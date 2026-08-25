@@ -595,6 +595,8 @@ private fun BangumiFollowContent(
                 selectedValue = status,
                 enabled = !state.isMutating,
                 onSelectionChange = onStatusSelected,
+                dragSelectionEnabled = BangumiFollowStatus.entries.size > 1,
+                tapPressRefractionEnabled = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 8.dp),

@@ -105,16 +105,18 @@ fun BangumiPlayerContent(
                     indicatorHeight = com.android.purebilibili.core.ui.roundMatchedLiquidIndicatorHeightDp(44f).dp,
                     labelFontSize = 15.sp,
                     miuixBackdrop = selectionBackdrop,
-                    forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
                     liquidGlassEffectsEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+                    dragSelectionEnabled = tabs.size > 1,
                     tapPressRefractionEnabled = false,
                     indicatorPositionProvider = indicatorPositionProvider,
                     isScrollInProgressProvider = { pagerState.isScrollInProgress },
+                    externalPagerMotionEffectsEnabled = true,
                 )
             } else {
                 AppPrimaryTabRow(
                     selectedTabIndex = pagerState.currentPage,
                     modifier = Modifier.fillMaxWidth(0.4f),
+                    indicatorPositionProvider = indicatorPositionProvider,
                 ) {
                     tabs.forEachIndexed { index, label ->
                         AppTab(

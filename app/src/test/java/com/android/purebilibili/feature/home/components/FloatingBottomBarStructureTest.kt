@@ -182,6 +182,8 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("EaseOut.transform(abs(fraction))"))
         assertTrue(source.contains("4.dp.toPx()"))
         assertTrue(source.contains("InteractiveHighlight("))
+        assertTrue(source.contains("resolveDockInteractiveHighlightRadiusPx("))
+        assertTrue(source.contains("resolveDockPillHighlightWidthDp("))
         assertTrue(source.contains("Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU"))
         assertTrue(source.contains("selectedIndexLatest.value().coerceIn(0, maxTabIndex) to"))
         assertTrue(source.contains("onSelectedLatest.value(targetIndex)"))
@@ -287,13 +289,17 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
-    fun `non liquid indicator hides the covered base content copy`() {
+    fun `selected dock label fades under the indicator in every visual mode`() {
         val source = loadFloatingBottomBarSource()
+        val alphaProvider = source
+            .substringAfter("val baseContentAlphaProvider")
+            .substringBefore("LaunchedEffect(dampedDragAnimation, maxTabIndex)")
 
         assertTrue(source.contains("LocalFloatingBottomBarBaseContentAlpha"))
         assertTrue(source.contains("LocalFloatingBottomBarActiveContent.current"))
         assertTrue(source.contains("baseContentAlpha(itemIndex)"))
         assertTrue(source.contains("1f - coverage"))
+        assertTrue(!alphaProvider.contains("if (isLiquidGlassMode)"))
         assertTrue(
             source.contains(
                 "LocalFloatingBottomBarBaseContentAlpha provides baseContentAlphaProvider"

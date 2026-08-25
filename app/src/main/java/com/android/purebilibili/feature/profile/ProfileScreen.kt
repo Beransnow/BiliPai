@@ -91,6 +91,8 @@ import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppWindowAction
+import com.android.purebilibili.core.ui.components.AppWindowActionMenu
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
@@ -134,6 +136,8 @@ import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.WindowWidthSizeClass
 import com.android.purebilibili.core.ui.components.AppPreference
 import com.android.purebilibili.core.ui.components.AppPreferenceGridItem
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.store.StoredAccountSession
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.data.model.response.FavFolder
@@ -168,7 +172,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 
 
 internal fun shouldEnableProfileHeaderLoginClick(isLogin: Boolean): Boolean = !isLogin
@@ -774,6 +777,16 @@ private fun BoxScope.ProfileBackground(
     val wallpaperModel = remember(user.topPhoto) {
         File(user.topPhoto).takeIf(File::isAbsolute) ?: user.topPhoto
     }
+    val wallpaperRequest = remember(context, wallpaperModel, wallpaperDecodeSize) {
+        ImageRequest.Builder(context)
+            .data(wallpaperModel)
+            .size(wallpaperDecodeSize.first, wallpaperDecodeSize.second)
+            .scale(Scale.FILL)
+            // Profile wallpaper is persistent chrome. Fading a local skin asset in from the
+            // surface color makes every bottom-tab entry look like a full-screen flash.
+            .crossfade(false)
+            .build()
+    }
     val heroChrome = remember(hasWallpaper, isDarkTheme, colorScheme.onSurface, colorScheme.onSurfaceVariant) {
         resolveProfileHeroChrome(
             hasWallpaper = hasWallpaper,
@@ -795,7 +808,7 @@ private fun BoxScope.ProfileBackground(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorScheme.surface)
+            .globalWallpaperAwareBackground(colorScheme.surface)
     )
 
     Box(
@@ -807,12 +820,7 @@ private fun BoxScope.ProfileBackground(
         if (shouldRenderProfileImmersiveBackground(user.topPhoto.isNotEmpty(), deferImmersiveRenderBudget)) {
             if (user.topPhoto.isNotEmpty()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(wallpaperModel)
-                        .size(wallpaperDecodeSize.first, wallpaperDecodeSize.second)
-                        .scale(Scale.FILL)
-                        .crossfade(true)
-                        .build(),
+                    model = wallpaperRequest,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     alignment = androidx.compose.ui.BiasAlignment(
@@ -1339,7 +1347,6 @@ private fun ProfileTopActions(
     tint: Color,
     onWallpaperClick: (() -> Unit)? = null,
 ) {
-    var expanded by remember { mutableStateOf(false) }
     AppIconButton(onClick = onSearchClick) {
         AppIcon(Icons.Rounded.Search, contentDescription = "搜索", tint = tint)
     }
@@ -1364,34 +1371,25 @@ private fun ProfileTopActions(
             AppIcon(rememberAppSettingsIcon(), contentDescription = "设置", tint = tint)
         }
     } else {
-        Box {
-            AppIconButton(onClick = { expanded = true }) {
-                AppIcon(Icons.Rounded.MoreVert, contentDescription = "更多", tint = tint)
-            }
-            AppDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                AppDropdownMenuItem(
-                    text = { AppText(if (privacyModeEnabled) "关闭无痕模式" else "开启无痕模式") },
-                    onClick = { expanded = false; onPrivacyClick() },
-                )
-                AppDropdownMenuItem(
-                    text = { AppText("切换账号") },
-                    onClick = { expanded = false; onAccountClick() },
-                )
-                AppDropdownMenuItem(
-                    text = { AppText("切换主题") },
-                    onClick = { expanded = false; onThemeClick() },
-                )
-                onWallpaperClick?.let { action ->
-                    AppDropdownMenuItem(
-                        text = { AppText("更换背景") },
-                        onClick = { expanded = false; action() },
+        AppWindowActionMenu(
+            groups = listOf(
+                buildList {
+                    add(
+                        AppWindowAction(
+                            label = if (privacyModeEnabled) "关闭无痕模式" else "开启无痕模式",
+                            onClick = onPrivacyClick,
+                        )
                     )
+                    add(AppWindowAction(label = "切换账号", onClick = onAccountClick))
+                    add(AppWindowAction(label = "切换主题", onClick = onThemeClick))
+                    onWallpaperClick?.let { action ->
+                        add(AppWindowAction(label = "更换背景", onClick = action))
+                    }
+                    add(AppWindowAction(label = "设置", onClick = onSettingsClick))
                 }
-                AppDropdownMenuItem(
-                    text = { AppText("设置") },
-                    onClick = { expanded = false; onSettingsClick() },
-                )
-            }
+            ),
+        ) {
+                AppIcon(Icons.Rounded.MoreVert, contentDescription = "更多", tint = tint)
         }
     }
 }
@@ -1821,11 +1819,12 @@ private fun ProfileSpaceTabs(
     val tabs = remember { defaultProfileSpaceTabs() }
     val chromeSpec = remember { resolveProfileSpaceTabChromeSpec() }
     val selectedIndex = tabs.indexOfFirst { it.tab == selectedTab }.coerceAtLeast(0)
-    BottomBarLiquidSegmentedControl(
-        items = tabs.map { it.title },
-        selectedIndex = selectedIndex,
-        onSelected = { index -> tabs.getOrNull(index)?.tab?.let(onTabSelected) },
-        forceLiquidChrome = true,
+    AppThemeAdaptiveTabRow(
+        options = tabs.map { AppSegmentOption(it.tab, it.title) },
+        selectedValue = tabs[selectedIndex].tab,
+        onSelectionChange = onTabSelected,
+        dragSelectionEnabled = tabs.size > 1,
+        tapPressRefractionEnabled = true,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = chromeSpec.rowHorizontalInsetDp.dp, vertical = 6.dp),

@@ -963,116 +963,114 @@ fun PluginsContent(
             item {
                 AppSurface(
                     modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .clip(AppShapes.container(ContainerLevel.Card))
-                        .clickable { onOpenSkinCatalog() },
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
-                    tonalElevation = 0.dp
+                        .fillMaxWidth()
+                        .clip(AppShapes.container(ContainerLevel.Card)),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 1.dp
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onOpenSkinCatalog() }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .adaptiveSquircleBackground(uiSkinTint, 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AppIcon(
+                                    imageVector = Icons.Filled.Cloud,
+                                    contentDescription = null,
+                                    tint = uiSkinIconContentColor,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                AppText(
+                                    text = "在线装扮目录",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                AppText(
+                                    text = "浏览 Rovniced/bilibili-skin 主题存档，真实预览后一键导入",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            AppSurface(
+                                shape = AppShapes.container(ContainerLevel.Chip),
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
+                            ) {
+                                AppText(
+                                    text = "在线",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .adaptiveSquircleBackground(uiSkinTint, 10.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            AppIcon(
-                                imageVector = Icons.Filled.Cloud,
-                                contentDescription = null,
-                                tint = uiSkinIconContentColor,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(14.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            AppText(
-                                text = "在线装扮目录",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            AppText(
-                                text = "浏览 Rovniced/bilibili-skin 主题存档，真实预览后一键导入",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        AppSurface(
-                            shape = AppShapes.container(ContainerLevel.Chip),
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
-                        ) {
-                            AppText(
-                                text = "在线",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            item {
-                AppSurface(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .clip(AppShapes.container(ContainerLevel.Card))
-                        .clickable(enabled = !isUiSkinPackageLoading) {
-                            uiSkinPackagePicker.launch("*/*")
-                        },
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
-                    tonalElevation = 0.dp
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
+                                .fillMaxWidth()
+                                .height(0.5.dp)
+                                .padding(start = 16.dp)
+                                .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        )
+                        Row(
                             modifier = Modifier
-                                .size(36.dp)
-                                .adaptiveSquircleBackground(uiSkinTint, 10.dp),
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .clickable(enabled = !isUiSkinPackageLoading) {
+                                    uiSkinPackagePicker.launch("*/*")
+                                }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            AppIcon(
-                                imageVector = Icons.Filled.Brush,
-                                contentDescription = null,
-                                tint = uiSkinIconContentColor,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(14.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            AppText(
-                                text = "导入界面皮肤包",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            AppText(
-                                text = if (isUiSkinPackageLoading) {
-                                    "正在读取 .bpskin..."
-                                } else {
-                                    "选择 .bpskin、主题目录 ZIP 或装扮 _package.zip，只保存资源和启用记录"
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        AppSurface(
-                            shape = AppShapes.container(ContainerLevel.Chip),
-                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
-                        ) {
-                            AppText(
-                                text = "资源包",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .adaptiveSquircleBackground(uiSkinTint, 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AppIcon(
+                                    imageVector = Icons.Filled.Brush,
+                                    contentDescription = null,
+                                    tint = uiSkinIconContentColor,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                AppText(
+                                    text = "导入界面皮肤包",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                AppText(
+                                    text = if (isUiSkinPackageLoading) {
+                                        "正在读取 .bpskin..."
+                                    } else {
+                                        "选择 .bpskin、主题目录 ZIP 或装扮 _package.zip，只保存资源和启用记录"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            AppSurface(
+                                shape = AppShapes.container(ContainerLevel.Chip),
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
+                            ) {
+                                AppText(
+                                    text = "资源包",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
                         }
                     }
                 }

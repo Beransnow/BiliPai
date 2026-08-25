@@ -26,6 +26,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,7 +41,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppShareIcon
@@ -97,8 +98,8 @@ fun ActionButton(
         isLike && isActive -> rememberAppLikeFilledIcon()
         isLike -> rememberAppLikeIcon()
         isForward -> rememberAppShareIcon()
-        isComment -> rememberAppCommentIcon()
-        else -> rememberAppCommentIcon()
+        isComment -> Icons.Outlined.ChatBubbleOutline
+        else -> Icons.Outlined.ChatBubbleOutline
     }
     val countFadeAnimationSpec = AppMotionTokens.standardSpec<Float>()
     val countSlideAnimationSpec = AppMotionTokens.standardSpec<IntOffset>()
@@ -112,56 +113,32 @@ fun ActionButton(
             )
         }
 
-        if (isForward || isComment) {
-            when (LocalAppUiStyle.current) {
-                AppUiStyle.MATERIAL3 -> FilledTonalButton(
-                    onClick = onClick,
-                    enabled = enabled,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = AppShapes.container(ContainerLevel.Card),
-                    contentPadding = PaddingValues(
-                        horizontal = AppSpacingTokens.Small,
-                        vertical = AppSpacingTokens.Small
-                    )
-                ) {
-                    Icon(
-                        imageVector = buttonIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(ButtonDefaults.IconSize)
-                    )
-                    DynamicNativeActionText(
-                        actionText = actionText,
-                        countFadeAnimationSpec = countFadeAnimationSpec,
-                        countSlideAnimationSpec = countSlideAnimationSpec,
-                        spacing = ButtonDefaults.IconSpacing
-                    )
-                }
-
-                AppUiStyle.MIUIX -> MiuixButton(
-                    onClick = onClick,
-                    enabled = enabled,
-                    modifier = Modifier.fillMaxWidth(),
-                    insideMargin = PaddingValues(
-                        horizontal = AppSpacingTokens.Small,
-                        vertical = AppSpacingTokens.Medium
-                    )
-                ) {
-                    AppIcon(
-                        imageVector = buttonIcon,
-                        contentDescription = null,
-                        modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.Micro)
-                    )
-                    DynamicNativeActionText(
-                        actionText = actionText,
-                        countFadeAnimationSpec = countFadeAnimationSpec,
-                        countSlideAnimationSpec = countSlideAnimationSpec,
-                        spacing = AppSpacingTokens.ExtraSmall
-                    )
-                }
+        if (isForward && LocalAppUiStyle.current == AppUiStyle.MIUIX) {
+            MiuixButton(
+                onClick = onClick,
+                enabled = enabled,
+                modifier = Modifier.fillMaxWidth(),
+                insideMargin = PaddingValues(
+                    horizontal = AppSpacingTokens.Small,
+                    vertical = AppSpacingTokens.Medium
+                )
+            ) {
+                AppIcon(
+                    imageVector = buttonIcon,
+                    contentDescription = null,
+                    modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.Micro)
+                )
+                DynamicNativeActionText(
+                    actionText = actionText,
+                    countFadeAnimationSpec = countFadeAnimationSpec,
+                    countSlideAnimationSpec = countSlideAnimationSpec,
+                    spacing = AppSpacingTokens.ExtraSmall
+                )
             }
             return@BoxWithConstraints
         }
 
+        val useFilledShell = !isComment && LocalAppUiStyle.current != AppUiStyle.MATERIAL3
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -169,9 +146,18 @@ fun ActionButton(
                 .fillMaxWidth()
                 .heightIn(min = AppChromeSizeTokens.MinimumTouchTarget)
                 .scale(scale)
-                .clip(AppShapes.container(ContainerLevel.Pill))
-                .background(
-                    color = buttonColor.copy(alpha = if (isActive && isLike) 0.15f else 0.08f)
+                .then(
+                    if (useFilledShell) {
+                        Modifier
+                            .clip(AppShapes.container(ContainerLevel.Pill))
+                            .background(
+                                color = buttonColor.copy(
+                                    alpha = if (isActive && isLike) 0.15f else 0.08f
+                                )
+                            )
+                    } else {
+                        Modifier
+                    }
                 )
                 .clickable(
                     enabled = enabled,

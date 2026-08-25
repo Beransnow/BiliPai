@@ -53,7 +53,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.R
-import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
 import com.android.purebilibili.core.store.BackToTopSettingsStore
 import com.android.purebilibili.core.store.DEFAULT_BACK_TO_TOP_BUTTON_ENABLED
 import com.android.purebilibili.core.store.HomeDurationStyle
@@ -455,16 +454,6 @@ fun AppearanceSettingsContent(
     val homeHeroCarouselAutoplayEnabled by SettingsManager
         .getHomeHeroCarouselAutoplayEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
-    val commonListHeaderCollapseMode by SettingsManager
-        .getCommonListHeaderCollapseMode(context)
-        .collectAsStateWithLifecycle(
-            initialValue = CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL
-        )
-    val commonListHeaderCollapseOptions = remember {
-        CommonListHeaderCollapseMode.entries.map { mode ->
-            AppSegmentOption(mode, mode.label)
-        }
-    }
     val themeRoleOverrides by SettingsManager
         .getThemeRoleOverrides(context)
         .collectAsStateWithLifecycle(initialValue = ThemeRoleOverrides())
@@ -1289,19 +1278,6 @@ fun AppearanceSettingsContent(
                             onSelectionChange = viewModel::setDisplayMode,
                         )
                         
-                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
-                        SettingsSingleChoicePreference(
-                            title = "列表顶部栏：${commonListHeaderCollapseMode.label}",
-                            subtitle = "收藏夹列表：${commonListHeaderCollapseMode.description}。历史记录固定为下滑隐藏标题、回顶恢复",
-                            options = commonListHeaderCollapseOptions,
-                            selectedValue = commonListHeaderCollapseMode,
-                            onSelectionChange = { mode ->
-                                scope.launch {
-                                    SettingsManager.setCommonListHeaderCollapseMode(context, mode)
-                                }
-                            }
-                        )
-
                         AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                         AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.HEADER_COLLAPSE),

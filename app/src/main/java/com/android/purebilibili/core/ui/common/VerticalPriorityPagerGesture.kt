@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
@@ -127,15 +128,20 @@ internal fun resolvePagerReleaseTargetPage(
  * two-dimensional pointer stream without consuming it, then takes ownership only after the
  * accumulated gesture is clearly horizontal. Vertical and ambiguous gestures remain untouched so
  * the child LazyColumn/LazyGrid can continue handling them normally.
+ *
+ * [shouldYield] aborts this detector without consuming the pointer stream, so a nested
+ * horizontal pager (such as the home hero carousel) can own the same gesture.
  */
 internal fun Modifier.verticalPriorityHorizontalPagerSwipe(
     state: PagerState,
     enabled: Boolean,
     reverseLayout: Boolean = false,
     horizontalLockSlopMultiplier: Float = 1f,
+    shouldYield: () -> Boolean = { false },
 ): Modifier = composed {
     if (!enabled) return@composed this
 
+    val latestShouldYield = rememberUpdatedState(shouldYield)
     val layoutDirection = LocalLayoutDirection.current
     val density = LocalDensity.current
     val minimumFlingVelocityPx = with(density) {
@@ -166,6 +172,7 @@ internal fun Modifier.verticalPriorityHorizontalPagerSwipe(
                 requireUnconsumed = false,
                 pass = PointerEventPass.Initial,
             )
+            if (latestShouldYield.value()) return@gesture
             if (state.isScrollInProgress) {
                 dragCoroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
                     state.scroll(MutatePriority.UserInput) { }
@@ -182,6 +189,7 @@ internal fun Modifier.verticalPriorityHorizontalPagerSwipe(
 
             while (direction == PagerGestureDirection.UNDECIDED) {
                 val event = awaitPointerEvent(PointerEventPass.Initial)
+                if (latestShouldYield.value()) return@gesture
                 val change = event.changes.firstOrNull { it.id == trackedPointerId }
                     ?: event.changes.firstOrNull { it.pressed }
                     ?: return@gesture
@@ -242,6 +250,11 @@ internal fun Modifier.verticalPriorityHorizontalPagerSwipe(
                 var released = false
                 while (!released) {
                     val event = awaitPointerEvent(PointerEventPass.Initial)
+                    if (latestShouldYield.value()) {
+                        dragSession.cancel()
+                        released = true
+                        continue
+                    }
                     val change = event.changes.firstOrNull { it.id == trackedPointerId }
                         ?: event.changes.firstOrNull { it.pressed }
                     if (change == null) {

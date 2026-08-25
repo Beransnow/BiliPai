@@ -269,9 +269,8 @@ internal fun Modifier.bottomBarMatchedLiquidDockSurface(
  */
 @Composable
 /**
- * @param drawShellLens 底栏整壳可开 lens；搜索框/评论输入等小胶囊必须 false，
- * 否则 refraction 边沿会出现「虾线」亮边（尤其 iOS 主题复用安卓原生液态玻璃时）。
- * @param shellLensIntensity 顶部分类等矮 dock 可用 <1 的 soft lens：保留上下滑动折射，压低边沿虾线。
+ * @param drawShellLens 独立液态表面应保留 lens；只有确实嵌套在另一个液态壳内的内容层才关闭。
+ * @param shellLensIntensity 矮 dock 应按实际高度相对 64dp 基准缩放 lens，避免上下折射边沿相撞成虾线。
  */
 internal fun BottomBarMatchedReusableLiquidDock(
     shape: Shape,

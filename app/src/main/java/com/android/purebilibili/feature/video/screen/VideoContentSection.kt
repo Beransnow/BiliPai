@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -35,7 +34,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
@@ -49,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.common.copyOnLongPress
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.core.util.ShareUtils
-import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberAppPlayIcon
@@ -83,6 +80,7 @@ import com.android.purebilibili.feature.video.ui.section.resolveDisplayBgmList
 import com.android.purebilibili.feature.video.ui.section.shouldShowAiSummaryEntry
 import com.android.purebilibili.feature.video.ui.section.resolveVideoDetailMotionBudget
 import com.android.purebilibili.feature.video.ui.section.shouldAnimateVideoDetailLayout
+import com.android.purebilibili.feature.video.ui.components.NativeDanmakuToggleButton
 import com.android.purebilibili.feature.video.ui.components.RelatedVideoGridRow
 import com.android.purebilibili.feature.video.ui.components.chunkRelatedVideosForHomeStyleGrid
 import com.android.purebilibili.feature.video.ui.components.filterRelatedVideosByHiddenBvids
@@ -121,6 +119,11 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 
 internal fun shouldShowDanmakuSendInput(isPlayerCollapsed: Boolean): Boolean = !isPlayerCollapsed
+
+/** Trailing send/toggle chrome stays on both 简介 and 评论. */
+internal fun shouldShowVideoContentTabBarDanmakuActions(
+    selectedTabIndex: Int,
+): Boolean = selectedTabIndex == 0 || selectedTabIndex == 1
 
 internal data class VideoContentTabBarLayoutSpec(
     val tabsRowWeight: Float,
@@ -233,48 +236,24 @@ internal fun resolveVideoContentTabBarLayoutSpec(widthDp: Int): VideoContentTabB
 
 internal data class VideoContentTabBarDanmakuActionLayoutPolicy(
     val toggleIconSizeDp: Int,
-    val toggleHorizontalPaddingDp: Int,
-    val toggleVerticalPaddingDp: Int,
-    val toggleTextSizeSp: Int,
+    val toggleButtonSizeDp: Int,
     val toggleTrailingPaddingDp: Int,
-    val sendHorizontalPaddingDp: Int,
-    val sendVerticalPaddingDp: Int,
+    val sendMinHeightDp: Int,
     val sendTextSizeSp: Int,
     val sendLabel: String,
-    val secondaryControlHeightDp: Int,
-    val secondaryControlCornerRadiusDp: Int,
 )
 
+/** Native PiliPlus tab-bar actions: plain “发弹幕” text + icon-only danmaku switch. */
 internal fun resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp: Int): VideoContentTabBarDanmakuActionLayoutPolicy {
-    return if (widthDp < 400) {
-        VideoContentTabBarDanmakuActionLayoutPolicy(
-            toggleIconSizeDp = 14,
-            toggleHorizontalPaddingDp = 8,
-            toggleVerticalPaddingDp = 6,
-            toggleTextSizeSp = 11,
-            toggleTrailingPaddingDp = 6,
-            sendHorizontalPaddingDp = 10,
-            sendVerticalPaddingDp = 6,
-            sendTextSizeSp = 11,
-            sendLabel = "发弹幕",
-            secondaryControlHeightDp = 40,
-            secondaryControlCornerRadiusDp = AppChromeSizeTokens.CompactControlCornerRadiusDp,
-        )
-    } else {
-        VideoContentTabBarDanmakuActionLayoutPolicy(
-            toggleIconSizeDp = 16,
-            toggleHorizontalPaddingDp = 10,
-            toggleVerticalPaddingDp = 8,
-            toggleTextSizeSp = 12,
-            toggleTrailingPaddingDp = 8,
-            sendHorizontalPaddingDp = 12,
-            sendVerticalPaddingDp = 8,
-            sendTextSizeSp = 12,
-            sendLabel = "发弹幕",
-            secondaryControlHeightDp = 40,
-            secondaryControlCornerRadiusDp = AppChromeSizeTokens.CompactControlCornerRadiusDp,
-        )
-    }
+    val compact = widthDp < 400
+    return VideoContentTabBarDanmakuActionLayoutPolicy(
+        toggleIconSizeDp = 22,
+        toggleButtonSizeDp = 38,
+        toggleTrailingPaddingDp = if (compact) 4 else 6,
+        sendMinHeightDp = 32,
+        sendTextSizeSp = 12,
+        sendLabel = "发弹幕",
+    )
 }
 
 internal data class VideoContentTabSwitchAnimationSpec(
@@ -1749,8 +1728,8 @@ private fun VideoContentTabBar(
                     indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                     labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
                     miuixBackdrop = miuixBackdrop,
-                    forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
                     liquidGlassEffectsEnabled = liquidChromeSpec.liquidGlassEffectsEnabled,
+                    dragSelectionEnabled = tabs.size > 1,
                     tapPressRefractionEnabled = true,
                     indicatorPositionProvider = indicatorPositionProvider,
                     isScrollInProgressProvider = isScrollInProgressProvider,
@@ -1764,6 +1743,7 @@ private fun VideoContentTabBar(
                             layoutSpec.unselectedTabFontSizeSp,
                         ) * tabs.size).dp,
                     ),
+                    indicatorPositionProvider = indicatorPositionProvider,
                 ) {
                     tabs.forEachIndexed { index, label ->
                         AppTab(
@@ -1784,7 +1764,7 @@ private fun VideoContentTabBar(
                 }
             }
 
-            if (selectedTabIndex != 1) {
+            if (shouldShowVideoContentTabBarDanmakuActions(selectedTabIndex)) {
                 // [新增] 恢复画面按钮 (仅在播放器折叠时显示)
                 AnimatedVisibility(
                     visible = isPlayerCollapsed,
@@ -1818,73 +1798,33 @@ private fun VideoContentTabBar(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                val danmakuToggleInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                val danmakuActiveColor = MaterialTheme.colorScheme.primary
-                val danmakuInactiveColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.82f)
-                Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(end = danmakuActionLayoutPolicy.toggleTrailingPaddingDp.dp)
-                    .height(danmakuActionLayoutPolicy.secondaryControlHeightDp.dp)
-                    .clip(RoundedCornerShape(danmakuActionLayoutPolicy.secondaryControlCornerRadiusDp.dp))
-                    .background(
-                        if (danmakuEnabled) {
-                            danmakuActiveColor.copy(alpha = 0.16f)
-                        } else {
-                            danmakuInactiveColor.copy(alpha = 0.12f)
-                        }
-                    )
-                    .clickable(
-                        interactionSource = danmakuToggleInteraction,
-                        indication = null,
-                        onClick = onDanmakuToggle
-                    )
-                    .padding(
-                        horizontal = danmakuActionLayoutPolicy.toggleHorizontalPaddingDp.dp,
-                        vertical = danmakuActionLayoutPolicy.toggleVerticalPaddingDp.dp
-                    )
-                ) {
-                AppIcon(
-                    imageVector = rememberAppCommentIcon(),
-                    contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
-                    tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
-                    modifier = Modifier.size(danmakuActionLayoutPolicy.toggleIconSizeDp.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                AppText(
-                    text = if (danmakuEnabled) "开" else "关",
-                    fontSize = danmakuActionLayoutPolicy.toggleTextSizeSp.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
-                    modifier = Modifier.offset(x = 1.dp),
-                )
-                }
-
                 AnimatedVisibility(
-                visible = shouldShowDanmakuSendInput(isPlayerCollapsed = isPlayerCollapsed),
-                enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
-                exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start)
-                ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .height(danmakuActionLayoutPolicy.secondaryControlHeightDp.dp)
-                        .clip(RoundedCornerShape(danmakuActionLayoutPolicy.secondaryControlCornerRadiusDp.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                        .clickable(onClick = onDanmakuSendClick)
-                        .padding(
-                            horizontal = danmakuActionLayoutPolicy.sendHorizontalPaddingDp.dp,
-                            vertical = danmakuActionLayoutPolicy.sendVerticalPaddingDp.dp
-                        )
+                    visible = shouldShowDanmakuSendInput(isPlayerCollapsed = isPlayerCollapsed),
+                    enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+                    exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
                 ) {
                     AppText(
                         text = danmakuActionLayoutPolicy.sendLabel,
                         fontSize = danmakuActionLayoutPolicy.sendTextSizeSp.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tapToCopyEnabled = false,
+                        modifier = Modifier
+                            .heightIn(min = danmakuActionLayoutPolicy.sendMinHeightDp.dp)
+                            .wrapContentHeight(align = Alignment.CenterVertically)
+                            .clickable(onClick = onDanmakuSendClick),
                     )
                 }
-                }
 
+                NativeDanmakuToggleButton(
+                    enabled = danmakuEnabled,
+                    onToggle = onDanmakuToggle,
+                    activeTint = MaterialTheme.colorScheme.secondary,
+                    inactiveTint = MaterialTheme.colorScheme.outline,
+                    modifier = Modifier
+                        .padding(end = danmakuActionLayoutPolicy.toggleTrailingPaddingDp.dp)
+                        .size(danmakuActionLayoutPolicy.toggleButtonSizeDp.dp),
+                    iconSize = danmakuActionLayoutPolicy.toggleIconSizeDp.dp,
+                )
             }
         }
         AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))

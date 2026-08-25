@@ -12,6 +12,23 @@ import kotlin.math.max
 import kotlin.math.min
 
 private const val HOME_WALLPAPER_HOME_ROUTE_BASE = "home"
+private const val HOME_WALLPAPER_MAIN_HOST_ROUTE = "main_host"
+
+/**
+ * 底栏宿主的当前路由是 `main_host`，真正的首页/动态等 tab 在 [mainHostTabRoute]。
+ * 推入详情后则直接使用 [currentRoute]。
+ */
+internal fun resolveGlobalHomeWallpaperRoute(
+    currentRoute: String?,
+    mainHostTabRoute: String? = null,
+): String? {
+    val normalized = normalizeHomeWallpaperRoute(currentRoute)
+    if (normalized == HOME_WALLPAPER_MAIN_HOST_ROUTE) {
+        val tabRoute = normalizeHomeWallpaperRoute(mainHostTabRoute)
+        if (!tabRoute.isNullOrBlank()) return tabRoute
+    }
+    return normalized
+}
 
 /**
  * App 根层全局壁纸：GLOBAL 且当前不在首页路由时绘制。
@@ -20,10 +37,15 @@ private const val HOME_WALLPAPER_HOME_ROUTE_BASE = "home"
 internal fun shouldRenderGlobalHomeWallpaperBackdrop(
     effectScope: HomeWallpaperEffectScope,
     currentRoute: String?,
+    mainHostTabRoute: String? = null,
 ): Boolean {
     if (effectScope != HomeWallpaperEffectScope.GLOBAL) return false
-    if (currentRoute.isNullOrBlank()) return false
-    return normalizeHomeWallpaperRoute(currentRoute) != HOME_WALLPAPER_HOME_ROUTE_BASE
+    val route = resolveGlobalHomeWallpaperRoute(
+        currentRoute = currentRoute,
+        mainHostTabRoute = mainHostTabRoute,
+    )
+    if (route.isNullOrBlank()) return false
+    return route != HOME_WALLPAPER_HOME_ROUTE_BASE
 }
 
 /**
@@ -50,9 +72,11 @@ internal fun shouldExposeGlobalHomeWallpaperChrome(
     effectScope: HomeWallpaperEffectScope,
     hasWallpaperUri: Boolean,
     currentRoute: String?,
+    mainHostTabRoute: String? = null,
 ): Boolean = shouldRenderGlobalHomeWallpaperBackdrop(
     effectScope = effectScope,
     currentRoute = currentRoute,
+    mainHostTabRoute = mainHostTabRoute,
 ) && hasWallpaperUri
 
 private fun normalizeHomeWallpaperRoute(route: String?): String? {

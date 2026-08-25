@@ -184,8 +184,8 @@ fun BangumiReviewScreen(
                     indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
                     labelFontSize = 13.sp,
                     miuixBackdrop = reviewChromeBackdrop,
-                    forceLiquidChrome = false,
                     liquidGlassEffectsEnabled = true,
+                    dragSelectionEnabled = reviewTypes.size > 1,
                     tapPressRefractionEnabled = true,
                 )
                 Spacer(modifier = Modifier.weight(1f))
@@ -198,8 +198,8 @@ fun BangumiReviewScreen(
                     indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
                     labelFontSize = 13.sp,
                     miuixBackdrop = reviewChromeBackdrop,
-                    forceLiquidChrome = false,
                     liquidGlassEffectsEnabled = true,
+                    dragSelectionEnabled = sortLabels.size > 1,
                     tapPressRefractionEnabled = true,
                 )
             }

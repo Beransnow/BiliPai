@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.list
 
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
+import com.android.purebilibili.core.store.HomeHeaderCollapseMode
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -15,39 +16,17 @@ class CommonListHeaderCollapsePolicyTest {
     }
 
     @Test
-    fun `favorite header only returns after reaching the top`() {
+    fun `global home header mode drives common list headers`() {
         assertEquals(
             CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY,
             resolveCommonListHeaderCollapseModeForScreen(
-                configuredMode = CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL,
-                isFavoritePage = true
+                homeHeaderMode = HomeHeaderCollapseMode.BOTH,
             )
         )
         assertEquals(
-            CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL,
+            CommonListHeaderCollapseMode.ALWAYS_VISIBLE,
             resolveCommonListHeaderCollapseModeForScreen(
-                configuredMode = CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL,
-                isFavoritePage = false
-            )
-        )
-    }
-
-    @Test
-    fun `history title always collapses and only returns at top`() {
-        assertEquals(
-            CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY,
-            resolveCommonListHeaderCollapseModeForScreen(
-                configuredMode = CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL,
-                isFavoritePage = false,
-                isHistoryPage = true,
-            )
-        )
-        assertEquals(
-            CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY,
-            resolveCommonListHeaderCollapseModeForScreen(
-                configuredMode = CommonListHeaderCollapseMode.ALWAYS_VISIBLE,
-                isFavoritePage = false,
-                isHistoryPage = true,
+                homeHeaderMode = HomeHeaderCollapseMode.OFF,
             )
         )
     }

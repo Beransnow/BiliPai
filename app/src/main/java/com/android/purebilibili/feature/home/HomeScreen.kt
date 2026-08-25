@@ -406,7 +406,13 @@ fun HomeScreen(
         displayedTabIndex = displayedTabIndexFromState
     )
     val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = initialPage) { topTabEntries.size }
-    var isHeroCarouselGestureActive by remember { mutableStateOf(false) }
+    val heroCarouselPointerActive = remember { java.util.concurrent.atomic.AtomicBoolean(false) }
+    val onHeroCarouselGestureActiveChange = remember(heroCarouselPointerActive) {
+        { active: Boolean -> heroCarouselPointerActive.set(active) }
+    }
+    val shouldYieldHomePagerToHeroCarousel = remember(heroCarouselPointerActive) {
+        { shouldYieldHomeTopPagerToHeroCarousel(heroCarouselPointerActive.get()) }
+    }
     // PagerState 会从 SaveableState 恢复实际页码；不能用 initialPage 判断同步状态，
     // 否则详情返回后可能把恢复的旧页反向写回当前分类。
     val initialPageSyncedWithState = shouldTreatInitialHomePagerPageAsSyncedWithState(
@@ -1673,8 +1679,7 @@ fun HomeScreen(
                     )
                     // [Fix] Re-enabled default overscroll for better feedback
                         val homeTopPagerSwipeEnabled =
-                            shouldEnableHomeTopPagerUserScroll(isTopLevelActive) &&
-                                !isHeroCarouselGestureActive
+                            shouldEnableHomeTopPagerUserScroll(isTopLevelActive)
                         HorizontalPager(
                             state = pagerState,
                             beyondViewportPageCount = 0,
@@ -1687,6 +1692,7 @@ fun HomeScreen(
                                     enabled = homeTopPagerSwipeEnabled,
                                     horizontalLockSlopMultiplier =
                                         HOME_PAGER_HORIZONTAL_LOCK_SLOP_MULTIPLIER,
+                                    shouldYield = shouldYieldHomePagerToHeroCarousel,
                                 ),
                             key = { index -> resolveHomeTopTabEntryKey(topTabEntries, index) }
                         ) { page ->
@@ -2036,9 +2042,7 @@ fun HomeScreen(
                                      homeFeedCardStyle = homeFeedCardStyle,
                                      homeHeroCarouselEnabled = homeSettings.homeHeroCarouselEnabled,
                                      homeHeroCarouselAutoplayEnabled = homeSettings.homeHeroCarouselAutoplayEnabled,
-                                     onHeroCarouselGestureActiveChange = { active ->
-                                         isHeroCarouselGestureActive = active
-                                     },
+                                     onHeroCarouselGestureActiveChange = onHeroCarouselGestureActiveChange,
                                      onGetPreviewUrl = { bvid, cid -> viewModel.getPreviewVideoUrl(bvid, cid) },
                                      oldContentAnchorBvid = if (shouldShowRecommendOldContentDivider(
                                              currentCategory = category,

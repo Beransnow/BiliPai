@@ -34,11 +34,16 @@ class BottomInputBarStructureTest {
         assertTrue(source.contains("text = \"写评论\""))
         assertTrue(source.contains("BottomBarMatchedReusableLiquidDock("))
         assertTrue(source.contains("reuseEnabled = true"))
-        // 输入和操作区各自复用同一胶囊液态 Dock。
+        // 输入区和操作区保持两个独立液态 Dock，并分别进行安全缩放后的 lens 渲染。
         assertEquals(2, source.substringAfter("private fun FloatingLiquidBottomInputBar(")
             .substringBefore("private fun BottomInputBarContentRow(")
             .split("BottomBarMatchedReusableLiquidDock(").size - 1)
         assertTrue(source.contains("drawShellLens = true"))
+        assertFalse(source.contains("drawShellLens = false"))
+        assertEquals(2, source.substringAfter("private fun FloatingLiquidBottomInputBar(")
+            .substringBefore("private fun BottomInputBarContentRow(")
+            .split("shellLensIntensity = resolveFloatingDockGeometryScale(44f)").size - 1)
+        assertTrue(source.contains("AppSurfaceTokens.background()"))
         assertTrue(source.contains("itemSize = 32.dp"))
         assertTrue(source.contains("iconSize = 19.dp"))
         assertTrue(source.contains("spreadItems = true"))

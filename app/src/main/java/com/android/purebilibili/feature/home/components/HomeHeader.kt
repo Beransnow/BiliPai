@@ -477,12 +477,9 @@ internal fun resolveHomeTopTabRowHeight(
     chromePolicy: AppTopChromePolicy,
     labelMode: Int = com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
 ): Dp {
+    if (isTabFloating) return FloatingBottomBarDefaultShellHeight
     val style = resolveHomeTopPresetStyle(chromePolicy, labelMode)
-    return if (isTabFloating) {
-        style.tabRowHeightFloating
-    } else {
-        style.tabRowHeightDocked
-    }
+    return style.tabRowHeightDocked
 }
 
 internal fun resolveHomeTopSearchRowHorizontalPadding(
@@ -2008,6 +2005,8 @@ fun HomeHeader(
     // 再出现一整块高对比的白色 dock。其余 presentation 仍保留独立轨道以保证可读性。
     val drawTopTabDockChrome = drawTopTabOuterChromeSurface
     val useTopTabBottomBarMatchedDock = drawTopTabDockChrome
+    val topTabInnerOwnsFloatingDockShell =
+        useTopTabBottomBarMatchedDock || topTabLiquidGlassEnabled
     val topTabLabelMode = homeSettings?.topTabLabelMode
         ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
     // Floating dock shell + tabs share one wrap decision so glass length matches content.
@@ -2060,7 +2059,7 @@ fun HomeHeader(
             } else {
                 resolveNonNegativeHomeTopPadding(tabHorizontalPadding)
             },
-            tabVerticalPadding = if (embedTopTabsInUnifiedPanel) {
+            tabVerticalPadding = if (embedTopTabsInUnifiedPanel || topTabInnerOwnsFloatingDockShell) {
                 AppSpacingTokens.None
             } else {
                 resolveNonNegativeHomeTopPadding(tabVerticalPadding)
@@ -2110,7 +2109,10 @@ fun HomeHeader(
                 !isTopTabsAutoCollapseEnabled,
             isTabsCollapsed = topTabsCollapsed,
             onTabsCollapsedChange = onTopTabsCollapsedChange,
-            drawChromeSurface = drawTopTabDockChrome,
+            drawChromeSurface = shouldHomeTopTabChromeDrawOuterShell(
+                drawOuterChrome = drawTopTabDockChrome,
+                innerOwnsFloatingDock = topTabInnerOwnsFloatingDockShell,
+            ),
             useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock,
             drawMatchedShellLens = topTabLiquidGlassEnabled,
             matchedShellLensIntensity = resolveFloatingDockGeometryScale(
@@ -2417,6 +2419,9 @@ fun HomeHeader(
                                                     isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                                                     forceLowBlurBudget = forceLowBlurBudget,
                                                     drawShellLens = true,
+                                                    shellLensIntensity = resolveFloatingDockGeometryScale(
+                                                        resolveHomeTopAvatarInnerSize().value
+                                                    ),
                                                     isScrolling = topChromeMotionPolicy.isScrolling
                                                 )
                                             } else if (useUnifiedTopPanel) {
@@ -2750,6 +2755,9 @@ fun HomeHeader(
                                                     isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                                                     forceLowBlurBudget = forceLowBlurBudget,
                                                     drawShellLens = true,
+                                                    shellLensIntensity = resolveFloatingDockGeometryScale(
+                                                        topRightActionButtonSize.value
+                                                    ),
                                                     isScrolling = topChromeMotionPolicy.isScrolling
                                                 )
                                             } else if (useUnifiedTopPanel) {

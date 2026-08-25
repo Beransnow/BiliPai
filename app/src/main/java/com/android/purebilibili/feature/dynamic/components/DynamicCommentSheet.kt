@@ -54,6 +54,7 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalC
 import com.android.purebilibili.feature.dynamic.resolveDynamicSubReplyCount
 import com.android.purebilibili.feature.dynamic.shouldOpenDynamicCommentThreadOnTap
 import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
+import com.android.purebilibili.feature.home.components.resolveFloatingDockGeometryScale
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
 import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
@@ -620,6 +621,8 @@ private fun DynamicCommentComposer(
 ) {
     val trimmedComment = value.trim()
     val dockShape = resolveSharedBottomBarCapsuleShape()
+    val composerHeight = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small
+    val composerLensIntensity = resolveFloatingDockGeometryScale(composerHeight.value)
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -629,10 +632,11 @@ private fun DynamicCommentComposer(
             shape = dockShape,
             modifier = Modifier
                 .weight(1f)
-                .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small),
+                .height(composerHeight),
             reuseEnabled = liquidGlassEnabled,
             backdrop = backdrop,
             drawShellLens = true,
+            shellLensIntensity = composerLensIntensity,
         ) { liquidChromeActive ->
             val fieldColor = if (liquidChromeActive) Color.Transparent else commentFieldContainerColor
             OutlinedTextField(
@@ -671,11 +675,12 @@ private fun DynamicCommentComposer(
         }
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
         BottomBarMatchedReusableLiquidDock(
-            modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small),
+            modifier = Modifier.height(composerHeight),
             shape = dockShape,
             reuseEnabled = liquidGlassEnabled,
             backdrop = backdrop,
             drawShellLens = true,
+            shellLensIntensity = composerLensIntensity,
         ) { liquidChromeActive ->
             AppButton(
                 onClick = { onSubmit(trimmedComment) },

@@ -1,13 +1,21 @@
 package com.android.purebilibili.feature.list
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,19 +24,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.FeedTitleHierarchy
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.MediaContrastPalette
@@ -37,8 +49,8 @@ import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
-import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.feedContentTypography
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
@@ -50,7 +62,9 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.HistoryBusiness
 import com.android.purebilibili.data.model.response.HistoryItem
-import com.android.purebilibili.feature.personal.PersonalMediaCardFrame
+import com.android.purebilibili.feature.home.components.cards.resolveVideoCardCoverOverlayTextShadow
+import com.android.purebilibili.feature.personal.PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO
+import com.android.purebilibili.feature.personal.PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP
 
 internal fun resolveHistoryKindLabel(business: HistoryBusiness): String = when (business) {
     HistoryBusiness.ARCHIVE -> "视频"
@@ -70,7 +84,7 @@ internal fun resolveHistoryProgressLabel(progress: Int, duration: Int): String =
 internal fun canAddHistoryToWatchLater(item: HistoryItem): Boolean =
     item.business == HistoryBusiness.ARCHIVE && item.videoItem.id > 0L
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
 @Composable
 internal fun HistoryPersonalCard(
     item: HistoryItem,
@@ -166,11 +180,22 @@ internal fun HistoryPersonalCard(
         onClick()
     }
 
-    PersonalMediaCardFrame(
-        coverModifier = Modifier.onGloballyPositioned {
-            coverBounds.value = it.boundsInRoot()
-        },
+    val coverOverlayTextStyle = remember {
+        TextStyle(shadow = resolveVideoCardCoverOverlayTextShadow())
+    }
+    val contentTypography = feedContentTypography(FeedTitleHierarchy.Standard)
+    val coverWidth = PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP.dp
+    val coverHeight =
+        (PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP / PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO).dp
+    val coverShape = AppShapes.container(ContainerLevel.Card)
+    val owner = video.owner.name.takeIf { it.isNotBlank() }
+        ?: if (item.business == HistoryBusiness.PGC) "番剧" else "未知作者"
+    val viewedAt = FormatUtils.formatPublishTime(video.view_at)
+    val titleMaxLines = if (item.page > 1) 1 else 2
+
+    Row(
         modifier = modifier
+            .fillMaxWidth()
             .videoCardShellSharedBoundsOrEmpty(
                 enabled = useSharedBounds,
                 sharedTransitionScope = sharedTransitionScope,
@@ -178,71 +203,51 @@ internal fun HistoryPersonalCard(
                 bvid = video.bvid,
                 sourceRoute = sourceRoute,
                 motionSpec = motionSpec,
-                clipShape = AppShapes.container(ContainerLevel.Card),
+                clipShape = coverShape,
                 crossfadeSourceContent = true,
             )
-            .onGloballyPositioned { cardBounds.value = it.boundsInRoot() },
-        selected = selected,
-        headlineContent = {
-            AppText(
-                text = video.title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                overflow = TextOverflow.Visible,
+            .combinedClickable(
+                onClick = triggerClick,
+                onLongClick = onLongClick,
             )
-        },
-        overlineContent = {
-            AppText(
-                text = resolveHistoryKindLabel(item.business),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        },
-        supportingContent = {
-            Column {
-                val owner = video.owner.name.takeIf { it.isNotBlank() }
-                    ?: if (item.business == HistoryBusiness.PGC) "番剧" else "未知作者"
-                AppText(
-                    text = owner,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    overflow = TextOverflow.Visible,
-                )
-                FormatUtils.formatPublishTime(video.view_at).takeIf { it.isNotBlank() }?.let { viewedAt ->
-                    AppText(
-                        text = viewedAt,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.76f),
+            .onGloballyPositioned { cardBounds.value = it.boundsInRoot() }
+            .padding(horizontal = 12.dp, vertical = 5.dp)
+            .then(
+                if (selected) {
+                    Modifier.background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
                     )
+                } else {
+                    Modifier
                 }
-            }
-        },
-        coverContent = {
+            ),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Box(
+            modifier = Modifier
+                .width(coverWidth)
+                .height(coverHeight)
+                .clip(coverShape)
+                .onGloballyPositioned { coverBounds.value = it.boundsInRoot() },
+        ) {
             AsyncImage(
                 model = stationaryCoverRequest,
                 contentDescription = video.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-        },
-        coverOverlayContent = {
-            AppSurface(
+            AppText(
+                text = resolveHistoryProgressLabel(progressState.progressSec, video.duration),
+                color = MediaContrastPalette.Foreground,
+                style = feedContentTypography().coverBadge
+                    .copy(fontWeight = FontWeight.Medium)
+                    .merge(coverOverlayTextStyle),
+                maxLines = 1,
+                tapToCopyEnabled = false,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(AppSpacingTokens.ExtraSmall),
-                shape = AppShapes.container(ContainerLevel.Tag),
-                color = MediaContrastPalette.Scrim.copy(alpha = 0.76f),
-            ) {
-                AppText(
-                    text = resolveHistoryProgressLabel(progressState.progressSec, video.duration),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MediaContrastPalette.Foreground,
-                    modifier = Modifier.padding(
-                        horizontal = AppSpacingTokens.ExtraSmall,
-                        vertical = AppSpacingTokens.Micro,
-                    ),
-                )
-            }
+                    .padding(start = 6.dp, end = 6.dp, bottom = 8.dp),
+            )
             if (progressState.showProgressBar) {
                 AppLinearProgressIndicator(
                     progress = { progressState.progressFraction },
@@ -251,49 +256,89 @@ internal fun HistoryPersonalCard(
                         .fillMaxWidth(),
                 )
             }
-        },
-        trailingContent = if (batchMode) null else {
-            {
-                Box {
-                    AppIconButton(
-                        onClick = { menuExpanded = true },
-                    ) {
-                        AppIcon(Icons.Filled.MoreVert, contentDescription = "历史记录操作")
-                    }
-                    AppDropdownMenu(
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false },
-                    ) {
-                        if (onUpClick != null) {
-                            AppDropdownMenuItem(
-                                text = { AppText("访问UP主") },
-                                onClick = {
-                                    menuExpanded = false
-                                    onUpClick()
-                                },
-                            )
-                        }
-                        if (onAddToWatchLater != null) {
-                            AppDropdownMenuItem(
-                                text = { AppText("加入稍后再看") },
-                                onClick = {
-                                    menuExpanded = false
-                                    onAddToWatchLater()
-                                },
-                            )
-                        }
+        }
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .height(coverHeight)
+                .padding(end = 4.dp),
+        ) {
+            AppText(
+                text = video.title,
+                style = contentTypography.title,
+                maxLines = titleMaxLines,
+                overflow = TextOverflow.Ellipsis,
+                tapToCopyEnabled = false,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            AppText(
+                text = owner,
+                style = contentTypography.author,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                tapToCopyEnabled = false,
+            )
+            if (viewedAt.isNotBlank()) {
+                AppText(
+                    text = viewedAt,
+                    style = contentTypography.author,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    tapToCopyEnabled = false,
+                )
+            }
+        }
+        if (!batchMode) {
+            Box(
+                modifier = Modifier
+                    .height(coverHeight)
+                    .width(29.dp),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                AppIconButton(
+                    onClick = { menuExpanded = true },
+                    modifier = Modifier.size(29.dp),
+                ) {
+                    AppIcon(
+                        Icons.Outlined.MoreVert,
+                        contentDescription = "历史记录操作",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+                AppDropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false },
+                ) {
+                    if (onUpClick != null) {
                         AppDropdownMenuItem(
-                            text = { AppText("删除记录", color = MaterialTheme.colorScheme.error) },
+                            text = { AppText("访问UP主") },
                             onClick = {
                                 menuExpanded = false
-                                onDelete()
+                                onUpClick()
                             },
                         )
                     }
+                    if (onAddToWatchLater != null) {
+                        AppDropdownMenuItem(
+                            text = { AppText("加入稍后再看") },
+                            onClick = {
+                                menuExpanded = false
+                                onAddToWatchLater()
+                            },
+                        )
+                    }
+                    AppDropdownMenuItem(
+                        text = { AppText("删除记录", color = MaterialTheme.colorScheme.error) },
+                        onClick = {
+                            menuExpanded = false
+                            onDelete()
+                        },
+                    )
                 }
             }
-        },
-        onClick = triggerClick,
-        onLongClick = onLongClick,
-    )
+        }
+    }
 }

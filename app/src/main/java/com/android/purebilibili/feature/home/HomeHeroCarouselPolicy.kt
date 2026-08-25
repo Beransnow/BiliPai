@@ -1,8 +1,9 @@
 package com.android.purebilibili.feature.home
 
 internal const val HOME_HERO_CAROUSEL_MAX_ITEMS = 8
-internal const val HOME_HERO_CAROUSEL_SIDE_PEEK_DP = 20f
-internal const val HOME_HERO_CAROUSEL_PAGE_SPACING_DP = 8f
+/** Extra peek inside the feed column; 0 keeps the banner flush with video cards. */
+internal const val HOME_HERO_CAROUSEL_SIDE_PEEK_DP = 0f
+internal const val HOME_HERO_CAROUSEL_PAGE_SPACING_DP = 0f
 internal const val HOME_HERO_CAROUSEL_PHONE_ASPECT_RATIO = 16f / 9f
 internal const val HOME_HERO_CAROUSEL_TABLET_ASPECT_RATIO = 2f
 internal const val HOME_HERO_CAROUSEL_WIDE_ASPECT_RATIO = 21f / 9f
@@ -75,6 +76,10 @@ internal fun shouldShowHomeHeroCarousel(
 ): Boolean {
     return enabled && category == HomeCategory.RECOMMEND && itemCount > 0
 }
+
+internal fun shouldYieldHomeTopPagerToHeroCarousel(
+    heroCarouselPointerActive: Boolean
+): Boolean = heroCarouselPointerActive
 
 internal fun resolveHomeHeroCarouselAspectRatio(containerWidthDp: Float): Float {
     return when {

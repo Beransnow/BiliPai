@@ -50,17 +50,22 @@ fun DynamicCreateVoteDialog(
             val choiceLabels = remember { listOf("单选", "多选") }
             val durationLabels = remember { listOf("1 天", "3 天", "7 天") }
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .layerBackdrop(voteChromeBackdrop),
+                modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
             ) {
-                AppTextField(value = title, onValueChange = { title = it }, placeholder = "投票标题", singleLine = true)
-                AppTextField(value = description, onValueChange = { description = it }, placeholder = "补充说明（可选）", singleLine = false, minLines = 2)
-                AppTextField(value = optionOne, onValueChange = { optionOne = it }, placeholder = "选项 1", singleLine = true)
-                AppTextField(value = optionTwo, onValueChange = { optionTwo = it }, placeholder = "选项 2", singleLine = true)
-                AppTextField(value = optionThree, onValueChange = { optionThree = it }, placeholder = "选项 3（可选）", singleLine = true)
-                AppTextField(value = optionFour, onValueChange = { optionFour = it }, placeholder = "选项 4（可选）", singleLine = true)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .layerBackdrop(voteChromeBackdrop),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
+                ) {
+                    AppTextField(value = title, onValueChange = { title = it }, placeholder = "投票标题", singleLine = true)
+                    AppTextField(value = description, onValueChange = { description = it }, placeholder = "补充说明（可选）", singleLine = false, minLines = 2)
+                    AppTextField(value = optionOne, onValueChange = { optionOne = it }, placeholder = "选项 1", singleLine = true)
+                    AppTextField(value = optionTwo, onValueChange = { optionTwo = it }, placeholder = "选项 2", singleLine = true)
+                    AppTextField(value = optionThree, onValueChange = { optionThree = it }, placeholder = "选项 3（可选）", singleLine = true)
+                    AppTextField(value = optionFour, onValueChange = { optionFour = it }, placeholder = "选项 4（可选）", singleLine = true)
+                }
                 DynamicAdaptiveSegmentedControl(
                     items = choiceLabels,
                     selectedIndex = if (choiceCount == 1) 0 else 1,

@@ -218,8 +218,8 @@ class HomeHeaderVisualPolicyTest {
     fun `home header trims top chrome heights for better content density`() {
         assertEquals(48.dp, resolveHomeTopSearchBarHeight())
         assertEquals(48.dp, resolveHomeTopSearchBarHeight(UiPreset.MD3))
-        assertEquals(40.dp, resolveHomeTopTabRowHeight(isTabFloating = true))
-        assertEquals(40.dp, resolveHomeTopTabRowHeight(isTabFloating = true, uiPreset = UiPreset.MD3))
+        assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = true))
+        assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = true, uiPreset = UiPreset.MD3))
         assertEquals(36.dp, resolveHomeTopTabRowHeight(isTabFloating = false))
         assertEquals(36.dp, resolveHomeTopTabRowHeight(isTabFloating = false, uiPreset = UiPreset.MD3))
     }
@@ -235,7 +235,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            60.dp,
+            56.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = true,
                 uiPreset = UiPreset.MD3,
@@ -255,7 +255,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            60.dp,
+            56.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = true,
                 uiPreset = UiPreset.IOS,
@@ -1957,7 +1957,7 @@ class HomeHeaderVisualPolicyTest {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
 
         assertTrue(headerSource.contains("labelMode = topTabLabelMode"))
-        assertTrue(headerSource.contains("drawChromeSurface = drawTopTabDockChrome"))
+        assertTrue(headerSource.contains("shouldHomeTopTabChromeDrawOuterShell("))
         assertTrue(headerSource.contains("hasOuterChromeSurface = drawTopTabDockChrome"))
         assertFalse(headerSource.contains("skinBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
         assertFalse(headerSource.contains("skinPlainStyle = shouldUseSkinPlainTopTabs"))

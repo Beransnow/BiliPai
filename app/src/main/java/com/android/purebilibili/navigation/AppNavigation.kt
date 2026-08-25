@@ -60,7 +60,7 @@ import com.android.purebilibili.feature.search.resolveArticleNavigationTarget
 import com.android.purebilibili.feature.search.SearchEntryMotionSource
 import com.android.purebilibili.feature.search.SearchScreen
 import com.android.purebilibili.feature.settings.SettingsScreen
-import com.android.purebilibili.feature.settings.resolveSettingsCategoryDirectTargetKey
+import com.android.purebilibili.feature.settings.resolveSettingsCategoryNavKey
 import com.android.purebilibili.feature.settings.resolveSettingsSearchNavigation
 import com.android.purebilibili.feature.settings.screen.SettingsCategoryScreen
 import com.android.purebilibili.feature.settings.screen.SettingsSearchScreen
@@ -557,31 +557,6 @@ fun AppNavigation(
         val isDataSaverActiveForGlobalWallpaper = remember(context) {
             SettingsManager.isDataSaverActive(context)
         }
-        val renderGlobalHomeWallpaperBackdrop = shouldRenderGlobalHomeWallpaperBackdrop(
-            effectScope = effectiveHomeSettings.homeWallpaperEffectScope,
-            currentRoute = currentRoute,
-        )
-        val exposeGlobalHomeWallpaperChrome = shouldExposeGlobalHomeWallpaperChrome(
-            effectScope = effectiveHomeSettings.homeWallpaperEffectScope,
-            hasWallpaperUri = globalHomeWallpaperUri.isNotBlank(),
-            currentRoute = currentRoute,
-        )
-        val globalHomeWallpaperAppearance = remember(
-            globalHomeWallpaperUri,
-            effectiveHomeSettings.homeWallpaperEffectMode,
-            renderGlobalHomeWallpaperBackdrop,
-            isLightBackground,
-            isDataSaverActiveForGlobalWallpaper
-        ) {
-            resolveHomeWallpaperBackdropAppearance(
-                hasWallpaper = renderGlobalHomeWallpaperBackdrop &&
-                    globalHomeWallpaperUri.isNotBlank(),
-                effectMode = effectiveHomeSettings.homeWallpaperEffectMode,
-                isDarkTheme = !isLightBackground,
-                isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
-                globalWallpaper = true
-            )
-        }
         var previousRouteForStopPolicy by remember { mutableStateOf<String?>(null) }
         var previousVideoBvidForStopPolicy by remember { mutableStateOf<String?>(null) }
         val currentVideoBvidForStopPolicy = (currentNavigation3Key as? BiliPaiNavKey.VideoDetail)?.bvid
@@ -664,6 +639,33 @@ fun AppNavigation(
             resolveBottomPagerItemForPage(
                 page = mainBottomPagerState.selectedPage,
                 visibleItems = visibleBottomBarItems
+            )
+        }
+        val renderGlobalHomeWallpaperBackdrop = shouldRenderGlobalHomeWallpaperBackdrop(
+            effectScope = effectiveHomeSettings.homeWallpaperEffectScope,
+            currentRoute = currentRoute,
+            mainHostTabRoute = currentBottomNavItem.route,
+        )
+        val exposeGlobalHomeWallpaperChrome = shouldExposeGlobalHomeWallpaperChrome(
+            effectScope = effectiveHomeSettings.homeWallpaperEffectScope,
+            hasWallpaperUri = globalHomeWallpaperUri.isNotBlank(),
+            currentRoute = currentRoute,
+            mainHostTabRoute = currentBottomNavItem.route,
+        )
+        val globalHomeWallpaperAppearance = remember(
+            globalHomeWallpaperUri,
+            effectiveHomeSettings.homeWallpaperEffectMode,
+            renderGlobalHomeWallpaperBackdrop,
+            isLightBackground,
+            isDataSaverActiveForGlobalWallpaper
+        ) {
+            resolveHomeWallpaperBackdropAppearance(
+                hasWallpaper = renderGlobalHomeWallpaperBackdrop &&
+                    globalHomeWallpaperUri.isNotBlank(),
+                effectMode = effectiveHomeSettings.homeWallpaperEffectMode,
+                isDarkTheme = !isLightBackground,
+                isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
+                globalWallpaper = true
             )
         }
         val bottomBarItemColors = appNavigationSettings.bottomBarItemColors
@@ -1600,6 +1602,8 @@ fun AppNavigation(
                     showBadges = showUpBadges,
                     showAvatars = showUpAvatars
                 ),
+            com.android.purebilibili.core.ui.LocalFullVideoCardContentVisible provides
+                homeSettings.showFullVideoCardContent,
             com.android.purebilibili.core.ui.LocalMainHazeState provides mainHazeState,
             // 卡片标签 / 信息区实时玻璃效果已下线，不再为首页建立额外 Haze 录制树。
             com.android.purebilibili.core.ui.LocalWallpaperHazeState provides null,
@@ -2647,10 +2651,7 @@ fun AppNavigation(
                                     onTipsClick = { pushNavigation3Key(BiliPaiNavKey.TipsSettings) },
                                     onReplayOnboardingClick = { pushNavigation3Route(ScreenRoutes.Onboarding.route) },
                                     onCategoryClick = { category ->
-                                        pushNavigation3Key(
-                                            resolveSettingsCategoryDirectTargetKey(category)
-                                                ?: BiliPaiNavKey.SettingsCategory(category)
-                                        )
+                                        pushNavigation3Key(resolveSettingsCategoryNavKey(category))
                                     },
                                     onSearchOpen = { pushNavigation3Key(BiliPaiNavKey.SettingsSearch) },
                                     mainHazeState = mainHazeState,
@@ -2678,10 +2679,7 @@ fun AppNavigation(
                                     onTipsClick = { pushNavigation3Key(BiliPaiNavKey.TipsSettings) },
                                     onReplayOnboardingClick = { pushNavigation3Route(ScreenRoutes.Onboarding.route) },
                                     onCategoryClick = { category ->
-                                        pushNavigation3Key(
-                                            resolveSettingsCategoryDirectTargetKey(category)
-                                                ?: BiliPaiNavKey.SettingsCategory(category)
-                                        )
+                                        pushNavigation3Key(resolveSettingsCategoryNavKey(category))
                                     },
                                     onSearchOpen = { pushNavigation3Key(BiliPaiNavKey.SettingsSearch) },
                                     mainHazeState = mainHazeState,
@@ -2695,10 +2693,7 @@ fun AppNavigation(
                                     viewModel = settingsViewModel,
                                     onBack = { performSystemBackAction() },
                                     onCategoryClick = { category ->
-                                        pushNavigation3Key(
-                                            resolveSettingsCategoryDirectTargetKey(category)
-                                                ?: BiliPaiNavKey.SettingsCategory(category)
-                                        )
+                                        pushNavigation3Key(resolveSettingsCategoryNavKey(category))
                                     },
                                     onSearchResultClick = { result ->
                                         resolveSettingsSearchNavigation(result)?.let { navKey ->

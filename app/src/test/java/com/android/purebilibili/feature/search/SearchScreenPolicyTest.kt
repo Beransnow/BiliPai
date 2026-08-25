@@ -383,9 +383,15 @@ class SearchScreenPolicyTest {
         // 可横向滚动；不再用静态 surfaceContainerHigh 灰胶囊）。
         assertTrue(searchSource.contains("private fun SearchResultTypeTabRow("))
         assertTrue(searchSource.contains("BottomBarLiquidSegmentedControl("))
+        assertTrue(
+            searchSource.contains("allowNativeLabelOverflow = true"),
+            "关闭液态玻璃后 MD3 下划线必须完整显示 直播间 / UP主 等标签",
+        )
         assertTrue(searchSource.contains("miuixBackdrop = searchChromeBackdrop"))
         assertTrue(searchSource.contains(".layerBackdrop(searchChromeBackdrop)"))
         assertTrue(searchSource.contains("externalPagerMotionEffectsEnabled = true"))
+        assertTrue(searchSource.contains("indicatorPositionProvider = {"))
+        assertTrue(searchSource.contains("pagerState.currentPage + pagerState.currentPageOffsetFraction"))
         assertFalse(searchSource.contains("androidx.compose.material3.ScrollableTabRow("))
         assertFalse(searchSource.contains("tabIndicatorOffset("))
         // Top bar uses native BasicTextField + TextFieldValue (not AppSearchField wrapper).
@@ -397,6 +403,10 @@ class SearchScreenPolicyTest {
         assertTrue(filterSheetSource.contains("AppFilterChip("))
         assertTrue(filterSheetSource.contains("AppModalBottomSheet("))
         assertTrue(filterSheetSource.contains("OverlayBottomSheet("))
+        assertTrue(
+            filterSheetSource.contains("allowNativeLabelOverflow = true"),
+            "视频筛选下划线必须完整显示 默认排序 / 播放多 等标签",
+        )
         // History chips use the neutral AppInputChip (visuals follow the theme layer).
         assertTrue(searchSource.contains("AppInputChip("))
         assertFalse(searchSource.contains("androidx.compose.material3.InputChip("))

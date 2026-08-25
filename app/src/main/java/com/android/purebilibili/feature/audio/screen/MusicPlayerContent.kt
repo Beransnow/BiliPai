@@ -396,16 +396,18 @@ internal fun MusicPlayerContent(
                             height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
                             indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
                             liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
-                            forceLiquidChrome = liquidGlassEffectsEnabled,
                             preferInlineContentStyle = false,
                             miuixBackdrop = musicBackdrop,
+                            dragSelectionEnabled = true,
+                            tapPressRefractionEnabled = true,
                             isScrollInProgressProvider = { pagerState.isScrollInProgress },
                             indicatorPositionProvider = {
                                 resolveMusicPagerIndicatorPosition(
                                     currentPage = pagerState.currentPage,
                                     currentPageOffsetFraction = pagerState.currentPageOffsetFraction
                                 )
-                            }
+                            },
+                            externalPagerMotionEffectsEnabled = true,
                         )
                     }
                 }
@@ -867,9 +869,10 @@ private fun MusicPlayModeDock(
         indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
         labelFontSize = 13.sp,
         liquidGlassEffectsEnabled = glassEnabled,
-        forceLiquidChrome = glassEnabled,
         preferInlineContentStyle = false,
         miuixBackdrop = miuixBackdrop,
+        dragSelectionEnabled = true,
+        tapPressRefractionEnabled = true,
     )
 }
 

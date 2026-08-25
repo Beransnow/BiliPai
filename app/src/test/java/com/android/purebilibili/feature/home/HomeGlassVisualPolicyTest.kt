@@ -249,6 +249,31 @@ class HomeGlassVisualPolicyTest {
                 currentRoute = "history",
             )
         )
+        assertEquals("home", resolveGlobalHomeWallpaperRoute("main_host", "home"))
+        assertEquals("dynamic", resolveGlobalHomeWallpaperRoute("main_host", "dynamic"))
+        assertEquals("video/BV1", resolveGlobalHomeWallpaperRoute("video/BV1", "home"))
+        assertFalse(
+            shouldRenderGlobalHomeWallpaperBackdrop(
+                effectScope = HomeWallpaperEffectScope.GLOBAL,
+                currentRoute = "main_host",
+                mainHostTabRoute = "home",
+            )
+        )
+        assertTrue(
+            shouldRenderGlobalHomeWallpaperBackdrop(
+                effectScope = HomeWallpaperEffectScope.GLOBAL,
+                currentRoute = "main_host",
+                mainHostTabRoute = "dynamic",
+            )
+        )
+        assertTrue(
+            shouldExposeGlobalHomeWallpaperChrome(
+                effectScope = HomeWallpaperEffectScope.GLOBAL,
+                hasWallpaperUri = true,
+                currentRoute = "main_host",
+                mainHostTabRoute = "history",
+            )
+        )
     }
 
     @Test

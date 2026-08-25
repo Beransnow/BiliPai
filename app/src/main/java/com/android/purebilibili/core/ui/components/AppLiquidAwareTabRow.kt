@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.store.HomeSettings
@@ -34,7 +35,14 @@ fun <T> AppThemeAdaptiveTabRow(
     enabled: Boolean = true,
     scrollable: Boolean = false,
     minTabWidth: Dp = 72.dp,
+    height: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
+    indicatorHeight: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+    labelFontSize: TextUnit = TextUnit.Unspecified,
+    dragSelectionEnabled: Boolean? = null,
+    tapPressRefractionEnabled: Boolean = true,
     miuixBackdrop: Backdrop? = null,
+    indicatorPositionProvider: (() -> Float)? = null,
+    isScrollInProgressProvider: () -> Boolean = { false },
 ) {
     AppLiquidAwareTabRow(
         options = options,
@@ -44,7 +52,14 @@ fun <T> AppThemeAdaptiveTabRow(
         enabled = enabled,
         scrollable = scrollable,
         minTabWidth = minTabWidth,
+        height = height,
+        indicatorHeight = indicatorHeight,
+        labelFontSize = labelFontSize,
+        dragSelectionEnabled = dragSelectionEnabled,
+        tapPressRefractionEnabled = tapPressRefractionEnabled,
         miuixBackdrop = miuixBackdrop,
+        indicatorPositionProvider = indicatorPositionProvider,
+        isScrollInProgressProvider = isScrollInProgressProvider,
     )
 }
 
@@ -62,7 +77,14 @@ fun <T> AppLiquidAwareTabRow(
     enabled: Boolean = true,
     scrollable: Boolean = false,
     minTabWidth: Dp = 72.dp,
+    height: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
+    indicatorHeight: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+    labelFontSize: TextUnit = TextUnit.Unspecified,
+    dragSelectionEnabled: Boolean? = null,
+    tapPressRefractionEnabled: Boolean = true,
     miuixBackdrop: Backdrop? = null,
+    indicatorPositionProvider: (() -> Float)? = null,
+    isScrollInProgressProvider: () -> Boolean = { false },
 ) {
     if (options.isEmpty()) return
     val context = LocalContext.current
@@ -80,10 +102,13 @@ fun <T> AppLiquidAwareTabRow(
             enabled = enabled,
             scrollable = scrollable,
             minTabWidth = minTabWidth,
+            allowLabelOverflow = true,
+            indicatorPositionProvider = indicatorPositionProvider,
         )
         return
     }
     val selectedIndex = options.indexOfFirst { it.value == selectedValue }.coerceAtLeast(0)
+    val resolvedDragSelectionEnabled = dragSelectionEnabled ?: (options.size > 1)
     if (scrollable) {
         val scrollState = rememberScrollState()
         val density = LocalDensity.current
@@ -109,12 +134,16 @@ fun <T> AppLiquidAwareTabRow(
                 modifier = Modifier.horizontalScroll(scrollState),
                 enabled = enabled,
                 itemWidth = minTabWidth,
-                height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
-                indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+                height = height,
+                indicatorHeight = indicatorHeight,
+                labelFontSize = labelFontSize,
                 liquidGlassEffectsEnabled = true,
                 dragSelectionEnabled = false,
-                longPressDragSelectionEnabled = options.size > 1,
+                longPressDragSelectionEnabled = resolvedDragSelectionEnabled,
+                tapPressRefractionEnabled = tapPressRefractionEnabled,
                 miuixBackdrop = miuixBackdrop,
+                indicatorPositionProvider = indicatorPositionProvider,
+                isScrollInProgressProvider = isScrollInProgressProvider,
             )
         }
     } else {
@@ -126,11 +155,15 @@ fun <T> AppLiquidAwareTabRow(
             },
             modifier = modifier,
             enabled = enabled,
-            height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
-            indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+            height = height,
+            indicatorHeight = indicatorHeight,
+            labelFontSize = labelFontSize,
             liquidGlassEffectsEnabled = true,
-            dragSelectionEnabled = options.size > 1,
+            dragSelectionEnabled = resolvedDragSelectionEnabled,
+            tapPressRefractionEnabled = tapPressRefractionEnabled,
             miuixBackdrop = miuixBackdrop,
+            indicatorPositionProvider = indicatorPositionProvider,
+            isScrollInProgressProvider = isScrollInProgressProvider,
         )
     }
 }

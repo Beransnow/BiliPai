@@ -185,6 +185,7 @@ private const val GRAVITY_DIR_THRESHOLD_SQ = 0.01f
 @Composable
 internal fun rememberGravityRotatedHighlight(
     extraDegrees: Float = 0f,
+    width: Dp = 1.dp,
 ): Highlight {
     val base = iosIndicatorSpecular
     val baseStyle = base.style as BloomStroke
@@ -213,8 +214,11 @@ internal fun rememberGravityRotatedHighlight(
             ),
         )
     }
-    return remember(base, rotatedPrimary) {
-        base.copy(style = baseStyle.copy(primaryLight = rotatedPrimary))
+    return remember(base, rotatedPrimary, width) {
+        base.copy(
+            width = width,
+            style = baseStyle.copy(primaryLight = rotatedPrimary),
+        )
     }
 }
 
@@ -613,13 +617,11 @@ fun FloatingBottomBar(
         }
     }
     val baseContentAlphaProvider: (Int) -> Float = { itemIndex ->
-        if (isLiquidGlassMode) {
-            1f
-        } else {
-            val coverage = (1f - abs(itemIndex.toFloat() - dampedDragAnimation.value))
-                .coerceIn(0f, 1f)
-            1f - coverage
-        }
+        // Fade the dock copy of the selected label in every mode. Leaving it opaque
+        // under a clamped right-edge indicator stacks two glyphs (重影).
+        val coverage = (1f - abs(itemIndex.toFloat() - dampedDragAnimation.value))
+            .coerceIn(0f, 1f)
+        1f - coverage
     }
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
@@ -691,7 +693,13 @@ fun FloatingBottomBar(
                             },
                             size.height / 2f
                         )
-                    }
+                    },
+                    radius = { size ->
+                        resolveDockInteractiveHighlightRadiusPx(
+                            shellMinDimensionPx = size.minDimension,
+                            tabWidthPx = tabWidthPx,
+                        )
+                    },
                 )
             }
         } else {
@@ -699,7 +707,13 @@ fun FloatingBottomBar(
         }
 
     val baseHighlight = rememberGravityRotatedHighlight(extraDegrees = -45f)
-    val pillHighlight = rememberGravityRotatedHighlight(extraDegrees = 90f)
+    val pillHighlight = rememberGravityRotatedHighlight(
+        extraDegrees = 90f,
+        width = resolveDockPillHighlightWidthDp(
+            indicatorWidthDp = fittedIndicatorWidth.value,
+            indicatorHeightDp = fittedIndicatorHeight.value,
+        ).dp,
+    )
 
     val combinedBackdrop = if (backdrop != null) {
         rememberCombinedBackdrop(backdrop, tabsBackdrop)

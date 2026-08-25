@@ -212,12 +212,14 @@ internal fun ListenVideoScreen(
                 indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
                 preferInlineContentStyle = false,
                 miuixBackdrop = listenBackdrop,
-                forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
                 liquidGlassEffectsEnabled = true,
+                dragSelectionEnabled = sectionLabels.size > 1,
+                tapPressRefractionEnabled = true,
                 indicatorPositionProvider = {
                     pagerState.currentPage + pagerState.currentPageOffsetFraction
                 },
-                isScrollInProgressProvider = { pagerState.isScrollInProgress }
+                isScrollInProgressProvider = { pagerState.isScrollInProgress },
+                externalPagerMotionEffectsEnabled = true,
             )
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalPager(

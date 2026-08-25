@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -47,6 +48,7 @@ internal fun PersonalMediaCardFrame(
     selected: Boolean = false,
     enabled: Boolean = true,
     coverAspectRatio: Float = PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO,
+    coverWidth: Dp? = null,
     supportingContent: (@Composable () -> Unit)? = null,
     overlineContent: (@Composable () -> Unit)? = null,
     coverOverlayContent: (@Composable BoxScope.() -> Unit)? = null,
@@ -74,11 +76,12 @@ internal fun PersonalMediaCardFrame(
         Box {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Top,
             ) {
+                val resolvedCoverWidth = coverWidth ?: (minimumHeight * coverAspectRatio)
                 Box(
                     modifier = coverModifier
-                        .width(minimumHeight * coverAspectRatio)
+                        .width(resolvedCoverWidth)
                         .aspectRatio(coverAspectRatio)
                         .clip(cardShape),
                 ) {

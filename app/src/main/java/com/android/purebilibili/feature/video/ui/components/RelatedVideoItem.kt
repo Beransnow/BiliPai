@@ -53,6 +53,8 @@ import com.android.purebilibili.core.store.withDislikedVideoFeedback
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.videoCardTitleMaxLines
+import com.android.purebilibili.core.ui.videoCardTitleOverflow
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
@@ -69,14 +71,11 @@ import com.android.purebilibili.data.repository.BlockedUpRepository
 import com.android.purebilibili.feature.home.HomeFeedCardLayout
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP
-import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
+import com.android.purebilibili.core.ui.components.VideoStatRow
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
 import com.android.purebilibili.feature.video.ui.resolveVideoFollowVisualPolicy
 import com.android.purebilibili.navigation.VideoRoute
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.PlayCircleOutline
-import androidx.compose.material.icons.outlined.Subtitles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -296,8 +295,8 @@ fun RelatedVideoItem(
                 AppText(
                     text = video.title,
                     style = contentTypography.title,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    maxLines = videoCardTitleMaxLines(),
+                    overflow = videoCardTitleOverflow(),
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -371,11 +370,9 @@ fun RelatedVideoItem(
                         modifier = Modifier.weight(1f),
                     )
                 }
-                HorizontalVideoStatRow(
+                VideoStatRow(
                     playText = FormatUtils.formatStat(video.stat.view.toLong()),
                     danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                    playIcon = Icons.Outlined.PlayCircleOutline,
-                    danmakuIcon = Icons.Outlined.Subtitles,
                     modifier = Modifier.padding(end = if (onMoreClick != null) 32.dp else 0.dp),
                 )
             }

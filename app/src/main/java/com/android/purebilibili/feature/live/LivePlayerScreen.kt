@@ -41,6 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -120,9 +121,9 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppButton
-import com.android.purebilibili.core.ui.components.AppDropdownMenu
-import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppWindowAction
+import com.android.purebilibili.core.ui.components.AppWindowActionMenu
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppSwitch
@@ -176,7 +177,7 @@ fun LivePlayerScreen(
     var showEmoticonSheet by remember { mutableStateOf(false) }
     var showStreamSourceSheet by remember { mutableStateOf(false) }
     var reportTarget by remember { mutableStateOf<LiveDanmakuItem?>(null) }
-    var isFullscreen by remember { mutableStateOf(false) }
+    var isFullscreen by rememberSaveable { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(true) }
     var isInteractionPanelVisible by remember {
         mutableStateOf(defaultLiveInteractionPanelVisible())
@@ -192,7 +193,6 @@ fun LivePlayerScreen(
     }
     var shutdownAtMillis by remember { mutableStateOf<Long?>(null) }
     val showLivePipButton = remember { shouldShowLivePipButton(android.os.Build.VERSION.SDK_INT) }
-    var showRoomMenu by remember { mutableStateOf(false) }
     val successState = uiState as? LivePlayerState.Success
     val isLiveAudioOnly = successState?.isAudioOnly == true
     val superChatItems by viewModel.superChatItems.collectAsStateWithLifecycle()
@@ -717,15 +717,21 @@ fun LivePlayerScreen(
         }
     }
 
-    LaunchedEffect(isTablet, isFullscreen) {
-        val requestedOrientation = if (isTablet) {
-            ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-        } else if (isFullscreen) {
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-        } else {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+    val liveRequestedOrientationMode = remember(windowSizeClass.isTabletDevice, isFullscreen) {
+        resolveLiveRequestedOrientationMode(
+            isTabletDevice = windowSizeClass.isTabletDevice,
+            isFullscreen = isFullscreen,
+        )
+    }
+    LaunchedEffect(liveRequestedOrientationMode) {
+        val requestedOrientation = when (liveRequestedOrientationMode) {
+            LiveRequestedOrientationMode.Unspecified ->
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            LiveRequestedOrientationMode.SensorLandscape ->
+                ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            LiveRequestedOrientationMode.Portrait ->
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-
         activity?.applyPlayerRequestedOrientation(requestedOrientation)
     }
 
@@ -1002,8 +1008,6 @@ fun LivePlayerScreen(
                         subtitle = liveSubtitle,
                         onBack = { exitLiveRoom() },
                         onUserClick = onUserClick,
-                        expanded = showRoomMenu,
-                        onExpandedChange = { showRoomMenu = it },
                         onCopyLink = { copyLiveUrl() },
                         onShare = { shareLiveUrl() },
                         onShareToMessage = { shareLiveToMessage() },
@@ -1144,8 +1148,6 @@ fun LivePlayerScreen(
                     subtitle = liveSubtitle,
                     onBack = { exitLiveRoom() },
                     onUserClick = onUserClick,
-                    expanded = showRoomMenu,
-                    onExpandedChange = { showRoomMenu = it },
                     onCopyLink = { copyLiveUrl() },
                     onShare = { shareLiveUrl() },
                     onShareToMessage = { shareLiveToMessage() },
@@ -1192,8 +1194,6 @@ fun LivePlayerScreen(
                         subtitle = liveSubtitle,
                         onBack = { exitLiveRoom() },
                         onUserClick = onUserClick,
-                        expanded = showRoomMenu,
-                        onExpandedChange = { showRoomMenu = it },
                         onCopyLink = { copyLiveUrl() },
                         onShare = { shareLiveUrl() },
                         onShareToMessage = { shareLiveToMessage() },
@@ -1476,8 +1476,6 @@ private fun LivePortraitOverlayAppBar(
     subtitle: String,
     onBack: () -> Unit,
     onUserClick: (Long) -> Unit,
-    expanded: Boolean,
-    onExpandedChange: (Boolean) -> Unit,
     onCopyLink: () -> Unit,
     onShare: () -> Unit,
     onShareToMessage: () -> Unit,
@@ -1581,31 +1579,58 @@ private fun LivePortraitOverlayAppBar(
                 compact = true
             )
         }
-        Box {
-            AppIconButton(
-                onClick = { onExpandedChange(true) },
-                modifier = Modifier.size(liveVisualSpec.playerButtonTouchTargetDp.dp)
-            ) {
-                AppIcon(
-                    Icons.Filled.MoreVert,
-                    contentDescription = "更多直播间操作",
-                    tint = roomColorTokens.inputOverlayColor
-                )
-            }
-            LiveRoomOverflowMenu(
-                expanded = expanded,
-                onDismiss = { onExpandedChange(false) },
-                isFollowing = isFollowing,
-                currentQualityDesc = currentQualityDesc,
-                onFollowClick = onFollowClick,
-                onQualityClick = onQualityClick,
-                onOpenRank = onOpenRank,
-                onOpenSend = onOpenSend,
-                onOpenBlock = onOpenBlock,
-                onCopyLink = onCopyLink,
-                onShare = onShare,
-                onShareToMessage = onShareToMessage,
-                onOpenBrowser = onOpenBrowser
+        AppWindowActionMenu(
+            modifier = Modifier.size(liveVisualSpec.playerButtonTouchTargetDp.dp),
+            groups = listOf(
+                listOf(
+                    AppWindowAction(
+                        label = if (isFollowing) "取消关注" else "关注主播",
+                        onClick = onFollowClick,
+                    ),
+                    AppWindowAction(
+                        label = "画质：$currentQualityDesc",
+                        onClick = onQualityClick,
+                    ),
+                    AppWindowAction(
+                        label = "高能榜",
+                        onClick = onOpenRank,
+                    ),
+                    AppWindowAction(
+                        label = "发弹幕",
+                        onClick = onOpenSend,
+                    ),
+                    AppWindowAction(
+                        label = "屏蔽弹幕",
+                        icon = Icons.Outlined.Block,
+                        onClick = onOpenBlock,
+                    ),
+                    AppWindowAction(
+                        label = "复制链接",
+                        icon = Icons.Outlined.ContentCopy,
+                        onClick = onCopyLink,
+                    ),
+                    AppWindowAction(
+                        label = "分享直播间",
+                        icon = Icons.Outlined.Share,
+                        onClick = onShare,
+                    ),
+                    AppWindowAction(
+                        label = "分享至消息",
+                        icon = Icons.AutoMirrored.Outlined.ForwardToInbox,
+                        onClick = onShareToMessage,
+                    ),
+                    AppWindowAction(
+                        label = "浏览器打开",
+                        icon = Icons.Outlined.OpenInBrowser,
+                        onClick = onOpenBrowser,
+                    ),
+                ),
+            ),
+        ) {
+            AppIcon(
+                Icons.Filled.MoreVert,
+                contentDescription = "更多直播间操作",
+                tint = roomColorTokens.inputOverlayColor
             )
         }
     }
@@ -1666,97 +1691,6 @@ private fun LiveRedPocketChip(
                 overflow = TextOverflow.Ellipsis
             )
         }
-    }
-}
-
-@Composable
-private fun LiveRoomOverflowMenu(
-    expanded: Boolean,
-    onDismiss: () -> Unit,
-    isFollowing: Boolean,
-    currentQualityDesc: String,
-    onFollowClick: () -> Unit,
-    onQualityClick: () -> Unit,
-    onOpenRank: () -> Unit,
-    onOpenSend: () -> Unit,
-    onOpenBlock: () -> Unit,
-    onCopyLink: () -> Unit,
-    onShare: () -> Unit,
-    onShareToMessage: () -> Unit,
-    onOpenBrowser: () -> Unit
-) {
-    AppDropdownMenu(
-        expanded = expanded,
-        onDismissRequest = onDismiss
-    ) {
-        AppDropdownMenuItem(
-            text = { AppText(if (isFollowing) "取消关注" else "关注主播") },
-            onClick = {
-                onDismiss()
-                onFollowClick()
-            }
-        )
-        AppDropdownMenuItem(
-            text = { AppText("画质：$currentQualityDesc") },
-            onClick = {
-                onDismiss()
-                onQualityClick()
-            }
-        )
-        AppDropdownMenuItem(
-            text = { AppText("高能榜") },
-            onClick = {
-                onDismiss()
-                onOpenRank()
-            }
-        )
-        AppDropdownMenuItem(
-            text = { AppText("发弹幕") },
-            onClick = {
-                onDismiss()
-                onOpenSend()
-            }
-        )
-        AppDropdownMenuItem(
-            text = { AppText("屏蔽弹幕") },
-            leadingIcon = { AppIcon(Icons.Outlined.Block, contentDescription = null) },
-            onClick = {
-                onDismiss()
-                onOpenBlock()
-            }
-        )
-        AppDropdownMenuItem(
-            text = { AppText("复制链接") },
-            leadingIcon = { AppIcon(Icons.Outlined.ContentCopy, contentDescription = null) },
-            onClick = {
-                onDismiss()
-                onCopyLink()
-            }
-        )
-        AppDropdownMenuItem(
-            text = { AppText("分享直播间") },
-            leadingIcon = { AppIcon(Icons.Outlined.Share, contentDescription = null) },
-            onClick = {
-                onDismiss()
-                onShare()
-            }
-        )
-        AppDropdownMenuItem(
-            text = { AppText("分享至消息") },
-            leadingIcon = { AppIcon(Icons.AutoMirrored.Outlined.ForwardToInbox, contentDescription = null) },
-            onClick = {
-                onDismiss()
-                onShareToMessage()
-            }
-        )
-        AppDropdownMenuItem(
-            text = { AppText("浏览器打开") },
-            leadingIcon = { AppIcon(Icons.Outlined.OpenInBrowser, contentDescription = null) },
-            onClick = {
-                onDismiss()
-                onOpenBrowser()
-            }
-        )
     }
 }
 
@@ -1846,7 +1780,13 @@ private fun LivePrimaryInteractionPanel(
                 indicatorHeight = segmentedSpec.indicatorHeightDp.dp,
                 labelFontSize = segmentedSpec.labelFontSizeSp.sp,
                 miuixBackdrop = selectionBackdrop,
-                isScrollInProgressProvider = { pagerState.isScrollInProgress }
+                dragSelectionEnabled = tabs.size > 1,
+                tapPressRefractionEnabled = true,
+                indicatorPositionProvider = {
+                    pagerState.currentPage + pagerState.currentPageOffsetFraction
+                },
+                isScrollInProgressProvider = { pagerState.isScrollInProgress },
+                externalPagerMotionEffectsEnabled = true,
             )
         }
         HorizontalPager(

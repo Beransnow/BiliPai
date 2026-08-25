@@ -67,6 +67,8 @@ fun HomeBangumiTabPage(
             options = channelOptions,
             selectedValue = state.channel,
             onSelectionChange = viewModel::selectChannel,
+            dragSelectionEnabled = channelOptions.size > 1,
+            tapPressRefractionEnabled = true,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),

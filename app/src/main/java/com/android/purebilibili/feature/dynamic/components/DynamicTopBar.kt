@@ -16,15 +16,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
-import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppIconButton
-import com.android.purebilibili.core.ui.components.AppDropdownMenu
-import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppWindowAction
+import com.android.purebilibili.core.ui.components.AppWindowActionMenu
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -150,8 +147,10 @@ fun DynamicTopBarWithTabs(
                 allowNativeLabelOverflow = true,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = isScrollInProgressProvider,
-                forceLiquidChrome = liquidGlassEnabled,
                 liquidGlassEffectsEnabled = liquidGlassEnabled,
+                dragSelectionEnabled = tabs.size > 1,
+                tapPressRefractionEnabled = true,
+                externalPagerMotionEffectsEnabled = true,
                 miuixBackdrop = dockBackdrop.takeIf { liquidGlassEnabled },
                 containerColorOverride = dockColor,
                 liquidGlassTuningOverride = liquidGlassTuning,
@@ -187,33 +186,24 @@ fun DynamicTopBarWithTabs(
                         .clip(dockShape),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    var showLayoutMenu by remember { mutableStateOf(false) }
-                    Box {
-                        AppIconButton(
-                            onClick = { showLayoutMenu = true }
-                        ) {
-                            AppIcon(
-                                imageVector = if (displayMode.isHorizontalUserList())
-                                    rememberAppGridLayoutIcon() else rememberAppListLayoutIcon(),
-                                contentDescription = "关注列表位置",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
-                            )
-                        }
-                        AppDropdownMenu(
-                            expanded = showLayoutMenu,
-                            onDismissRequest = { showLayoutMenu = false }
-                        ) {
-                            DynamicDisplayMode.entries.forEach { mode ->
-                                AppDropdownMenuItem(
-                                    text = { AppText(resolveDynamicDisplayModeLabel(mode)) },
-                                    onClick = {
-                                        showLayoutMenu = false
-                                        onDisplayModeChange(mode)
-                                    }
+                    AppWindowActionMenu(
+                        groups = listOf(
+                            DynamicDisplayMode.entries.map { mode ->
+                                AppWindowAction(
+                                    label = resolveDynamicDisplayModeLabel(mode),
+                                    selected = displayMode == mode,
+                                    onClick = { onDisplayModeChange(mode) },
                                 )
-                            }
-                        }
+                            },
+                        ),
+                    ) {
+                        AppIcon(
+                            imageVector = if (displayMode.isHorizontalUserList())
+                                rememberAppGridLayoutIcon() else rememberAppListLayoutIcon(),
+                            contentDescription = "关注列表位置",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
+                        )
                     }
 
                     //  发布动态入口（对齐 BiliPai AppBar actions 的发布按钮）

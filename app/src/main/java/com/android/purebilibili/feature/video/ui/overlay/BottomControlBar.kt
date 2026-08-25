@@ -722,8 +722,9 @@ fun BottomControlBar(
 
             Spacer(modifier = Modifier.width(layoutPolicy.afterTimeSpacingDp.dp))
 
-            // Danmaku toggle: fullscreen always; tablet inline player (wide) also needs it —
-            // phone detail has a separate toggle under the player, tablet cinema does not.
+            // Danmaku toggle: fullscreen always; tablet inline player (wide) also needs it
+            // while overlay chrome is visible. Always-visible send/toggle live on the
+            // tablet side pane next to 评论.
             val showDanmakuToggle = shouldShowDanmakuToggleInControlBar(
                 isFullscreen = isFullscreen,
                 widthDp = configuration.screenWidthDp

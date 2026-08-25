@@ -137,6 +137,8 @@ fun BangumiScreen(
                     selectedValue = state.channel,
                     enabled = !selectionActive,
                     onSelectionChange = viewModel::selectChannel,
+                    dragSelectionEnabled = true,
+                    tapPressRefractionEnabled = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),

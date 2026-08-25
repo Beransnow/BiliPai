@@ -576,7 +576,6 @@ private fun TodayWatchPluginModeSegmentedControl(
         containerHorizontalPadding = 4.dp,
         containerVerticalPadding = 4.dp,
         miuixBackdrop = backdrop,
-        forceLiquidChrome = false,
         liquidGlassEffectsEnabled = true,
         tapPressRefractionEnabled = true,
         dragSelectionEnabled = true,

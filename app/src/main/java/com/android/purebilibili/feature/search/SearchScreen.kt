@@ -110,6 +110,8 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import com.android.purebilibili.core.database.entity.SearchHistory
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
+import com.android.purebilibili.core.ui.videoCardTitleMaxLines
+import com.android.purebilibili.core.ui.videoCardTitleOverflow
 import com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton
 import com.android.purebilibili.core.ui.skeleton.ContentVideoGridSkeleton
 import com.android.purebilibili.core.ui.OfficialVerifyAvatarBadge
@@ -132,6 +134,8 @@ import com.android.purebilibili.core.ui.resolveOfficialVerifyBadge
 import com.android.purebilibili.core.ui.components.UserLevelBadge
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard  //  使用首页卡片
+import com.android.purebilibili.feature.home.components.cards.VideoCardCoverDurationText
+import com.android.purebilibili.core.ui.components.VideoStatRow
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.home.resolveReturnAnimationSuppressionDurationMs
 import com.android.purebilibili.core.store.HomeDurationStyle
@@ -2556,8 +2560,8 @@ private fun SearchResultTypeTabRow(
         height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
         indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
         labelFontSize = 13.sp,
+        allowNativeLabelOverflow = true,
         miuixBackdrop = miuixBackdrop,
-        forceLiquidChrome = false,
         liquidGlassEffectsEnabled = true,
         tapPressRefractionEnabled = true,
         dragSelectionEnabled = tabs.size > 1,
@@ -2996,42 +3000,13 @@ fun SearchResultCard(
                     )
             )
             
-            // 时长标签
-            AppSurface(
+            VideoCardCoverDurationText(
+                text = FormatUtils.formatDuration(video.duration),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(8.dp),
-                shape = AppShapes.container(ContainerLevel.Tag),
-                color = Color.Black.copy(alpha = 0.6f)
-            ) {
-                AppText(
-                    text = FormatUtils.formatDuration(video.duration),
-                    color = Color.White,
-                    fontSize = 11.sp,
-                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
-                )
-            }
+            )
             
-            // 播放量
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AppText(
-                    text = "▶ ${FormatUtils.formatStat(video.stat.view.toLong())}",
-                    color = Color.White,
-                    fontSize = 11.sp
-                )
-                if (video.stat.danmaku > 0) {
-                    AppText(
-                        text = "   ${FormatUtils.formatStat(video.stat.danmaku.toLong())}",
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 11.sp
-                    )
-                }
-            }
         }
         
         Spacer(modifier = Modifier.height(8.dp))
@@ -3040,12 +3015,24 @@ fun SearchResultCard(
         AppText(
             text = video.title,
             minLines = 1,
-            overflow = TextOverflow.Visible,
+            maxLines = videoCardTitleMaxLines(),
+            overflow = videoCardTitleOverflow(),
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             lineHeight = 18.sp,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.padding(horizontal = 2.dp)
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+        VideoStatRow(
+            playText = FormatUtils.formatStat(video.stat.view.toLong()),
+            danmakuText = if (video.stat.danmaku > 0) {
+                FormatUtils.formatStat(video.stat.danmaku.toLong())
+            } else {
+                ""
+            },
+            modifier = Modifier.padding(horizontal = 2.dp),
         )
         
         Spacer(modifier = Modifier.height(6.dp))

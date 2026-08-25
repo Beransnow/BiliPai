@@ -3577,7 +3577,10 @@ private fun ColumnScope.FloatingBottomBarTabVisual(
         AppText(
             text = label,
             color = contentColor,
-            fontSize = MaterialTheme.typography.labelSmall.fontSize,
+            fontSize = resolveFloatingDockLabelFontSize(
+                showIcon = showIcon,
+                showText = showText,
+            ),
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             maxLines = 1,
             textAlign = TextAlign.Center,

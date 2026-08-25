@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.list
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
+import com.android.purebilibili.core.store.HomeHeaderCollapseMode
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
 import com.android.purebilibili.core.ui.AppTopChromePolicy
@@ -101,24 +102,14 @@ internal fun resolveCommonListHeaderOffsetPx(
     return (currentOffsetPx + scrollDeltaYPx).coerceIn(-maxCollapsePx, 0f)
 }
 
-/**
- * 收藏夹在列表反向滚动时不重新展开整个顶栏；只在真正回到顶部时恢复。
- * 历史记录等共用列表仍遵循用户选择的顶栏折叠模式。
- */
+/** Maps the shared home/header switch onto history, favorites, and other common lists. */
 internal fun resolveCommonListHeaderCollapseModeForScreen(
-    configuredMode: CommonListHeaderCollapseMode,
-    isFavoritePage: Boolean,
-    isHistoryPage: Boolean = false,
+    homeHeaderMode: HomeHeaderCollapseMode,
 ): CommonListHeaderCollapseMode {
-    if (isHistoryPage) {
-        return CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY
-    }
-    return if (
-        isFavoritePage && configuredMode == CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL
-    ) {
+    return if (homeHeaderMode.hasAnyCollapse) {
         CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY
     } else {
-        configuredMode
+        CommonListHeaderCollapseMode.ALWAYS_VISIBLE
     }
 }
 

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -28,7 +27,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -42,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -75,6 +74,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
@@ -90,8 +90,6 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.home.HomeHeroCarouselCardTransform
-import com.android.purebilibili.feature.home.HOME_HERO_CAROUSEL_PAGE_SPACING_DP
-import com.android.purebilibili.feature.home.HOME_HERO_CAROUSEL_SIDE_PEEK_DP
 import com.android.purebilibili.feature.home.resolveHomeHeroCarouselAspectRatio
 import com.android.purebilibili.feature.home.resolveHomeHeroCarouselCardTransform
 import com.android.purebilibili.feature.home.resolveHomeHeroCarouselItemKey
@@ -114,44 +112,44 @@ internal fun HomeHeroCarousel(
     if (videos.isEmpty()) return
 
     val pagerState = rememberPagerState { videos.size }
+    val onGestureActiveChangeLatest = rememberUpdatedState(onGestureActiveChange)
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
-            .pointerInput(onGestureActiveChange) {
+            .pointerInput(Unit) {
                 awaitEachGesture {
                     awaitFirstDown(
                         requireUnconsumed = false,
                         pass = PointerEventPass.Initial,
                     )
-                    onGestureActiveChange(true)
+                    onGestureActiveChangeLatest.value(true)
                     try {
                         do {
                             val event = awaitPointerEvent(PointerEventPass.Initial)
                         } while (event.changes.any { it.pressed })
                     } finally {
-                        onGestureActiveChange(false)
+                        onGestureActiveChangeLatest.value(false)
                     }
                 }
             }
             .padding(vertical = AppSpacingTokens.ExtraSmall)
     ) {
-        val sidePeek = HOME_HERO_CAROUSEL_SIDE_PEEK_DP.dp
-        val pageSpacing = HOME_HERO_CAROUSEL_PAGE_SPACING_DP.dp
         val carouselWidth = resolveHomeHeroCarouselWidthDp(maxWidth.value).dp
-        val pageWidth = (carouselWidth - sidePeek * 2 - pageSpacing)
-            .coerceAtLeast(AppSpacingTokens.None)
         val aspectRatio = resolveHomeHeroCarouselAspectRatio(carouselWidth.value)
         HorizontalPager(
             state = pagerState,
             key = { page ->
                 resolveHomeHeroCarouselItemKey(videos, page, VideoItem::bvid)
             },
-            pageSize = PageSize.Fixed(pageWidth),
-            pageSpacing = pageSpacing,
-            contentPadding = PaddingValues(horizontal = sidePeek),
+            userScrollEnabled = false,
+            beyondViewportPageCount = 1,
             modifier = Modifier
                 .width(carouselWidth)
                 .align(Alignment.Center)
+                .verticalPriorityHorizontalPagerSwipe(
+                    state = pagerState,
+                    enabled = videos.size > 1,
+                )
         ) { page ->
             val video = resolveHomeHeroCarouselItemOrNull(videos, page)
                 ?: return@HorizontalPager
@@ -182,27 +180,31 @@ internal fun HomeHeroCarousel(
             )
         }
 
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(
-                    top = AppSpacingTokens.Medium,
-                    end = sidePeek + AppSpacingTokens.Medium,
-                )
-                .clip(CircleShape)
-                .background(MediaContrastPalette.Scrim.copy(alpha = 0.56f))
-                .padding(
-                    horizontal = AppSpacingTokens.Medium,
-                    vertical = AppSpacingTokens.ExtraSmall,
-                ),
-            contentAlignment = Alignment.Center,
-        ) {
-            AppText(
-                text = "${pagerState.currentPage + 1} / ${videos.size}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MediaContrastPalette.Foreground,
-                fontWeight = FontWeight.SemiBold,
-            )
+        if (videos.size > 1) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = AppSpacingTokens.Small),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                repeat(videos.size) { index ->
+                    val selected = index == pagerState.currentPage
+                    Box(
+                        modifier = Modifier
+                            .height(AppSpacingTokens.ExtraSmall)
+                            .width(
+                                if (selected) AppSpacingTokens.Medium else AppSpacingTokens.ExtraSmall
+                            )
+                            .clip(CircleShape)
+                            .background(
+                                MediaContrastPalette.Foreground.copy(
+                                    alpha = if (selected) 0.92f else 0.38f
+                                )
+                            )
+                    )
+                }
+            }
         }
     }
 }
@@ -411,7 +413,11 @@ private fun HomeHeroCarouselCard(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
-                    .padding(start = AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall, end = AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall, bottom = AppSpacingTokens.Medium + AppSpacingTokens.Micro)
+                    .padding(
+                        start = AppSpacingTokens.Large,
+                        end = AppSpacingTokens.Large,
+                        bottom = AppSpacingTokens.ExtraLarge,
+                    )
                     .videoCardShellReturnChromeAlpha(
                         enabled = useCardShellSharedBounds,
                         bvid = video.bvid,

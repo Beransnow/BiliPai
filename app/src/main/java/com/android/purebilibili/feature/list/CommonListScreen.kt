@@ -1,6 +1,4 @@
 package com.android.purebilibili.feature.list
-import com.android.purebilibili.core.ui.components.AppHorizontalDivider
-
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppAlertDialog
@@ -13,8 +11,11 @@ import com.android.purebilibili.core.ui.components.AppCardVariant
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppWindowAction
+import com.android.purebilibili.core.ui.components.AppWindowActionMenu
 import com.android.purebilibili.core.ui.components.AppLiquidAwareTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -77,7 +78,6 @@ import androidx.compose.runtime.DisposableEffect // [Fix] Missing import
 import kotlinx.coroutines.launch // [Fix] Import
 //  Material Icons
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChipDefaults
 import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppText
@@ -120,11 +120,12 @@ import com.android.purebilibili.feature.home.LocalHomeScrollOffset
 import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScrollOffset
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberAppChevronDownIcon
+import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
 
 import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
-import com.android.purebilibili.core.ui.components.AppSearchField
+import com.android.purebilibili.core.ui.components.AppLiquidAwareSearchField
 import com.android.purebilibili.core.ui.animation.DissolveAnimationPreset
 import com.android.purebilibili.core.ui.animation.MaybeDissolvableVideoCard
 import com.android.purebilibili.core.ui.animation.jiggleOnDissolve
@@ -154,11 +155,8 @@ import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
-import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
-import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
-import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
 import com.android.purebilibili.feature.video.player.PlayMode
@@ -295,7 +293,6 @@ fun CommonListScreen(
     var isHistoryBatchMode by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var selectedHistoryKeys by rememberSaveable { androidx.compose.runtime.mutableStateOf(setOf<String>()) }
     var showHistoryBatchDeleteConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
-    var showHistoryManagementMenu by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showHistoryClearConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var pendingHistorySingleDeleteKey by rememberSaveable { androidx.compose.runtime.mutableStateOf<String?>(null) }
     val supportsCollapsibleCommonListHeader = historyViewModel != null || favoriteViewModel != null
@@ -394,7 +391,6 @@ fun CommonListScreen(
     val favoriteSearchUiState by favoriteViewModel?.searchUiState?.collectAsStateWithLifecycle()
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(ListUiState()) }
     var favoriteBrowseSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(FavoriteBrowseSection.OWNED) }
-    var showFavoriteManagementMenu by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showFavoriteCleanInvalidConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showFavoriteDynamicShareConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var favoriteSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(FavoriteSection.VIDEO) }
@@ -402,7 +398,6 @@ fun CommonListScreen(
     var selectedFavoriteResourceIds by rememberSaveable { androidx.compose.runtime.mutableStateOf(setOf<Long>()) }
     var showFavoriteBatchDeleteConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var pendingFavoriteTransferCopy by rememberSaveable { androidx.compose.runtime.mutableStateOf<Boolean?>(null) }
-    var showFavoriteBatchMenu by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var favoriteFolderEditorMode by rememberSaveable { androidx.compose.runtime.mutableStateOf<String?>(null) }
     var favoriteFolderEditorTitle by rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
     var favoriteFolderEditorIntro by rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
@@ -623,9 +618,7 @@ fun CommonListScreen(
     var commonListHeaderOffsetPx by remember { mutableFloatStateOf(0f) }
     var commonListHeaderSettleJob by remember { androidx.compose.runtime.mutableStateOf<Job?>(null) }
     val commonListHeaderCollapseMode = resolveCommonListHeaderCollapseModeForScreen(
-        configuredMode = homeSettings.commonListHeaderCollapseMode,
-        isFavoritePage = favoriteViewModel != null,
-        isHistoryPage = historyViewModel != null,
+        homeHeaderMode = homeSettings.homeHeaderCollapseMode,
     )
     val commonListHeaderCollapseEnabled = supportsCollapsibleCommonListHeader &&
         commonListHeaderCollapseMode != CommonListHeaderCollapseMode.ALWAYS_VISIBLE
@@ -805,17 +798,6 @@ fun CommonListScreen(
         isHistoryPage = historyViewModel != null,
         globalLiquidGlassReuseEnabled = historyFilterChrome.useLiquidDock,
     )
-    val historyLiquidGlassTuning = remember(
-        homeSettings.liquidGlassProgress,
-        homeSettings.liquidGlassAdvancedSettings,
-        homeSettings.liquidGlassReadabilityMode,
-    ) {
-        resolveLiquidGlassTuning(
-            progress = homeSettings.liquidGlassProgress,
-            advancedSettings = homeSettings.liquidGlassAdvancedSettings,
-            readabilityMode = homeSettings.liquidGlassReadabilityMode,
-        )
-    }
     val blurIntensity = currentUnifiedBlurIntensity()
     val backgroundAlpha = BlurStyles.getBackgroundAlpha(blurIntensity)
     val headerBackgroundAlpha = if (favoriteViewModel != null) {
@@ -914,17 +896,24 @@ fun CommonListScreen(
         modifier = Modifier
             .nestedScroll(commonListHeaderScrollConnection)
             .nestedScroll(scrollBehavior.nestedScrollConnection),
-        containerColor = AppSurfaceTokens.groupedListContainer()
+        containerColor = if (globalWallpaperVisible) {
+            Color.Transparent
+        } else {
+            AppSurfaceTokens.groupedListContainer()
+        }
     ) { scaffoldPadding ->
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
             // 1. 底层：内容区域
             // [Haze Audit] 全局源已在 AppNavigation 根层提供，这里仅保留本地源
+            // 无全局壁纸时铺满 grouped 底色，避免 header blur 采到空洞；全局壁纸开启后
+            // 改为半透明保护色，让根层壁纸透出来。
             val contentModifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(commonListChromeBackdrop)
                 .hazeSourceCompat(state = localHazeState)
+                .globalWallpaperAwareBackground(AppSurfaceTokens.groupedListContainer())
 
             Box(modifier = contentModifier) {
                 if (
@@ -1273,39 +1262,26 @@ fun CommonListScreen(
                                     ) {
                                         AppText(if (allSelected) "取消全选" else "全选")
                                     }
-                                    Box {
-                                        AppIconButton(
-                                            enabled = selectedFavoriteResourceIds.isNotEmpty() && !isFavoriteManaging,
-                                            onClick = { showFavoriteBatchMenu = true },
-                                        ) {
-                                            AppIcon(Icons.Filled.MoreVert, contentDescription = "批量操作")
-                                        }
-                                        AppDropdownMenu(
-                                            expanded = showFavoriteBatchMenu,
-                                            onDismissRequest = { showFavoriteBatchMenu = false },
-                                        ) {
-                                            AppDropdownMenuItem(
-                                                text = { AppText("复制到收藏夹") },
-                                                onClick = {
-                                                    showFavoriteBatchMenu = false
-                                                    pendingFavoriteTransferCopy = true
-                                                },
-                                            )
-                                            AppDropdownMenuItem(
-                                                text = { AppText("移动到收藏夹") },
-                                                onClick = {
-                                                    showFavoriteBatchMenu = false
-                                                    pendingFavoriteTransferCopy = false
-                                                },
-                                            )
-                                            AppDropdownMenuItem(
-                                                text = { AppText("删除", color = MaterialTheme.colorScheme.error) },
-                                                onClick = {
-                                                    showFavoriteBatchMenu = false
-                                                    showFavoriteBatchDeleteConfirm = true
-                                                },
-                                            )
-                                        }
+                                    AppWindowActionMenu(
+                                        enabled = selectedFavoriteResourceIds.isNotEmpty() && !isFavoriteManaging,
+                                        groups = listOf(
+                                            listOf(
+                                                AppWindowAction(
+                                                    label = "复制到收藏夹",
+                                                    onClick = { pendingFavoriteTransferCopy = true },
+                                                ),
+                                                AppWindowAction(
+                                                    label = "移动到收藏夹",
+                                                    onClick = { pendingFavoriteTransferCopy = false },
+                                                ),
+                                                AppWindowAction(
+                                                    label = "删除",
+                                                    onClick = { showFavoriteBatchDeleteConfirm = true },
+                                                ),
+                                            ),
+                                        ),
+                                    ) {
+                                        AppIcon(Icons.Filled.MoreVert, contentDescription = "批量操作")
                                     }
                                     AppTextButton(
                                         onClick = {
@@ -1360,104 +1336,82 @@ fun CommonListScreen(
                                 }
 
                                 if (!isSubscribedBrowse) {
-                                    Box {
-                                        AppIconButton(
-                                            enabled = !isFavoriteManaging,
-                                            onClick = { showFavoriteManagementMenu = true }
-                                        ) {
-                                            AppIcon(
-                                                imageVector = Icons.Filled.MoreVert,
-                                                contentDescription = "更多管理"
-                                            )
-                                        }
-                                        AppDropdownMenu(
-                                            expanded = showFavoriteManagementMenu,
-                                            onDismissRequest = { showFavoriteManagementMenu = false }
-                                        ) {
-                                            AppDropdownMenuItem(
-                                                text = { AppText("新建收藏夹") },
-                                                enabled = !isFavoriteManaging,
-                                                onClick = {
-                                                    showFavoriteManagementMenu = false
-                                                    favoriteFolderEditorMode = "create"
-                                                    favoriteFolderEditorTitle = ""
-                                                    favoriteFolderEditorIntro = ""
-                                                    favoriteFolderEditorPrivate = false
-                                                }
-                                            )
-                                            AppDropdownMenuItem(
-                                                text = { AppText("编辑收藏夹") },
-                                                enabled = selectedFavoriteFolder != null && !isFavoriteManaging,
-                                                onClick = {
-                                                    showFavoriteManagementMenu = false
-                                                    selectedFavoriteFolder?.let { folder ->
-                                                        favoriteFolderEditorMode = "edit"
-                                                        favoriteFolderEditorTitle = folder.title
-                                                        favoriteFolderEditorIntro = folder.intro
-                                                        favoriteFolderEditorPrivate = folder.attr != 0
-                                                    }
-                                                }
-                                            )
-                                            AppDropdownMenuItem(
-                                                text = { AppText("删除收藏夹", color = MaterialTheme.colorScheme.error) },
-                                                enabled = selectedFolderIndex > 0 && !isFavoriteManaging,
-                                                onClick = {
-                                                    showFavoriteManagementMenu = false
-                                                    showFavoriteFolderDeleteConfirm = true
-                                                }
-                                            )
-                                            AppHorizontalDivider()
-                                            FavoriteResourceOrder.entries.forEach { order ->
-                                                AppDropdownMenuItem(
-                                                    text = {
-                                                        AppText(
-                                                            if (order == favoriteOrder) {
-                                                                "排序：${order.label}"
-                                                            } else {
-                                                                order.label
-                                                            }
-                                                        )
-                                                    },
+                                    AppWindowActionMenu(
+                                        enabled = !isFavoriteManaging,
+                                        groups = listOf(
+                                            listOf(
+                                                AppWindowAction(
+                                                    label = "新建收藏夹",
                                                     enabled = !isFavoriteManaging,
                                                     onClick = {
-                                                        showFavoriteManagementMenu = false
-                                                        favoriteViewModel.changeFavoriteOrder(order)
-                                                    }
+                                                        favoriteFolderEditorMode = "create"
+                                                        favoriteFolderEditorTitle = ""
+                                                        favoriteFolderEditorIntro = ""
+                                                        favoriteFolderEditorPrivate = false
+                                                    },
+                                                ),
+                                                AppWindowAction(
+                                                    label = "编辑收藏夹",
+                                                    enabled = selectedFavoriteFolder != null && !isFavoriteManaging,
+                                                    onClick = {
+                                                        selectedFavoriteFolder?.let { folder ->
+                                                            favoriteFolderEditorMode = "edit"
+                                                            favoriteFolderEditorTitle = folder.title
+                                                            favoriteFolderEditorIntro = folder.intro
+                                                            favoriteFolderEditorPrivate = folder.attr != 0
+                                                        }
+                                                    },
+                                                ),
+                                                AppWindowAction(
+                                                    label = "删除收藏夹",
+                                                    enabled = selectedFolderIndex > 0 && !isFavoriteManaging,
+                                                    onClick = { showFavoriteFolderDeleteConfirm = true },
+                                                ),
+                                            ),
+                                            FavoriteResourceOrder.entries.map { order ->
+                                                AppWindowAction(
+                                                    label = if (order == favoriteOrder) {
+                                                        "排序：${order.label}"
+                                                    } else {
+                                                        order.label
+                                                    },
+                                                    enabled = !isFavoriteManaging,
+                                                    selected = order == favoriteOrder,
+                                                    onClick = { favoriteViewModel.changeFavoriteOrder(order) },
                                                 )
-                                            }
-                                            AppHorizontalDivider()
-                                            AppDropdownMenuItem(
-                                                text = { AppText("分享收藏夹") },
-                                                enabled = selectedFavoriteFolder?.attr == 0 && !isFavoriteManaging,
-                                                onClick = {
-                                                    showFavoriteManagementMenu = false
-                                                    selectedFavoriteFolder?.let { folder ->
-                                                        com.android.purebilibili.core.util.ShareUtils.shareText(
-                                                            context = context,
-                                                            subject = folder.title,
-                                                            text = "https://www.bilibili.com/medialist/detail/ml${resolveFavoriteFolderMediaId(folder)}",
-                                                            chooserTitle = "分享收藏夹",
-                                                        )
-                                                    }
-                                                }
-                                            )
-                                            AppDropdownMenuItem(
-                                                text = { AppText("分享至动态") },
-                                                enabled = selectedFavoriteFolder?.attr == 0 && !isFavoriteManaging,
-                                                onClick = {
-                                                    showFavoriteManagementMenu = false
-                                                    showFavoriteDynamicShareConfirm = true
-                                                }
-                                            )
-                                            AppDropdownMenuItem(
-                                                text = { AppText("清理失效内容") },
-                                                enabled = canCleanInvalidFavoriteResources(selectedFavoriteFolder) && !isFavoriteManaging,
-                                                onClick = {
-                                                    showFavoriteManagementMenu = false
-                                                    showFavoriteCleanInvalidConfirm = true
-                                                }
-                                            )
-                                        }
+                                            },
+                                            listOf(
+                                                AppWindowAction(
+                                                    label = "分享收藏夹",
+                                                    enabled = selectedFavoriteFolder?.attr == 0 && !isFavoriteManaging,
+                                                    onClick = {
+                                                        selectedFavoriteFolder?.let { folder ->
+                                                            com.android.purebilibili.core.util.ShareUtils.shareText(
+                                                                context = context,
+                                                                subject = folder.title,
+                                                                text = "https://www.bilibili.com/medialist/detail/ml${resolveFavoriteFolderMediaId(folder)}",
+                                                                chooserTitle = "分享收藏夹",
+                                                            )
+                                                        }
+                                                    },
+                                                ),
+                                                AppWindowAction(
+                                                    label = "分享至动态",
+                                                    enabled = selectedFavoriteFolder?.attr == 0 && !isFavoriteManaging,
+                                                    onClick = { showFavoriteDynamicShareConfirm = true },
+                                                ),
+                                                AppWindowAction(
+                                                    label = "清理失效内容",
+                                                    enabled = canCleanInvalidFavoriteResources(selectedFavoriteFolder) && !isFavoriteManaging,
+                                                    onClick = { showFavoriteCleanInvalidConfirm = true },
+                                                ),
+                                            ),
+                                        ),
+                                    ) {
+                                        AppIcon(
+                                            imageVector = Icons.Filled.MoreVert,
+                                            contentDescription = "更多管理"
+                                        )
                                     }
                                 }
                                 }
@@ -1508,45 +1462,32 @@ fun CommonListScreen(
                                         }
                                     }
 
-                                    Box {
-                                        AppIconButton(
-                                            enabled = !isHistoryManagementBusy,
-                                            onClick = { showHistoryManagementMenu = true }
-                                        ) {
-                                            AppIcon(
-                                                imageVector = Icons.Filled.MoreVert,
-                                                contentDescription = "更多管理"
-                                            )
-                                        }
-                                        AppDropdownMenu(
-                                            expanded = showHistoryManagementMenu,
-                                            onDismissRequest = { showHistoryManagementMenu = false }
-                                        ) {
-                                            AppDropdownMenuItem(
-                                                text = { AppText(resolveHistoryPauseActionLabel(isHistoryPaused)) },
-                                                enabled = !isHistoryManagementBusy,
-                                                onClick = {
-                                                    showHistoryManagementMenu = false
-                                                    historyViewModel.toggleHistoryPause()
-                                                }
-                                            )
-                                            AppDropdownMenuItem(
-                                                text = { AppText("删除已看记录") },
-                                                enabled = state.items.isNotEmpty() && !isHistoryManagementBusy,
-                                                onClick = {
-                                                    showHistoryManagementMenu = false
-                                                    historyViewModel.deleteViewedHistory()
-                                                }
-                                            )
-                                            AppDropdownMenuItem(
-                                                text = { AppText("清空历史") },
-                                                enabled = state.items.isNotEmpty() && !isHistoryManagementBusy,
-                                                onClick = {
-                                                    showHistoryManagementMenu = false
-                                                    showHistoryClearConfirm = true
-                                                }
-                                            )
-                                        }
+                                    AppWindowActionMenu(
+                                        enabled = !isHistoryManagementBusy,
+                                        groups = listOf(
+                                            listOf(
+                                                AppWindowAction(
+                                                    label = resolveHistoryPauseActionLabel(isHistoryPaused),
+                                                    enabled = !isHistoryManagementBusy,
+                                                    onClick = { historyViewModel.toggleHistoryPause() },
+                                                ),
+                                                AppWindowAction(
+                                                    label = "删除已看记录",
+                                                    enabled = state.items.isNotEmpty() && !isHistoryManagementBusy,
+                                                    onClick = { historyViewModel.deleteViewedHistory() },
+                                                ),
+                                                AppWindowAction(
+                                                    label = "清空历史",
+                                                    enabled = state.items.isNotEmpty() && !isHistoryManagementBusy,
+                                                    onClick = { showHistoryClearConfirm = true },
+                                                ),
+                                            ),
+                                        ),
+                                    ) {
+                                        AppIcon(
+                                            imageVector = Icons.Filled.MoreVert,
+                                            contentDescription = "更多管理"
+                                        )
                                     }
                                 }
                             }
@@ -1579,47 +1520,16 @@ fun CommonListScreen(
                                 "搜索${favoriteSection.label}收藏"
                             else -> "搜索视频"
                         }
-                        val searchField: @Composable () -> Unit = {
-                            AppSearchField(
-                                query = searchQuery,
-                                onQueryChange = { searchQuery = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = searchPlaceholder,
-                                containerColor = if (historyFilterChrome.useLiquidDock) {
-                                    Color.Transparent
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
-                                },
-                                shapeOverride = if (historyFilterChrome.useLiquidDock) {
-                                    CircleShape
-                                } else {
-                                    null
-                                },
-                                heightOverride = if (historyFilterChrome.useLiquidDock) {
-                                    historyFilterChrome.heightDp.dp
-                                } else {
-                                    favoriteHeaderLayout.searchBarHeightDp.dp
-                                }
-                            )
-                        }
-                        if (historyViewModel != null && historyFilterChrome.useLiquidDock) {
-                            BottomBarMatchedReusableLiquidDock(
-                                backdrop = commonListChromeBackdrop,
-                                shape = CircleShape,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(historyFilterChrome.heightDp.dp),
-                                reuseEnabled = true,
-                                drawShellLens = false,
-                                isScrollInProgressProvider = {
-                                    primaryGridState.isScrollInProgress
-                                },
-                            ) { _ ->
-                                searchField()
-                            }
-                        } else {
-                            searchField()
-                        }
+                        AppLiquidAwareSearchField(
+                            query = searchQuery,
+                            onQueryChange = { searchQuery = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = searchPlaceholder,
+                            backdrop = commonListChromeBackdrop,
+                            isScrollInProgressProvider = {
+                                primaryGridState.isScrollInProgress
+                            },
+                        )
                     }
 
                     if (favoriteViewModel != null) {
@@ -1641,9 +1551,15 @@ fun CommonListScreen(
                                 }
                             },
                             scrollable = FavoriteSection.entries.size > 4,
+                            height = historyFilterChrome.heightDp.dp,
+                            indicatorHeight = historyFilterChrome.indicatorHeightDp.dp,
+                            labelFontSize = historyFilterChrome.labelFontSizeSp.sp,
+                            dragSelectionEnabled = historyFilterChrome.dragSelectionEnabled,
+                            tapPressRefractionEnabled = true,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = AppSpacingTokens.Medium),
+                            miuixBackdrop = commonListChromeBackdrop,
                         )
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                     }
@@ -1715,11 +1631,10 @@ fun CommonListScreen(
                             }
                             Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                         }
-                        val historyFilterLabels = remember {
-                            HistoryContentFilter.entries.map { it.label }
-                        }
-                        val selectedHistoryFilterIndex = remember(historyContentFilter) {
-                            HistoryContentFilter.entries.indexOf(historyContentFilter).coerceAtLeast(0)
+                        val historyFilterOptions = remember {
+                            HistoryContentFilter.entries.map { filter ->
+                                AppSegmentOption(value = filter, label = filter.label)
+                            }
                         }
                         val onHistoryFilterSelected: (HistoryContentFilter) -> Unit = { filter ->
                             if (filter != historyContentFilter) {
@@ -1730,68 +1645,21 @@ fun CommonListScreen(
                                 }
                             }
                         }
-                        Box(
+                        AppThemeAdaptiveTabRow(
+                            options = historyFilterOptions,
+                            selectedValue = historyContentFilter,
+                            onSelectionChange = onHistoryFilterSelected,
+                            enabled = !isHistoryBatchMode,
+                            height = historyFilterChrome.heightDp.dp,
+                            indicatorHeight = historyFilterChrome.indicatorHeightDp.dp,
+                            labelFontSize = historyFilterChrome.labelFontSizeSp.sp,
+                            dragSelectionEnabled = historyFilterChrome.dragSelectionEnabled,
+                            tapPressRefractionEnabled = true,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = historyFilterChrome.horizontalPaddingDp.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (historyFilterChrome.useLiquidDock) {
-                                BottomBarLiquidSegmentedControl(
-                                    items = historyFilterLabels,
-                                    selectedIndex = selectedHistoryFilterIndex,
-                                    onSelected = { index ->
-                                        HistoryContentFilter.entries.getOrNull(index)?.let(onHistoryFilterSelected)
-                                    },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    enabled = !isHistoryBatchMode,
-                                    itemWidth = historyFilterChrome.itemWidthDp?.dp,
-                                    height = historyFilterChrome.heightDp.dp,
-                                    indicatorHeight = historyFilterChrome.indicatorHeightDp.dp,
-                                    labelFontSize = historyFilterChrome.labelFontSizeSp.sp,
-                                    miuixBackdrop = commonListChromeBackdrop,
-                                    forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
-                                    liquidGlassEffectsEnabled = true,
-                                    dragSelectionEnabled = historyFilterChrome.dragSelectionEnabled,
-                                    tapPressRefractionEnabled = true,
-                                    isScrollInProgressProvider = {
-                                        primaryGridState.isScrollInProgress
-                                    },
-                                    liquidGlassTuningOverride = historyLiquidGlassTuning,
-                                )
-                            } else {
-                                FlowRow(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(
-                                        space = AppSpacingTokens.Small,
-                                        alignment = Alignment.CenterHorizontally
-                                    ),
-                                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
-                                ) {
-                                    HistoryContentFilter.entries.forEach { filter ->
-                                        AppFilterChip(
-                                            selected = historyContentFilter == filter,
-                                            enabled = !isHistoryBatchMode,
-                                            onClick = { onHistoryFilterSelected(filter) },
-                                            label = {
-                                                AppText(
-                                                    text = filter.label,
-                                                    style = MaterialTheme.typography.labelLarge.copy(
-                                                        fontSize = historyFilterChrome.labelFontSizeSp.sp
-                                                    )
-                                                )
-                                            },
-                                            colors = FilterChipDefaults.filterChipColors(
-                                                containerColor = AppSurfaceTokens.cardContainer(),
-                                                labelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                                                selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                            miuixBackdrop = commonListChromeBackdrop,
+                        )
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                     }
 

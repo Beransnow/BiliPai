@@ -117,9 +117,15 @@ class HomeHeroCarouselPolicyTest {
     }
 
     @Test
-    fun `carousel exposes adjacent cards as a swipe affordance`() {
-        assertEquals(20f, HOME_HERO_CAROUSEL_SIDE_PEEK_DP)
-        assertEquals(8f, HOME_HERO_CAROUSEL_PAGE_SPACING_DP)
+    fun `carousel fills the feed width without side peek gaps`() {
+        assertEquals(0f, HOME_HERO_CAROUSEL_SIDE_PEEK_DP)
+        assertEquals(0f, HOME_HERO_CAROUSEL_PAGE_SPACING_DP)
+    }
+
+    @Test
+    fun `home pager yields to the hero carousel while a pointer is active on it`() {
+        assertTrue(shouldYieldHomeTopPagerToHeroCarousel(heroCarouselPointerActive = true))
+        assertFalse(shouldYieldHomeTopPagerToHeroCarousel(heroCarouselPointerActive = false))
     }
 
     @Test

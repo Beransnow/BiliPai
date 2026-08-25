@@ -3183,15 +3183,11 @@ private fun LandscapeVideoItem(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            // 时长
-            AppText(
+            com.android.purebilibili.feature.home.components.cards.VideoCardCoverDurationText(
                 text = FormatUtils.formatDuration(video.duration),
-                color = Color.White,
-                fontSize = layoutPolicy.itemDurationFontSp.sp,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .background(Color.Black.copy(0.6f), AppShapes.container(ContainerLevel.Tag))
-                    .padding(horizontal = 2.dp)
+                    .padding(horizontal = 2.dp),
             )
         }
         
@@ -3252,18 +3248,11 @@ private fun LandscapeEpisodeItem(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
-                // 时长
-                AppText(
+                com.android.purebilibili.feature.home.components.cards.VideoCardCoverDurationText(
                     text = FormatUtils.formatDuration(episode.arc.duration),
-                    color = Color.White,
-                    fontSize = layoutPolicy.itemDurationFontSp.sp,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .background(
-                            Color.Black.copy(0.6f),
-                            AppShapes.topStartRounded(AppShapes.containerCornerDp(ContainerLevel.Tag)),
-                        )
-                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                        .padding(horizontal = 4.dp, vertical = 1.dp),
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))

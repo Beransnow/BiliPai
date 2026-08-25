@@ -43,7 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.store.HomeHeaderBlurMode
 import com.android.purebilibili.core.store.HomeHeaderCollapseMode
 import com.android.purebilibili.core.store.HomeTopLayoutOrder
 import com.android.purebilibili.core.store.HomeTopRightAction
@@ -194,8 +193,6 @@ fun BottomBarSettingsContent(
     val topTabVisible by SettingsManager.getTopTabVisibleTabs(context).collectAsStateWithLifecycle(initialValue = defaultTopTabIds.toSet())
     val topTabLabelMode by SettingsManager.getTopTabLabelMode(context)
         .collectAsStateWithLifecycle(initialValue = SettingsManager.TopTabLabelMode.TEXT_ONLY)
-    val headerBlurMode by SettingsManager.getHomeHeaderBlurMode(context)
-        .collectAsStateWithLifecycle(initialValue = HomeHeaderBlurMode.FOLLOW_PRESET)
     val homeTopLayoutOrder by SettingsManager.getHomeTopLayoutOrder(context)
         .collectAsStateWithLifecycle(initialValue = HomeTopLayoutOrder.SEARCH_THEN_TABS)
     val homeHeaderCollapseMode by SettingsManager.getHomeHeaderCollapseMode(context)
@@ -487,21 +484,6 @@ fun BottomBarSettingsContent(
                             )
                             AppPreferenceDivider()
                             SettingsSingleChoicePreference(
-                                icon = Icons.Outlined.WaterDrop,
-                                iconTint = com.android.purebilibili.core.theme.iOSTeal,
-                                title = "顶部模糊",
-                                options = listOf(
-                                    AppSegmentOption(HomeHeaderBlurMode.FOLLOW_PRESET, "跟随预设"),
-                                    AppSegmentOption(HomeHeaderBlurMode.ALWAYS_ON, "始终开启"),
-                                    AppSegmentOption(HomeHeaderBlurMode.ALWAYS_OFF, "始终关闭"),
-                                ),
-                                selectedValue = headerBlurMode,
-                                onSelectionChange = { mode ->
-                                    scope.launch { SettingsManager.setHomeHeaderBlurMode(context, mode) }
-                                },
-                            )
-                            AppPreferenceDivider()
-                            SettingsSingleChoicePreference(
                                 icon = Icons.Outlined.Reorder,
                                 iconTint = com.android.purebilibili.core.theme.iOSPurple,
                                 title = "首页顶部布局",
@@ -517,11 +499,11 @@ fun BottomBarSettingsContent(
                             SettingsSingleChoicePreference(
                                 icon = Icons.Outlined.Search,
                                 iconTint = com.android.purebilibili.core.theme.iOSTeal,
-                                title = "首页顶栏显示",
+                                title = "全局顶栏显示",
                                 subtitle = if (homeHeaderCollapseMode.hasAnyCollapse) {
-                                    "离开顶部后收起搜索框和标签页，单击底栏首页回顶后再出现"
+                                    "首页、历史、收藏和稍后再看等页面离开顶部后收起沉浸顶栏，回顶后恢复"
                                 } else {
-                                    "搜索框和标签页始终固定在顶部"
+                                    "首页和二级列表的沉浸顶栏始终显示"
                                 },
                                 options = listOf(
                                     AppSegmentOption(false, "始终显示"),
@@ -797,7 +779,6 @@ fun BottomBarSettingsContent(
                                 saveConfig()
                                 saveTopTabConfig()
                                 scope.launch {
-                                    SettingsManager.setHomeHeaderBlurMode(context, HomeHeaderBlurMode.FOLLOW_PRESET)
                                     // 重置为设备类型默认：平板开侧栏，手机开底栏
                                     SettingsManager.setTabletUseSidebar(context, isTabletDevice)
                                     SettingsManager.clearBottomBarItemLabels(context)
