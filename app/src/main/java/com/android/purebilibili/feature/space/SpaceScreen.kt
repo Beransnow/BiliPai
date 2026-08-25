@@ -2645,6 +2645,7 @@ private fun SpaceSecondarySwitchRow(
                     )
                 }
             },
+            responsiveDragSpringEnabled = true,
             tapPressRefractionEnabled = !useScrollableRail,
             modifier = if (useScrollableRail) {
                 Modifier.horizontalScroll(scrollState)

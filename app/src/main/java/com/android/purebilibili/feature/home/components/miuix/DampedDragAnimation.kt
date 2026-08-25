@@ -41,14 +41,18 @@ class DampedDragAnimation(
     val initialScale: Float,
     pressedScale: Float,
     private val trackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
+    responsiveSpring: Boolean = false,
     val canDrag: (Offset) -> Boolean = { true },
     val onDragStarted: DampedDragAnimation.(position: Offset) -> Unit,
     val onDragStopped: DampedDragAnimation.() -> Unit,
     val onDrag: DampedDragAnimation.(size: IntSize, dragAmount: Offset) -> Unit,
 ) {
 
-    private val valueAnimationSpec =
+    private val valueAnimationSpec = if (responsiveSpring) {
+        spring(0.86f, 1800f, visibilityThreshold)
+    } else {
         spring(1f, 1000f, visibilityThreshold)
+    }
     private val velocityAnimationSpec =
         spring(0.5f, 300f, visibilityThreshold * 10f)
     private val pressProgressAnimationSpec =

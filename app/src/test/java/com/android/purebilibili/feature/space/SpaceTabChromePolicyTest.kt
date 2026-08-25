@@ -172,7 +172,7 @@ class SpaceTabChromePolicyTest {
 
         assertEquals(1, spec.selectedIndex)
         assertEquals(48, spec.heightDp)
-        assertEquals(176, spec.itemWidthDp)
+        assertEquals(112, spec.itemWidthDp)
         assertTrue(spec.liquidGlassEffectsEnabled)
         assertFalse(shouldScrollSpaceSecondarySwitch(2, 104, 360, 4))
         assertTrue(shouldScrollSpaceSecondarySwitch(4, 104, 360, 4))

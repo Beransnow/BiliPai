@@ -382,6 +382,7 @@ fun FloatingBottomBar(
     longPressDragSelectionEnabled: Boolean = false,
     onDragPositionChanged: ((Float) -> Unit)? = null,
     dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
+    responsiveDragSpringEnabled: Boolean = false,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
 ) {
@@ -524,6 +525,7 @@ fun FloatingBottomBar(
         isLtr,
         matchedGeometry.pressedScale,
         dragTrackingMode,
+        responsiveDragSpringEnabled,
     ) {
         DampedDragAnimation(
             animationScope = animationScope,
@@ -533,6 +535,7 @@ fun FloatingBottomBar(
             initialScale = 1f,
             pressedScale = matchedGeometry.pressedScale,
             trackingMode = dragTrackingMode,
+            responsiveSpring = responsiveDragSpringEnabled,
             canDrag = { offset ->
                 val animation = holder.instance ?: return@DampedDragAnimation true
                 if (tabWidthPx == 0f) return@DampedDragAnimation false

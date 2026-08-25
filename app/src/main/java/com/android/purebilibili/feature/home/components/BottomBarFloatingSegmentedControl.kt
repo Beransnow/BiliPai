@@ -52,6 +52,7 @@ internal fun BottomBarFloatingSegmentedControl(
     dragSelectionEnabled: Boolean,
     longPressDragSelectionEnabled: Boolean,
     onDragPositionChanged: ((Float) -> Unit)?,
+    responsiveDragSpringEnabled: Boolean,
     forceLiquidChrome: Boolean,
     miuixBackdrop: Backdrop?,
     containerColorOverride: Color? = null,
@@ -184,6 +185,7 @@ internal fun BottomBarFloatingSegmentedControl(
                 longPressDragSelectionEnabled && enabled && itemCount > 1,
             onDragPositionChanged = onDragPositionChanged,
             dragTrackingMode = DampedDragTrackingMode.SPRING,
+            responsiveDragSpringEnabled = responsiveDragSpringEnabled,
             liquidGlassTuning = liquidGlassTuning,
         ) {
             items.forEachIndexed { index, label ->
