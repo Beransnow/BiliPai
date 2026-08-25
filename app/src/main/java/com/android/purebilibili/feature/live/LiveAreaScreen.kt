@@ -45,6 +45,7 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.skeleton.ContentCategoryGridSkeleton
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -143,9 +144,15 @@ fun LiveAreaScreen(
                 .padding(innerPadding),
         ) {
         when {
-            isLoading -> com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton(
+            isLoading -> ContentCategoryGridSkeleton(
+                columns = gridColumns,
                 modifier = Modifier.fillMaxSize(),
-                itemCount = 10,
+                contentPadding = PaddingValues(
+                    start = metrics.safeSpaceDp.dp,
+                    end = metrics.safeSpaceDp.dp,
+                    top = AppSpacingTokens.Medium,
+                    bottom = LocalBottomBarContentPadding.current,
+                ),
             )
             error != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {

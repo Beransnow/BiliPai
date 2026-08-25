@@ -63,6 +63,7 @@ import com.android.purebilibili.feature.bangumi.ui.detail.SeasonSelector
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.skeleton.PosterDetailSkeleton
 
 /**
  * 番剧详情页面
@@ -104,14 +105,11 @@ fun BangumiDetailScreen(
     ) { paddingValues ->
         when (val state = detailState) {
             is BangumiDetailState.Loading -> {
-                Box(
+                PosterDetailSkeleton(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    com.android.purebilibili.core.ui.CutePersonLoadingIndicator()
-                }
+                )
             }
             is BangumiDetailState.Error -> {
                 Box(
