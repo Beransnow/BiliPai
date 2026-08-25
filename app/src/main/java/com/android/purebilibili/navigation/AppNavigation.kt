@@ -499,6 +499,7 @@ fun AppNavigation(
     CompositionLocalProvider(
             LocalVideoSharedTransitionSpeedSettings provides videoSharedTransitionSpeedSettings,
             LocalVideoTransitionAdaptiveInfo provides videoTransitionAdaptiveInfo,
+            com.android.purebilibili.core.plugin.skin.LocalUiSkinState provides uiSkinState,
         ) {
         // [新增] 全局底栏状态管理
         val initialNavigationBackStack = remember(

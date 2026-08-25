@@ -8,6 +8,7 @@ import com.android.purebilibili.core.plugin.skin.UiSkinInstallStore
 import com.android.purebilibili.core.plugin.skin.UiSkinPackagePreview
 import com.android.purebilibili.core.plugin.skin.UiSkinSelection
 import com.android.purebilibili.core.plugin.skin.UiSkinSettingsStore
+import com.android.purebilibili.core.plugin.skin.normalizeSkinPackageUrl
 import com.android.purebilibili.feature.settings.UiSkinCompositionPreview
 import com.android.purebilibili.feature.settings.UiSkinCompositionPreviewData
 import com.android.purebilibili.feature.settings.downloadUiSkinRemotePackage
@@ -137,12 +138,17 @@ fun SkinCatalogScreen(
                             remotePackageFetcher = ::downloadUiSkinRemotePackage,
                         )
                     }.getOrThrow()
-                    val preview = uiSkinStore.previewPackage(importPackage.packageBytes).getOrThrow()
+                    val supplementalAssets = downloadCatalogEffectAssets(entry)
+                    val mergedPackageBytes = UiSkinImportPackageResolver.mergeSupplementalEffectAssets(
+                        packageBytes = importPackage.packageBytes,
+                        supplementalAssets = supplementalAssets,
+                    ).getOrThrow()
+                    val preview = uiSkinStore.previewPackage(mergedPackageBytes).getOrThrow()
                     val previewAssetFiles = uiSkinStore.extractPreviewAssetFiles(
                         preview = preview,
-                        packageBytes = importPackage.packageBytes
+                        packageBytes = mergedPackageBytes
                     ).getOrThrow()
-                    stateHolder.cachePendingInstall(importPackage.packageBytes, preview)
+                    stateHolder.cachePendingInstall(mergedPackageBytes, preview)
                     UiSkinCompositionPreviewData(
                         displayName = entry.displayName,
                         manifest = preview.manifest,
@@ -267,6 +273,36 @@ fun SkinCatalogScreen(
             onDismiss = { stateHolder.closePreview() },
             onInstall = { confirmInstall(entry, onInstalled) }
         )
+    }
+}
+
+private fun downloadCatalogEffectAssets(entry: SkinCatalogEntry): Map<String, ByteArray> {
+    val effects = entry.effectAssets
+    if (effects.isEmpty) return emptyMap()
+    return buildMap {
+        fun download(url: String?, targetPath: String) {
+            if (url.isNullOrBlank()) return
+            runCatching { downloadUiSkinRemotePackage(normalizeSkinPackageUrl(url)) }
+                .getOrNull()
+                ?.let { bytes -> put(targetPath, bytes) }
+        }
+        download(effects.loadingAnimationUrl, "assets/loading.webp")
+        download(effects.loadingFrameUrl, "assets/loading_frame.png")
+        effects.likeEffectAnimationUrl?.let { url ->
+            val path = url.substringBefore('?')
+            when {
+                path.endsWith(".json", true) -> download(url, "assets/like_effect.json")
+                path.endsWith(".webp", true) -> download(url, "assets/like_effect.webp")
+                path.endsWith(".png", true) -> download(url, "assets/like_effect.png")
+            }
+        }
+        effects.likeEffectPreviewUrl?.let { url ->
+            val extension = if (url.substringBefore('?').endsWith(".png", true)) "png" else "jpg"
+            download(url, "assets/like_effect_preview.$extension")
+        }
+        download(effects.playerProgressIconUrl, "assets/progress_icon.json")
+        download(effects.playerProgressDraggingIconUrl, "assets/progress_drag_icon.json")
+        download(effects.playerProgressStaticIconUrl, "assets/progress_static_icon.png")
     }
 }
 

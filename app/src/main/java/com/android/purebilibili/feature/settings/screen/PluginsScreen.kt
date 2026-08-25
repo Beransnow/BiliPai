@@ -52,6 +52,7 @@ import com.android.purebilibili.core.plugin.skin.UiSkinSettingsStore
 import com.android.purebilibili.core.plugin.skin.rememberUiSkinState
 import com.android.purebilibili.core.plugin.PluginInfo
 import com.android.purebilibili.core.plugin.PluginManager
+import com.android.purebilibili.core.plugin.PluginStore
 import com.android.purebilibili.core.plugin.json.JsonPluginStatsNotificationConfig
 import com.android.purebilibili.core.plugin.json.persistJsonPluginStatsNotificationConfig
 import com.android.purebilibili.core.plugin.json.postJsonPluginStatsTestNotification
@@ -244,6 +245,11 @@ fun PluginsContent(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
+    val effectMatchHintsEnabledFlow = remember(context) {
+        PluginStore.effectMatchHintsEnabledFlow(context)
+    }
+    val effectMatchHintsEnabled by effectMatchHintsEnabledFlow
+        .collectAsStateWithLifecycle(initialValue = false)
     val listState = rememberLazyListState()
     SettingsBottomBarScrollEffect(listState)
     val contentBottomPadding = LocalBottomBarContentPadding.current + 16.dp
@@ -581,6 +587,60 @@ fun PluginsContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 32.dp, top = 16.dp)
                 )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+                AppText(
+                    text = "提示设置",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
+                )
+                AppSurface(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .clip(AppShapes.container(ContainerLevel.Card)),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 1.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                scope.launch {
+                                    PluginStore.setEffectMatchHintsEnabled(
+                                        context,
+                                        !effectMatchHintsEnabled
+                                    )
+                                }
+                            }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            AppText(
+                                text = "显示插件生效提示",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            AppText(
+                                text = "去广告或弹幕增强命中时显示顶部提示",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        AppAdaptiveSwitch(
+                            checked = effectMatchHintsEnabled,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    PluginStore.setEffectMatchHintsEnabled(context, enabled)
+                                }
+                            }
+                        )
+                    }
+                }
             }
             
             //  导入外部插件按钮

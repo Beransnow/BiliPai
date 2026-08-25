@@ -79,6 +79,11 @@ import com.android.purebilibili.feature.anime4k.resolveAnime4KPresetLabel
 import kotlin.math.roundToInt
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.plugin.skin.LocalUiSkinState
+import com.android.purebilibili.core.plugin.skin.UiSkinAnimatedAsset
+import com.android.purebilibili.core.plugin.skin.UiSkinSurface
+import com.android.purebilibili.core.plugin.skin.assetPath
+import com.android.purebilibili.core.plugin.skin.parseUiSkinColor
 
 /**
  * Bottom Control Bar Component
@@ -1501,7 +1506,30 @@ fun VideoProgressBar(
         }
     }
 
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val uiSkinState = LocalUiSkinState.current
+    val progressSkin = uiSkinState.activeSkin?.takeIf {
+        uiSkinState.enabled && UiSkinSurface.PLAYER_PROGRESS in it.manifest.surfaces
+    }
+    val progressColors = progressSkin?.manifest?.colors
+    val primaryColor = parseUiSkinColor(
+        progressColors?.playerProgressActiveTint,
+        MaterialTheme.colorScheme.primary,
+    )
+    val bufferedTrackColor = parseUiSkinColor(
+        progressColors?.playerProgressBufferedTint,
+        Color.White.copy(alpha = 0.42f),
+    )
+    val inactiveTrackColor = parseUiSkinColor(
+        progressColors?.playerProgressTrackTint,
+        Color.White.copy(alpha = 0.24f),
+    )
+    val progressThumbPath = uiSkinState.assetPath(UiSkinSurface.PLAYER_PROGRESS) { assets ->
+        if (isSeekScrubbing) {
+            assets.playerProgressDraggingIcon ?: assets.playerProgressIcon ?: assets.playerProgressStaticIcon
+        } else {
+            assets.playerProgressIcon ?: assets.playerProgressStaticIcon
+        }
+    }
     val activePositionMs = resolveSeekPreviewTargetPositionMs(
         displayPositionMs = displayPositionMs,
         dragTargetPositionMs = dragTargetPositionMs,
@@ -1796,8 +1824,8 @@ fun VideoProgressBar(
                     }
                 }
 
-                drawTrack(size.width, Color.White.copy(alpha = 0.24f))
-                drawTrack(size.width * bufferedProgress, Color.White.copy(alpha = 0.42f))
+                drawTrack(size.width, inactiveTrackColor)
+                drawTrack(size.width * bufferedProgress, bufferedTrackColor)
                 drawTrack(size.width * displayProgress, primaryColor)
 
                 resolvedSponsorMarkers.forEach { marker ->
@@ -1837,13 +1865,25 @@ fun VideoProgressBar(
                                 .coerceIn(0f, (containerWidthPx - thumbSizePx).coerceAtLeast(0f))
                                 .roundToInt()
                         }
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.CenterStart)
-                                .offset { IntOffset(thumbOffsetPx, 0) }
-                                .size(thumbSizeDp)
-                                .background(primaryColor, CircleShape)
-                        )
+                        if (progressThumbPath != null) {
+                            UiSkinAnimatedAsset(
+                                path = progressThumbPath,
+                                size = thumbSizeDp,
+                                iterations = if (isSeekScrubbing) Int.MAX_VALUE else 1,
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .offset { IntOffset(thumbOffsetPx, 0) },
+                                contentDescription = null,
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.CenterStart)
+                                    .offset { IntOffset(thumbOffsetPx, 0) }
+                                    .size(thumbSizeDp)
+                                    .background(primaryColor, CircleShape)
+                            )
+                        }
                     }
                 }
             }
