@@ -1129,7 +1129,10 @@ fun CommonListScreen(
                         onFavoriteLongPress = if (favoriteViewModel != null) enterFavoriteBatchMode else null,
                         spacing = spacing.medium,
                         padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
-                        scrollUnderHeader = commonListHeaderCollapseEnabled,
+                        scrollUnderHeader = shouldScrollCommonListUnderHeader(
+                            isHistoryPage = historyViewModel != null,
+                            headerCollapseEnabled = commonListHeaderCollapseEnabled,
+                        ),
                         cardAnimationEnabled = homeSettings.cardAnimationEnabled,
                         cardTransitionEnabled = homeSettings.cardTransitionEnabled,
                         cardMotionTier = cardMotionTier,
