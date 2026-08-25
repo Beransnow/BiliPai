@@ -94,6 +94,7 @@ import com.android.purebilibili.feature.live.components.LiveReportDialog
 import com.android.purebilibili.feature.live.components.LiveSendDanmakuSheet
 import com.android.purebilibili.feature.live.components.LiveStreamSourceSheet
 import com.android.purebilibili.feature.live.components.LiveSuperChatSection
+import com.android.purebilibili.feature.live.components.LiveVotePanel
 import com.android.purebilibili.feature.live.components.LiveSuperChatFlashOverlay
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import top.yukonga.miuix.kmp.blur.layerBackdrop
@@ -199,6 +200,7 @@ fun LivePlayerScreen(
     val replyTarget by viewModel.replyTarget.collectAsStateWithLifecycle()
     val emoticonPackages by viewModel.emoticonPackages.collectAsStateWithLifecycle()
     val shieldInfo by viewModel.shieldInfo.collectAsStateWithLifecycle()
+    val voteSnapshot by viewModel.voteSnapshot.collectAsStateWithLifecycle()
     val roomInfo = successState?.roomInfo ?: RoomInfo()
     val anchorInfo = successState?.anchorInfo ?: AnchorInfo()
     val currentIsRoomLive by rememberUpdatedState(roomInfo.liveStatus == 1)
@@ -988,7 +990,8 @@ fun LivePlayerScreen(
                         }
                     },
                 )
-            }
+            },
+            voteContent = { LiveVotePanel(voteSnapshot, Modifier.fillMaxSize()) }
         )
     }
 
@@ -1733,13 +1736,14 @@ private fun LivePrimaryInteractionPanel(
     selectedTab: Int,
     onSelectedTab: (Int) -> Unit,
     chatContent: @Composable () -> Unit,
-    superChatContent: @Composable () -> Unit
+    superChatContent: @Composable () -> Unit,
+    voteContent: @Composable () -> Unit
 ) {
     val playerChromeProfile = rememberAppPlayerChromeProfile()
     val segmentedSpec = remember(playerChromeProfile.compactChromeSpec) {
         resolveLiveInteractionSegmentedControlSpec(playerChromeProfile.compactChromeSpec)
     }
-    val tabs = remember { listOf("聊天", "SC") }
+    val tabs = remember { listOf("聊天", "SC", "投票") }
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val scope = rememberCoroutineScope()
     val selectionBackdrop = rememberLayerBackdrop()
@@ -1797,7 +1801,8 @@ private fun LivePrimaryInteractionPanel(
         ) { page ->
             when (page) {
                 0 -> Box(modifier = Modifier.fillMaxSize()) { chatContent() }
-                else -> Box(modifier = Modifier.fillMaxSize()) { superChatContent() }
+                1 -> Box(modifier = Modifier.fillMaxSize()) { superChatContent() }
+                else -> Box(modifier = Modifier.fillMaxSize()) { voteContent() }
             }
         }
     }
