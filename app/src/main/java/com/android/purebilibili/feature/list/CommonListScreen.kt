@@ -269,6 +269,9 @@ fun CommonListScreen(
     // [新增] 优先使用用户设置的列数
     val columns = if (homeSettings.gridColumnCount > 0) homeSettings.gridColumnCount else adaptiveColumns
     val configuration = LocalConfiguration.current
+    val commonListViewportWidthPx = with(density) {
+        configuration.screenWidthDp.dp.roundToPx()
+    }
     val personalListColumns = remember(configuration.screenWidthDp) {
         resolvePersonalListColumnCount(configuration.screenWidthDp.toFloat())
     }
@@ -1794,23 +1797,37 @@ fun CommonListScreen(
                     }
                     },
                 ) { measurables, constraints ->
-                    val childConstraints = constraints.copy(minHeight = 0)
+                    val boundedMaxWidth = if (constraints.hasBoundedWidth) {
+                        constraints.maxWidth
+                    } else {
+                        commonListViewportWidthPx
+                    }
+                    val childConstraints = constraints.copy(
+                        minWidth = 0,
+                        maxWidth = boundedMaxWidth,
+                        minHeight = 0,
+                    )
                     val placeables = measurables.map { it.measure(childConstraints) }
                     val width = placeables.maxOfOrNull { it.width }
-                        ?.coerceIn(constraints.minWidth, constraints.maxWidth)
+                        ?.coerceIn(constraints.minWidth, boundedMaxWidth)
                         ?: constraints.minWidth
                     if (historyViewModel != null && placeables.isNotEmpty()) {
                         val titleHeight = placeables.first().height
                         val floatingDockHeight = placeables.drop(1).sumOf { it.height }
-                        val titleOffset = commonListHeaderOffsetPx
-                            .coerceIn(-titleHeight.toFloat(), 0f)
+                        val titleOffset = resolveHistoryTitleOffsetPx(
+                            headerOffsetPx = commonListHeaderOffsetPx,
+                            maxCollapsePx = commonListHeaderMaxCollapsePx,
+                            titleHeightPx = titleHeight,
+                        )
+                        val floatingDockTop = (titleHeight + commonListHeaderOffsetPx)
+                            .coerceAtLeast(statusBarHeightPx)
                             .toInt()
-                        val height = (titleHeight + floatingDockHeight + titleOffset)
+                        val height = (floatingDockTop + floatingDockHeight)
                             .coerceIn(constraints.minHeight, constraints.maxHeight)
                         layout(width, height) {
-                            // 标题与 Dock 同步上移；标题完全离场后，搜索 Dock 正好停在顶部。
+                            // 标题完整离场；Dock 仍只上移到状态栏安全区下方。
                             placeables.first().placeRelative(0, titleOffset)
-                            var y = titleHeight + titleOffset
+                            var y = floatingDockTop
                             placeables.drop(1).forEach { placeable ->
                                 placeable.placeRelative(0, y)
                                 y += placeable.height

@@ -1649,6 +1649,18 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
+    fun `liquid continuous slab samples backdrop without drawing another tinted panel`() {
+        assertEquals(
+            Color.Transparent,
+            resolveHomeTopContinuousSlabSurfaceColor(
+                baseColor = Color.White.copy(alpha = 0.72f),
+                blurAlpha = 0.64f,
+                renderMode = HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
+            ),
+        )
+    }
+
+    @Test
     fun `blur mode keeps local search and tabs plain to avoid stacked blur lag`() {
         assertEquals(
             HomeTopChromeRenderMode.PLAIN,

@@ -75,6 +75,17 @@ internal fun resolveCommonListHeaderMaxCollapsePx(
     return (headerHeightPx - pinnedDockHeightPx - topInsetPx).coerceAtLeast(0f)
 }
 
+/** Fully removes the history title while its following docks stop below the status bar. */
+internal fun resolveHistoryTitleOffsetPx(
+    headerOffsetPx: Float,
+    maxCollapsePx: Float,
+    titleHeightPx: Int,
+): Int {
+    if (titleHeightPx <= 0 || maxCollapsePx <= 0f) return 0
+    val collapseFraction = (-headerOffsetPx / maxCollapsePx).coerceIn(0f, 1f)
+    return (-titleHeightPx * collapseFraction).toInt()
+}
+
 internal fun resolveCommonListHeaderOffsetPx(
     currentOffsetPx: Float,
     scrollDeltaYPx: Float,

@@ -2,11 +2,13 @@ package com.android.purebilibili.core.ui.components
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
@@ -62,7 +64,10 @@ fun <T> AppLiquidAwareTabRow(
     if (scrollable) {
         val scrollState = rememberScrollState()
         val density = LocalDensity.current
-        BoxWithConstraints(modifier = modifier) {
+        val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp
+        BoxWithConstraints(
+            modifier = modifier.widthIn(max = viewportMaxWidth),
+        ) {
             val viewportWidthPx = with(density) { maxWidth.toPx() }
             val itemWidthPx = with(density) { minTabWidth.toPx() }
             LaunchedEffect(selectedIndex, scrollState.maxValue, viewportWidthPx, itemWidthPx) {

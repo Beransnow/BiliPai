@@ -764,9 +764,9 @@ internal fun resolveHomeTopContinuousSlabSurfaceColor(
     renderMode: HomeTopChromeRenderMode
 ): Color {
     if (renderMode == HomeTopChromeRenderMode.PLAIN) return Color.Transparent
-    if (renderMode != HomeTopChromeRenderMode.BLUR) {
-        return baseColor.copy(alpha = maxOf(baseColor.alpha, blurAlpha))
-    }
+    // Liquid controls already own their local glass surfaces. The continuous slab only samples
+    // the backdrop; another tinted fill here becomes a visible rectangular panel behind them.
+    if (renderMode != HomeTopChromeRenderMode.BLUR) return Color.Transparent
     return if (usesNativeContainerTreatment) {
         baseColor.copy(alpha = maxOf(baseColor.alpha, blurAlpha))
     } else {

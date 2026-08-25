@@ -63,7 +63,17 @@ class CommonListAppearancePolicyTest {
         ).first { it.exists() }.readText()
         assertTrue(source.contains("(fixedTopBarHeightPx.toFloat() - statusBarHeightPx).coerceAtLeast(0f)"))
         assertTrue(source.contains("placeables.first().placeRelative(0, titleOffset)"))
-        assertTrue(source.contains("var y = titleHeight + titleOffset"))
+        assertTrue(source.contains("var y = floatingDockTop"))
+        assertTrue(source.contains("if (constraints.hasBoundedWidth)"))
+        assertTrue(source.contains("maxWidth = boundedMaxWidth"))
+        assertEquals(
+            -96,
+            resolveHistoryTitleOffsetPx(
+                headerOffsetPx = -48f,
+                maxCollapsePx = 48f,
+                titleHeightPx = 96,
+            ),
+        )
     }
 
 
