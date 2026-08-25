@@ -94,6 +94,7 @@ class SpaceScreenStructureTest {
         assertTrue(secondaryRow.contains("shouldScrollSpaceSecondarySwitch("))
         assertTrue(secondaryRow.contains("Modifier.horizontalScroll(scrollState)"))
         assertTrue(secondaryRow.contains("dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail"))
+        assertTrue(secondaryRow.contains("longPressDragSelectionEnabled = useScrollableRail"))
         assertFalse(secondaryRow.contains("AppFilterChip("))
         assertFalse(secondaryRow.contains("AppNativeTabRow("))
         assertFalse(source.contains("rememberTextMeasurer()"))

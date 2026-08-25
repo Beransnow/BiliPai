@@ -398,6 +398,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(source.contains("BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP = 58"))
         assertTrue(source.contains("liquidGlassEffectsEnabled: Boolean = true"))
         assertTrue(source.contains("dragSelectionEnabled: Boolean = true"))
+        assertTrue(source.contains("longPressDragSelectionEnabled: Boolean = false"))
         assertTrue(source.contains("resolveSegmentedControlChromeStyle("))
         assertTrue(source.contains("uiStyle = LocalAppUiStyle.current"))
         assertTrue(source.contains("resolveHomeSelectionIndicatorStyle("))
@@ -470,6 +471,10 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(
             floating.contains("dragSelectionEnabled && enabled && itemCount > 1"),
             "Scrollable contribution tabs disable drag selection, so the liquid indicator must not attach a competing drag gesture"
+        )
+        assertTrue(
+            floating.contains("longPressDragSelectionEnabled && enabled && itemCount > 1"),
+            "Scrollable segmented controls may opt into indicator dragging only after a long press"
         )
     }
 

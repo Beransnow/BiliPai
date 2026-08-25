@@ -379,6 +379,7 @@ fun FloatingBottomBar(
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
+    longPressDragSelectionEnabled: Boolean = false,
     dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
@@ -1031,10 +1032,12 @@ fun FloatingBottomBar(
                     }
                     .then(interactiveHighlight?.gestureModifier ?: Modifier)
                     .then(
-                        if (dragSelectionEnabled && safeTabsCount > 1) {
-                            dampedDragAnimation.modifier
-                        } else {
-                            Modifier
+                        when {
+                            longPressDragSelectionEnabled && safeTabsCount > 1 ->
+                                dampedDragAnimation.longPressModifier
+                            dragSelectionEnabled && safeTabsCount > 1 ->
+                                dampedDragAnimation.modifier
+                            else -> Modifier
                         }
                     )
                     .clickable(

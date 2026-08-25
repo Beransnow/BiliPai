@@ -2628,6 +2628,7 @@ private fun SpaceSecondarySwitchRow(
             forceLiquidChrome = true,
             liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled,
             dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail,
+            longPressDragSelectionEnabled = useScrollableRail,
             tapPressRefractionEnabled = !useScrollableRail,
             modifier = if (useScrollableRail) {
                 Modifier.horizontalScroll(scrollState)

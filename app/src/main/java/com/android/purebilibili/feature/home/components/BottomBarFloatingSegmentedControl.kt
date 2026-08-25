@@ -50,6 +50,7 @@ internal fun BottomBarFloatingSegmentedControl(
     containerVerticalPadding: Dp,
     liquidGlassEffectsEnabled: Boolean,
     dragSelectionEnabled: Boolean,
+    longPressDragSelectionEnabled: Boolean,
     forceLiquidChrome: Boolean,
     miuixBackdrop: Backdrop?,
     containerColorOverride: Color? = null,
@@ -178,6 +179,8 @@ internal fun BottomBarFloatingSegmentedControl(
             indicatorPositionProvider = indicatorPositionProvider,
             isScrollInProgressProvider = isScrollInProgressProvider,
             dragSelectionEnabled = dragSelectionEnabled && enabled && itemCount > 1,
+            longPressDragSelectionEnabled =
+                longPressDragSelectionEnabled && enabled && itemCount > 1,
             dragTrackingMode = DampedDragTrackingMode.SPRING,
             liquidGlassTuning = liquidGlassTuning,
         ) {

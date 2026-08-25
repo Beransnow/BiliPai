@@ -5,6 +5,7 @@ package com.android.purebilibili.feature.home.components.miuix
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.MutatorMutex
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -139,6 +140,45 @@ class DampedDragAnimation(
                 onDrag(size, dragAmount)
             }
         }
+    }
+
+    val longPressModifier: Modifier = Modifier.pointerInput(Unit) {
+        var gestureAccepted = false
+        detectDragGesturesAfterLongPress(
+            onDragStart = { position ->
+                gestureAccepted = canDrag(position)
+                if (gestureAccepted) {
+                    isDragging = true
+                    onDragStarted(position)
+                    press()
+                }
+            },
+            onDragEnd = {
+                if (gestureAccepted) {
+                    onDragStopped()
+                    isDragging = false
+                    release()
+                }
+                gestureAccepted = false
+            },
+            onDragCancel = {
+                if (gestureAccepted) {
+                    onDragStopped()
+                    isDragging = false
+                    release()
+                }
+                gestureAccepted = false
+            },
+            onDrag = { change, dragAmount ->
+                if (!gestureAccepted) return@detectDragGesturesAfterLongPress
+                val isInside = canDrag(change.position)
+                val wasInside = canDrag(change.previousPosition)
+                if (isInside && wasInside) {
+                    if (dragAmount != Offset.Zero) change.consume()
+                    onDrag(size, dragAmount)
+                }
+            },
+        )
     }
 
     fun press() {
