@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -67,10 +68,10 @@ import com.android.purebilibili.core.ui.components.AppContentStateAction
 import com.android.purebilibili.core.ui.components.AppContentStatePresentation
 import com.android.purebilibili.core.ui.components.AppEmptyState
 import com.android.purebilibili.core.ui.components.AppErrorState
-import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppLiquidAwareTabRow
+import com.android.purebilibili.core.ui.components.AppNativeTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
@@ -519,26 +520,33 @@ private fun IndexFilterPanel(
     }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         visibleGroups.forEach { group ->
+            val selectedChoice = group.choices.firstOrNull { choice ->
+                state.selectedParams[group.field] == choice.keyword
+            } ?: group.choices.firstOrNull()
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
+                    .heightIn(min = 48.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AppText(
                     text = group.label,
-                    modifier = Modifier.widthIn(min = 42.dp),
+                    modifier = Modifier.width(56.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
+                    maxLines = 1,
                 )
-                group.choices.forEach { choice ->
-                    val selected = state.selectedParams[group.field] == choice.keyword
-                    AppFilterChip(
-                        selected = selected,
-                        onClick = { onFilterSelected(group, choice) },
-                        modifier = Modifier.heightIn(min = 48.dp),
-                        label = { AppText(choice.label, fontSize = 13.sp, maxLines = 1) },
+                if (selectedChoice != null) {
+                    AppNativeTabRow(
+                        options = group.choices.map { choice ->
+                            AppSegmentOption(choice, choice.label)
+                        },
+                        selectedValue = selectedChoice,
+                        scrollable = true,
+                        minTabWidth = 88.dp,
+                        onSelectionChange = { choice -> onFilterSelected(group, choice) },
+                        modifier = Modifier.weight(1f),
                     )
                 }
             }
