@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ContentPaste
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material.icons.outlined.Refresh
@@ -39,10 +40,10 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
-import com.android.purebilibili.core.ui.components.AppSegmentOption
-import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
+import com.android.purebilibili.core.ui.components.AppPrimaryScrollableTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -324,15 +325,20 @@ private fun LoginMethodTabs(
     onMethodSelected: (LoginMethod) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    AppThemeAdaptiveTabRow(
-        options = resolveAvailableLoginMethods().map { method ->
-            AppSegmentOption(method, loginMethodLabel(method))
-        },
-        selectedValue = selectedMethod,
-        onSelectionChange = onMethodSelected,
+    AppPrimaryScrollableTabRow(
+        selectedTabIndex = resolveAvailableLoginMethods().indexOf(selectedMethod),
         modifier = modifier.fillMaxWidth(),
-        scrollable = true,
-    )
+        edgePadding = 0.dp
+    ) {
+        resolveAvailableLoginMethods().forEach { method ->
+            AppTab(
+                selected = method == selectedMethod,
+                onClick = { onMethodSelected(method) },
+                text = { AppText(loginMethodLabel(method)) },
+                icon = { AppIcon(loginMethodIcon(method), contentDescription = null) }
+            )
+        }
+    }
 }
 
 private fun loginMethodLabel(method: LoginMethod): String = when (method) {
@@ -340,6 +346,13 @@ private fun loginMethodLabel(method: LoginMethod): String = when (method) {
     LoginMethod.PASSWORD -> "密码登录"
     LoginMethod.SMS -> "短信登录"
     LoginMethod.COOKIE_IMPORT -> "Cookie 导入"
+}
+
+private fun loginMethodIcon(method: LoginMethod) = when (method) {
+    LoginMethod.TV_QR -> Icons.Outlined.QrCode2
+    LoginMethod.PASSWORD -> Icons.Outlined.Password
+    LoginMethod.SMS -> Icons.Outlined.Phone
+    LoginMethod.COOKIE_IMPORT -> Icons.Outlined.ContentPaste
 }
 
 @Composable
