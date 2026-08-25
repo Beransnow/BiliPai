@@ -38,8 +38,9 @@ internal enum class PagerGestureDirection {
 
 internal const val PAGER_HORIZONTAL_DOMINANCE_RATIO = 1.5f
 internal const val PAGER_AMBIGUOUS_DIRECTION_SLOP_MULTIPLIER = 1.5f
-internal const val HOME_PAGER_HORIZONTAL_LOCK_SLOP_MULTIPLIER = 2f
+internal const val HOME_PAGER_HORIZONTAL_LOCK_SLOP_MULTIPLIER = 1.5f
 internal const val PAGER_RELEASE_POSITION_THRESHOLD = 0.2f
+internal const val PAGER_RELEASE_MAX_POSITION_THRESHOLD_DP = 96f
 internal const val PAGER_RELEASE_MIN_FLING_VELOCITY_DP = 300f
 
 internal fun resolveVerticalPriorityPagerGestureDirection(
@@ -94,14 +95,19 @@ internal fun resolvePagerReleaseTargetPage(
     scrollDeltaPx: Float,
     scrollVelocityPxPerSecond: Float,
     positionalThresholdFraction: Float = PAGER_RELEASE_POSITION_THRESHOLD,
+    maximumPositionThresholdPx: Float = Float.POSITIVE_INFINITY,
     minimumFlingVelocityPxPerSecond: Float,
 ): Int {
     if (pageCount <= 0) return 0
     val boundedStartPage = startPage.coerceIn(0, pageCount - 1)
     val isFastFling = scrollVelocityPxPerSecond != 0f &&
         abs(scrollVelocityPxPerSecond) >= minimumFlingVelocityPxPerSecond.coerceAtLeast(0f)
+    val positionThresholdPx = minOf(
+        pageSizePx * positionalThresholdFraction.coerceIn(0f, 1f),
+        maximumPositionThresholdPx.coerceAtLeast(0f),
+    )
     val crossedPositionThreshold = pageSizePx > 0f &&
-        abs(scrollDeltaPx) >= pageSizePx * positionalThresholdFraction.coerceIn(0f, 1f)
+        abs(scrollDeltaPx) >= positionThresholdPx
     if (!isFastFling && !crossedPositionThreshold) return boundedStartPage
 
     val releaseDirection = if (isFastFling) {
@@ -135,6 +141,9 @@ internal fun Modifier.verticalPriorityHorizontalPagerSwipe(
     val minimumFlingVelocityPx = with(density) {
         PAGER_RELEASE_MIN_FLING_VELOCITY_DP.dp.toPx()
     }
+    val maximumPositionThresholdPx = with(density) {
+        PAGER_RELEASE_MAX_POSITION_THRESHOLD_DP.dp.toPx()
+    }
     val reverseDirection = remember(layoutDirection, reverseLayout) {
         ScrollableDefaults.reverseDirection(
             layoutDirection = layoutDirection,
@@ -143,7 +152,13 @@ internal fun Modifier.verticalPriorityHorizontalPagerSwipe(
         )
     }
 
-    pointerInput(state, reverseDirection, minimumFlingVelocityPx, horizontalLockSlopMultiplier) {
+    pointerInput(
+        state,
+        reverseDirection,
+        minimumFlingVelocityPx,
+        maximumPositionThresholdPx,
+        horizontalLockSlopMultiplier,
+    ) {
         val dragCoroutineScope = CoroutineScope(currentCoroutineContext())
         val velocityTracker = VelocityTracker()
         awaitEachGesture gesture@{
@@ -214,6 +229,7 @@ internal fun Modifier.verticalPriorityHorizontalPagerSwipe(
                             pageSizePx = state.layoutInfo.pageSize.toFloat(),
                             scrollDeltaPx = dragRelease.scrollDeltaPx,
                             scrollVelocityPxPerSecond = dragRelease.velocityPxPerSecond,
+                            maximumPositionThresholdPx = maximumPositionThresholdPx,
                             minimumFlingVelocityPxPerSecond = minimumFlingVelocityPx,
                         ),
                     )
