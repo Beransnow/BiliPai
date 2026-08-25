@@ -925,25 +925,13 @@ private fun LiveAreaHomeChipRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (LocalAppUiStyle.current == AppUiStyle.MATERIAL3) {
-            AppNativeTabRow(
-                options = categoryOptions,
-                selectedValue = selectedCategory,
-                onSelectionChange = onAreaSelected,
-                scrollable = true,
-                minTabWidth = categoryMinWidth,
-                modifier = Modifier.weight(1f),
-            )
-        } else {
-            AppLiquidAwareTabRow(
-                options = categoryOptions,
-                selectedValue = selectedCategory,
-                onSelectionChange = onAreaSelected,
-                scrollable = true,
-                minTabWidth = categoryMinWidth,
-                modifier = Modifier.weight(1f),
-            )
-        }
+        LiveThemeAdaptiveTabRow(
+            options = categoryOptions,
+            selectedValue = selectedCategory,
+            onSelectionChange = onAreaSelected,
+            minTabWidth = categoryMinWidth,
+            modifier = Modifier.weight(1f),
+        )
         AppIconButton(
             onClick = onToggleFirstFrame,
             modifier = Modifier.size(40.dp),
@@ -987,17 +975,55 @@ private fun LiveSortTagChipRow(
     selectedSortType: String?,
     onSortTagSelected: (String?) -> Unit,
 ) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
-        items(tags, key = { it.sortType.ifBlank { it.name } }) { tag ->
-            val selected = selectedSortType == tag.sortType ||
-                (selectedSortType.isNullOrBlank() && tags.firstOrNull() == tag)
-            LiveHomeSelectableChip(
+    if (tags.isEmpty()) return
+    val options = remember(tags) {
+        tags.map { tag ->
+            AppSegmentOption(
+                value = tag.sortType,
                 label = tag.name.ifBlank { tag.sortType },
-                selected = selected,
-                compact = true,
-                onClick = { onSortTagSelected(tag.sortType.takeIf { it.isNotBlank() }) },
             )
         }
+    }
+    val selectedValue = selectedSortType
+        ?.takeIf { selected -> options.any { it.value == selected } }
+        ?: options.first().value
+    LiveThemeAdaptiveTabRow(
+        options = options,
+        selectedValue = selectedValue,
+        onSelectionChange = { value ->
+            onSortTagSelected(value.takeIf { it.isNotBlank() })
+        },
+        minTabWidth = 72.dp,
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+@Composable
+private fun <T> LiveThemeAdaptiveTabRow(
+    options: List<AppSegmentOption<T>>,
+    selectedValue: T,
+    onSelectionChange: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    minTabWidth: androidx.compose.ui.unit.Dp = 72.dp,
+) {
+    if (LocalAppUiStyle.current == AppUiStyle.MATERIAL3) {
+        AppNativeTabRow(
+            options = options,
+            selectedValue = selectedValue,
+            onSelectionChange = onSelectionChange,
+            scrollable = true,
+            minTabWidth = minTabWidth,
+            modifier = modifier,
+        )
+    } else {
+        AppLiquidAwareTabRow(
+            options = options,
+            selectedValue = selectedValue,
+            onSelectionChange = onSelectionChange,
+            scrollable = true,
+            minTabWidth = minTabWidth,
+            modifier = modifier,
+        )
     }
 }
 
