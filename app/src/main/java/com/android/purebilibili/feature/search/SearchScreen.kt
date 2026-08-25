@@ -789,9 +789,12 @@ fun SearchScreen(
     var exitMotionKey by remember { mutableIntStateOf(0) }
     var exitMotionInProgress by remember { mutableStateOf(false) }
     val exitContentAlpha by animateFloatAsState(
-        targetValue = if (exitMotionInProgress) 0f else 1f,
+        // Keep the destination visibly populated until navigation hands off to Home. Fading to
+        // zero here leaves only Search's opaque scaffold background for the remainder of the
+        // search-field morph, which reads as a white flash.
+        targetValue = if (exitMotionInProgress) 0.72f else 1f,
         animationSpec = tween(
-            durationMillis = 180,
+            durationMillis = 220,
             easing = AppMotionEasing.Continuity,
         ),
         label = "searchExitContentAlpha",
