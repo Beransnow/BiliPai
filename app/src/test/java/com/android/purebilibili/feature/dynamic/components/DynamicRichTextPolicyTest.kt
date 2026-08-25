@@ -484,6 +484,33 @@ class DynamicRichTextPolicyTest {
     }
 
     @Test
+    fun buildDynamicRichText_usesMergedSummaryEmojiMetadataForFullBodyShortcode() {
+        val shortcode = "[UPOWER_3546635395139954_舔舔]"
+        val iconUrl = "https://i0.hdslb.com/bfs/garb/upower.png"
+        val result = buildDynamicRichText(
+            desc = DynamicDesc(
+                text = "完整正文$shortcode",
+                rich_text_nodes = listOf(
+                    RichTextNode(type = "TEXT", text = "完整正文$shortcode"),
+                    RichTextNode(
+                        type = "EMOJI",
+                        text = shortcode,
+                        emoji = com.android.purebilibili.data.model.response.EmojiInfo(
+                            icon_url = iconUrl,
+                            text = shortcode,
+                        ),
+                    ),
+                ),
+            ),
+            primaryColor = Color.Magenta,
+            textColor = Color.White,
+        )
+
+        assertEquals(iconUrl, result.emojiUrlById[shortcode])
+        assertEquals("完整正文$shortcode", result.annotatedString.text)
+    }
+
+    @Test
     fun resolvePreferredDynamicDesc_prefersSideWithRenderableEmoji() {
         val plain = DynamicDesc(text = "画完芽衣，大家新年快乐[豹富][豹富]")
         val withEmoji = DynamicDesc(

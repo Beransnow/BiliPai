@@ -8,6 +8,7 @@ import com.android.purebilibili.data.model.response.DynamicModules
 import com.android.purebilibili.data.model.response.OpusContentBlock
 import com.android.purebilibili.data.model.response.OpusMajor
 import com.android.purebilibili.data.model.response.OpusPic
+import com.android.purebilibili.data.model.response.RichTextNode
 import com.android.purebilibili.feature.article.ArticleContentBlock
 import com.android.purebilibili.feature.article.scoreOpusContentBlocks
 
@@ -131,13 +132,15 @@ internal fun mergeDynamicDetailInteractionMetadata(
         it.comment_type > 0 && it.comment_id_str.toLongOrNull()?.let { oid -> oid > 0L } == true
     }
     val detailContent = detailItem.modules.module_dynamic
-    val seedEmojiNodes = seedItem.modules.module_dynamic?.desc
-        ?.rich_text_nodes
-        .orEmpty()
-        .takeIf(::containsDynamicEmojiMetadata)
-    val mergedContent = if (detailContent != null && !seedEmojiNodes.isNullOrEmpty()) {
+    val seedEmojiNodes = collectDynamicDetailSeedEmojiNodes(seedItem)
+    val mergedContent = if (detailContent != null && seedEmojiNodes.isNotEmpty()) {
         detailContent.copy(
-            desc = detailContent.desc?.copy(rich_text_nodes = seedEmojiNodes)
+            desc = detailContent.desc?.copy(
+                rich_text_nodes = mergeDynamicDetailRichTextNodes(
+                    detailNodes = detailContent.desc.rich_text_nodes,
+                    seedEmojiNodes = seedEmojiNodes,
+                )
+            )
                 ?: DynamicDesc(rich_text_nodes = seedEmojiNodes),
         )
     } else {
@@ -152,15 +155,45 @@ internal fun mergeDynamicDetailInteractionMetadata(
     )
 }
 
-private fun containsDynamicEmojiMetadata(
-    nodes: List<com.android.purebilibili.data.model.response.RichTextNode>
-): Boolean = nodes.any { node ->
+/**
+ * Dynamic feed payloads may expose emoji metadata in either `desc.rich_text_nodes` or
+ * `major.opus.summary.rich_text_nodes`. The detail/opus body can retain only the shortcode,
+ * so both documented preview sources must be carried into the full-body renderer.
+ */
+internal fun collectDynamicDetailSeedEmojiNodes(item: DynamicItem): List<RichTextNode> {
+    val content = item.modules.module_dynamic ?: return emptyList()
+    return (content.desc?.rich_text_nodes.orEmpty() +
+        content.major?.opus?.summary?.rich_text_nodes.orEmpty())
+        .filter(::containsDynamicEmojiMetadata)
+        .distinctBy(::dynamicEmojiMetadataKey)
+}
+
+internal fun mergeDynamicDetailRichTextNodes(
+    detailNodes: List<RichTextNode>,
+    seedEmojiNodes: List<RichTextNode>,
+): List<RichTextNode> {
+    if (seedEmojiNodes.isEmpty()) return detailNodes
+    val existingEmojiKeys = detailNodes
+        .filter(::containsDynamicEmojiMetadata)
+        .mapTo(mutableSetOf(), ::dynamicEmojiMetadataKey)
+    return detailNodes + seedEmojiNodes
+        .distinctBy(::dynamicEmojiMetadataKey)
+        .filter { node -> dynamicEmojiMetadataKey(node) !in existingEmojiKeys }
+}
+
+private fun containsDynamicEmojiMetadata(node: RichTextNode): Boolean {
     val type = node.type.removePrefix("RICH_TEXT_NODE_TYPE_")
-    type.equals("EMOJI", ignoreCase = true) &&
+    return type.equals("EMOJI", ignoreCase = true) &&
         node.emoji?.let { emoji ->
             emoji.icon_url.isNotBlank() || emoji.webp_url.isNotBlank() || emoji.gif_url.isNotBlank()
         } == true
 }
+
+private fun dynamicEmojiMetadataKey(node: RichTextNode): String = sequenceOf(
+    node.text,
+    node.orig_text,
+    node.emoji?.text.orEmpty(),
+).map { it.trim() }.firstOrNull { it.isNotEmpty() }.orEmpty()
 
 internal fun shouldFetchOpusDetailForDynamicDetail(item: DynamicItem): Boolean {
     val major = item.modules.module_dynamic?.major
