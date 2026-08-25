@@ -208,6 +208,8 @@ fun <T> AppNativeTabRow(
     enabled: Boolean = true,
     scrollable: Boolean = false,
     minTabWidth: Dp = 72.dp,
+    allowLabelOverflow: Boolean = false,
+    indicatorPositionProvider: (() -> Float)? = null,
     onSelectionChange: (T) -> Unit,
 ) {
     if (options.isEmpty()) return
@@ -234,6 +236,8 @@ fun <T> AppNativeTabRow(
             enabled = enabled,
             scrollable = scrollable,
             minTabWidth = minTabWidth,
+            allowLabelOverflow = allowLabelOverflow,
+            indicatorPositionProvider = indicatorPositionProvider,
             modifier = viewportBoundedModifier,
             onSelectionChange = onSelectionChange,
         )
@@ -246,6 +250,7 @@ fun <T> AppNativeTabRow(
             colors = colors,
             preferredCornerRadius = policy.preferredCornerRadius,
             modifier = viewportBoundedModifier,
+            indicatorPositionProvider = indicatorPositionProvider,
             onSelectionChange = onSelectionChange,
         )
     }
