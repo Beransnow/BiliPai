@@ -628,13 +628,17 @@ fun CommonListScreen(
     val statusBarHeightPx = with(LocalDensity.current) {
         WindowInsets.statusBars.asPaddingValues().calculateTopPadding().toPx()
     }
-    val commonListHeaderMaxCollapsePx = resolveCommonListHeaderMaxCollapsePx(
-        headerHeightPx = headerHeightPx,
-        pinnedDockHeightPx = if (historyViewModel != null) fixedTopBarHeightPx else 0,
-        topInsetPx = if (historyViewModel != null) 0f else statusBarHeightPx,
-        // 历史页保留页面标题栏，只收起搜索与筛选 Dock；收藏夹沿用原有整栏策略。
-        retainPinnedDock = historyViewModel != null,
-    )
+    val commonListHeaderMaxCollapsePx = if (historyViewModel != null) {
+        // 历史页只移走标题内容；保留状态栏安全区，让搜索和分类 Dock 停在其下方。
+        (fixedTopBarHeightPx.toFloat() - statusBarHeightPx).coerceAtLeast(0f)
+    } else {
+        resolveCommonListHeaderMaxCollapsePx(
+            headerHeightPx = headerHeightPx,
+            pinnedDockHeightPx = 0,
+            topInsetPx = statusBarHeightPx,
+            retainPinnedDock = false,
+        )
+    }
     fun animateCommonListHeaderOffsetTo(targetOffsetPx: Float) {
         if (kotlin.math.abs(commonListHeaderOffsetPx - targetOffsetPx) <= 0.5f) {
             commonListHeaderOffsetPx = targetOffsetPx
@@ -1217,13 +1221,6 @@ fun CommonListScreen(
                             route = favoriteCollectionSharedElementRoute,
                             transitionEnabled = favoriteCollectionSharedTransitionEnabled
                         )
-                            .then(
-                                if (historyViewModel != null) {
-                                    Modifier.background(AppSurfaceTokens.surface())
-                                } else {
-                                    Modifier
-                                }
-                            )
                             .onGloballyPositioned { coordinates ->
                                 fixedTopBarHeightPx = coordinates.size.height
                             },
@@ -1783,23 +1780,21 @@ fun CommonListScreen(
                         ?.coerceIn(constraints.minWidth, constraints.maxWidth)
                         ?: constraints.minWidth
                     if (historyViewModel != null && placeables.isNotEmpty()) {
-                        val fixedHeight = placeables.first().height
-                        val collapsibleHeight = placeables.drop(1).sumOf { it.height }
-                        val bodyOffset = commonListHeaderOffsetPx
-                            .coerceIn(-collapsibleHeight.toFloat(), 0f)
+                        val titleHeight = placeables.first().height
+                        val floatingDockHeight = placeables.drop(1).sumOf { it.height }
+                        val titleOffset = commonListHeaderOffsetPx
+                            .coerceIn(-titleHeight.toFloat(), 0f)
                             .toInt()
-                        val height = (fixedHeight + collapsibleHeight + bodyOffset)
+                        val height = (titleHeight + floatingDockHeight + titleOffset)
                             .coerceIn(constraints.minHeight, constraints.maxHeight)
                         layout(width, height) {
-                            var y = fixedHeight + bodyOffset
+                            // 标题与 Dock 同步上移；标题完全离场后，搜索 Dock 正好停在顶部。
+                            placeables.first().placeRelative(0, titleOffset)
+                            var y = titleHeight + titleOffset
                             placeables.drop(1).forEach { placeable ->
                                 placeable.placeRelative(0, y)
                                 y += placeable.height
                             }
-                            // The pinned title bar is the foreground clipping cap. Collapsible
-                            // search/filter docks may move beneath it, but must never paint over
-                            // the title or actions while the history list is scrolled.
-                            placeables.first().placeRelative(0, 0)
                         }
                     } else {
                         val height = placeables.sumOf { it.height }
