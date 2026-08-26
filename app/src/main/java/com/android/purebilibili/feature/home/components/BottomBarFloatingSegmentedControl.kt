@@ -49,6 +49,7 @@ internal fun BottomBarFloatingSegmentedControl(
     containerHorizontalPadding: Dp,
     containerVerticalPadding: Dp,
     liquidGlassEffectsEnabled: Boolean,
+    backdropBlurEnabled: Boolean = liquidGlassEffectsEnabled,
     dragSelectionEnabled: Boolean,
     longPressDragSelectionEnabled: Boolean,
     miuixBackdrop: Backdrop?,
@@ -107,7 +108,7 @@ internal fun BottomBarFloatingSegmentedControl(
     // nested pages mount another backdrop (for example Bangumi/Film), overflowing RenderThread.
     // Keep the local source strictly as a fallback so visual blur remains real in both paths.
     val localBackdrop = rememberLayerBackdrop()
-    val effectiveBackdrop = if (liquidGlassEnabled) {
+    val effectiveBackdrop = if (liquidGlassEnabled || backdropBlurEnabled) {
         miuixBackdrop ?: localBackdrop
     } else {
         null

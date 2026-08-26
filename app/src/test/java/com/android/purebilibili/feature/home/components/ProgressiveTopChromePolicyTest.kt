@@ -53,7 +53,9 @@ class ProgressiveTopChromePolicyTest {
         val dynamicTopBar = loadSource("feature/dynamic/components/DynamicTopBar.kt")
         val commonList = loadSource("feature/list/CommonListScreen.kt")
 
-        assertTrue(homeHeader.contains("pinnedChromeLayout.blurHeight + progressiveBlurBottomExtension"))
+        assertTrue(homeHeader.contains("floatingTabBackdropOverlap + progressiveBlurBottomExtension"))
+        assertTrue(homeHeader.contains("FloatingBottomBarDefaultShellHeight / 2"))
+        assertTrue(homeHeader.contains("floatingDockBlurEnabled = effectiveContinuousSlabRenderMode"))
         assertTrue(dynamicTopBar.contains("Spacer(modifier = Modifier.height(statusBarHeight))"))
         assertTrue(commonList.contains(".then(topBarBackgroundModifier)"))
     }

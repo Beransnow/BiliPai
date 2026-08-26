@@ -2041,7 +2041,13 @@ fun HomeHeader(
         ),
         endFraction = liquidGlassTuning.progressiveBlurEndFraction,
     )
-    val continuousSlabHeight = pinnedChromeLayout.blurHeight + progressiveBlurBottomExtension
+    val floatingTabBackdropOverlap = if (topTabInnerOwnsFloatingDockShell) {
+        FloatingBottomBarDefaultShellHeight / 2
+    } else {
+        AppSpacingTokens.None
+    }
+    val continuousSlabHeight = pinnedChromeLayout.blurHeight +
+        floatingTabBackdropOverlap + progressiveBlurBottomExtension
     val pinnedChromeContentHeight = pinnedChromeLayout.tabTop + currentTabHeight
     val isTopTabViewportSyncEnabled = resolveHomeTopTabViewportSyncEnabled(
         currentTabHeightDp = currentTabHeight.value,
@@ -2146,6 +2152,8 @@ fun HomeHeader(
                 isLiquidGlassEnabled = resolveHomeTopTabIndicatorLiquidGlassEnabled(
                     homeSettings = homeSettings,
                 ),
+                floatingDockBlurEnabled = effectiveContinuousSlabRenderMode !=
+                    HomeTopChromeRenderMode.PLAIN,
                 liquidGlassStyle = liquidStyle,
                 liquidGlassTuning = liquidGlassTuning,
                 liquidGlassPreset = bottomBarLiquidGlassPreset,
