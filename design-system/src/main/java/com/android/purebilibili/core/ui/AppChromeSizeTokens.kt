@@ -51,10 +51,12 @@ fun resolveCompactCapsuleChromeSpec(
         // primaryCornerRadius must stay well below height/2 or search/filter bars
         // become full sausages (same failure mode as 48dp TabRow + 22–28dp Pill).
         AppUiStyle.MIUIX -> {
-            val primaryHeight = 44
+            // Visual chrome follows the compact 36dp Miuix row. The 48dp
+            // minimum touch target is provided by the surrounding hit area.
+            val primaryHeight = 36
             CompactCapsuleChromeSpec(
                 primaryHeightDp = primaryHeight,
-                secondaryButtonSizeDp = chromeTokens.rowMinTouchTargetDp,
+                secondaryButtonSizeDp = 36,
                 chipHeightDp = 32,
                 compactChipHeightDp = 28,
                 primaryCornerRadiusDp = minOf(
@@ -63,7 +65,7 @@ fun resolveCompactCapsuleChromeSpec(
                 ),
                 secondaryButtonCornerRadiusDp = minOf(
                     chromeTokens.containerCornerRadiusDp,
-                    (chromeTokens.rowMinTouchTargetDp * 0.3f).toInt(),
+                    (36 * 0.3f).toInt(),
                 ),
                 chipCornerRadiusDp = minOf(16, (32 * 0.3f).toInt()), // 9 → keep 9
                 compactChipCornerRadiusDp = minOf(14, (28 * 0.3f).toInt()),
