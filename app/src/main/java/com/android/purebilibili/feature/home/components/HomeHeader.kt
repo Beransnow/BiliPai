@@ -2154,6 +2154,8 @@ fun HomeHeader(
                 ),
                 floatingDockBlurEnabled = effectiveContinuousSlabRenderMode !=
                     HomeTopChromeRenderMode.PLAIN,
+                floatingDockContainerVisible = effectiveContinuousSlabRenderMode ==
+                    HomeTopChromeRenderMode.PLAIN,
                 liquidGlassStyle = liquidStyle,
                 liquidGlassTuning = liquidGlassTuning,
                 liquidGlassPreset = bottomBarLiquidGlassPreset,

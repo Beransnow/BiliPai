@@ -50,6 +50,7 @@ internal fun BottomBarFloatingSegmentedControl(
     containerVerticalPadding: Dp,
     liquidGlassEffectsEnabled: Boolean,
     backdropBlurEnabled: Boolean = liquidGlassEffectsEnabled,
+    containerChromeVisible: Boolean = true,
     dragSelectionEnabled: Boolean,
     longPressDragSelectionEnabled: Boolean,
     miuixBackdrop: Backdrop?,
@@ -97,26 +98,33 @@ internal fun BottomBarFloatingSegmentedControl(
             onSurface = MaterialTheme.colorScheme.onSurface,
             enabled = enabled,
         )
-    val shellColor = containerColorOverride ?: resolveBiliPaiBottomBarShellColor(
-        containerColor = AppSurfaceTokens.cardContainer(),
-        liquidGlassEnabled = liquidGlassEnabled,
-        darkTheme = isDarkTheme,
-        liquidGlassTuning = liquidGlassTuning,
-    )
+    val shellColor = if (containerChromeVisible) {
+        containerColorOverride ?: resolveBiliPaiBottomBarShellColor(
+            containerColor = AppSurfaceTokens.cardContainer(),
+            liquidGlassEnabled = liquidGlassEnabled,
+            darkTheme = isDarkTheme,
+            liquidGlassTuning = liquidGlassTuning,
+        )
+    } else {
+        Color.Transparent
+    }
     // A supplied page backdrop already contains the pixels behind this dock. Combining it
     // with a local source can make MIUI's native background-blur graph sample itself when
     // nested pages mount another backdrop (for example Bangumi/Film), overflowing RenderThread.
     // Keep the local source strictly as a fallback so visual blur remains real in both paths.
     val localBackdrop = rememberLayerBackdrop()
-    val effectiveBackdrop = if (liquidGlassEnabled || backdropBlurEnabled) {
+    val effectiveBackdrop = if (
+        containerChromeVisible && (liquidGlassEnabled || backdropBlurEnabled)
+    ) {
         miuixBackdrop ?: localBackdrop
     } else {
         null
     }
-    val floatingMode = if (effectiveBackdrop != null) {
-        FloatingBottomBarMode.LiquidGlass
-    } else {
-        FloatingBottomBarMode.None
+    val floatingMode = when {
+        !containerChromeVisible -> FloatingBottomBarMode.None
+        liquidGlassEnabled && effectiveBackdrop != null -> FloatingBottomBarMode.LiquidGlass
+        effectiveBackdrop != null -> FloatingBottomBarMode.Blur
+        else -> FloatingBottomBarMode.None
     }
     val rootModifier = if (itemWidth != null) {
         modifier.width(itemWidth * itemCount + containerHorizontalPadding * 2)
