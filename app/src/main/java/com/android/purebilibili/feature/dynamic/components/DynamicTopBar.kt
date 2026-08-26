@@ -12,6 +12,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RectangleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -140,7 +141,11 @@ fun DynamicTopBarWithTabs(
                 items = tabs,
                 selectedIndex = selectedTab,
                 onSelected = onTabSelected,
-                modifier = Modifier.weight(1f),
+                // Liquid indicator/shell can draw beyond its measured bounds for backdrop
+                // capture. Clip the tab slot so it cannot bleed under the action Dock.
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RectangleShape),
                 height = liquidTabSpec.heightDp.dp,
                 indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
                 labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
