@@ -13,10 +13,11 @@ class AppPrimitiveComponentsStructureTest {
         val source = loadSource()
 
         assertTrue(source.contains("fun AppButton("))
-        assertTrue(source.contains(") = Button("))
         assertTrue(source.contains("colors: ButtonColors"))
         assertTrue(source.contains("fun AppTextButton("))
-        assertTrue(source.contains(") = TextButton("))
+        assertTrue(source.contains("AppUiStyle.MIUIX -> MiuixButton("))
+        assertTrue(source.contains("AppUiStyle.MATERIAL3 -> Button("))
+        assertTrue(source.contains("AppUiStyle.MATERIAL3 -> TextButton("))
         assertTrue(source.contains("fun AppOutlinedTextField("))
         assertTrue(source.contains("shouldUseMiuixOutlinedTextField("))
         assertTrue(source.contains("MiuixTextField("))

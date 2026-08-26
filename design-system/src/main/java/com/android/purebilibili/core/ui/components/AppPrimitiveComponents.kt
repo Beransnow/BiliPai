@@ -86,6 +86,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
 import top.yukonga.miuix.kmp.basic.TextFieldDefaults as MiuixTextFieldDefaults
+import top.yukonga.miuix.kmp.basic.Button as MiuixButton
+import top.yukonga.miuix.kmp.basic.ButtonColors as MiuixButtonColors
+import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private const val APP_TAB_INDICATOR_DURATION_MILLIS = 300
@@ -278,26 +281,43 @@ fun AppButton(
     content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
 ) {
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    Button(
-        onClick = onClick,
-        modifier = modifier.appDesktopInteractionVisuals(resolvedInteractionSource, enabled),
-        enabled = enabled,
-        shape = shape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor,
-            contentColor = contentColor,
-            disabledContainerColor = disabledContainerColor,
-            disabledContentColor = disabledContentColor,
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = defaultElevation,
-            pressedElevation = pressedElevation,
-        ),
-        border = border,
-        contentPadding = contentPadding,
-        interactionSource = resolvedInteractionSource,
-        content = content,
-    )
+    val interactionModifier = modifier.appDesktopInteractionVisuals(resolvedInteractionSource, enabled)
+    when (LocalAppUiStyle.current) {
+        com.android.purebilibili.core.theme.AppUiStyle.MATERIAL3 -> Button(
+            onClick = onClick,
+            modifier = interactionModifier,
+            enabled = enabled,
+            shape = shape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = containerColor,
+                contentColor = contentColor,
+                disabledContainerColor = disabledContainerColor,
+                disabledContentColor = disabledContentColor,
+            ),
+            elevation = ButtonDefaults.buttonElevation(
+                defaultElevation = defaultElevation,
+                pressedElevation = pressedElevation,
+            ),
+            border = border,
+            contentPadding = contentPadding,
+            interactionSource = resolvedInteractionSource,
+            content = content,
+        )
+        com.android.purebilibili.core.theme.AppUiStyle.MIUIX -> MiuixButton(
+            onClick = onClick,
+            modifier = interactionModifier,
+            enabled = enabled,
+            colors = MiuixButtonColors(
+                color = containerColor,
+                disabledColor = disabledContainerColor,
+                contentColor = contentColor,
+                disabledContentColor = disabledContentColor,
+            ),
+            insideMargin = contentPadding,
+            interactionSource = resolvedInteractionSource,
+            content = content,
+        )
+    }
 }
 
 @Composable
@@ -314,21 +334,40 @@ fun AppButton(
     content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
 ) {
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    Button(
-        onClick = onClick,
-        modifier = modifier.appDesktopInteractionVisuals(resolvedInteractionSource, enabled),
-        enabled = enabled,
-        shape = shape,
-        colors = colors ?: ButtonDefaults.buttonColors(
-            containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
-            contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme),
-        ),
-        elevation = elevation,
-        border = border,
-        contentPadding = contentPadding,
-        interactionSource = resolvedInteractionSource,
-        content = content,
-    )
+    val interactionModifier = modifier.appDesktopInteractionVisuals(resolvedInteractionSource, enabled)
+    when (LocalAppUiStyle.current) {
+        com.android.purebilibili.core.theme.AppUiStyle.MATERIAL3 -> Button(
+            onClick = onClick,
+            modifier = interactionModifier,
+            enabled = enabled,
+            shape = shape,
+            colors = colors ?: ButtonDefaults.buttonColors(
+                containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+                contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme),
+            ),
+            elevation = elevation,
+            border = border,
+            contentPadding = contentPadding,
+            interactionSource = resolvedInteractionSource,
+            content = content,
+        )
+        com.android.purebilibili.core.theme.AppUiStyle.MIUIX -> MiuixButton(
+            onClick = onClick,
+            modifier = interactionModifier,
+            enabled = enabled,
+            colors = colors?.let {
+                MiuixButtonColors(
+                    color = it.containerColor,
+                    disabledColor = it.disabledContainerColor,
+                    contentColor = it.contentColor,
+                    disabledContentColor = it.disabledContentColor,
+                )
+            } ?: MiuixButtonDefaults.buttonColorsPrimary(),
+            insideMargin = contentPadding,
+            interactionSource = resolvedInteractionSource,
+            content = content,
+        )
+    }
 }
 
 @Composable
@@ -343,16 +382,33 @@ fun AppTextButton(
     content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
 ) {
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    TextButton(
-        onClick = onClick,
-        modifier = modifier.appDesktopInteractionVisuals(resolvedInteractionSource, enabled),
-        enabled = enabled,
-        shape = shape,
-        colors = colors,
-        contentPadding = contentPadding,
-        interactionSource = resolvedInteractionSource,
-        content = content,
-    )
+    val interactionModifier = modifier.appDesktopInteractionVisuals(resolvedInteractionSource, enabled)
+    when (LocalAppUiStyle.current) {
+        com.android.purebilibili.core.theme.AppUiStyle.MATERIAL3 -> TextButton(
+            onClick = onClick,
+            modifier = interactionModifier,
+            enabled = enabled,
+            shape = shape,
+            colors = colors,
+            contentPadding = contentPadding,
+            interactionSource = resolvedInteractionSource,
+            content = content,
+        )
+        com.android.purebilibili.core.theme.AppUiStyle.MIUIX -> MiuixButton(
+            onClick = onClick,
+            modifier = interactionModifier,
+            enabled = enabled,
+            colors = MiuixButtonColors(
+                color = colors.containerColor,
+                disabledColor = colors.disabledContainerColor,
+                contentColor = colors.contentColor,
+                disabledContentColor = colors.disabledContentColor,
+            ),
+            insideMargin = contentPadding,
+            interactionSource = resolvedInteractionSource,
+            content = content,
+        )
+    }
 }
 
 @Composable
