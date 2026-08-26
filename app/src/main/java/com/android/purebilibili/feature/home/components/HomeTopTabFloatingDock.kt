@@ -9,12 +9,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,10 +31,14 @@ import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
+import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
+import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
+import dev.chrisbanes.haze.HazeState
 import top.yukonga.miuix.kmp.blur.Backdrop
 
 internal fun shouldHomeTopTabUseFloatingBottomBarDock(
@@ -89,6 +95,10 @@ internal fun HomeTopTabFloatingDock(
     labelFontSize: TextUnit,
     liquidGlassEffectsEnabled: Boolean,
     backdropBlurEnabled: Boolean = liquidGlassEffectsEnabled,
+    hazeState: HazeState?,
+    motionTier: MotionTier,
+    isTransitionRunning: Boolean,
+    forceLowBlurBudget: Boolean,
     containerChromeVisible: Boolean = true,
     miuixBackdrop: Backdrop?,
     liquidGlassPreset: BottomBarLiquidGlassPreset,
@@ -104,6 +114,24 @@ internal fun HomeTopTabFloatingDock(
             liquidGlassEnabled = liquidGlassEffectsEnabled,
         )
     ) {
+        val useBlur = backdropBlurEnabled && hazeState != null
+        val toolbarShape = FloatingToolbarDefaults.ContainerShape
+        val toolbarColors = FloatingToolbarDefaults.standardFloatingToolbarColors(
+            toolbarContainerColor = if (useBlur) Color.Transparent else Color.Unspecified,
+        )
+        val toolbarModifier = if (backdropBlurEnabled && hazeState != null) {
+            Modifier.unifiedBlur(
+                hazeState = hazeState,
+                shape = toolbarShape,
+                surfaceType = BlurSurfaceType.HEADER,
+                motionTier = motionTier,
+                isScrolling = false,
+                isTransitionRunning = isTransitionRunning,
+                forceLowBudget = forceLowBlurBudget,
+            )
+        } else {
+            Modifier
+        }
         Box(modifier = modifier, contentAlignment = Alignment.Center) {
             val toolbarContent: @Composable RowScope.() -> Unit = {
                 categories.forEachIndexed { index, label ->
@@ -144,6 +172,9 @@ internal fun HomeTopTabFloatingDock(
             }
             HorizontalFloatingToolbar(
                 expanded = true,
+                modifier = toolbarModifier,
+                colors = toolbarColors,
+                shape = toolbarShape,
                 content = toolbarContent,
             )
         }
