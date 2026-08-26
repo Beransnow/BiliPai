@@ -12,7 +12,9 @@ object AppChromeSizeTokens {
     const val CompactControlCornerRadiusDp = 20
     const val MiuixNativeCompactControlHeightDp = 36
     const val MiuixNativeCompactControlMinWidthDp = 52
-    const val MiuixNativeCompactCornerRadiusDp = 12
+    // Visual radius for compact native controls. The 48dp touch target remains
+    // an accessibility minimum, never the basis for corner geometry.
+    const val MiuixNativeCompactCornerRadiusDp = 10
     // Compact liquid docks keep the home bottom-bar rest fill (48/64).
     const val BottomBarMatchedSegmentedControlHeightDp = 40
     const val BottomBarMatchedSegmentedIndicatorHeightDp = 30
@@ -49,7 +51,7 @@ fun resolveCompactCapsuleChromeSpec(
         // primaryCornerRadius must stay well below height/2 or search/filter bars
         // become full sausages (same failure mode as 48dp TabRow + 22–28dp Pill).
         AppUiStyle.MIUIX -> {
-            val primaryHeight = 48
+            val primaryHeight = 44
             CompactCapsuleChromeSpec(
                 primaryHeightDp = primaryHeight,
                 secondaryButtonSizeDp = chromeTokens.rowMinTouchTargetDp,
