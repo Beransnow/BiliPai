@@ -1892,7 +1892,11 @@ private fun ProfileSpaceTabBody(
             onRetry = onContributionRetry
         )
         ProfileSpaceMainTab.FAVORITE -> ProfileFavoriteFolderList(user.mid, space.favoriteFolders, onFavoriteFolderClick)
-        ProfileSpaceMainTab.BANGUMI -> ProfileBangumiList(space.bangumiItems, onBangumiClick)
+        ProfileSpaceMainTab.BANGUMI -> ProfileBangumiList(
+            items = space.bangumiItems,
+            onBangumiClick = onBangumiClick,
+            contentChrome = contentChrome,
+        )
     }
 }
 
@@ -2277,18 +2281,30 @@ private fun ProfileFavoriteFolderList(ownerMid: Long, folders: List<FavFolder>, 
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ProfileBangumiList(items: List<FollowBangumiItem>, onBangumiClick: (Long, Long) -> Unit) {
+private fun ProfileBangumiList(
+    items: List<FollowBangumiItem>,
+    onBangumiClick: (Long, Long) -> Unit,
+    contentChrome: ProfileContentChrome,
+) {
     if (items.isEmpty()) {
         ProfileSpaceEmpty("暂无追番")
         return
     }
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
         items.forEach { item ->
-            ProfileSpaceListRow(
+            ProfileSpacePosterCard(
                 title = item.title,
                 subtitle = item.progress.ifBlank { item.newEp?.indexShow.orEmpty() },
                 imageUrl = item.cover,
+                contentChrome = contentChrome,
                 onClick = { onBangumiClick(item.seasonId, item.firstEp) }
             )
         }
