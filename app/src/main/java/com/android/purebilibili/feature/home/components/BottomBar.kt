@@ -608,7 +608,9 @@ internal fun resolveBiliPaiBottomBarDockHeight(
 }
 
 internal fun resolveBiliPaiBottomBarIndicatorHeight(dockHeight: Dp): Dp {
-    return (dockHeight - 4.dp).coerceAtLeast(1.dp)
+    // Keep the same 4dp rest inset above and below across the regular 56dp Dock and
+    // the 64dp skin Dock. Touch targets remain owned by the full navigation slots.
+    return (dockHeight - 8.dp).coerceAtLeast(1.dp)
 }
 
 internal fun resolveBiliPaiBottomBarSearchHeight(searchExpanded: Boolean): Dp {
