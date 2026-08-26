@@ -166,6 +166,11 @@ internal fun resolveVideoContentTabBarDockItemWidthDp(labelFontSizeSp: Int): Int
     return (labelFontSizeSp * 2) + 40
 }
 
+internal fun resolveVideoContentTabBarControlWidthDp(
+    itemWidthDp: Int,
+    itemCount: Int,
+): Int = itemWidthDp.coerceAtLeast(0) * itemCount.coerceAtLeast(0)
+
 internal fun shouldReuseVideoContentTabBarLiquidGlassDock(
     androidNativeLiquidGlassEnabled: Boolean,
     hasBackdrop: Boolean,
@@ -1721,6 +1726,10 @@ private fun VideoContentTabBar(
     // Dock shell/effects are removed; the tab indicator and its dimensions are not redesigned.
     val tabItemWidthDp = liquidChromeSpec.itemWidthDp
         ?: resolveVideoContentTabBarDockItemWidthDp(liquidChromeSpec.labelFontSizeSp)
+    val tabControlWidthDp = resolveVideoContentTabBarControlWidthDp(
+        itemWidthDp = tabItemWidthDp,
+        itemCount = tabs.size,
+    )
     Column(
         modifier = modifier
     ) {
@@ -1748,10 +1757,9 @@ private fun VideoContentTabBar(
                 options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
                 selectedValue = selectedTabIndex,
                 onSelectionChange = onTabSelected,
-                modifier = Modifier.weight(1f),
-                // Keep the two-tab indicator confined to the left segmented
-                // control; expanding the row to the full available width makes
-                // the selected capsule appear centered under the action icons.
+                // Use the liquid Dock's measured item geometry in both branches. A weight here
+                // would hand the native fallback the entire space before the danmaku actions.
+                modifier = Modifier.width(tabControlWidthDp.dp),
                 compactMiuixWhenTwoOptions = true,
                 scrollable = liquidChromeSpec.itemWidthDp != null,
                 minTabWidth = tabItemWidthDp.dp,
