@@ -2034,8 +2034,11 @@ fun HomeHeader(
         includeTabInBlur = true,
     )
     val progressiveBlurBottomExtension = resolveProgressiveTopBlurBottomExtension(
-        enabled = homeSettings?.androidNativeLiquidGlassEnabled == true &&
-            liquidGlassTuning.progressiveBlurRadius > 0.001f,
+        enabled = shouldExtendProgressiveTopBlurBelowTabs(
+            progressiveBlurEnabled = homeSettings?.androidNativeLiquidGlassEnabled == true &&
+                liquidGlassTuning.progressiveBlurRadius > 0.001f,
+            tabRowIncludedInBlur = true,
+        ),
         endFraction = liquidGlassTuning.progressiveBlurEndFraction,
     )
     val continuousSlabHeight = pinnedChromeLayout.blurHeight + progressiveBlurBottomExtension

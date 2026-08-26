@@ -58,6 +58,22 @@ class ProgressiveTopChromePolicyTest {
         assertTrue(commonList.contains(".then(topBarBackgroundModifier)"))
     }
 
+    @Test
+    fun includedTabRowDoesNotLeaveProgressiveBlurExtensionBelowDock() {
+        assertFalse(
+            shouldExtendProgressiveTopBlurBelowTabs(
+                progressiveBlurEnabled = true,
+                tabRowIncludedInBlur = true,
+            )
+        )
+        assertTrue(
+            shouldExtendProgressiveTopBlurBelowTabs(
+                progressiveBlurEnabled = true,
+                tabRowIncludedInBlur = false,
+            )
+        )
+    }
+
     private fun loadSource(relativePath: String): String {
         return listOf(
             File("app/src/main/java/com/android/purebilibili/$relativePath"),
