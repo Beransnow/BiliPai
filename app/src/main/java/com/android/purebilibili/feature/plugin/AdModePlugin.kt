@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Campaign
@@ -37,6 +36,7 @@ import com.android.purebilibili.core.plugin.RecommendationPluginApi
 import com.android.purebilibili.core.plugin.RecommendationRequest
 import com.android.purebilibili.core.plugin.RecommendationResult
 import com.android.purebilibili.core.plugin.RecommendedVideo
+import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.ui.components.AppSwitchPreference
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -105,7 +105,7 @@ object AdModeRuntime {
 class AdModePlugin : RecommendationPluginApi {
     override val id: String = AD_MODE_PLUGIN_ID
     override val name: String = "广告模式"
-    override val description: String = "本地模拟开屏广告、营销内容优先和页面广告横幅，仅用于体验与测试"
+    override val description: String = "开屏广告、营销内容优先和页面广告横幅"
     override val version: String = "1.0.0"
     override val author: String = "BiliPai项目组"
     override val icon: ImageVector = Icons.Outlined.Campaign
@@ -137,7 +137,7 @@ class AdModePlugin : RecommendationPluginApi {
                     video = video,
                     score = (100 - index).toDouble(),
                     confidence = 0.45f,
-                    explanation = "广告模式演示：营销特征优先（非内容质量判断）",
+                    explanation = "营销特征优先",
                 )
             },
             historySampleCount = request.historyVideos.size,
@@ -152,12 +152,8 @@ class AdModePlugin : RecommendationPluginApi {
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            AppText(
-                text = "这是纯本地讽刺/压力测试模式，不加载真实广告、不追踪用户，也不代表视频或作者的真实质量。",
-                style = MaterialTheme.typography.bodyMedium,
-            )
             AppSwitchPreference(
-                title = "模拟开屏广告",
+                title = "开屏广告",
                 subtitle = "每次启用后显示一次，可立即跳过",
                 checked = config.showSplashAd,
                 onCheckedChange = { checked -> AdModeRuntime.updateConfig { it.copy(showSplashAd = checked) } },
@@ -180,11 +176,18 @@ class AdModePlugin : RecommendationPluginApi {
     }
 }
 
-internal fun marketingScore(video: com.android.purebilibili.core.plugin.PluginVideoCandidate): Int {
-    val text = "${video.title} ${video.authorName} ${video.tags.joinToString(" ")}".lowercase()
+internal fun marketingScore(video: VideoItem): Int {
+    val text = "${video.title} ${video.owner.name} ${video.tname} ${video.contentType}".lowercase()
     val keywordScore = MARKETING_KEYWORDS.count(text::contains) * 20
-    val lowEngagementScore = if (video.playCount > 10_000 && video.likeCount * 100 < video.playCount) 12 else 0
-    val shortVideoScore = if (video.durationSeconds in 1..90) 6 else 0
+    val lowEngagementScore = if (
+        video.stat.view > 10_000 &&
+        video.stat.like.toLong() * 100L < video.stat.view.toLong()
+    ) {
+        12
+    } else {
+        0
+    }
+    val shortVideoScore = if (video.duration in 1..90) 6 else 0
     return keywordScore + lowEngagementScore + shortVideoScore
 }
 
@@ -227,9 +230,8 @@ fun AdModeOverlayHost(currentRoute: String?, modifier: Modifier = Modifier) {
                 contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    AppText("广告模式演示", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black)
+                    AppText("精选推荐", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black)
                     AppText("全场限时 · 错过再等五分钟", style = MaterialTheme.typography.titleLarge)
-                    AppText("模拟广告｜无真实推广｜无外部跳转", style = MaterialTheme.typography.bodyMedium)
                     AppTextButton(onClick = { splashVisible = false }) { AppText("跳过广告") }
                 }
             }
@@ -240,13 +242,16 @@ fun AdModeOverlayHost(currentRoute: String?, modifier: Modifier = Modifier) {
 @Composable
 private fun AdModeBanner(placement: String, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.fillMaxWidth().background(Color(0xFF201F1A), RoundedCornerShape(16.dp)).padding(14.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color(0xFF201F1A), RoundedCornerShape(16.dp))
+            .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(modifier = Modifier.fillMaxWidth(0.82f)) {
             AppText("广告模式 · $placement", color = Color.White, fontWeight = FontWeight.Bold)
-            AppText("你刚好需要的，算法刚好知道（本地模拟）", color = Color(0xFFE6E1D5))
+            AppText("你刚好需要的，算法刚好知道", color = Color(0xFFE6E1D5))
         }
         AppText("广告", color = Color(0xFFF7D54A), style = MaterialTheme.typography.labelMedium)
     }
