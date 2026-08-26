@@ -999,6 +999,10 @@ fun FloatingBottomBar(
                             }
                             clip = false
                         }
+                        // This overlay contains a translated copy of the complete tab row.
+                        // Keep it clipped to the indicator or every copied icon will be drawn
+                        // over the base row when liquid glass is disabled.
+                        .clip(pillShape)
                         .background(colors.indicatorColor.copy(alpha = 0.15f), pillShape)
                         .height(fittedIndicatorHeight)
                         .width(fittedIndicatorWidth),

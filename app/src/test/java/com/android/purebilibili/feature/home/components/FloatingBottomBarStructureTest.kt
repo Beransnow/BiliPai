@@ -327,7 +327,7 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
-    fun `cross scaled selected icon can draw beyond the non liquid indicator`() {
+    fun `non liquid selected content stays clipped to its indicator`() {
         val source = loadFloatingBottomBarSource()
         val indicatorSection = source
             .substringAfter("if (isLiquidGlassMode && combinedBackdrop != null)")
@@ -339,7 +339,7 @@ class FloatingBottomBarStructureTest {
                 ".background(colors.indicatorColor.copy(alpha = 0.15f), pillShape)"
             )
         )
-        assertFalse(nonLiquidIndicator.contains(".clip(pillShape)"))
+        assertTrue(nonLiquidIndicator.contains(".clip(pillShape)"))
     }
 
     @Test
