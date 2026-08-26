@@ -776,4 +776,29 @@ class BottomBarLayoutPolicyTest {
         assertEquals(58f, resolveBottomBarFloatingHeightDp(labelMode = 1, isTablet = false))
         assertEquals(12f, resolveBottomBarBottomPaddingDp(isFloating = true, isTablet = false))
     }
+
+    @Test
+    fun `plain md3 floating bar uses official floating toolbar`() {
+        assertEquals(
+            true,
+            shouldUseOfficialMd3FloatingToolbar(
+                isFloating = true,
+                liquidGlassEnabled = false,
+            ),
+        )
+        assertEquals(
+            false,
+            shouldUseOfficialMd3FloatingToolbar(
+                isFloating = true,
+                liquidGlassEnabled = true,
+            ),
+        )
+        assertEquals(
+            false,
+            shouldUseOfficialMd3FloatingToolbar(
+                isFloating = false,
+                liquidGlassEnabled = false,
+            ),
+        )
+    }
 }
