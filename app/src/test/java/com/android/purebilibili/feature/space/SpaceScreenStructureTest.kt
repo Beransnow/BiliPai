@@ -14,6 +14,7 @@ class SpaceScreenStructureTest {
         assertTrue(source.contains("AppNativeTabRow("))
         assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(source.contains("AppThemeAdaptiveTabRow("))
+        assertTrue(source.contains("scrollable = spec.scrollable"))
         assertFalse(source.contains("forceLiquidChrome = true"))
         assertTrue(source.contains("SpaceSecondarySwitchRow("))
         assertTrue(source.contains("resolveSpacePrimaryTab(selectedMainTab)"))
