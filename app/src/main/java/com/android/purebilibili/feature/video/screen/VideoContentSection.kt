@@ -1774,6 +1774,8 @@ private fun VideoContentTabBar(
                 isScrollInProgressProvider = isScrollInProgressProvider,
             )
 
+            Spacer(modifier = Modifier.weight(1f))
+
             AnimatedVisibility(
                 visible = shouldShowDanmakuSendInput(isPlayerCollapsed = isPlayerCollapsed),
                 enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
