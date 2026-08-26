@@ -46,10 +46,10 @@ data class AppSegmentedControlPolicy(
 internal fun resolveAppSegmentedControlPolicy(
     uiStyle: AppUiStyle,
 ): AppSegmentedControlPolicy {
-    // Prefer Card-level corners, never the full Pill token. Native renderers keep this corner and
-    // derive any required visual height from it instead of forcing a shared 48dp container.
+    // Native MIUIX controls are compact chrome, not cards. Card-level corners become
+    // disproportionately round once liquid glass is disabled, especially on 32-36dp rows.
     val preferred = AppShapes.resolveContainerCornerDp(
-        level = ContainerLevel.Card,
+        level = ContainerLevel.Chip,
         uiStyle = uiStyle,
     )
     return when (uiStyle) {

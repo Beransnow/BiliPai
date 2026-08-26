@@ -223,6 +223,8 @@ fun <T> AppNativeTabRow(
     onSelectionChange: (T) -> Unit,
 ) {
     if (options.isEmpty()) return
+    // Dense native rows scroll instead of squeezing labels into ellipses.
+    val effectiveScrollable = scrollable || options.size > 3
     val viewportBoundedModifier = modifier.widthIn(
         max = LocalConfiguration.current.screenWidthDp.dp,
     )
@@ -244,7 +246,7 @@ fun <T> AppNativeTabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
-            scrollable = scrollable,
+            scrollable = effectiveScrollable,
             minTabWidth = minTabWidth,
             allowLabelOverflow = allowLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
@@ -254,7 +256,7 @@ fun <T> AppNativeTabRow(
         AppSegmentedRenderer.MIUIX -> {
             val compact = shouldUseCompactMiuixTabRow(
                 optionCount = options.size,
-                scrollable = scrollable,
+                scrollable = effectiveScrollable,
                 compactWhenTwoOptions = compactMiuixWhenTwoOptions,
             )
             if (compact) {
@@ -278,7 +280,7 @@ fun <T> AppNativeTabRow(
                     options = options,
                     selectedValue = selectedValue,
                     enabled = enabled,
-                    scrollable = scrollable,
+                    scrollable = effectiveScrollable,
                     minTabWidth = minTabWidth,
                     height = height,
                     colors = colors,
