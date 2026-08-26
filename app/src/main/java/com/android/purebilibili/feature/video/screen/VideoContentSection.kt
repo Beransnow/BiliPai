@@ -79,7 +79,6 @@ import com.android.purebilibili.feature.video.ui.section.resolveDisplayBgmList
 import com.android.purebilibili.feature.video.ui.section.shouldShowAiSummaryEntry
 import com.android.purebilibili.feature.video.ui.section.resolveVideoDetailMotionBudget
 import com.android.purebilibili.feature.video.ui.section.shouldAnimateVideoDetailLayout
-import com.android.purebilibili.feature.video.ui.components.NativeDanmakuToggleButton
 import com.android.purebilibili.feature.video.ui.components.RelatedVideoGridRow
 import com.android.purebilibili.feature.video.ui.components.chunkRelatedVideosForHomeStyleGrid
 import com.android.purebilibili.feature.video.ui.components.filterRelatedVideosByHiddenBvids
@@ -210,10 +209,10 @@ internal fun resolveVideoContentTabBarLayoutSpec(widthDp: Int): VideoContentTabB
             tabHorizontalPaddingDp = 8,
             tabVerticalPaddingDp = 7,
             tabSpacingDp = 10,
-            selectedTabFontSizeSp = 16,
-            unselectedTabFontSizeSp = 15,
+            selectedTabFontSizeSp = 14,
+            unselectedTabFontSizeSp = 14,
             indicatorWidthDp = 28,
-            segmentedControlHeightDp = 40,
+            segmentedControlHeightDp = 32,
             segmentedControlIndicatorHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp
         )
     } else {
@@ -227,7 +226,7 @@ internal fun resolveVideoContentTabBarLayoutSpec(widthDp: Int): VideoContentTabB
             selectedTabFontSizeSp = 17,
             unselectedTabFontSizeSp = 16,
             indicatorWidthDp = 32,
-            segmentedControlHeightDp = 40,
+            segmentedControlHeightDp = 36,
             segmentedControlIndicatorHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp
         )
     }
@@ -847,9 +846,6 @@ fun VideoContentSection(
                 onTabSelected = onTabSelected,
                 sortMode = sortMode,
                 onSortModeChange = onSortModeChange,
-                onDanmakuSendClick = onDanmakuSendClick,
-                danmakuEnabled = danmakuEnabled,
-                onDanmakuToggle = onDanmakuToggle,
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(unbounded = tabBarMaxHeightPx > 0f)
@@ -866,7 +862,6 @@ fun VideoContentSection(
                         alpha = 1f - progress
                         translationY = -tabBarMaxHeightPx * progress * 0.35f
                     },
-                isPlayerCollapsed = isPlayerCollapsed,
                 miuixBackdrop = videoContentMiuixBackdrop,
                 indicatorPositionProvider = {
                     pagerState.currentPage + pagerState.currentPageOffsetFraction
@@ -1585,7 +1580,14 @@ private fun VideoHeaderContent(
             videoCount = ownerVideoCount,
             transitionEnabled = transitionEnabled,  // 🔗 传递共享元素开关
             isQuickReturnLimitedForSharedElements = isQuickReturnLimitedForSharedElements,
-            sourceRouteForSharedElement = sourceRouteForSharedElement
+            sourceRouteForSharedElement = sourceRouteForSharedElement,
+            trailingContent = {
+                TabletSecondaryDanmakuActions(
+                    danmakuEnabled = danmakuEnabled,
+                    onDanmakuSendClick = onDanmakuSendClick,
+                    onDanmakuToggle = onDanmakuToggle,
+                )
+            },
         )
 
         VideoTitleWithDesc(
@@ -1686,11 +1688,7 @@ private fun VideoContentTabBar(
     onTabSelected: (Int) -> Unit,
     sortMode: CommentSortMode,
     onSortModeChange: (CommentSortMode) -> Unit,
-    onDanmakuSendClick: () -> Unit,
-    danmakuEnabled: Boolean,
-    onDanmakuToggle: () -> Unit,
     modifier: Modifier = Modifier,
-    isPlayerCollapsed: Boolean = false,
     miuixBackdrop: MiuixBackdrop? = null,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
@@ -1702,9 +1700,6 @@ private fun VideoContentTabBar(
     val configuration = LocalConfiguration.current
     val layoutSpec = remember(configuration.screenWidthDp) {
         resolveVideoContentTabBarLayoutSpec(widthDp = configuration.screenWidthDp)
-    }
-    val danmakuActionLayoutPolicy = remember(configuration.screenWidthDp) {
-        resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp = configuration.screenWidthDp)
     }
     val liquidChromeSpec = remember(
         homeSettings.androidNativeLiquidGlassEnabled,
@@ -1764,37 +1759,6 @@ private fun VideoContentTabBar(
                 isScrollInProgressProvider = isScrollInProgressProvider,
             )
 
-            if (shouldShowVideoContentTabBarDanmakuActions(selectedTabIndex)) {
-                Spacer(modifier = Modifier.weight(1f))
-
-                AnimatedVisibility(
-                    visible = shouldShowDanmakuSendInput(isPlayerCollapsed = isPlayerCollapsed),
-                    enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
-                    exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
-                ) {
-                    AppText(
-                        text = danmakuActionLayoutPolicy.sendLabel,
-                        fontSize = danmakuActionLayoutPolicy.sendTextSizeSp.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        tapToCopyEnabled = false,
-                        modifier = Modifier
-                            .heightIn(min = danmakuActionLayoutPolicy.sendMinHeightDp.dp)
-                            .wrapContentHeight(align = Alignment.CenterVertically)
-                            .clickable(onClick = onDanmakuSendClick),
-                    )
-                }
-
-                NativeDanmakuToggleButton(
-                    enabled = danmakuEnabled,
-                    onToggle = onDanmakuToggle,
-                    activeTint = MaterialTheme.colorScheme.secondary,
-                    inactiveTint = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier
-                        .padding(end = danmakuActionLayoutPolicy.toggleTrailingPaddingDp.dp)
-                        .size(danmakuActionLayoutPolicy.toggleButtonSizeDp.dp),
-                    iconSize = danmakuActionLayoutPolicy.toggleIconSizeDp.dp,
-                )
-            }
         }
         AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
     }

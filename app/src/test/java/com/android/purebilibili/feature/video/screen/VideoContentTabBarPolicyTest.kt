@@ -151,14 +151,14 @@ class VideoContentTabBarPolicyTest {
     }
 
     @Test
-    fun `tab bar layout reserves trailing danmaku action area`() {
+    fun `tab bar layout stays compact after actions move to owner row`() {
         val spec = resolveVideoContentTabBarLayoutSpec(widthDp = 412)
 
         assertEquals(1f, spec.tabsRowWeight)
         assertTrue(spec.tabsRowScrollable)
         assertEquals(12, spec.containerHorizontalPaddingDp)
         assertEquals(12, spec.tabHorizontalPaddingDp)
-        assertEquals(40, spec.segmentedControlHeightDp)
+        assertEquals(36, spec.segmentedControlHeightDp)
         assertEquals(30, spec.segmentedControlIndicatorHeightDp)
         assertTrue(
             hasVideoContentTabBarIndicatorScaleClearance(
@@ -211,8 +211,8 @@ class VideoContentTabBarPolicyTest {
         assertEquals(8, spec.containerHorizontalPaddingDp)
         assertEquals(8, spec.tabHorizontalPaddingDp)
         assertEquals(10, spec.tabSpacingDp)
-        assertEquals(16, spec.selectedTabFontSizeSp)
-        assertEquals(40, spec.segmentedControlHeightDp)
+        assertEquals(14, spec.selectedTabFontSizeSp)
+        assertEquals(32, spec.segmentedControlHeightDp)
         assertTrue(
             hasVideoContentTabBarIndicatorScaleClearance(
                 containerHeightDp = spec.segmentedControlHeightDp,
