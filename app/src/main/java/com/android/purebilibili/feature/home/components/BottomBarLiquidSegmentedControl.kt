@@ -389,7 +389,7 @@ fun BottomBarLiquidSegmentedControl(
     height: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP.dp,
     indicatorHeight: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP.dp,
     labelFontSize: TextUnit = TextUnit.Unspecified,
-    allowNativeLabelOverflow: Boolean = false,
+    allowNativeLabelOverflow: Boolean = true,
     containerHorizontalPadding: Dp = AppSpacingTokens.ExtraSmall,
     containerVerticalPadding: Dp = AppSpacingTokens.ExtraSmall,
     liquidGlassEffectsEnabled: Boolean = true,

@@ -92,6 +92,23 @@ fun shouldUseCompactMiuixTabRow(
     compactWhenTwoOptions: Boolean,
 ): Boolean = compactWhenTwoOptions && !scrollable && optionCount == 2
 
+/**
+ * Native scrollable tab rows use one shared minimum width for every item. Expand that width
+ * across Miuix and Material3 when complete labels are requested so longer entries such as
+ * “默认排序” fit inside their own slot instead of relying on overflow drawing. Short labels
+ * keep the caller's existing geometry.
+ */
+fun resolveReadableNativeTabMinWidth(
+    requestedMinWidth: Dp,
+    labels: List<String>,
+    allowLabelOverflow: Boolean,
+): Dp {
+    if (!allowLabelOverflow || labels.isEmpty()) return requestedMinWidth
+    val longestLabelLength = labels.maxOf(String::length)
+    val readableWidth = (longestLabelLength * 16 + 24).dp
+    return maxOf(requestedMinWidth, readableWidth)
+}
+
 fun resolveAppLiquidSegmentedControlSpec(
     itemCount: Int,
     hasExternalBackdrop: Boolean,
@@ -218,13 +235,20 @@ fun <T> AppNativeTabRow(
     minTabWidth: Dp = 72.dp,
     compactMiuixWhenTwoOptions: Boolean = true,
     height: Dp? = null,
-    allowLabelOverflow: Boolean = false,
+    allowLabelOverflow: Boolean = true,
     indicatorPositionProvider: (() -> Float)? = null,
     onSelectionChange: (T) -> Unit,
 ) {
     if (options.isEmpty()) return
-    // Dense native rows scroll instead of squeezing labels into ellipses.
-    val effectiveScrollable = scrollable || options.size > 3
+    val readableMinTabWidth = resolveReadableNativeTabMinWidth(
+        requestedMinWidth = minTabWidth,
+        labels = options.map { it.label },
+        allowLabelOverflow = allowLabelOverflow,
+    )
+    // Dense or content-expanded native rows scroll instead of squeezing labels.
+    val effectiveScrollable = scrollable ||
+        options.size > 3 ||
+        readableMinTabWidth > minTabWidth
     val viewportBoundedModifier = modifier.widthIn(
         max = LocalConfiguration.current.screenWidthDp.dp,
     )
@@ -247,7 +271,7 @@ fun <T> AppNativeTabRow(
             selectedValue = selectedValue,
             enabled = enabled,
             scrollable = effectiveScrollable,
-            minTabWidth = minTabWidth,
+            minTabWidth = readableMinTabWidth,
             allowLabelOverflow = allowLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
             modifier = viewportBoundedModifier,
@@ -266,11 +290,11 @@ fun <T> AppNativeTabRow(
                         selectedValue = selectedValue,
                         enabled = enabled,
                         scrollable = false,
-                        minTabWidth = minTabWidth,
+                        minTabWidth = readableMinTabWidth,
                         height = height,
                         colors = colors,
                         preferredCornerRadius = policy.preferredCornerRadius,
-                        modifier = Modifier.width(minTabWidth * options.size),
+                        modifier = Modifier.width(readableMinTabWidth * options.size),
                         indicatorPositionProvider = indicatorPositionProvider,
                         onSelectionChange = onSelectionChange,
                     )
@@ -281,7 +305,7 @@ fun <T> AppNativeTabRow(
                     selectedValue = selectedValue,
                     enabled = enabled,
                     scrollable = effectiveScrollable,
-                    minTabWidth = minTabWidth,
+                    minTabWidth = readableMinTabWidth,
                     height = height,
                     colors = colors,
                     preferredCornerRadius = policy.preferredCornerRadius,

@@ -3,6 +3,7 @@ package com.android.purebilibili.core.ui
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.ui.components.shouldUseCompactMiuixTabRow
+import com.android.purebilibili.core.ui.components.resolveReadableNativeTabMinWidth
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -10,6 +11,34 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AppSegmentedControlPolicyTest {
+
+    @Test
+    fun `native tabs expand shared item width across themes for complete long labels`() {
+        assertEquals(
+            88.dp,
+            resolveReadableNativeTabMinWidth(
+                requestedMinWidth = 72.dp,
+                labels = listOf("播放多", "默认排序", "新发布"),
+                allowLabelOverflow = true,
+            ),
+        )
+        assertEquals(
+            72.dp,
+            resolveReadableNativeTabMinWidth(
+                requestedMinWidth = 72.dp,
+                labels = listOf("视频", "番剧"),
+                allowLabelOverflow = true,
+            ),
+        )
+        assertEquals(
+            72.dp,
+            resolveReadableNativeTabMinWidth(
+                requestedMinWidth = 72.dp,
+                labels = listOf("默认排序"),
+                allowLabelOverflow = false,
+            ),
+        )
+    }
 
     @Test
     fun `only non scrollable two option Miuix rows use compact width`() {
