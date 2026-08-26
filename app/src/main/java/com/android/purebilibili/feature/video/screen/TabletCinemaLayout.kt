@@ -716,6 +716,16 @@ private fun CinemaMetaPanel(
                                     } else {
                                         // 宽度不足，竖排
                                         Column(Modifier.fillMaxWidth()) {
+                                            CinemaMetaUpInfo(
+                                                success = success,
+                                                isFollowing = engagement.isFollowing,
+                                                onFollowClick = onFollowClick,
+                                                onUpClick = onUpClick,
+                                                danmakuEnabled = danmakuEnabled,
+                                                onDanmakuSendClick = onDanmakuSendClick,
+                                                onDanmakuToggle = onDanmakuToggle,
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
                                             CinemaMetaActions(
                                                 success = success,
                                                 engagement = engagement,
@@ -728,16 +738,6 @@ private fun CinemaMetaPanel(
                                                 onDownloadClick = onDownloadClick,
                                                 onWatchLaterClick = onWatchLaterClick,
                                                 onOpenComments = onOpenComments,
-                                                modifier = Modifier.fillMaxWidth()
-                                            )
-                                            CinemaMetaUpInfo(
-                                                success = success,
-                                                isFollowing = engagement.isFollowing,
-                                                onFollowClick = onFollowClick,
-                                                onUpClick = onUpClick,
-                                                danmakuEnabled = danmakuEnabled,
-                                                onDanmakuSendClick = onDanmakuSendClick,
-                                                onDanmakuToggle = onDanmakuToggle,
                                                 modifier = Modifier.fillMaxWidth()
                                             )
                                         }
