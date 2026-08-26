@@ -39,14 +39,14 @@ class AppSegmentedControlPolicyTest {
     }
 
     @Test
-    fun `visual height is derived from corner instead of a hardcoded 48dp`() {
+    fun `oversized semantic corner is clamped instead of enlarging the control`() {
         val geometry = resolveRoundedControlVisualGeometry(
             preferredCornerRadius = 14.4.dp,
             nativeMinimumHeight = 40.dp,
         )
 
-        assertEquals(48f, geometry.height.value, absoluteTolerance = 0.001f)
-        assertEquals(14.4.dp, geometry.cornerRadius)
+        assertEquals(40.dp, geometry.height)
+        assertEquals(12.dp, geometry.cornerRadius)
         assertTrue(geometry.cornerRadius < geometry.height / 2)
     }
 

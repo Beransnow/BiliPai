@@ -79,6 +79,7 @@ internal fun <T> AppMiuixTabRow(
     enabled: Boolean,
     scrollable: Boolean,
     minTabWidth: Dp,
+    height: Dp?,
     colors: AppSegmentedControlColors,
     preferredCornerRadius: Dp,
     modifier: Modifier,
@@ -90,7 +91,7 @@ internal fun <T> AppMiuixTabRow(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val geometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = TabRowDefaults.TabRowHeight,
+        nativeMinimumHeight = height ?: TabRowDefaults.TabRowHeight,
     )
     TabRow(
         tabs = options.map { it.label },

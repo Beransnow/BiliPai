@@ -55,8 +55,6 @@ import com.android.purebilibili.core.store.withDislikedVideoFeedback
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.videoCardTitleMaxLines
-import com.android.purebilibili.core.ui.videoCardTitleOverflow
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
@@ -302,10 +300,14 @@ fun RelatedVideoItem(
                 AppText(
                     text = video.title,
                     style = contentTypography.title,
-                    maxLines = videoCardTitleMaxLines(),
-                    overflow = videoCardTitleOverflow(),
+                    // This side-by-side card has a cover-bound fixed height. Never let the
+                    // global "full card content" preference make its title overlap metadata.
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f, fill = false),
                 )
                 Column(
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),

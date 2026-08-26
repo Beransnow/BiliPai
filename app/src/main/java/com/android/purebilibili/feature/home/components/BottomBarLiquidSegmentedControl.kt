@@ -436,6 +436,7 @@ fun BottomBarLiquidSegmentedControl(
             enabled = enabled,
             scrollable = itemWidth != null,
             minTabWidth = itemWidth ?: 72.dp,
+            height = height,
             allowLabelOverflow = allowNativeLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
         )

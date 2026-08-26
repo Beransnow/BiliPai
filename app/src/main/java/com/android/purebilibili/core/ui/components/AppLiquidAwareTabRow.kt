@@ -104,6 +104,7 @@ fun <T> AppLiquidAwareTabRow(
             enabled = enabled,
             scrollable = scrollable,
             minTabWidth = minTabWidth,
+            height = height,
             allowLabelOverflow = true,
             indicatorPositionProvider = indicatorPositionProvider,
         )

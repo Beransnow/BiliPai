@@ -6,7 +6,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
-import kotlin.math.max
+import kotlin.math.min
 
 data class RoundedControlVisualGeometry(
     val height: Dp,
@@ -16,9 +16,9 @@ data class RoundedControlVisualGeometry(
 /**
  * Resolves visual geometry without treating the accessibility touch target as component height.
  *
- * [nativeMinimumHeight] comes from the selected renderer's native component. If the semantic
- * [preferredCornerRadius] would exceed [maxCornerRatio], the visible control grows just enough to
- * preserve the corner. Touch expansion is intentionally outside this policy.
+ * [nativeMinimumHeight] is the requested visible height. A theme corner that does not fit is
+ * clamped to that height instead of making the whole control taller. Touch expansion is
+ * intentionally outside this policy.
  */
 fun resolveRoundedControlVisualGeometry(
     preferredCornerRadius: Dp,
@@ -28,10 +28,9 @@ fun resolveRoundedControlVisualGeometry(
     val safeCorner = preferredCornerRadius.coerceAtLeast(0.dp)
     val safeMinimumHeight = nativeMinimumHeight.coerceAtLeast(0.dp)
     val safeRatio = maxCornerRatio.coerceIn(0.15f, 0.45f)
-    val radiusDrivenHeight = (safeCorner.value / safeRatio).dp
     return RoundedControlVisualGeometry(
-        height = max(safeMinimumHeight.value, radiusDrivenHeight.value).dp,
-        cornerRadius = safeCorner,
+        height = safeMinimumHeight,
+        cornerRadius = min(safeCorner.value, safeMinimumHeight.value * safeRatio).dp,
     )
 }
 
