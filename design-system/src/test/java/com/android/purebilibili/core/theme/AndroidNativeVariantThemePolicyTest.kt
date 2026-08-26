@@ -14,8 +14,10 @@ class AndroidNativeVariantThemePolicyTest {
     fun miuixVariant_usesMd3TypographyDensity() {
         val typography = resolveMaterialTypography(AppUiStyle.MIUIX)
 
-        assertEquals(Md3Typography.bodyMedium.fontSize, typography.bodyMedium.fontSize)
-        assertEquals(Md3Typography.labelLarge.fontSize, typography.labelLarge.fontSize)
+        assertSame(CompactMiuixTypography, typography)
+        assertNotSame(Md3Typography, typography)
+        assertEquals(Md3Typography.bodyMedium.fontSize, CompactMiuixTypography.bodyMedium.fontSize)
+        assertEquals(Md3Typography.labelLarge.fontSize, CompactMiuixTypography.labelLarge.fontSize)
     }
 
     @Test

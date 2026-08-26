@@ -66,9 +66,8 @@ fun shouldUseMiuixSmoothRounding(
 fun resolveMaterialTypography(
     uiStyle: AppUiStyle
 ): Typography = when (uiStyle) {
-    // Keep Miuix's component language, but use the same density and hierarchy as MD3.
-    // The previous iOS-sized typography made mixed Material/Miuix screens visibly inflate.
-    AppUiStyle.MIUIX -> Md3Typography
+    // Miuix owns its typography object; only its numeric density follows the MD3 baseline.
+    AppUiStyle.MIUIX -> CompactMiuixTypography
     AppUiStyle.MATERIAL3 -> Md3Typography
 }
 
