@@ -677,8 +677,7 @@ fun VideoContentSection(
         listAtTop = commentListAtTop,
     )
     val tabBarVisibleHeightDp = with(density) {
-        if (tabBarMaxHeightPx <= 0f) 66.dp
-        else (tabBarMaxHeightPx - tabBarCollapsePx).coerceAtLeast(0f).toDp()
+        (tabBarMaxHeightPx - tabBarCollapsePx).coerceAtLeast(0f).toDp()
     }
     // Match the home bottom dock: one full-size content source, with liquid docks rendered as
     // overlay siblings outside that source. A source attached only to the LazyColumns starts
@@ -828,15 +827,16 @@ fun VideoContentSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(
-                    // Keep the tab/navigation dock compact and floating. An
-                    // unbounded wrapContentHeight here measured the pager itself
-                    // on the first frame, reserving most of the screen for the
-                    // 简介/评论 chrome.
-                    Modifier
-                        .height(tabBarVisibleHeightDp.coerceIn(0.dp, 66.dp))
-                        .graphicsLayer {
-                            clip = tabBarCollapseProgress > 0.001f
-                        }
+                    if (tabBarMaxHeightPx <= 0f) {
+                        // 首帧先按内容测量真实高度，再进入跟手折叠。
+                        Modifier.wrapContentHeight()
+                    } else {
+                        Modifier
+                            .height(tabBarVisibleHeightDp)
+                            .graphicsLayer {
+                                clip = tabBarCollapseProgress > 0.001f
+                            }
+                    }
                 ),
             contentAlignment = Alignment.TopStart,
         ) {
@@ -1745,7 +1745,12 @@ private fun VideoContentTabBar(
                 selectedValue = selectedTabIndex,
                 onSelectionChange = onTabSelected,
                 modifier = Modifier.weight(1f),
-                compactMiuixWhenTwoOptions = false,
+                // Keep the two-tab indicator confined to the left segmented
+                // control; expanding the row to the full available width makes
+                // the selected capsule appear centered under the action icons.
+                compactMiuixWhenTwoOptions = true,
+                scrollable = liquidChromeSpec.itemWidthDp != null,
+                minTabWidth = (liquidChromeSpec.itemWidthDp ?: 72).dp,
                 height = liquidChromeSpec.segmentedControlHeightDp.dp,
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
