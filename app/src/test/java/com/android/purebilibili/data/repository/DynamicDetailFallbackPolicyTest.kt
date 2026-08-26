@@ -8,6 +8,8 @@ import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.DynamicMajor
 import com.android.purebilibili.data.model.response.DynamicModules
 import com.android.purebilibili.data.model.response.DynamicStatModule
+import com.android.purebilibili.data.model.response.DrawMajor
+import com.android.purebilibili.data.model.response.DrawItem
 import com.android.purebilibili.data.model.response.EmojiInfo
 import com.android.purebilibili.data.model.response.RichTextNode
 import com.android.purebilibili.data.model.response.StatItem
@@ -22,6 +24,32 @@ import kotlin.test.assertTrue
 import kotlin.test.assertFalse
 
 class DynamicDetailFallbackPolicyTest {
+
+    @Test
+    fun mergeRicherOpusDetailContent_retainsDesktopDrawPreviewImages() {
+        val seed = DynamicItem(
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_DRAW",
+                        draw = DrawMajor(items = listOf(DrawItem(src = "https://img.example/a.jpg")))
+                    )
+                )
+            )
+        )
+        val detail = seed.copy(
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_OPUS",
+                        opus = OpusMajor(summary = OpusSummary(text = "body"))
+                    )
+                )
+            )
+        )
+        val merged = mergeRicherOpusDetailContent(detail, listOf(detail, seed))
+        assertEquals("https://img.example/a.jpg", merged.modules.module_dynamic?.major?.opus?.pics?.single()?.url)
+    }
 
     @Test
     fun shouldFallback_returnsTrue_whenAuthorAndContentMissing() {

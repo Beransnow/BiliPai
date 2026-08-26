@@ -209,24 +209,6 @@ data class VideoItem(
     val recommendationFeedback: RecommendationFeedbackMetadata? = null,
     val contentType: String = "",
     val navigationUrl: String = "",
-    @Transient
-    val promotion: VideoPromotionPresentation? = null,
-)
-
-data class VideoPromotionPresentation(
-    val badgeLabel: String,
-    val supportingText: String,
-    val actionLabel: String,
-    val marketingScore: Int,
-    val inlineBannerTarget: PromotionBannerTarget? = null,
-)
-
-data class PromotionBannerTarget(
-    val bvid: String,
-    val cid: Long,
-    val title: String,
-    val ownerName: String,
-    val coverUrl: String,
 )
 
 @Serializable

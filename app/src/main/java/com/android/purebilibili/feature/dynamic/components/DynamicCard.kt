@@ -134,13 +134,19 @@ fun DynamicCardV2(
     }
     val contentHasImages = content?.major?.draw?.items?.isNotEmpty() == true ||
         content?.major?.opus?.pics?.isNotEmpty() == true
+    val opus = content?.major?.opus
     val visibleDynamicDesc = content?.desc?.let { desc ->
         resolveDynamicDescForImages(desc, hasImages = contentHasImages)
     }
-    val fullOpusContentBlocks = content?.major?.opus?.let { opus ->
+    val fullOpusContentBlocks = opus?.let { opus ->
         resolveDynamicOpusPresentationBlocks(opus = opus, isDetail = isDetail)
     }.orEmpty()
-    val hasFullOpusDetailContent = fullOpusContentBlocks.isNotEmpty()
+    // A detail response can provide rich text blocks without embedding the
+    // documented `opus.pics` entries in those blocks. In that case use the
+    // image-grid path below so pictures are not hidden after the network
+    // response replaces the cached feed item.
+    val hasFullOpusDetailContent = fullOpusContentBlocks.isNotEmpty() &&
+        (fullOpusContentBlocks.any { it is OpusContentBlock.Image } || opus?.pics.isNullOrEmpty())
     val type = DynamicType.fromApiValue(item.type)
     val cardClickAction = remember(item) { resolveDynamicCardPrimaryAction(item) }
     val watchLaterAid = remember(item) { resolveDynamicWatchLaterAid(item) }
@@ -818,6 +824,16 @@ fun DynamicCardV2(
             // 显示图片 (转换为 DrawItem 格式复用现有组件)
             if (fullOpusContentBlocks.isNotEmpty()) {
                 val previewImages = remember(opus.pics) { opus.pics.map { it.url } }
+                // The desktop opus API documents width/height as nullable. The
+                // paragraph image can therefore have dimensions while the same
+                // URL in opus.pics does not (or vice versa). Resolve dimensions
+                // once from both payload locations so a recomposition never
+                // leaves an AsyncImage without a measurable height.
+                val opusPicDimensionsByUrl = remember(opus.pics) {
+                    opus.pics
+                        .filter { it.url.isNotBlank() && it.width > 0 && it.height > 0 }
+                        .associateBy { it.url }
+                }
                 var fullContentSelectedImageIndex by remember { mutableIntStateOf(-1) }
                 var fullContentImageIndex = 0
                 fullOpusContentBlocks.forEach { block ->
@@ -924,22 +940,30 @@ fun DynamicCardV2(
                             val dividerPic = block.pic
                             if (dividerPic != null) {
                                 fullContentImageIndex += 1
-                                val dividerAspectRatio = if (dividerPic.width > 0 && dividerPic.height > 0) {
-                                    dividerPic.width.toFloat() / dividerPic.height.toFloat()
+                                val resolvedDividerPic = remember(dividerPic, opusPicDimensionsByUrl) {
+                                    opusPicDimensionsByUrl[dividerPic.url]?.let { known ->
+                                        if (dividerPic.width > 0 && dividerPic.height > 0) dividerPic
+                                        else dividerPic.copy(width = known.width, height = known.height)
+                                    } ?: dividerPic
+                                }
+                                val dividerAspectRatio = if (resolvedDividerPic.width > 0 && resolvedDividerPic.height > 0) {
+                                    resolvedDividerPic.width.toFloat() / resolvedDividerPic.height.toFloat()
                                 } else {
-                                    null
+                                    16f / 9f
+                                }
+                                val dividerRequest = remember(resolvedDividerPic.url) {
+                                    coil.request.ImageRequest.Builder(context)
+                                        .data(resolvedDividerPic.url)
+                                        .addHeader("Referer", "https://www.bilibili.com/")
+                                        .build()
                                 }
                                 AsyncImage(
-                                    model = dividerPic.url,
+                                    model = dividerRequest,
                                     contentDescription = "分割线",
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .then(
-                                            if (dividerAspectRatio != null) {
-                                                Modifier.aspectRatio(dividerAspectRatio)
-                                            } else {
-                                                Modifier
-                                            }
+                                            Modifier.aspectRatio(dividerAspectRatio)
                                         )
                                         .padding(vertical = AppSpacingTokens.Small),
                                     contentScale = ContentScale.FillWidth,
@@ -954,20 +978,35 @@ fun DynamicCardV2(
                         is OpusContentBlock.Image -> {
                             val currentImageIndex = fullContentImageIndex
                             fullContentImageIndex += 1
-                            val aspectRatio = remember(block.pic.width, block.pic.height) {
-                                if (block.pic.width > 0 && block.pic.height > 0) {
-                                    block.pic.width.toFloat() / block.pic.height.toFloat()
+                            val resolvedPic = remember(block.pic, opusPicDimensionsByUrl) {
+                                opusPicDimensionsByUrl[block.pic.url]?.let { known ->
+                                    if (block.pic.width > 0 && block.pic.height > 0) block.pic
+                                    else block.pic.copy(width = known.width, height = known.height)
+                                } ?: block.pic
+                            }
+                            val aspectRatio = remember(resolvedPic.width, resolvedPic.height) {
+                                if (resolvedPic.width > 0 && resolvedPic.height > 0) {
+                                    resolvedPic.width.toFloat() / resolvedPic.height.toFloat()
                                 } else {
-                                    null
+                                    // Keep the node measurable while the API omits
+                                    // dimensions; the image can then load without
+                                    // collapsing and disappearing on recomposition.
+                                    4f / 3f
                                 }
                             }
+                            val imageRequest = remember(resolvedPic.url) {
+                                coil.request.ImageRequest.Builder(context)
+                                    .data(resolvedPic.url)
+                                    .addHeader("Referer", "https://www.bilibili.com/")
+                                    .build()
+                            }
                             AsyncImage(
-                                model = block.pic.url,
+                                model = imageRequest,
                                 contentDescription = opus.title.orEmpty(),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .then(
-                                        if (aspectRatio != null) {
+                                        if (aspectRatio > 0f) {
                                             Modifier.aspectRatio(aspectRatio)
                                         } else {
                                             Modifier

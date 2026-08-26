@@ -91,15 +91,33 @@ internal fun mergeRicherOpusDetailContent(
     // response may contain the article blocks while the feed seed contains the
     // actual preview pictures. Keep the union so navigating into detail cannot
     // accidentally drop images just because the richer candidate scored higher.
-    val richestPics = candidates.asSequence()
+    val candidateItems = candidates.asSequence()
+        .flatMap { item -> sequence {
+            yield(item)
+            item.orig?.let { yield(it) }
+        } }
+        .toList()
+    val richestPics = candidateItems.asSequence()
         .mapNotNull { it.modules.module_dynamic?.major?.opus }
         .flatMap { it.pics.asSequence() }
         .filter { it.url.isNotBlank() }
         .distinctBy { it.url }
         .toList()
+    // The desktop/feed API documents legacy image dynamics under
+    // `major.draw.items`, while the detail/opus API may return the same
+    // dynamic as an opus payload. Preserve those preview images when the
+    // preferred candidate switches representation.
+    val drawPics = candidateItems.asSequence()
+        .mapNotNull { it.modules.module_dynamic?.major?.draw }
+        .flatMap { it.items.asSequence() }
+        .filter { it.src.isNotBlank() }
+        .map { OpusPic(url = it.src, width = it.width, height = it.height) }
+        .toList()
+    val mergedPics = (richestPics + drawPics)
+        .distinctBy { it.url }
     val mergedOpus = OpusMajor(
         jump_url = baseOpus?.jump_url?.takeIf { it.isNotBlank() } ?: richestOpus.jump_url,
-        pics = richestPics.ifEmpty { baseOpus?.pics.orEmpty() },
+        pics = mergedPics.ifEmpty { baseOpus?.pics.orEmpty() },
         summary = if ((richestOpus.summary?.text?.length ?: 0) >= (baseOpus?.summary?.text?.length ?: 0)) {
             richestOpus.summary
         } else {

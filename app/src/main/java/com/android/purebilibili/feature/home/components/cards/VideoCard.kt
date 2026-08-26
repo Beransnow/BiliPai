@@ -119,7 +119,6 @@ import com.android.purebilibili.feature.home.resolveHomeGlassCoverPillBaseColor
 import com.android.purebilibili.feature.home.resolveHomeGlassPillStyle
 import com.android.purebilibili.feature.video.controller.PlaybackProgressManager
 import com.android.purebilibili.feature.video.ui.section.resolveCompactPublishTimeRowText
-import com.android.purebilibili.feature.plugin.AdModePromotionBadge
 //  [预览播放] 相关引用已移除
 
 import kotlin.math.roundToInt
@@ -1382,31 +1381,6 @@ internal fun ElegantVideoCard(
             Spacer(modifier = Modifier.height(if (compactMetadata) AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro else AppSpacingTokens.Small))
         }
 
-        video.promotion?.let { promotion ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AdModePromotionBadge(promotion = promotion)
-                AppText(
-                    text = promotion.actionLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                )
-            }
-            AppText(
-                text = promotion.supportingText,
-                modifier = Modifier.padding(bottom = AppSpacingTokens.ExtraSmall),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        
-        // 标题独占整行：更多操作移至右下角，不再挤占两行标题的可用宽度。
         AppText(
             text = highlightedTitle ?: AnnotatedString(video.title),
             maxLines = videoCardTitleMaxLines(titleMaxLines),

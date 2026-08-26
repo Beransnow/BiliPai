@@ -47,7 +47,6 @@ import com.android.purebilibili.feature.home.HomeVideoClickRequest
 import com.android.purebilibili.feature.home.HomeVideoClickSource
 import com.android.purebilibili.feature.home.HomeScreen
 import com.android.purebilibili.feature.home.HomeViewModel
-import com.android.purebilibili.feature.plugin.AdModeSplashHost
 import com.android.purebilibili.feature.home.DepthSyncedGlobalHomeWallpaperBackdrop
 import com.android.purebilibili.feature.home.resolveHomeWallpaperBackdropAppearance
 import com.android.purebilibili.feature.home.resolveHomeWallpaperUri
@@ -3747,15 +3746,6 @@ fun AppNavigation(
                 modifier = Modifier
                     .fillMaxSize()
                     .zIndex(100f)
-            )
-
-            AdModeSplashHost(
-                onOpenVideo = { video ->
-                    navigateToVideoInNavigation3(video.bvid, video.cid, video.pic)
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .zIndex(99f),
             )
 
             HingeOcclusionInputShield(

@@ -133,6 +133,7 @@ import com.android.purebilibili.core.ui.components.VideoStatRow
 import com.android.purebilibili.feature.home.components.cards.VideoCardCoverDurationText
 import com.android.purebilibili.feature.home.components.cards.resolveVideoCardCoverOverlayTextShadow
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
+import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.videoCardTitleMaxLines
@@ -2467,9 +2468,10 @@ private fun SpaceSearchEntryChip(
     modifier: Modifier = Modifier
 ) {
     if (label.isBlank()) return
-    // Use bordered Field shape (not continuous Pill + stroke) so corners stay round
-    // and match the real search bar; continuous iOS corners + BorderStroke chamfer.
-    val shape = AppShapes.borderedContainer(ContainerLevel.Field)
+    // Keep the entry capsule on the same Pill geometry as the space/home dock.
+    // Using the Field token here made the search entry visibly flatter than the
+    // segmented dock immediately above it.
+    val shape = resolveSharedBottomBarCapsuleShape()
     AppSurface(
         onClick = onClick,
         modifier = modifier
