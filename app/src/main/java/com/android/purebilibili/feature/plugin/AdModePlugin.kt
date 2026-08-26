@@ -27,7 +27,6 @@ import com.android.purebilibili.data.model.response.PromotionBannerTarget
 import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.data.model.response.VideoPromotionPresentation
-import com.android.purebilibili.data.repository.SearchRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -38,22 +37,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.random.Random
 
 internal const val AD_MODE_PLUGIN_ID = "ad_mode_simulator"
-
-/** Manually curated commercial terms used when an API response has no ad flag. */
-internal val MANUAL_AD_KEYWORDS = listOf(
-    "流量卡", "电话卡", "号卡", "通信卡", "拼多多", "淘宝", "天猫", "京东",
-    "唯品会", "优惠券", "开卡", "办卡", "充值", "下单", "领券",
-)
-private val CURATED_AD_SEARCH_KEYWORDS = listOf("流量卡", "拼多多", "淘宝", "京东")
 @Serializable
 data class AdModeConfig(
     val showSplashAd: Boolean = true,
     val advertiseCards: Boolean = true,
     val showPageBanners: Boolean = true,
-    val shakeToExitSplash: Boolean = false,
 )
 
 object AdModeRuntime {
@@ -65,8 +55,6 @@ object AdModeRuntime {
     val config = _config.asStateFlow()
     private val _splashCandidate = MutableStateFlow<VideoItem?>(null)
     val splashCandidate = _splashCandidate.asStateFlow()
-    private val _curatedAds = MutableStateFlow<List<VideoItem>>(emptyList())
-    val curatedAds = _curatedAds.asStateFlow()
     private val splashSession = AdModeSplashSession()
 
     internal suspend fun enable() {
@@ -74,7 +62,6 @@ object AdModeRuntime {
             PluginStore.getConfigJson(PluginManager.getContext(), AD_MODE_PLUGIN_ID),
             json,
         )
-        _curatedAds.value = loadCuratedAds()
         splashSession.reset()
         _splashCandidate.value = null
         _enabled.value = true
@@ -82,7 +69,6 @@ object AdModeRuntime {
 
     internal fun disable() {
         _enabled.value = false
-        _curatedAds.value = emptyList()
         _splashCandidate.value = null
         splashSession.reset()
     }
@@ -105,21 +91,9 @@ object AdModeRuntime {
 
     internal fun offerSplashCandidate(candidate: VideoItem?) {
         if (!_enabled.value || !splashSession.canOffer() || !_config.value.showSplashAd) return
-        if (_splashCandidate.value == null && candidate?.bvid?.isNotBlank() == true &&
-            marketingScore(candidate) >= 60
-        ) {
+        if (_splashCandidate.value == null && candidate?.bvid?.isNotBlank() == true) {
             _splashCandidate.value = candidate
         }
-    }
-
-    private suspend fun loadCuratedAds(): List<VideoItem> {
-        return CURATED_AD_SEARCH_KEYWORDS
-            .flatMap { keyword ->
-                SearchRepository.search(keyword).getOrNull()?.first.orEmpty()
-            }
-            .filter { containsManualAdKeyword(it) || it.isAd }
-            .distinctBy { it.bvid.ifBlank { "aid:${it.aid}" } }
-            .take(6)
     }
 
     fun dismissSplashCandidate() {
@@ -162,45 +136,16 @@ class AdModePlugin : RecommendationPluginApi, FeedTransformPlugin {
     override suspend fun onDisable() = AdModeRuntime.disable()
 
     override fun transformFeedItems(items: List<VideoItem>, feedKind: FeedKind): List<VideoItem> {
-        if (!AdModeRuntime.enabled.value) return items
-        if (feedKind !in AD_MODE_FEED_KINDS) return items
-        val transformed = transformAdModeFeed(
-            items = items,
-            config = AdModeRuntime.config.value,
-            curatedAds = AdModeRuntime.curatedAds.value,
-        )
+        if (feedKind !in AD_MODE_FEED_KINDS || items.isEmpty()) return items
+        val transformed = transformAdModeFeed(items, AdModeRuntime.config.value)
         if (feedKind == FeedKind.HOME_RECOMMEND) {
-            AdModeRuntime.offerSplashCandidate(resolveAdModeSplashCandidate(transformed))
+            AdModeRuntime.offerSplashCandidate(transformed.firstOrNull())
         }
         return transformed
     }
 
     override fun buildRecommendations(request: RecommendationRequest): RecommendationResult {
-        if (!AdModeRuntime.enabled.value) {
-            return RecommendationResult(
-                sourcePluginId = id,
-                mode = request.mode,
-                items = request.candidateVideos.take(request.queueLimit).mapIndexed { index, video ->
-                    RecommendedVideo(
-                        video = video,
-                        score = (request.queueLimit - index).toDouble(),
-                        confidence = 0f,
-                        explanation = "广告模式未启用",
-                    )
-                },
-                historySampleCount = request.historyVideos.size,
-                sceneSignals = request.sceneSignals,
-            )
-        }
-        val recommendationCandidates = (AdModeRuntime.curatedAds.value + request.candidateVideos)
-            .distinctBy { it.bvid.ifBlank { "aid:${it.aid}" } }
-        val ranked = if (!AdModeRuntime.config.value.advertiseCards &&
-            !AdModeRuntime.config.value.showPageBanners
-        ) {
-            request.candidateVideos
-        } else {
-            rankMarketingVideos(recommendationCandidates)
-        }
+        val ranked = rankMarketingVideos(request.candidateVideos)
         return RecommendationResult(
             sourcePluginId = id,
             mode = request.mode,
@@ -240,15 +185,9 @@ class AdModePlugin : RecommendationPluginApi, FeedTransformPlugin {
             )
             AppSwitchPreference(
                 title = "页面广告位",
-                subtitle = "在视频详情的相关推荐中插入已识别的广告横幅",
+                subtitle = "每 6 条内容和视频详情中插入广告横幅",
                 checked = config.showPageBanners,
                 onCheckedChange = { value -> AdModeRuntime.updateConfig { it.copy(showPageBanners = value) } },
-            )
-            AppSwitchPreference(
-                title = "摇动退出开屏广告",
-                subtitle = "开屏广告期间连续强烈摇动手机可退出本次广告（默认关闭）",
-                checked = config.shakeToExitSplash,
-                onCheckedChange = { value -> AdModeRuntime.updateConfig { it.copy(shakeToExitSplash = value) } },
             )
         }
     }
@@ -262,18 +201,8 @@ internal val AD_MODE_FEED_KINDS = setOf(
     FeedKind.SEARCH,
 )
 
-internal fun transformAdModeFeed(
-    items: List<VideoItem>,
-    config: AdModeConfig,
-    curatedAds: List<VideoItem> = emptyList(),
-): List<VideoItem> {
-    // Turning off both presentation features must be a true no-op. In
-    // particular, do not reorder the user's feed just because the plugin is
-    // enabled in the background.
-    if (!config.advertiseCards && !config.showPageBanners) return items
-    val candidates = (curatedAds + items)
-        .distinctBy { it.bvid.ifBlank { "aid:${it.aid}" } }
-    val ranked = rankMarketingVideos(candidates)
+internal fun transformAdModeFeed(items: List<VideoItem>, config: AdModeConfig): List<VideoItem> {
+    val ranked = rankMarketingVideos(items)
     val markedBvids = ranked
         .filter { marketingScore(it) >= 60 }
         .take(2)
@@ -300,57 +229,41 @@ internal fun rankMarketingVideos(items: List<VideoItem>): List<VideoItem> = item
     )
     .map { it.value }
 
-internal fun resolveAdModeSplashCandidate(items: List<VideoItem>): VideoItem? =
-    items.firstOrNull { it.bvid.isNotBlank() && marketingScore(it) >= 60 }
-
 internal fun marketingScore(video: VideoItem): Int {
-    // Preserve the server's authoritative classification above all heuristics.
-    if (video.isAd) return 100
-    if (containsManualAdKeyword(video)) return 85
     val feedbackText = video.recommendationFeedback?.reasons
         .orEmpty()
         .joinToString(" ") { "${it.name} ${it.toast}" }
         .lowercase()
     val goto = video.recommendationFeedback?.goto.orEmpty().lowercase()
     val routeText = "${video.contentType} ${video.navigationUrl}".lowercase()
-    val trafficCardScore = resolveTrafficCardScore(video)
     val serverCommercialScore = when {
         COMMERCIAL_FEEDBACK_MARKERS.any(feedbackText::contains) -> 90
         goto.isNotBlank() && goto !in PLAYABLE_VIDEO_GOTO_TYPES -> 70
         COMMERCIAL_ROUTE_MARKERS.any(routeText::contains) -> 60
         else -> 0
     }
-    // Engagement and duration are audience signals, not evidence of a
-    // commercial placement. Using them here promoted ordinary low-engagement
-    // or short videos to the front and made the splash ad prone to false
-    // positives. Only explicit server/route/offer signals classify content as
-    // marketing.
-    return serverCommercialScore + trafficCardScore
-}
-
-internal fun containsManualAdKeyword(video: VideoItem): Boolean {
-    val text = "${video.title} ${video.owner.name} ${video.tname}".lowercase()
-    return MANUAL_AD_KEYWORDS.any(text::contains)
-}
-
-/**
- * Traffic-card ads share a bundle of offer mechanics rather than one title keyword:
- * telecom product noun + quota/unit + price/term, or national data + call minutes.
- */
-internal fun resolveTrafficCardScore(video: VideoItem): Int {
-    val text = "${video.title} ${video.owner.name} ${video.tname} ${video.contentType}".lowercase()
-    val telecomProduct = listOf("流量卡", "电话卡", "套餐", "月租", "号卡", "通信卡").count(text::contains)
-    val quota = Regex("\\b\\d{2,4}\\s*(g|gb|兆|m)\\b", RegexOption.IGNORE_CASE).containsMatchIn(text) ||
-        text.contains("全国流量") || text.contains("通用流量")
-    val price = Regex("(?:￥|¥|\\b\\d{1,3})\\s*元").containsMatchIn(text) || text.contains("元/月")
-    val minutes = Regex("\\b\\d{2,4}\\s*分钟").containsMatchIn(text)
-    val reviewOrSalesContext = listOf("测评局", "评测", "开卡", "办卡", "激活", "运营商", "移动", "联通", "电信")
-        .any(text::contains)
-    return when {
-        telecomProduct > 0 && quota && price && (minutes || reviewOrSalesContext) -> 92
-        telecomProduct > 0 && quota && (minutes || reviewOrSalesContext) -> 68
-        else -> 0
+    val viewCount = video.stat.view.toLong().coerceAtLeast(0L)
+    val likeCount = video.stat.like.toLong().coerceAtLeast(0L)
+    val knownEngagement = likeCount > 0L || video.stat.coin > 0 || video.stat.favorite > 0 ||
+        video.stat.reply > 0 || video.stat.share > 0
+    val lowEngagementScore = if (
+        viewCount > 10_000L && knownEngagement && likeCount * 1_000L < viewCount * 3L
+    ) {
+        28
+    } else {
+        0
     }
+    val lowConversionScore = if (
+        viewCount > 20_000L && knownEngagement &&
+        video.stat.coin.toLong() * 2_000L < viewCount &&
+        video.stat.favorite.toLong() * 1_000L < viewCount
+    ) {
+        18
+    } else {
+        0
+    }
+    val shortVideoScore = if (video.duration in 1..75) 8 else 0
+    return serverCommercialScore + lowEngagementScore + lowConversionScore + shortVideoScore
 }
 
 private fun resolveMarketingSupportingText(video: VideoItem): String = when {
@@ -367,11 +280,7 @@ private fun VideoItem.toPromotionBannerTarget() = PromotionBannerTarget(
     coverUrl = pic,
 )
 
-internal fun resolveAdModeRelatedBannerTarget(
-    videos: List<RelatedVideo>,
-    curatedAds: List<VideoItem> = emptyList(),
-    random: Random = Random.Default,
-): PromotionBannerTarget? {
+internal fun resolveAdModeRelatedBannerTarget(videos: List<RelatedVideo>): PromotionBannerTarget? {
     val ranked = rankMarketingVideos(
         videos.map { related ->
             VideoItem(
@@ -384,21 +293,10 @@ internal fun resolveAdModeRelatedBannerTarget(
                 owner = related.owner,
                 stat = related.stat,
                 duration = related.duration,
-                isAd = related.isAd,
             )
         },
     )
-    // Never label an arbitrary related video as an ad just because it is the
-    // first result. A banner requires a positive commercial signal.
-    val candidates = ranked.filter {
-        it.bvid.isNotBlank() && (containsManualAdKeyword(it) || it.isAd)
-    }
-    val fallbackCandidates = curatedAds.filter {
-        it.bvid.isNotBlank() && (containsManualAdKeyword(it) || it.isAd)
-    }
-    val pool = (candidates + fallbackCandidates).distinctBy { it.bvid }
-    if (pool.isEmpty()) return null
-    return pool[random.nextInt(pool.size)].toPromotionBannerTarget()
+    return ranked.firstOrNull { it.bvid.isNotBlank() }?.toPromotionBannerTarget()
 }
 
 internal fun migrateAdModeConfig(raw: String?, json: Json): AdModeConfig {

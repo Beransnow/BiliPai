@@ -209,7 +209,6 @@ data class VideoItem(
     val recommendationFeedback: RecommendationFeedbackMetadata? = null,
     val contentType: String = "",
     val navigationUrl: String = "",
-    @SerialName("is_ad") val isAd: Boolean = false,
     @Transient
     val promotion: VideoPromotionPresentation? = null,
 )
