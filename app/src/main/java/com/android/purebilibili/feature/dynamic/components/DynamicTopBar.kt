@@ -180,10 +180,19 @@ fun DynamicTopBarWithTabs(
                                     liquidGlassTuning = liquidGlassTuning,
                                 )
                             } else {
-                                Modifier.background(dockColor, dockShape)
+                                // Non-glass action docks should use a compact field
+                                // radius; the glass pill radius is visually oversized
+                                // and can make the dock overlap dense tab labels.
+                                Modifier.background(
+                                    dockColor,
+                                    AppShapes.container(ContainerLevel.Field),
+                                )
                             }
                         )
-                        .clip(dockShape),
+                        .clip(
+                            if (liquidGlassEnabled) dockShape
+                            else AppShapes.container(ContainerLevel.Field)
+                        ),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     AppWindowActionMenu(
