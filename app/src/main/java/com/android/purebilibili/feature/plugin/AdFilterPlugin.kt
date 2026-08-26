@@ -134,7 +134,13 @@ class AdFilterPlugin : FeedPlugin {
         )
     )
     
+    // shouldShowItem() is a synchronous hot-path callback and may be invoked
+    // concurrently with the settings screen. Publish complete immutable
+    // snapshots so readers never observe a partially updated configuration.
+    @Volatile
     private var config: AdFilterConfig = AdFilterConfig()
+    @Volatile
+    private var active = false
     private var filteredCount = 0
     
     //  配置版本号，用于检测是否需要重载
@@ -142,6 +148,7 @@ class AdFilterPlugin : FeedPlugin {
     private var configVersion = 0
     @Volatile
     private var lastConfigReloadMs = 0L
+    private val configReloadLock = Any()
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     
     //  内置广告关键词（强化版）
@@ -171,18 +178,21 @@ class AdFilterPlugin : FeedPlugin {
     override suspend fun onEnable() {
         filteredCount = 0
         loadConfigSuspend()
+        active = true
         Logger.d(TAG, " 去广告增强v2.0已启用")
         Logger.d(TAG, " 拉黑UP主: ${config.blockedUpNames.size}个, 屏蔽关键词: ${config.blockedKeywords.size}个")
     }
     
     override suspend fun onDisable() {
+        // Flip the gate before any cleanup so a concurrent callback immediately
+        // becomes a no-op after disable returns.
+        active = false
         Logger.d(TAG, "🔴 去广告增强已禁用，本次过滤了 $filteredCount 条内容")
         filteredCount = 0
     }
     
     override fun shouldShowItem(item: VideoItem): Boolean {
-        // 广告模式需要接管原始候选做商业内容重排；关闭广告模式后自动恢复过滤。
-        if (AdModeRuntime.enabled.value) return true
+        if (!active) return true
         //  每次过滤前确保配置是最新的
         reloadConfigAsync()
         
@@ -294,9 +304,7 @@ class AdFilterPlugin : FeedPlugin {
             // 精确匹配（忽略大小写和简繁体）
             normalizedUpName == normalizedBlocked ||
             // 模糊匹配：UP名包含拉黑词
-            normalizedUpName.contains(normalizedBlocked) ||
-            // 模糊匹配：拉黑词包含UP名
-            normalizedBlocked.contains(normalizedUpName)
+            normalizedUpName.contains(normalizedBlocked)
         }
     }
 
@@ -312,10 +320,11 @@ class AdFilterPlugin : FeedPlugin {
         )
         ioScope.launch {
             runCatching {
-                AdFilterInsightStore.appendRecord(
-                    PluginManager.getContext(),
-                    enrichAdFilterRecordUpProfile(record)
-                )
+                // Filtering must stay local and cheap. Profile enrichment used to
+                // issue one network request per filtered item, which could flood
+                // the API while scrolling. The settings screen refreshes missing
+                // profiles in a bounded, explicit operation instead.
+                AdFilterInsightStore.appendRecord(PluginManager.getContext(), record)
             }.onFailure { error ->
                 Logger.w(TAG, "记录过滤历史失败: ${error.message}")
             }
@@ -412,8 +421,10 @@ class AdFilterPlugin : FeedPlugin {
      */
     private fun reloadConfigAsync() {
         val now = System.currentTimeMillis()
-        if (now - lastConfigReloadMs < 1000L) return
-        lastConfigReloadMs = now
+        synchronized(configReloadLock) {
+            if (now - lastConfigReloadMs < 1000L) return
+            lastConfigReloadMs = now
+        }
         
         ioScope.launch {
             try {

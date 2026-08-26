@@ -34,6 +34,44 @@ class AdModePluginPolicyTest {
     }
 
     @Test
+    fun serverAdFlagIsAuthoritative() {
+        val flagged = video("BV1FLAGGED").copy(isAd = true)
+        val organic = video("BV1ORGANIC")
+
+        assertEquals(100, marketingScore(flagged))
+        assertTrue(marketingScore(flagged) > marketingScore(organic))
+    }
+
+    @Test
+    fun manuallyCuratedKeywordIsCommercialEvidence() {
+        val trafficCard = video("BV1CARD", title = "19元流量卡全国通用")
+        assertTrue(containsManualAdKeyword(trafficCard))
+        assertTrue(marketingScore(trafficCard) >= 85)
+    }
+
+    @Test
+    fun trafficCardOfferPatternIsRecognizedWithoutSingleKeywordRule() {
+        val trafficCard = video(
+            bvid = "BV1CARD",
+            title = "长期19元直接终结比赛",
+            stat = Stat(view = 30_000, like = 2_000),
+        ).copy(
+            tname = "流量卡测评局",
+        )
+        val organic = video(bvid = "BV1ORG", title = "长期城市影像记录")
+
+        assertTrue(resolveTrafficCardScore(trafficCard) >= 68)
+        assertTrue(marketingScore(trafficCard) > marketingScore(organic))
+    }
+
+    @Test
+    fun trafficCardNeedsOfferBundleNotJustTheWordTraffic() {
+        val generic = video(bvid = "BV1GEN", title = "流量卡发展史")
+
+        assertEquals(0, resolveTrafficCardScore(generic))
+    }
+
+    @Test
     fun titleKeywordsDoNotDriveClassification() {
         val keywordHeavy = video(
             bvid = "BV1KEY",
@@ -85,15 +123,55 @@ class AdModePluginPolicyTest {
     }
 
     @Test
-    fun disabledPresentationReturnsUndecoratedItems() {
-        val item = video("BV1OFF")
+    fun enabledPresentationInjectsCuratedAdCandidatesAheadOfOrganicItems() {
+        val organic = video("BVORG")
+        val curated = video("BVCURATED", title = "19元流量卡全国通用")
 
         val result = transformAdModeFeed(
-            listOf(item),
+            items = listOf(organic),
+            config = AdModeConfig(),
+            curatedAds = listOf(curated),
+        )
+
+        assertEquals("BVCURATED", result.first().bvid)
+        assertTrue(result.first().promotion != null)
+    }
+
+    @Test
+    fun disabledPresentationReturnsUndecoratedItems() {
+        val items = listOf(
+            video("BV1OFF", feedback = RecommendationFeedbackMetadata(goto = "mall")),
+            video("BV2OFF"),
+        )
+
+        val result = transformAdModeFeed(
+            items,
             AdModeConfig(advertiseCards = false, showPageBanners = false),
         )
 
-        assertEquals(listOf(item), result)
+        assertEquals(items, result)
+    }
+
+    @Test
+    fun weakEngagementAndShortDurationAreNotCommercialEvidence() {
+        val ordinary = video(
+            bvid = "BV1ORDINARY",
+            stat = Stat(view = 1_000_000, like = 1),
+        ).copy(duration = 30)
+
+        assertEquals(0, marketingScore(ordinary))
+    }
+
+    @Test
+    fun splashCandidateRequiresCommercialEvidence() {
+        val ordinary = video("BV1ORDINARY")
+        val commercial = video(
+            "BV1COMMERCIAL",
+            feedback = RecommendationFeedbackMetadata(goto = "mall"),
+        )
+
+        assertEquals(commercial, resolveAdModeSplashCandidate(listOf(ordinary, commercial)))
+        assertEquals(null, resolveAdModeSplashCandidate(listOf(ordinary)))
     }
 
     @Test

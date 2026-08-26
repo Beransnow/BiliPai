@@ -1412,9 +1412,13 @@ private fun CinemaRelatedPane(
     val relatedVideoCardLayout = rememberRelatedVideoCardLayout()
     val adModeEnabled by AdModeRuntime.enabled.collectAsStateWithLifecycle()
     val adModeConfig by AdModeRuntime.config.collectAsStateWithLifecycle()
-    val adBannerTarget = remember(success.related, adModeEnabled, adModeConfig.showPageBanners) {
+    val curatedAdVideos by AdModeRuntime.curatedAds.collectAsStateWithLifecycle()
+    val adBannerTarget = remember(success.related, curatedAdVideos, adModeEnabled, adModeConfig.showPageBanners) {
         if (adModeEnabled && adModeConfig.showPageBanners) {
-            resolveAdModeRelatedBannerTarget(success.related)
+            resolveAdModeRelatedBannerTarget(
+                videos = success.related,
+                curatedAds = curatedAdVideos,
+            )
         } else {
             null
         }

@@ -1,6 +1,7 @@
 package com.android.purebilibili.data.model.response
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class RelatedResponse(
@@ -18,4 +19,5 @@ data class RelatedVideo(
     val stat: Stat = Stat(),
     val duration: Int = 0, // 视频时长(秒)
     val pubdate: Long = 0,
+    @SerialName("is_ad") val isAd: Boolean = false,
 )

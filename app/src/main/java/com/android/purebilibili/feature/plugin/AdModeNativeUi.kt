@@ -1,5 +1,11 @@
 package com.android.purebilibili.feature.plugin
 
+import android.app.Activity
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -25,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AppShapes
@@ -126,6 +134,46 @@ fun AdModeSplashHost(
     val latestOnOpenVideo by rememberUpdatedState(onOpenVideo)
     var secondsRemaining by remember { mutableIntStateOf(5) }
     val visibleCandidate = candidate.takeIf { enabled && config.showSplashAd }
+    val context = LocalContext.current
+
+    DisposableEffect(visibleCandidate?.bvid, config.shakeToExitSplash) {
+        if (visibleCandidate == null || !config.shakeToExitSplash) {
+            onDispose { }
+        } else {
+            val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+            val accelerometer = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+            var shakeCount = 0
+            var windowStartMs = 0L
+            val listener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent) {
+                    val magnitude = kotlin.math.sqrt(
+                        (event.values[0] * event.values[0] +
+                            event.values[1] * event.values[1] +
+                            event.values[2] * event.values[2]).toDouble()
+                    ) / SensorManager.GRAVITY_EARTH
+                    val now = android.os.SystemClock.elapsedRealtime()
+                    if (magnitude < 2.7) return
+                    if (windowStartMs == 0L || now - windowStartMs > 1_200L) {
+                        windowStartMs = now
+                        shakeCount = 0
+                    }
+                    shakeCount++
+                    if (shakeCount >= 3) {
+                        AdModeRuntime.dismissSplashCandidate()
+                        (context as? Activity)?.finishAndRemoveTask()
+                    }
+                }
+
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
+            }
+            if (sensorManager != null && accelerometer != null) {
+                sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_GAME)
+            }
+            onDispose {
+                sensorManager?.unregisterListener(listener)
+            }
+        }
+    }
 
     LaunchedEffect(visibleCandidate?.bvid) {
         if (visibleCandidate == null) return@LaunchedEffect

@@ -1024,9 +1024,13 @@ private fun VideoIntroTab(
     val relatedVideoCardLayout = rememberRelatedVideoCardLayout()
     val adModeEnabled by AdModeRuntime.enabled.collectAsStateWithLifecycle()
     val adModeConfig by AdModeRuntime.config.collectAsStateWithLifecycle()
-    val adBannerTarget = remember(relatedVideos, adModeEnabled, adModeConfig.showPageBanners) {
+    val curatedAdVideos by AdModeRuntime.curatedAds.collectAsStateWithLifecycle()
+    val adBannerTarget = remember(relatedVideos, curatedAdVideos, adModeEnabled, adModeConfig.showPageBanners) {
         if (adModeEnabled && adModeConfig.showPageBanners) {
-            resolveAdModeRelatedBannerTarget(relatedVideos)
+            resolveAdModeRelatedBannerTarget(
+                videos = relatedVideos,
+                curatedAds = curatedAdVideos,
+            )
         } else {
             null
         }

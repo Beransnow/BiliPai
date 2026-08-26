@@ -120,6 +120,8 @@ import com.android.purebilibili.feature.home.resolveHomeGlassPillStyle
 import com.android.purebilibili.feature.video.controller.PlaybackProgressManager
 import com.android.purebilibili.feature.video.ui.section.resolveCompactPublishTimeRowText
 import com.android.purebilibili.feature.plugin.AdModePromotionBadge
+import com.android.purebilibili.feature.plugin.AdModeRuntime
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 //  [预览播放] 相关引用已移除
 
 import kotlin.math.roundToInt
@@ -522,6 +524,7 @@ internal fun ElegantVideoCard(
     modifier: Modifier = Modifier,
     onClick: (String, Long) -> Unit
 ) {
+    val adModeEnabled by AdModeRuntime.enabled.collectAsStateWithLifecycle()
     val haptic = rememberHapticFeedback()
     val contentTypography = feedContentTypography()
     val scope = rememberCoroutineScope()
@@ -1382,7 +1385,7 @@ internal fun ElegantVideoCard(
             Spacer(modifier = Modifier.height(if (compactMetadata) AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro else AppSpacingTokens.Small))
         }
 
-        video.promotion?.let { promotion ->
+        if (adModeEnabled) video.promotion?.let { promotion ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
