@@ -438,7 +438,7 @@ class VideoContentTabBarPolicyTest {
         assertTrue(spec.liquidGlassEffectsEnabled)
         assertEquals(layoutSpec.segmentedControlHeightDp, spec.segmentedControlHeightDp)
         assertEquals(layoutSpec.segmentedControlIndicatorHeightDp, spec.segmentedControlIndicatorHeightDp)
-        assertEquals(70, spec.itemWidthDp)
+        assertEquals(68, spec.itemWidthDp)
         assertEquals(70, resolveVideoContentTabBarDockItemWidthDp(labelFontSizeSp = 15))
         assertEquals(72, resolveVideoContentTabBarDockItemWidthDp(labelFontSizeSp = 16))
         assertEquals(66, resolveVideoContentTabBarDockItemWidthDp(labelFontSizeSp = 13))
@@ -462,12 +462,16 @@ class VideoContentTabBarPolicyTest {
                 hasBackdrop = false,
             )
         )
-        assertNull(
-            resolveVideoContentTabBarLiquidChromeSpec(
-                androidNativeLiquidGlassEnabled = false,
-                hasBackdrop = true,
-                layoutSpec = layoutSpec,
-            ).itemWidthDp
+        val nativeSpec = resolveVideoContentTabBarLiquidChromeSpec(
+            androidNativeLiquidGlassEnabled = false,
+            hasBackdrop = true,
+            layoutSpec = layoutSpec,
+        )
+        assertFalse(nativeSpec.reusesLiquidGlassDock)
+        assertFalse(nativeSpec.liquidGlassEffectsEnabled)
+        assertEquals(
+            spec.itemWidthDp,
+            resolveVideoContentTabBarDockItemWidthDp(nativeSpec.labelFontSizeSp),
         )
     }
 

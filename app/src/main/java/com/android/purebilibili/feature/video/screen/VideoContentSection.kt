@@ -1717,6 +1717,10 @@ private fun VideoContentTabBar(
             layoutSpec = layoutSpec,
         )
     }
+    // Native fallback keeps the exact same item geometry as the liquid Dock. Only the
+    // Dock shell/effects are removed; the tab indicator and its dimensions are not redesigned.
+    val tabItemWidthDp = liquidChromeSpec.itemWidthDp
+        ?: resolveVideoContentTabBarDockItemWidthDp(liquidChromeSpec.labelFontSizeSp)
     Column(
         modifier = modifier
     ) {
@@ -1750,7 +1754,7 @@ private fun VideoContentTabBar(
                 // the selected capsule appear centered under the action icons.
                 compactMiuixWhenTwoOptions = true,
                 scrollable = liquidChromeSpec.itemWidthDp != null,
-                minTabWidth = (liquidChromeSpec.itemWidthDp ?: 72).dp,
+                minTabWidth = tabItemWidthDp.dp,
                 height = liquidChromeSpec.segmentedControlHeightDp.dp,
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
