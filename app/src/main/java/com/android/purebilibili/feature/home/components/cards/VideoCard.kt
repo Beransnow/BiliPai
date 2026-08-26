@@ -1177,7 +1177,7 @@ internal fun ElegantVideoCard(
                                 borderColor = coverPillColors.borderColor
                             ) {
                                 AppIcon(
-                                    imageVector = Icons.Outlined.ChatBubbleOutline,
+                                    imageVector = Icons.Outlined.Subtitles,
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Small + AppSpacingTokens.Micro),
                                     tint = MediaContrastPalette.Foreground.copy(alpha = 0.90f)
