@@ -29,7 +29,10 @@ fun resolveAndroidNativeChromeTokens(
         selectedContainerAlpha = 0.18f,
         tonalSurfaceElevationDp = 0,
         denseHorizontalSpacingDp = 16,
-        rowMinTouchTargetDp = 48,
+        // Miuix controls use denser visual geometry. A 48dp visual minimum makes
+        // buttons and preference rows look inflated; accessibility hit slop is
+        // handled by the component instead of enlarging its visible container.
+        rowMinTouchTargetDp = 44,
         expressiveMotionDurationMillis = 180,
         motionScale = 1f,
         motionStandardMillis = 180,

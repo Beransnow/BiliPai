@@ -5,6 +5,8 @@ import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import androidx.compose.ui.unit.dp
 
 object AppChromeSizeTokens {
+    // Accessibility target only. Do not use this as a visible component size;
+    // use the compact/chrome-specific tokens below for Miuix geometry.
     val MinimumTouchTarget = 48.dp
     const val CompactControlHeightDp = 44
     const val CompactControlCornerRadiusDp = 20

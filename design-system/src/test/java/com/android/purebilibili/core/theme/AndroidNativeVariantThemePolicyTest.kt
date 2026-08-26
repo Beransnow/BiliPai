@@ -77,6 +77,8 @@ class AndroidNativeVariantThemePolicyTest {
         assertEquals(300, material.motionEmphasizedMillis)
         assertEquals(180, miuix.motionStandardMillis)
         assertEquals(200, material.motionStandardMillis)
+        assertEquals(44, miuix.rowMinTouchTargetDp)
+        assertEquals(48, material.rowMinTouchTargetDp)
     }
 
     @Test

@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.lazy.LazyRow
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -186,9 +187,8 @@ internal fun TabletSecondaryLiquidTabRow(
         onSelected = onSelected,
         modifier = modifier,
         itemWidth = if (labels.size <= 2) 108.dp else null,
-        height = 48.dp,
-        indicatorHeight = com.android.purebilibili.core.ui
-            .roundMatchedLiquidIndicatorHeightDp(48f).dp,
+        height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
+        indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
         labelFontSize = 15.sp,
         liquidGlassEffectsEnabled = true,
         dragSelectionEnabled = true,
