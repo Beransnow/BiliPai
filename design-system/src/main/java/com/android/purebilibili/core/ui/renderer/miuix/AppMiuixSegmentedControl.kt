@@ -103,7 +103,10 @@ internal fun <T> AppMiuixTabRow(
         onTabSelected = { index ->
             if (enabled) options.getOrNull(index)?.let { onSelectionChange(it.value) }
         },
-        modifier = modifier.fillMaxWidth(),
+        // Respect an explicit compact width supplied by AppNativeTabRow. Calling
+        // fillMaxWidth here expands two-option controls to the whole parent and
+        // makes the detail-page tabs consume the action area.
+        modifier = modifier,
         colors = TabRowDefaults.tabRowColors(
             backgroundColor = tabColors.backgroundColor,
             contentColor = tabColors.contentColor,
