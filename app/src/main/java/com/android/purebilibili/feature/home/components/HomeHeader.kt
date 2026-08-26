@@ -2028,10 +2028,10 @@ fun HomeHeader(
         tabRowHeight = currentTabHeight,
         searchToTabsSpacing = currentTabToSearchSpacing,
         renderMode = effectiveContinuousSlabRenderMode,
-        // The shared FloatingBottomBar must sample the feed directly. A header slab
-        // underneath changes the pixels before refraction and makes the same renderer
-        // look darker than the bottom dock.
-        includeTabInBlur = !topTabInnerOwnsFloatingDockShell,
+        // Keep the complete tab track inside the pinned top chrome. The floating dock may own
+        // its local glass shell, but excluding its row made the parent blur stop at the dock's
+        // top edge and exposed feed pixels behind the lower half of the tabs.
+        includeTabInBlur = true,
     )
     val progressiveBlurBottomExtension = resolveProgressiveTopBlurBottomExtension(
         enabled = homeSettings?.androidNativeLiquidGlassEnabled == true &&

@@ -2485,7 +2485,25 @@ internal fun VideoDetailScreenStateHolder(
             portraitSyncSnapshotCid = portraitSyncSnapshotCid,
             currentBvidCid = currentBvidCid
         ) ?: return
+        val loaded = viewModel.uiState.value as? VideoPlaybackUiState.Success
         presentationState.switchVideo(target.bvid, target.cid)
+        if (com.android.purebilibili.feature.video.ui.pager.shouldReloadMainPlayerAfterPortraitExit(
+                snapshotBvid = target.bvid,
+                snapshotCid = target.cid,
+                currentBvid = loaded?.info?.bvid,
+                currentCid = loaded?.info?.cid ?: 0L,
+            )
+        ) {
+            // Commit the detail subject together with the portrait exit. Relying on the later
+            // currentBvid observer leaves a frame-order race with AnimatedVisibility disposal:
+            // the player/cover can already point at page N while title/description still expose
+            // the route's first VideoInfo.
+            viewModel.loadVideo(
+                bvid = target.bvid,
+                cid = target.cid.takeIf { it > 0L } ?: 0L,
+                autoPlay = resolveAutoPlayOverrideForInternalBvidSync(forceAutoPlay = false),
+            )
+        }
     }
 
 

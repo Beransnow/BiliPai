@@ -502,7 +502,7 @@ class TopTabStylePolicyTest {
         val header = sourceText(
             "app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt"
         )
-        assertTrue(header.contains("includeTabInBlur = !topTabInnerOwnsFloatingDockShell"))
+        assertTrue(header.contains("includeTabInBlur = true"))
         assertTrue(
             header.contains(
                 "tabHorizontalPadding = if (topTabInnerOwnsFloatingDockShell)"
