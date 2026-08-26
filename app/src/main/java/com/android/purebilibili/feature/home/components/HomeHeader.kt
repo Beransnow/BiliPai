@@ -2041,7 +2041,9 @@ fun HomeHeader(
         ),
         endFraction = liquidGlassTuning.progressiveBlurEndFraction,
     )
-    val floatingTabBackdropOverlap = if (topTabInnerOwnsFloatingDockShell) {
+    val floatingTabBackdropOverlap = if (
+        topTabInnerOwnsFloatingDockShell && !isHeaderBlurEnabled
+    ) {
         FloatingBottomBarDefaultShellHeight / 2
     } else {
         AppSpacingTokens.None
