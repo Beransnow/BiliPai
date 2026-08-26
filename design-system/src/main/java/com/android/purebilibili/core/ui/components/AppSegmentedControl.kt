@@ -1,6 +1,8 @@
 package com.android.purebilibili.core.ui.components
 
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -83,6 +85,12 @@ fun shouldFillMaxWidthAppSegmentedControl(
     optionCount: Int,
     longestLabelLength: Int,
 ): Boolean = optionCount >= 2 || longestLabelLength >= 1
+
+fun shouldUseCompactMiuixTabRow(
+    optionCount: Int,
+    scrollable: Boolean,
+    compactWhenTwoOptions: Boolean,
+): Boolean = compactWhenTwoOptions && !scrollable && optionCount == 2
 
 fun resolveAppLiquidSegmentedControlSpec(
     itemCount: Int,
@@ -208,6 +216,7 @@ fun <T> AppNativeTabRow(
     enabled: Boolean = true,
     scrollable: Boolean = false,
     minTabWidth: Dp = 72.dp,
+    compactMiuixWhenTwoOptions: Boolean = true,
     height: Dp? = null,
     allowLabelOverflow: Boolean = false,
     indicatorPositionProvider: (() -> Float)? = null,
@@ -242,18 +251,43 @@ fun <T> AppNativeTabRow(
             modifier = viewportBoundedModifier,
             onSelectionChange = onSelectionChange,
         )
-        AppSegmentedRenderer.MIUIX -> AppMiuixTabRow(
-            options = options,
-            selectedValue = selectedValue,
-            enabled = enabled,
-            scrollable = scrollable,
-            minTabWidth = minTabWidth,
-            height = height,
-            colors = colors,
-            preferredCornerRadius = policy.preferredCornerRadius,
-            modifier = viewportBoundedModifier,
-            indicatorPositionProvider = indicatorPositionProvider,
-            onSelectionChange = onSelectionChange,
-        )
+        AppSegmentedRenderer.MIUIX -> {
+            val compact = shouldUseCompactMiuixTabRow(
+                optionCount = options.size,
+                scrollable = scrollable,
+                compactWhenTwoOptions = compactMiuixWhenTwoOptions,
+            )
+            if (compact) {
+                Box(modifier = viewportBoundedModifier) {
+                    AppMiuixTabRow(
+                        options = options,
+                        selectedValue = selectedValue,
+                        enabled = enabled,
+                        scrollable = false,
+                        minTabWidth = minTabWidth,
+                        height = height,
+                        colors = colors,
+                        preferredCornerRadius = policy.preferredCornerRadius,
+                        modifier = Modifier.width(minTabWidth * options.size),
+                        indicatorPositionProvider = indicatorPositionProvider,
+                        onSelectionChange = onSelectionChange,
+                    )
+                }
+            } else {
+                AppMiuixTabRow(
+                    options = options,
+                    selectedValue = selectedValue,
+                    enabled = enabled,
+                    scrollable = scrollable,
+                    minTabWidth = minTabWidth,
+                    height = height,
+                    colors = colors,
+                    preferredCornerRadius = policy.preferredCornerRadius,
+                    modifier = viewportBoundedModifier,
+                    indicatorPositionProvider = indicatorPositionProvider,
+                    onSelectionChange = onSelectionChange,
+                )
+            }
+        }
     }
 }

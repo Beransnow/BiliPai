@@ -2,6 +2,7 @@ package com.android.purebilibili.core.ui
 
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.ui.components.shouldUseCompactMiuixTabRow
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,6 +10,14 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AppSegmentedControlPolicyTest {
+
+    @Test
+    fun `only non scrollable two option Miuix rows use compact width`() {
+        assertTrue(shouldUseCompactMiuixTabRow(2, scrollable = false, compactWhenTwoOptions = true))
+        assertFalse(shouldUseCompactMiuixTabRow(2, scrollable = true, compactWhenTwoOptions = true))
+        assertFalse(shouldUseCompactMiuixTabRow(3, scrollable = false, compactWhenTwoOptions = true))
+        assertFalse(shouldUseCompactMiuixTabRow(2, scrollable = false, compactWhenTwoOptions = false))
+    }
 
     @Test
     fun `material3 exposes material segmented capabilities`() {

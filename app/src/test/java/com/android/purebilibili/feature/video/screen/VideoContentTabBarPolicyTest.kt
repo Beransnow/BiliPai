@@ -282,7 +282,8 @@ class VideoContentTabBarPolicyTest {
         assertTrue(tabBarBlock.contains("indicatorPositionProvider = indicatorPositionProvider"))
         assertTrue(tabBarBlock.contains("dragSelectionEnabled = true"))
         assertFalse(tabBarBlock.contains("tabSwipeModifier"))
-        assertTrue(tabBarBlock.contains("modifier = Modifier.width("))
+        assertTrue(tabBarBlock.contains("modifier = Modifier.weight(1f)"))
+        assertTrue(tabBarBlock.contains("compactMiuixWhenTwoOptions = false"))
         assertTrue(source.contains("clip = tabBarCollapseProgress > 0.001f"))
     }
 
