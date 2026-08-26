@@ -791,13 +791,6 @@ private fun TabletSecondaryContent(
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
                     modifier = Modifier.weight(1f),
                 )
-                if (showDanmakuActions) {
-                    TabletSecondaryDanmakuActions(
-                        danmakuEnabled = danmakuEnabled,
-                        onDanmakuSendClick = onDanmakuSendClick,
-                        onDanmakuToggle = onDanmakuToggle,
-                    )
-                }
             }
         }
         
