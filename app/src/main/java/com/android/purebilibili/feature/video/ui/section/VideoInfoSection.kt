@@ -697,7 +697,8 @@ fun UpInfoSection(
     transitionEnabled: Boolean = false,  // 🔗 共享元素过渡开关
     isQuickReturnLimitedForSharedElements: Boolean = false,
     sourceRouteForSharedElement: String? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    trailingContent: (@Composable RowScope.() -> Unit)? = null,
 ) {
     val playerControlVisibility by com.android.purebilibili.core.store.SettingsManager
         .getPlayerControlVisibilitySettings(LocalContext.current)
@@ -931,6 +932,12 @@ fun UpInfoSection(
                         )
                     }
                 }
+            }
+            if (trailingContent != null) {
+                if (playerControlVisibility.showFollowButton) {
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+                trailingContent()
             }
         }
         if (shouldShowCreatorTeamSection(info)) {
