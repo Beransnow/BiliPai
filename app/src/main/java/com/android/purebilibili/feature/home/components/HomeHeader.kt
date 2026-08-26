@@ -2028,8 +2028,10 @@ fun HomeHeader(
         tabRowHeight = currentTabHeight,
         searchToTabsSpacing = currentTabToSearchSpacing,
         renderMode = effectiveContinuousSlabRenderMode,
-        // 连续背景始终覆盖顶部 Dock；独立轨道只负责自身材质与前景可读性。
-        includeTabInBlur = true,
+        // The shared FloatingBottomBar must sample the feed directly. A header slab
+        // underneath changes the pixels before refraction and makes the same renderer
+        // look darker than the bottom dock.
+        includeTabInBlur = !topTabInnerOwnsFloatingDockShell,
     )
     val progressiveBlurBottomExtension = resolveProgressiveTopBlurBottomExtension(
         enabled = homeSettings?.androidNativeLiquidGlassEnabled == true &&
@@ -2054,7 +2056,10 @@ fun HomeHeader(
             containerZIndex = if (useUnifiedTopPanel) 0f else -1f,
             // 分栏 dock 最大宽度 = 顶部三控件合计宽度，保证左右对齐。
             maxDockWidth = maxDockWidth,
-            tabHorizontalPadding = if (embedTopTabsInUnifiedPanel) {
+            tabHorizontalPadding = if (topTabInnerOwnsFloatingDockShell) {
+                // FloatingBottomBar owns the same screen-edge inset as the bottom dock.
+                AppSpacingTokens.None
+            } else if (embedTopTabsInUnifiedPanel) {
                 resolveNonNegativeHomeTopPadding(resolveHomeTopEmbeddedTabHorizontalPadding(topChromePolicy))
             } else {
                 resolveNonNegativeHomeTopPadding(tabHorizontalPadding)

@@ -413,6 +413,24 @@ class TopTabStylePolicyTest {
                 selectionIndicatorStyle = HomeSelectionIndicatorStyle.CAPSULE,
             )
         )
+        assertTrue(
+            shouldHomeTopTabUseFloatingBottomBarDock(
+                skinPlainStyle = false,
+                hasSkinStickerIcons = false,
+                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
+                liquidGlassEnabled = false,
+                selectionIndicatorStyle = HomeSelectionIndicatorStyle.MD3_UNDERLINE,
+            )
+        )
+        assertFalse(
+            shouldHomeTopTabUseFloatingBottomBarDock(
+                skinPlainStyle = true,
+                hasSkinStickerIcons = false,
+                presentation = AppTopTabPresentation.MOVING_CAPSULE,
+                liquidGlassEnabled = true,
+                selectionIndicatorStyle = HomeSelectionIndicatorStyle.CAPSULE,
+            )
+        )
         assertFalse(
             shouldHomeTopTabChromeDrawOuterShell(
                 drawOuterChrome = true,
@@ -425,7 +443,7 @@ class TopTabStylePolicyTest {
             resolveBiliPaiFloatingBottomBarWidth(
                 containerWidth = 360.dp,
                 itemCount = 4,
-                minEdgePadding = 0.dp,
+                minEdgePadding = 20.dp,
                 labelMode = 0,
                 cornerRadius = FloatingBottomBarDefaultShellHeight / 2,
             ),
@@ -450,6 +468,15 @@ class TopTabStylePolicyTest {
         assertTrue(topBar.contains("showText = showText"))
         assertTrue(chrome.contains("resolveHomeTopTabFloatingDockWidth("))
         assertTrue(dock.contains("itemIndex = index"))
+        val header = sourceText(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt"
+        )
+        assertTrue(header.contains("includeTabInBlur = !topTabInnerOwnsFloatingDockShell"))
+        assertTrue(
+            header.contains(
+                "tabHorizontalPadding = if (topTabInnerOwnsFloatingDockShell)"
+            )
+        )
     }
 
     @Test

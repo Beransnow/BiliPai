@@ -11,6 +11,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.AppTopTabPresentation
@@ -25,14 +26,13 @@ import top.yukonga.miuix.kmp.blur.Backdrop
 internal fun shouldHomeTopTabUseFloatingBottomBarDock(
     skinPlainStyle: Boolean,
     hasSkinStickerIcons: Boolean,
-    presentation: AppTopTabPresentation,
-    liquidGlassEnabled: Boolean,
-    selectionIndicatorStyle: HomeSelectionIndicatorStyle,
+    @Suppress("UNUSED_PARAMETER") presentation: AppTopTabPresentation,
+    @Suppress("UNUSED_PARAMETER") liquidGlassEnabled: Boolean,
+    @Suppress("UNUSED_PARAMETER") selectionIndicatorStyle: HomeSelectionIndicatorStyle,
 ): Boolean {
-    if (skinPlainStyle || hasSkinStickerIcons) return false
-    if (presentation == AppTopTabPresentation.MOVING_CAPSULE) return true
-    if (selectionIndicatorStyle == HomeSelectionIndicatorStyle.CAPSULE) return true
-    return liquidGlassEnabled
+    // The ordinary home category dock has one renderer regardless of preset, blur,
+    // or indicator style. Only artwork-backed/skin layouts remain on the bespoke path.
+    return !skinPlainStyle && !hasSkinStickerIcons
 }
 
 internal fun shouldHomeTopTabChromeDrawOuterShell(
@@ -40,10 +40,7 @@ internal fun shouldHomeTopTabChromeDrawOuterShell(
     innerOwnsFloatingDock: Boolean,
 ): Boolean = drawOuterChrome && !innerOwnsFloatingDock
 
-/**
- * Same compact width as the home bottom bar: 76dp icon+text slots, 8dp shell inset.
- * The old wrap dock used 84dp slots and read a full circle larger.
- */
+/** Uses the exact home bottom-bar width contract, including its screen-edge inset. */
 internal fun resolveHomeTopTabFloatingDockWidth(
     containerWidth: Dp,
     itemCount: Int,
@@ -51,7 +48,10 @@ internal fun resolveHomeTopTabFloatingDockWidth(
 ): Dp = resolveBiliPaiFloatingBottomBarWidth(
     containerWidth = containerWidth,
     itemCount = itemCount,
-    minEdgePadding = AppSpacingTokens.None,
+    minEdgePadding = resolveAndroidNativeBottomBarTuning(
+        blurEnabled = true,
+        darkTheme = false,
+    ).outerHorizontalPaddingDp.dp,
     labelMode = labelMode,
     cornerRadius = resolveBiliPaiBottomBarDockHeight(searchExpanded = false) / 2,
 )
