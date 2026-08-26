@@ -79,6 +79,7 @@ import com.android.purebilibili.feature.video.ui.section.resolveDisplayBgmList
 import com.android.purebilibili.feature.video.ui.section.shouldShowAiSummaryEntry
 import com.android.purebilibili.feature.video.ui.section.resolveVideoDetailMotionBudget
 import com.android.purebilibili.feature.video.ui.section.shouldAnimateVideoDetailLayout
+import com.android.purebilibili.feature.video.ui.components.NativeDanmakuToggleButton
 import com.android.purebilibili.feature.video.ui.components.RelatedVideoGridRow
 import com.android.purebilibili.feature.video.ui.components.chunkRelatedVideosForHomeStyleGrid
 import com.android.purebilibili.feature.video.ui.components.filterRelatedVideosByHiddenBvids
@@ -740,9 +741,6 @@ fun VideoContentSection(
                         onCoinClick = onCoinClick,
                         onTripleClick = onTripleClick,
                         onCommentClick = { onTabSelected(1) },
-                        onDanmakuSendClick = onDanmakuSendClick,
-                        danmakuEnabled = danmakuEnabled,
-                        onDanmakuToggle = onDanmakuToggle,
                         onPageSelect = onPageSelect,
                         onUpClick = onUpClick,
                         onRelatedVideoClick = onRelatedVideoClick,
@@ -849,6 +847,9 @@ fun VideoContentSection(
                 onTabSelected = onTabSelected,
                 sortMode = sortMode,
                 onSortModeChange = onSortModeChange,
+                onDanmakuSendClick = onDanmakuSendClick,
+                danmakuEnabled = danmakuEnabled,
+                onDanmakuToggle = onDanmakuToggle,
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(unbounded = tabBarMaxHeightPx > 0f)
@@ -865,6 +866,7 @@ fun VideoContentSection(
                         alpha = 1f - progress
                         translationY = -tabBarMaxHeightPx * progress * 0.35f
                     },
+                isPlayerCollapsed = isPlayerCollapsed,
                 miuixBackdrop = videoContentMiuixBackdrop,
                 indicatorPositionProvider = {
                     pagerState.currentPage + pagerState.currentPageOffsetFraction
@@ -970,9 +972,6 @@ private fun VideoIntroTab(
     onCoinClick: () -> Unit,
     onTripleClick: () -> Unit,
     onCommentClick: () -> Unit,
-    onDanmakuSendClick: () -> Unit,
-    danmakuEnabled: Boolean,
-    onDanmakuToggle: () -> Unit,
     onPageSelect: (Int) -> Unit,
     onUpClick: (Long) -> Unit,
     onRelatedVideoClick: (String, android.os.Bundle?) -> Unit,
@@ -1039,9 +1038,6 @@ private fun VideoIntroTab(
                 onCoinClick = onCoinClick,
                 onTripleClick = onTripleClick,
                 onCommentClick = onCommentClick,
-                onDanmakuSendClick = onDanmakuSendClick,
-                danmakuEnabled = danmakuEnabled,
-                onDanmakuToggle = onDanmakuToggle,
                 onUpClick = onUpClick,
                 onOpenCollectionSheet = onOpenCollectionSheet,
                 onDownloadClick = onDownloadClick,
@@ -1523,9 +1519,6 @@ private fun VideoHeaderContent(
     onCoinClick: () -> Unit,
     onTripleClick: () -> Unit,
     onCommentClick: () -> Unit,
-    onDanmakuSendClick: () -> Unit,
-    danmakuEnabled: Boolean,
-    onDanmakuToggle: () -> Unit,
     onUpClick: (Long) -> Unit,
     onOpenCollectionSheet: () -> Unit,
     onDownloadClick: () -> Unit,
@@ -1593,13 +1586,6 @@ private fun VideoHeaderContent(
             transitionEnabled = transitionEnabled,  // 🔗 传递共享元素开关
             isQuickReturnLimitedForSharedElements = isQuickReturnLimitedForSharedElements,
             sourceRouteForSharedElement = sourceRouteForSharedElement,
-            trailingContent = {
-                TabletSecondaryDanmakuActions(
-                    danmakuEnabled = danmakuEnabled,
-                    onDanmakuSendClick = onDanmakuSendClick,
-                    onDanmakuToggle = onDanmakuToggle,
-                )
-            },
         )
 
         VideoTitleWithDesc(
@@ -1700,7 +1686,11 @@ private fun VideoContentTabBar(
     onTabSelected: (Int) -> Unit,
     sortMode: CommentSortMode,
     onSortModeChange: (CommentSortMode) -> Unit,
+    onDanmakuSendClick: () -> Unit,
+    danmakuEnabled: Boolean,
+    onDanmakuToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    isPlayerCollapsed: Boolean = false,
     miuixBackdrop: MiuixBackdrop? = null,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
@@ -1712,6 +1702,9 @@ private fun VideoContentTabBar(
     val configuration = LocalConfiguration.current
     val layoutSpec = remember(configuration.screenWidthDp) {
         resolveVideoContentTabBarLayoutSpec(widthDp = configuration.screenWidthDp)
+    }
+    val danmakuActionLayoutPolicy = remember(configuration.screenWidthDp) {
+        resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp = configuration.screenWidthDp)
     }
     val liquidChromeSpec = remember(
         homeSettings.androidNativeLiquidGlassEnabled,
@@ -1745,21 +1738,13 @@ private fun VideoContentTabBar(
                     end = layoutSpec.containerHorizontalPaddingDp.dp,
                 ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = if (liquidChromeSpec.reusesLiquidGlassDock) {
-                Arrangement.spacedBy(8.dp)
-            } else {
-                Arrangement.Start
-            }
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             AppThemeAdaptiveTabRow(
                 options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
                 selectedValue = selectedTabIndex,
                 onSelectionChange = onTabSelected,
-                modifier = Modifier.width(
-                    (resolveVideoContentTabBarDockItemWidthDp(
-                        layoutSpec.unselectedTabFontSizeSp,
-                    ) * tabs.size).dp,
-                ),
+                modifier = Modifier.weight(1f),
                 height = liquidChromeSpec.segmentedControlHeightDp.dp,
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
@@ -1769,6 +1754,33 @@ private fun VideoContentTabBar(
                 miuixBackdrop = miuixBackdrop,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = isScrollInProgressProvider,
+            )
+
+            AnimatedVisibility(
+                visible = shouldShowDanmakuSendInput(isPlayerCollapsed = isPlayerCollapsed),
+                enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+                exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
+            ) {
+                AppText(
+                    text = danmakuActionLayoutPolicy.sendLabel,
+                    fontSize = danmakuActionLayoutPolicy.sendTextSizeSp.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tapToCopyEnabled = false,
+                    modifier = Modifier
+                        .heightIn(min = danmakuActionLayoutPolicy.sendMinHeightDp.dp)
+                        .wrapContentHeight(align = Alignment.CenterVertically)
+                        .clickable(onClick = onDanmakuSendClick),
+                )
+            }
+            NativeDanmakuToggleButton(
+                enabled = danmakuEnabled,
+                onToggle = onDanmakuToggle,
+                activeTint = MaterialTheme.colorScheme.secondary,
+                inactiveTint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier
+                    .padding(end = danmakuActionLayoutPolicy.toggleTrailingPaddingDp.dp)
+                    .size(danmakuActionLayoutPolicy.toggleButtonSizeDp.dp),
+                iconSize = danmakuActionLayoutPolicy.toggleIconSizeDp.dp,
             )
 
         }

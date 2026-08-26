@@ -151,7 +151,7 @@ class VideoContentTabBarPolicyTest {
     }
 
     @Test
-    fun `tab bar layout stays compact after actions move to owner row`() {
+    fun `tab bar layout stays compact beside danmaku actions`() {
         val spec = resolveVideoContentTabBarLayoutSpec(widthDp = 412)
 
         assertEquals(1f, spec.tabsRowWeight)
