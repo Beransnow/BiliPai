@@ -181,6 +181,8 @@ class AdFilterPlugin : FeedPlugin {
     }
     
     override fun shouldShowItem(item: VideoItem): Boolean {
+        // 广告模式需要接管原始候选做商业内容重排；关闭广告模式后自动恢复过滤。
+        if (AdModeRuntime.enabled.value) return true
         //  每次过滤前确保配置是最新的
         reloadConfigAsync()
         

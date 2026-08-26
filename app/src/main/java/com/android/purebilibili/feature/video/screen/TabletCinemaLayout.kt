@@ -140,6 +140,10 @@ import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.purebilibili.feature.plugin.AdModeInlineBanner
+import com.android.purebilibili.feature.plugin.AdModeRuntime
+import com.android.purebilibili.feature.plugin.resolveAdModeRelatedBannerTarget
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -1406,10 +1410,36 @@ private fun CinemaRelatedPane(
         filterRelatedVideosByHiddenBvids(success.related, hiddenRelatedBvids)
     }
     val relatedVideoCardLayout = rememberRelatedVideoCardLayout()
+    val adModeEnabled by AdModeRuntime.enabled.collectAsStateWithLifecycle()
+    val adModeConfig by AdModeRuntime.config.collectAsStateWithLifecycle()
+    val adBannerTarget = remember(success.related, adModeEnabled, adModeConfig.showPageBanners) {
+        if (adModeEnabled && adModeConfig.showPageBanners) {
+            resolveAdModeRelatedBannerTarget(success.related)
+        } else {
+            null
+        }
+    }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp)
     ) {
+        adBannerTarget?.let { target ->
+            item(key = "ad_mode_tablet_detail_banner_${target.bvid}") {
+                AdModeInlineBanner(
+                    target = target,
+                    onClick = { bvid, cid ->
+                        val navOptions = buildVideoNavigationOptions(
+                            targetCid = cid,
+                            coverUrl = target.coverUrl,
+                        ) ?: android.os.Bundle.EMPTY
+                        onRelatedVideoClick(bvid, navOptions)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                )
+            }
+        }
         val relatedRows = chunkRelatedVideosForHomeStyleGrid(visibleRelatedVideos)
         itemsIndexed(
             items = relatedRows,

@@ -74,6 +74,7 @@ import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrE
 import com.android.purebilibili.feature.home.HomeCoverRequestSpec
 import com.android.purebilibili.feature.home.resolveHomeCardEnterAnimationEnabledAtMount
 import com.android.purebilibili.feature.video.ui.section.resolveCompactPublishTimeRowText
+import com.android.purebilibili.feature.plugin.AdModePromotionBadge
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import kotlin.math.roundToInt
@@ -426,6 +427,30 @@ internal fun StoryVideoCard(
         ) {
         Spacer(modifier = Modifier.height(if (compactMetadata) AppSpacingTokens.Small else AppSpacingTokens.Medium))
         
+        video.promotion?.let { promotion ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AdModePromotionBadge(promotion = promotion)
+                AppText(
+                    text = promotion.actionLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                )
+            }
+            AppText(
+                text = promotion.supportingText,
+                modifier = Modifier.padding(bottom = AppSpacingTokens.ExtraSmall),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
         AppText(
             text = video.title,
             color = MaterialTheme.colorScheme.onSurface,
@@ -518,6 +543,7 @@ internal fun StoryVideoCard(
                     topSpacing = if (compactMetadata) AppSpacingTokens.ExtraSmall else AppSpacingTokens.Small
                 )
             }
+
         }
         }
     }

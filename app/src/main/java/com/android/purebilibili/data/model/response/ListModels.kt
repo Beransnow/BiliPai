@@ -2,6 +2,7 @@ package com.android.purebilibili.data.model.response
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 /**
  * 核心列表模型 - 视频、推荐、热门、分区相关
@@ -207,7 +208,25 @@ data class VideoItem(
     val rights: VideoRights? = null,
     val recommendationFeedback: RecommendationFeedbackMetadata? = null,
     val contentType: String = "",
-    val navigationUrl: String = ""
+    val navigationUrl: String = "",
+    @Transient
+    val promotion: VideoPromotionPresentation? = null,
+)
+
+data class VideoPromotionPresentation(
+    val badgeLabel: String,
+    val supportingText: String,
+    val actionLabel: String,
+    val marketingScore: Int,
+    val inlineBannerTarget: PromotionBannerTarget? = null,
+)
+
+data class PromotionBannerTarget(
+    val bvid: String,
+    val cid: Long,
+    val title: String,
+    val ownerName: String,
+    val coverUrl: String,
 )
 
 @Serializable

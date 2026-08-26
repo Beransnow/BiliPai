@@ -1,33 +1,19 @@
 package com.android.purebilibili.feature.plugin
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Campaign
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.purebilibili.core.plugin.FeedKind
+import com.android.purebilibili.core.plugin.FeedTransformPlugin
 import com.android.purebilibili.core.plugin.PluginCapability
 import com.android.purebilibili.core.plugin.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
@@ -36,11 +22,11 @@ import com.android.purebilibili.core.plugin.RecommendationPluginApi
 import com.android.purebilibili.core.plugin.RecommendationRequest
 import com.android.purebilibili.core.plugin.RecommendationResult
 import com.android.purebilibili.core.plugin.RecommendedVideo
-import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.ui.components.AppSwitchPreference
-import com.android.purebilibili.core.ui.components.AppText
-import com.android.purebilibili.core.ui.components.AppTextButton
-import kotlinx.coroutines.delay
+import com.android.purebilibili.data.model.response.PromotionBannerTarget
+import com.android.purebilibili.data.model.response.RelatedVideo
+import com.android.purebilibili.data.model.response.VideoItem
+import com.android.purebilibili.data.model.response.VideoPromotionPresentation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -48,17 +34,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 
 internal const val AD_MODE_PLUGIN_ID = "ad_mode_simulator"
-
 @Serializable
 data class AdModeConfig(
     val showSplashAd: Boolean = true,
+    val advertiseCards: Boolean = true,
     val showPageBanners: Boolean = true,
-    val prioritizeMarketingVideos: Boolean = true,
 )
 
 object AdModeRuntime {
@@ -66,25 +51,35 @@ object AdModeRuntime {
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val _enabled = MutableStateFlow(false)
     val enabled = _enabled.asStateFlow()
-
     private val _config = MutableStateFlow(AdModeConfig())
     val config = _config.asStateFlow()
-    private var splashShownForCurrentEnableSession = false
+    private val _splashCandidate = MutableStateFlow<VideoItem?>(null)
+    val splashCandidate = _splashCandidate.asStateFlow()
+    private val splashSession = AdModeSplashSession()
 
-    internal fun setEnabled(value: Boolean) {
-        _enabled.value = value
-        if (!value) splashShownForCurrentEnableSession = false
+    internal suspend fun enable() {
+        _config.value = migrateAdModeConfig(
+            PluginStore.getConfigJson(PluginManager.getContext(), AD_MODE_PLUGIN_ID),
+            json,
+        )
+        splashSession.reset()
+        _splashCandidate.value = null
+        _enabled.value = true
     }
 
-    internal fun consumeSplashOpportunity(): Boolean {
-        if (splashShownForCurrentEnableSession) return false
-        splashShownForCurrentEnableSession = true
-        return true
+    internal fun disable() {
+        _enabled.value = false
+        _splashCandidate.value = null
+        splashSession.reset()
     }
 
     fun updateConfig(transform: (AdModeConfig) -> AdModeConfig) {
         val updated = transform(_config.value)
         _config.value = updated
+        if (!updated.showSplashAd) {
+            splashSession.consume()
+            _splashCandidate.value = null
+        }
         ioScope.launch {
             PluginStore.setConfigJson(
                 PluginManager.getContext(),
@@ -94,18 +89,37 @@ object AdModeRuntime {
         }
     }
 
-    internal suspend fun enable() {
-        PluginStore.getConfigJson(PluginManager.getContext(), AD_MODE_PLUGIN_ID)
-            ?.let { stored -> runCatching { json.decodeFromString<AdModeConfig>(stored) }.getOrNull() }
-            ?.let { _config.value = it }
-        _enabled.value = true
+    internal fun offerSplashCandidate(candidate: VideoItem?) {
+        if (!_enabled.value || !splashSession.canOffer() || !_config.value.showSplashAd) return
+        if (_splashCandidate.value == null && candidate?.bvid?.isNotBlank() == true) {
+            _splashCandidate.value = candidate
+        }
+    }
+
+    fun dismissSplashCandidate() {
+        splashSession.consume()
+        _splashCandidate.value = null
     }
 }
 
-class AdModePlugin : RecommendationPluginApi {
+internal class AdModeSplashSession {
+    private var consumed = false
+
+    fun canOffer(): Boolean = !consumed
+
+    fun consume() {
+        consumed = true
+    }
+
+    fun reset() {
+        consumed = false
+    }
+}
+
+class AdModePlugin : RecommendationPluginApi, FeedTransformPlugin {
     override val id: String = AD_MODE_PLUGIN_ID
     override val name: String = "广告模式"
-    override val description: String = "开屏广告、营销内容优先和页面广告横幅"
+    override val description: String = "全站营销内容重排、开屏广告和页面原生广告位"
     override val version: String = "1.0.0"
     override val author: String = "BiliPai项目组"
     override val icon: ImageVector = Icons.Outlined.Campaign
@@ -119,16 +133,19 @@ class AdModePlugin : RecommendationPluginApi {
     )
 
     override suspend fun onEnable() = AdModeRuntime.enable()
+    override suspend fun onDisable() = AdModeRuntime.disable()
 
-    override suspend fun onDisable() = AdModeRuntime.setEnabled(false)
+    override fun transformFeedItems(items: List<VideoItem>, feedKind: FeedKind): List<VideoItem> {
+        if (feedKind !in AD_MODE_FEED_KINDS || items.isEmpty()) return items
+        val transformed = transformAdModeFeed(items, AdModeRuntime.config.value)
+        if (feedKind == FeedKind.HOME_RECOMMEND) {
+            AdModeRuntime.offerSplashCandidate(transformed.firstOrNull())
+        }
+        return transformed
+    }
 
     override fun buildRecommendations(request: RecommendationRequest): RecommendationResult {
-        val config = AdModeRuntime.config.value
-        val ranked = if (config.prioritizeMarketingVideos) {
-            request.candidateVideos.sortedByDescending(::marketingScore)
-        } else {
-            request.candidateVideos
-        }
+        val ranked = rankMarketingVideos(request.candidateVideos)
         return RecommendationResult(
             sourcePluginId = id,
             mode = request.mode,
@@ -136,7 +153,7 @@ class AdModePlugin : RecommendationPluginApi {
                 RecommendedVideo(
                     video = video,
                     score = (100 - index).toDouble(),
-                    confidence = 0.45f,
+                    confidence = 0.55f,
                     explanation = "营销特征优先",
                 )
             },
@@ -149,110 +166,151 @@ class AdModePlugin : RecommendationPluginApi {
     override fun SettingsContent() {
         val config by AdModeRuntime.config.collectAsStateWithLifecycle()
         Column(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             AppSwitchPreference(
                 title = "开屏广告",
-                subtitle = "每次启用后显示一次，可立即跳过",
+                subtitle = "使用首页营销分最高的视频",
                 checked = config.showSplashAd,
-                onCheckedChange = { checked -> AdModeRuntime.updateConfig { it.copy(showSplashAd = checked) } },
+                onCheckedChange = { value -> AdModeRuntime.updateConfig { it.copy(showSplashAd = value) } },
             )
             AppSwitchPreference(
-                title = "页面广告横幅",
-                subtitle = "在首页和视频详情等页面底部显示演示横幅",
+                title = "卡片广告化",
+                subtitle = "全站视频卡片显示广告标签和营销文案",
+                checked = config.advertiseCards,
+                onCheckedChange = { value -> AdModeRuntime.updateConfig { it.copy(advertiseCards = value) } },
+            )
+            AppSwitchPreference(
+                title = "页面广告位",
+                subtitle = "每 6 条内容和视频详情中插入广告横幅",
                 checked = config.showPageBanners,
-                onCheckedChange = { checked -> AdModeRuntime.updateConfig { it.copy(showPageBanners = checked) } },
-            )
-            AppSwitchPreference(
-                title = "营销内容优先",
-                subtitle = "在插件推荐队列中优先排列带营销特征的候选视频",
-                checked = config.prioritizeMarketingVideos,
-                onCheckedChange = { checked ->
-                    AdModeRuntime.updateConfig { it.copy(prioritizeMarketingVideos = checked) }
-                },
+                onCheckedChange = { value -> AdModeRuntime.updateConfig { it.copy(showPageBanners = value) } },
             )
         }
     }
 }
 
+internal val AD_MODE_FEED_KINDS = setOf(
+    FeedKind.HOME_RECOMMEND,
+    FeedKind.HOME_POPULAR,
+    FeedKind.HOME_RANK,
+    FeedKind.HOME_REGION,
+    FeedKind.SEARCH,
+)
+
+internal fun transformAdModeFeed(items: List<VideoItem>, config: AdModeConfig): List<VideoItem> {
+    val ranked = rankMarketingVideos(items)
+    val markedBvids = ranked
+        .filter { marketingScore(it) >= 60 }
+        .take(2)
+        .map { it.bvid }
+        .toSet()
+    return ranked.mapIndexed { index, video ->
+        if (!config.advertiseCards && !config.showPageBanners) return@mapIndexed video
+        video.copy(
+            promotion = VideoPromotionPresentation(
+                badgeLabel = "广告",
+                supportingText = resolveMarketingSupportingText(video),
+                actionLabel = "立即观看",
+                marketingScore = marketingScore(video),
+            ).takeIf { config.advertiseCards && video.bvid in markedBvids },
+        )
+    }
+}
+
+internal fun rankMarketingVideos(items: List<VideoItem>): List<VideoItem> = items
+    .withIndex()
+    .sortedWith(
+        compareByDescending<IndexedValue<VideoItem>> { marketingScore(it.value) }
+            .thenBy { it.index },
+    )
+    .map { it.value }
+
 internal fun marketingScore(video: VideoItem): Int {
-    val text = "${video.title} ${video.owner.name} ${video.tname} ${video.contentType}".lowercase()
-    val keywordScore = MARKETING_KEYWORDS.count(text::contains) * 20
+    val feedbackText = video.recommendationFeedback?.reasons
+        .orEmpty()
+        .joinToString(" ") { "${it.name} ${it.toast}" }
+        .lowercase()
+    val goto = video.recommendationFeedback?.goto.orEmpty().lowercase()
+    val routeText = "${video.contentType} ${video.navigationUrl}".lowercase()
+    val serverCommercialScore = when {
+        COMMERCIAL_FEEDBACK_MARKERS.any(feedbackText::contains) -> 90
+        goto.isNotBlank() && goto !in PLAYABLE_VIDEO_GOTO_TYPES -> 70
+        COMMERCIAL_ROUTE_MARKERS.any(routeText::contains) -> 60
+        else -> 0
+    }
+    val viewCount = video.stat.view.toLong().coerceAtLeast(0L)
+    val likeCount = video.stat.like.toLong().coerceAtLeast(0L)
+    val knownEngagement = likeCount > 0L || video.stat.coin > 0 || video.stat.favorite > 0 ||
+        video.stat.reply > 0 || video.stat.share > 0
     val lowEngagementScore = if (
-        video.stat.view > 10_000 &&
-        video.stat.like.toLong() * 100L < video.stat.view.toLong()
+        viewCount > 10_000L && knownEngagement && likeCount * 1_000L < viewCount * 3L
     ) {
-        12
+        28
     } else {
         0
     }
-    val shortVideoScore = if (video.duration in 1..90) 6 else 0
-    return keywordScore + lowEngagementScore + shortVideoScore
+    val lowConversionScore = if (
+        viewCount > 20_000L && knownEngagement &&
+        video.stat.coin.toLong() * 2_000L < viewCount &&
+        video.stat.favorite.toLong() * 1_000L < viewCount
+    ) {
+        18
+    } else {
+        0
+    }
+    val shortVideoScore = if (video.duration in 1..75) 8 else 0
+    return serverCommercialScore + lowEngagementScore + lowConversionScore + shortVideoScore
 }
 
-private val MARKETING_KEYWORDS = listOf(
-    "必买", "测评", "种草", "优惠", "限时", "新品", "同款", "开箱", "推荐", "避坑", "直播间",
+private fun resolveMarketingSupportingText(video: VideoItem): String = when {
+    marketingScore(video) >= 70 -> "商业推广"
+    marketingScore(video) >= 40 -> "高曝光推广内容"
+    else -> "为你推荐"
+}
+
+private fun VideoItem.toPromotionBannerTarget() = PromotionBannerTarget(
+    bvid = bvid,
+    cid = cid,
+    title = title,
+    ownerName = owner.name,
+    coverUrl = pic,
 )
 
-@Composable
-fun AdModeOverlayHost(currentRoute: String?, modifier: Modifier = Modifier) {
-    val enabled by AdModeRuntime.enabled.collectAsStateWithLifecycle()
-    val config by AdModeRuntime.config.collectAsStateWithLifecycle()
-    var splashVisible by rememberSaveable { mutableStateOf(false) }
-
-    LaunchedEffect(enabled, config.showSplashAd) {
-        if (enabled && config.showSplashAd && AdModeRuntime.consumeSplashOpportunity()) {
-            splashVisible = true
-            delay(3_500)
-            splashVisible = false
-        } else {
-            splashVisible = false
-        }
-    }
-
-    if (!enabled) return
-    Box(modifier = modifier.fillMaxSize()) {
-        if (config.showPageBanners && !splashVisible) {
-            AdModeBanner(
-                placement = if (currentRoute?.substringBefore("?") == "video") "视频详情" else "信息流",
-                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 12.dp, vertical = 88.dp),
+internal fun resolveAdModeRelatedBannerTarget(videos: List<RelatedVideo>): PromotionBannerTarget? {
+    val ranked = rankMarketingVideos(
+        videos.map { related ->
+            VideoItem(
+                id = related.aid,
+                aid = related.aid,
+                bvid = related.bvid,
+                cid = related.cid,
+                title = related.title,
+                pic = related.pic,
+                owner = related.owner,
+                stat = related.stat,
+                duration = related.duration,
             )
-        }
-        AnimatedVisibility(
-            visible = splashVisible,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize().background(Color(0xFFF7D54A)).padding(24.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    AppText("精选推荐", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black)
-                    AppText("全场限时 · 错过再等五分钟", style = MaterialTheme.typography.titleLarge)
-                    AppTextButton(onClick = { splashVisible = false }) { AppText("跳过广告") }
-                }
-            }
-        }
-    }
+        },
+    )
+    return ranked.firstOrNull { it.bvid.isNotBlank() }?.toPromotionBannerTarget()
 }
 
-@Composable
-private fun AdModeBanner(placement: String, modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color(0xFF201F1A), RoundedCornerShape(16.dp))
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Column(modifier = Modifier.fillMaxWidth(0.82f)) {
-            AppText("广告模式 · $placement", color = Color.White, fontWeight = FontWeight.Bold)
-            AppText("你刚好需要的，算法刚好知道", color = Color(0xFFE6E1D5))
-        }
-        AppText("广告", color = Color(0xFFF7D54A), style = MaterialTheme.typography.labelMedium)
-    }
+internal fun migrateAdModeConfig(raw: String?, json: Json): AdModeConfig {
+    if (raw.isNullOrBlank()) return AdModeConfig()
+    return runCatching { json.decodeFromString<AdModeConfig>(raw) }.getOrDefault(AdModeConfig())
 }
+
+private val PLAYABLE_VIDEO_GOTO_TYPES = setOf("av", "video", "")
+private val COMMERCIAL_FEEDBACK_MARKERS = listOf("广告", "推广", "营销", "商业")
+private val COMMERCIAL_ROUTE_MARKERS = listOf(
+    "mall.bilibili.com",
+    "show.bilibili.com",
+    "activity.bilibili.com",
+    "commercial",
+    "product",
+    "campaign",
+)

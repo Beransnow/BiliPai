@@ -112,6 +112,9 @@ import com.android.purebilibili.feature.video.note.VideoNoteEditorDocument
 import com.android.purebilibili.feature.video.note.VideoNoteUiState
 import com.android.purebilibili.feature.video.note.buildVideoNoteShareText
 import com.android.purebilibili.feature.video.note.shouldShowVideoNoteCard
+import com.android.purebilibili.feature.plugin.AdModeInlineBanner
+import com.android.purebilibili.feature.plugin.AdModeRuntime
+import com.android.purebilibili.feature.plugin.resolveAdModeRelatedBannerTarget
 import kotlin.math.abs
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AppShapes
@@ -1019,6 +1022,15 @@ private fun VideoIntroTab(
         filterRelatedVideosByHiddenBvids(relatedVideos, hiddenRelatedBvids)
     }
     val relatedVideoCardLayout = rememberRelatedVideoCardLayout()
+    val adModeEnabled by AdModeRuntime.enabled.collectAsStateWithLifecycle()
+    val adModeConfig by AdModeRuntime.config.collectAsStateWithLifecycle()
+    val adBannerTarget = remember(relatedVideos, adModeEnabled, adModeConfig.showPageBanners) {
+        if (adModeEnabled && adModeConfig.showPageBanners) {
+            resolveAdModeRelatedBannerTarget(relatedVideos)
+        } else {
+            null
+        }
+    }
     LazyColumn(
         state = listState,
         modifier = modifier.fillMaxSize(),
@@ -1092,6 +1104,23 @@ private fun VideoIntroTab(
 
         item {
             VideoRecommendationHeader()
+        }
+
+        adBannerTarget?.let { target ->
+            item(key = "ad_mode_detail_banner_${target.bvid}") {
+                AdModeInlineBanner(
+                    target = target,
+                    onClick = { bvid, cid ->
+                        onRelatedVideoClick(
+                            bvid,
+                            buildVideoNavigationOptions(targetCid = cid, coverUrl = target.coverUrl),
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                )
+            }
         }
 
         val relatedRows = chunkRelatedVideosForHomeStyleGrid(visibleRelatedVideos)
