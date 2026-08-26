@@ -2389,6 +2389,11 @@ private fun MaterialBottomBar(
             ),
             onSearchClick = onSearchClick,
             haptic = haptic,
+            blurEnabled = blurEnabled,
+            hazeState = hazeState,
+            motionTier = motionTier,
+            isTransitionRunning = isTransitionRunning,
+            forceLowBlurBudget = forceLowBlurBudget,
         )
         return
     }
@@ -2583,7 +2588,30 @@ private fun OfficialMd3FloatingBottomBar(
     searchEnabled: Boolean,
     onSearchClick: () -> Unit,
     haptic: (HapticType) -> Unit,
+    blurEnabled: Boolean,
+    hazeState: HazeState?,
+    motionTier: MotionTier,
+    isTransitionRunning: Boolean,
+    forceLowBlurBudget: Boolean,
 ) {
+    val useBlur = blurEnabled && hazeState != null
+    val toolbarShape = FloatingToolbarDefaults.ContainerShape
+    val toolbarColors = FloatingToolbarDefaults.standardFloatingToolbarColors(
+        toolbarContainerColor = if (useBlur) Color.Transparent else Color.Unspecified,
+    )
+    val toolbarModifier = if (blurEnabled && hazeState != null) {
+        Modifier.unifiedBlur(
+            hazeState = hazeState,
+            shape = toolbarShape,
+            surfaceType = BlurSurfaceType.BOTTOM_BAR,
+            motionTier = motionTier,
+            isScrolling = false,
+            isTransitionRunning = isTransitionRunning,
+            forceLowBudget = forceLowBlurBudget,
+        )
+    } else {
+        Modifier
+    }
     val toolbarContent: @Composable RowScope.() -> Unit = {
         visibleItems.forEach { item ->
             val selected = currentItem == item
@@ -2655,6 +2683,9 @@ private fun OfficialMd3FloatingBottomBar(
         if (searchEnabled) {
             HorizontalFloatingToolbar(
                 expanded = true,
+                modifier = toolbarModifier,
+                colors = toolbarColors,
+                shape = toolbarShape,
                 floatingActionButton = {
                     FloatingToolbarDefaults.StandardFloatingActionButton(
                         onClick = {
@@ -2672,6 +2703,9 @@ private fun OfficialMd3FloatingBottomBar(
         } else {
             HorizontalFloatingToolbar(
                 expanded = true,
+                modifier = toolbarModifier,
+                colors = toolbarColors,
+                shape = toolbarShape,
                 content = toolbarContent,
             )
         }
