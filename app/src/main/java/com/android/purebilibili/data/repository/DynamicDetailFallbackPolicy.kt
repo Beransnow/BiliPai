@@ -87,13 +87,19 @@ internal fun mergeRicherOpusDetailContent(
     val baseContent = base.modules.module_dynamic ?: return richest
     val baseMajor = baseContent.major
     val baseOpus = baseMajor?.opus
+    // Detail and feed responses split rich content across payloads: the opus
+    // response may contain the article blocks while the feed seed contains the
+    // actual preview pictures. Keep the union so navigating into detail cannot
+    // accidentally drop images just because the richer candidate scored higher.
+    val richestPics = candidates.asSequence()
+        .mapNotNull { it.modules.module_dynamic?.major?.opus }
+        .flatMap { it.pics.asSequence() }
+        .filter { it.url.isNotBlank() }
+        .distinctBy { it.url }
+        .toList()
     val mergedOpus = OpusMajor(
         jump_url = baseOpus?.jump_url?.takeIf { it.isNotBlank() } ?: richestOpus.jump_url,
-        pics = if (richestOpus.pics.size >= (baseOpus?.pics?.size ?: 0)) {
-            richestOpus.pics
-        } else {
-            baseOpus?.pics.orEmpty()
-        },
+        pics = richestPics.ifEmpty { baseOpus?.pics.orEmpty() },
         summary = if ((richestOpus.summary?.text?.length ?: 0) >= (baseOpus?.summary?.text?.length ?: 0)) {
             richestOpus.summary
         } else {
