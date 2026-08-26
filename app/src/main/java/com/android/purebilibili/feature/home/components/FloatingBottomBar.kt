@@ -999,7 +999,6 @@ fun FloatingBottomBar(
                             }
                             clip = false
                         }
-                        .clip(pillShape)
                         .background(colors.indicatorColor.copy(alpha = 0.15f), pillShape)
                         .height(fittedIndicatorHeight)
                         .width(fittedIndicatorWidth),
