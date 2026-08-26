@@ -247,11 +247,12 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         PluginManager.register(TodayWatchPlugin())
         PluginManager.register(CdnRegionPlugin())
         PluginManager.register(HomeFeedAnonymizerPlugin())
+        PluginManager.register(com.android.purebilibili.feature.plugin.AdModePlugin())
         PluginManager.register(DlnaCastPlugin())
         PluginManager.register(GoogleCastPlugin())
         //  [BiliPai 移植] 推荐流过滤(默认关闭, 可在插件中心启用)
         PluginManager.register(com.android.purebilibili.feature.plugin.BiliPaiFeedFilterPlugin())
-        Logger.d(PureApplicationRuntimeConfig.TAG, " Plugin system initialized with 11 built-in plugins")
+        Logger.d(PureApplicationRuntimeConfig.TAG, " Plugin system initialized with 12 built-in plugins")
 
         com.android.purebilibili.core.plugin.json.JsonPluginManager.initialize(this)
         Logger.d(PureApplicationRuntimeConfig.TAG, " JSON plugin system initialized")

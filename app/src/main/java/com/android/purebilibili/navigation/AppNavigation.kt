@@ -47,6 +47,7 @@ import com.android.purebilibili.feature.home.HomeVideoClickRequest
 import com.android.purebilibili.feature.home.HomeVideoClickSource
 import com.android.purebilibili.feature.home.HomeScreen
 import com.android.purebilibili.feature.home.HomeViewModel
+import com.android.purebilibili.feature.plugin.AdModeOverlayHost
 import com.android.purebilibili.feature.home.DepthSyncedGlobalHomeWallpaperBackdrop
 import com.android.purebilibili.feature.home.resolveHomeWallpaperBackdropAppearance
 import com.android.purebilibili.feature.home.resolveHomeWallpaperUri
@@ -3746,6 +3747,13 @@ fun AppNavigation(
                 modifier = Modifier
                     .fillMaxSize()
                     .zIndex(100f)
+            )
+
+            AdModeOverlayHost(
+                currentRoute = currentRoute,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(99f),
             )
 
             HingeOcclusionInputShield(
