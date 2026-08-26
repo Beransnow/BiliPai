@@ -3,6 +3,7 @@ package com.android.purebilibili.core.ui.components
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -314,6 +315,9 @@ fun AppButton(
                 disabledContentColor = disabledContentColor,
             ),
             insideMargin = contentPadding,
+            minHeight = AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
+            minWidth = AppChromeSizeTokens.MiuixNativeCompactControlMinWidthDp.dp,
+            cornerRadius = AppChromeSizeTokens.MiuixNativeCompactCornerRadiusDp.dp,
             interactionSource = resolvedInteractionSource,
             content = content,
         )
@@ -364,6 +368,9 @@ fun AppButton(
                 )
             } ?: MiuixButtonDefaults.buttonColorsPrimary(),
             insideMargin = contentPadding,
+            minHeight = AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
+            minWidth = AppChromeSizeTokens.MiuixNativeCompactControlMinWidthDp.dp,
+            cornerRadius = AppChromeSizeTokens.MiuixNativeCompactCornerRadiusDp.dp,
             interactionSource = resolvedInteractionSource,
             content = content,
         )
@@ -405,6 +412,9 @@ fun AppTextButton(
                 disabledContentColor = colors.disabledContentColor,
             ),
             insideMargin = contentPadding,
+            minHeight = AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
+            minWidth = AppChromeSizeTokens.MiuixNativeCompactControlMinWidthDp.dp,
+            cornerRadius = AppChromeSizeTokens.MiuixNativeCompactCornerRadiusDp.dp,
             interactionSource = resolvedInteractionSource,
             content = content,
         )

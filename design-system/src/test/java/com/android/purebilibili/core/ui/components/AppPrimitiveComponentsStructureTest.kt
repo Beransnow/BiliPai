@@ -144,7 +144,8 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuix.contains("MiuixIconButton("))
         assertTrue(miuix.contains("MiuixButtonDefaults.buttonColorsPrimary()"))
         assertTrue(miuix.contains("MiuixLocalContentColor provides contentColor"))
-        assertTrue(miuix.contains("RoundedCornerShape(MiuixIconButtonDefaults.CornerRadius)"))
+        assertTrue(miuix.contains("MiuixNativeCompactControlHeightDp.dp"))
+        assertTrue(miuix.contains("MiuixNativeCompactCornerRadiusDp.dp"))
         assertTrue(miuix.contains("if (interactionSource != null)"))
         assertTrue(miuix.contains(".then(pointerMirror)"))
         assertTrue(miuix.contains("awaitEachGesture"))
@@ -189,9 +190,10 @@ class AppPrimitiveComponentsStructureTest {
         assertFalse(facade.contains("import top.yukonga.miuix"))
 
         assertTrue(material.contains("import androidx.compose.material3.ListItem"))
-        assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.BasicComponent"))
-        assertTrue(miuix.contains("startAction = leadingContent"))
-        assertTrue(miuix.contains("endActions = trailingContent?.let"))
+        assertFalse(miuix.contains("BasicComponent("))
+        assertTrue(miuix.contains(".heightIn(min = 48.dp)"))
+        assertTrue(miuix.contains("leadingContent()"))
+        assertTrue(miuix.contains("trailingContent()"))
         assertFalse(miuix.contains("import androidx.compose.material3"))
     }
 

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.adaptiveSquircleBackground
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSegmentedControlColors
 import com.android.purebilibili.core.ui.components.resolveAppMiuixSegmentedColors
@@ -33,7 +34,7 @@ internal fun <T> AppMiuixSegmentedControl(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val itemGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = TabRowDefaults.TabRowHeight,
+        nativeMinimumHeight = AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
     )
     val outerGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
@@ -91,7 +92,10 @@ internal fun <T> AppMiuixTabRow(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val geometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = height ?: TabRowDefaults.TabRowHeight,
+        nativeMinimumHeight = minOf(
+            height ?: AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
+            AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
+        ),
     )
     TabRow(
         tabs = options.map { it.label },

@@ -73,7 +73,7 @@ class AppSegmentedControlPolicyTest {
         )
 
         assertFalse(materialSource.contains("heightIn(min = 48.dp)"))
-        assertTrue(miuixSource.contains("TabRowDefaults.TabRowHeight"))
+        assertTrue(miuixSource.contains("MiuixNativeCompactControlHeightDp"))
         assertTrue(miuixSource.contains("resolveRoundedControlVisualGeometry("))
     }
 
