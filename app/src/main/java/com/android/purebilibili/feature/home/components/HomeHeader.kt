@@ -2152,10 +2152,12 @@ fun HomeHeader(
                 isLiquidGlassEnabled = resolveHomeTopTabIndicatorLiquidGlassEnabled(
                     homeSettings = homeSettings,
                 ),
-                floatingDockBlurEnabled = effectiveContinuousSlabRenderMode !=
-                    HomeTopChromeRenderMode.PLAIN,
-                floatingDockContainerVisible = effectiveContinuousSlabRenderMode ==
-                    HomeTopChromeRenderMode.PLAIN,
+                floatingDockBlurEnabled = isHeaderBlurEnabled,
+                // This is a user-facing setting decision, not a renderer-mode decision: some
+                // themes flatten the local mode to PLAIN even while the header blur is enabled.
+                // In blurred headers the continuous slab is the container; keep only tab
+                // glyphs/text plus the selected indicator capsule.
+                floatingDockContainerVisible = !isHeaderBlurEnabled,
                 liquidGlassStyle = liquidStyle,
                 liquidGlassTuning = liquidGlassTuning,
                 liquidGlassPreset = bottomBarLiquidGlassPreset,

@@ -55,8 +55,8 @@ class ProgressiveTopChromePolicyTest {
 
         assertTrue(homeHeader.contains("floatingTabBackdropOverlap + progressiveBlurBottomExtension"))
         assertTrue(homeHeader.contains("FloatingBottomBarDefaultShellHeight / 2"))
-        assertTrue(homeHeader.contains("floatingDockBlurEnabled = effectiveContinuousSlabRenderMode"))
-        assertTrue(homeHeader.contains("floatingDockContainerVisible = effectiveContinuousSlabRenderMode"))
+        assertTrue(homeHeader.contains("floatingDockBlurEnabled = isHeaderBlurEnabled"))
+        assertTrue(homeHeader.contains("floatingDockContainerVisible = !isHeaderBlurEnabled"))
         assertTrue(dynamicTopBar.contains("Spacer(modifier = Modifier.height(statusBarHeight))"))
         assertTrue(commonList.contains(".then(topBarBackgroundModifier)"))
     }
