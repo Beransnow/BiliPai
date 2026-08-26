@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.home.components
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveUiStyle
 import com.android.purebilibili.core.ui.AppTopTabPresentation
@@ -17,6 +18,36 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TopTabStylePolicyTest {
+
+    @Test
+    fun `md3 top tabs use official floating toolbar only when liquid glass is off`() {
+        assertTrue(
+            shouldUseOfficialMd3HomeTopToolbar(
+                uiStyle = AppUiStyle.MATERIAL3,
+                liquidGlassEnabled = false,
+            )
+        )
+        assertFalse(
+            shouldUseOfficialMd3HomeTopToolbar(
+                uiStyle = AppUiStyle.MATERIAL3,
+                liquidGlassEnabled = true,
+            )
+        )
+        assertFalse(
+            shouldUseOfficialMd3HomeTopToolbar(
+                uiStyle = AppUiStyle.MIUIX,
+                liquidGlassEnabled = false,
+            )
+        )
+
+        val topDock = sourceText(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/" +
+                "HomeTopTabFloatingDock.kt"
+        )
+        assertTrue(topDock.contains("HorizontalFloatingToolbar("))
+        assertTrue(topDock.contains("FilledTonalButton("))
+        assertTrue(topDock.contains("FilledTonalIconButton("))
+    }
 
     @Test
     fun `floating plus liquid uses liquid glass`() {

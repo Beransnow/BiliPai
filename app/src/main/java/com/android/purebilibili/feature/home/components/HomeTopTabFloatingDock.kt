@@ -1,7 +1,17 @@
 package com.android.purebilibili.feature.home.components
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.HorizontalFloatingToolbar
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +26,8 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -40,6 +52,11 @@ internal fun shouldHomeTopTabChromeDrawOuterShell(
     innerOwnsFloatingDock: Boolean,
 ): Boolean = drawOuterChrome && !innerOwnsFloatingDock
 
+internal fun shouldUseOfficialMd3HomeTopToolbar(
+    uiStyle: AppUiStyle,
+    liquidGlassEnabled: Boolean,
+): Boolean = uiStyle == AppUiStyle.MATERIAL3 && !liquidGlassEnabled
+
 /** Uses the exact home bottom-bar width contract, including its screen-edge inset. */
 internal fun resolveHomeTopTabFloatingDockWidth(
     containerWidth: Dp,
@@ -56,7 +73,8 @@ internal fun resolveHomeTopTabFloatingDockWidth(
     cornerRadius = resolveBiliPaiBottomBarDockHeight(searchExpanded = false) / 2,
 )
 
-/** Top category dock using the bottom bar's component and geometry resolvers unchanged. */
+/** Top category navigation matching the active bottom-bar renderer contract. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun HomeTopTabFloatingDock(
     categories: List<String>,
@@ -78,6 +96,57 @@ internal fun HomeTopTabFloatingDock(
     modifier: Modifier = Modifier,
 ) {
     if (categories.isEmpty()) return
+    if (
+        shouldUseOfficialMd3HomeTopToolbar(
+            uiStyle = LocalAppUiStyle.current,
+            liquidGlassEnabled = liquidGlassEffectsEnabled,
+        )
+    ) {
+        Box(modifier = modifier, contentAlignment = Alignment.Center) {
+            val toolbarContent: @Composable RowScope.() -> Unit = {
+                categories.forEachIndexed { index, label ->
+                    val selected = selectedIndex == index
+                    val categoryKey = categoryKeys.getOrNull(index) ?: label
+                    val icon: @Composable () -> Unit = {
+                        AppIcon(
+                            imageVector = resolveTopTabCategoryIcon(
+                                categoryKey = categoryKey,
+                                iconFamily = AppSemanticIconFamily.MATERIAL,
+                                selected = selected,
+                            ),
+                            contentDescription = if (showText) null else label,
+                        )
+                    }
+                    val onClick = {
+                        if (selected) onReselected() else onSelected(index)
+                    }
+                    when {
+                        showIcon && showText && selected -> FilledTonalButton(
+                            onClick = onClick,
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                        ) {
+                            icon()
+                            Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
+                            AppText(text = label, maxLines = 1, tapToCopyEnabled = false)
+                        }
+                        showIcon && selected -> FilledTonalIconButton(onClick = onClick) { icon() }
+                        showIcon -> IconButton(onClick = onClick) { icon() }
+                        selected -> FilledTonalButton(onClick = onClick) {
+                            AppText(text = label, maxLines = 1, tapToCopyEnabled = false)
+                        }
+                        else -> TextButton(onClick = onClick) {
+                            AppText(text = label, maxLines = 1, tapToCopyEnabled = false)
+                        }
+                    }
+                }
+            }
+            HorizontalFloatingToolbar(
+                expanded = true,
+                content = toolbarContent,
+            )
+        }
+        return
+    }
     val dockHeight = resolveBiliPaiBottomBarDockHeight(searchExpanded = false)
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
     val bottomBarTuning = resolveAndroidNativeBottomBarTuning(

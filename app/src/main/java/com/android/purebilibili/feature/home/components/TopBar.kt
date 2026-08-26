@@ -1006,8 +1006,15 @@ private fun LightweightHomeTopTabs(
             liquidGlassEnabled = isLiquidGlassEnabled,
         ),
     )
+    val useOfficialMd3HomeTopToolbar = useFloatingBottomBarDock &&
+        shouldUseOfficialMd3HomeTopToolbar(
+            uiStyle = LocalAppUiStyle.current,
+            liquidGlassEnabled = isLiquidGlassEnabled,
+        )
     val topTabMotionSpec = remember { resolveSegmentedControlMotionSpec() }
-    val baseRowHeight = if (useFloatingBottomBarDock) {
+    val baseRowHeight = if (useOfficialMd3HomeTopToolbar) {
+        FloatingToolbarDefaults.ContainerSize
+    } else if (useFloatingBottomBarDock) {
         resolveBiliPaiBottomBarDockHeight(searchExpanded = false)
     } else if (skinPlainStyle) {
         resolveHomeSkinTopTabRowHeight()
