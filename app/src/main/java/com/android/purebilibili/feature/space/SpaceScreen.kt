@@ -107,6 +107,7 @@ import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.MediaContrastPalette
@@ -3205,7 +3206,7 @@ private fun SpaceTopVideoCard(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .clip(AppShapes.container(ContainerLevel.Card))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f))
+            .background(AppSurfaceTokens.cardContainer())
             .clickable {
                 coverBounds?.let { bounds ->
                     CardPositionManager.recordVideoCardPosition(
@@ -3397,6 +3398,7 @@ private fun SpaceArchiveListItemRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .padding(horizontal = 16.dp)
             .videoCardShellSharedBoundsOrEmpty(
                 enabled = useCardShellSharedBounds,
                 sharedTransitionScope = sharedTransitionScope,
@@ -3406,11 +3408,12 @@ private fun SpaceArchiveListItemRow(
                 motionSpec = cardSharedTransitionMotionSpec,
                 clipShape = cardShellShape
             )
+            .clip(cardShellShape)
+            .background(AppSurfaceTokens.cardContainer())
             .border(width = 3.dp, color = locateHighlightColor, shape = cardShellShape)
             .onGloballyPositioned { coordinates ->
                 cardBounds = coordinates.boundsInRoot()
             }
-            .padding(horizontal = 16.dp)
             .clickable {
                 cardBounds?.let { bounds ->
                     CardPositionManager.recordVideoCardPosition(
