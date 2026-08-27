@@ -11,13 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.adaptiveSquircleBackground
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSegmentedControlColors
 import com.android.purebilibili.core.ui.components.resolveAppMiuixSegmentedColors
 import com.android.purebilibili.core.ui.components.resolveAppSegmentedSelectionIndex
 import com.android.purebilibili.core.ui.resolveRoundedControlVisualGeometry
 import top.yukonga.miuix.kmp.basic.TabRow
-import top.yukonga.miuix.kmp.basic.TabRowDefaults
 
 @Composable
 internal fun <T> AppMiuixSegmentedControl(
@@ -26,6 +27,7 @@ internal fun <T> AppMiuixSegmentedControl(
     enabled: Boolean,
     colors: AppSegmentedControlColors,
     preferredCornerRadius: Dp,
+    height: Dp? = null,
     modifier: Modifier,
     onSelectionChange: (T) -> Unit,
 ) {
@@ -33,7 +35,7 @@ internal fun <T> AppMiuixSegmentedControl(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val itemGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = height ?: TabRowDefaults.TabRowHeight,
+        nativeMinimumHeight = height ?: AppChromeSizeTokens.MinimumTouchTarget,
     )
     val outerGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
@@ -46,7 +48,7 @@ internal fun <T> AppMiuixSegmentedControl(
                 color = colors.outerContainerColor,
                 cornerRadius = outerGeometry.cornerRadius,
             )
-            .padding(4.dp),
+            .padding(AppSpacingTokens.ExtraSmall),
     ) {
         TabRow(
             tabs = options.map { it.label },
@@ -63,7 +65,7 @@ internal fun <T> AppMiuixSegmentedControl(
             ),
             height = itemGeometry.height,
             cornerRadius = itemGeometry.cornerRadius,
-            itemSpacing = 4.dp,
+            itemSpacing = AppSpacingTokens.ExtraSmall,
             // 与 AppMiuixTabRow 一致：交给 Miuix 按容器宽度均分，避免默认 minWidth=76dp
             // 在选项较多时压缩文字。
             minWidth = 0.dp,
@@ -91,7 +93,7 @@ internal fun <T> AppMiuixTabRow(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val geometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = height ?: TabRowDefaults.TabRowHeight,
+        nativeMinimumHeight = height ?: AppChromeSizeTokens.MinimumTouchTarget,
     )
     TabRow(
         tabs = options.map { it.label },
@@ -114,7 +116,7 @@ internal fun <T> AppMiuixTabRow(
         maxWidth = Dp.Infinity,
         height = geometry.height,
         cornerRadius = geometry.cornerRadius,
-        itemSpacing = 8.dp,
+        itemSpacing = AppSpacingTokens.Small,
         listState = if (scrollable) scrollState else null,
     )
     // Upstream centers every selected item, including the first and last. At a non-zero parent
