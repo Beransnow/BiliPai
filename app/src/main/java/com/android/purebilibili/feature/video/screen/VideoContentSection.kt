@@ -1765,8 +1765,9 @@ private fun VideoContentTabBar(
                 height = liquidChromeSpec.segmentedControlHeightDp.dp,
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
-                // 该栏的指示器由 HorizontalPager 实时位置驱动，禁止自身再 settle 一次。
-                dragSelectionEnabled = false,
+                // Keep direct horizontal dragging on the indicator; pager motion still
+                // drives the position provider without disabling the tab gesture.
+                dragSelectionEnabled = true,
                 tapPressRefractionEnabled = true,
                 miuixBackdrop = miuixBackdrop,
                 indicatorPositionProvider = indicatorPositionProvider,
