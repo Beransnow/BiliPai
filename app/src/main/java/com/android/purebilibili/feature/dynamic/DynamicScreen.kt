@@ -1694,7 +1694,12 @@ private fun HorizontalUserList(
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            modifier = Modifier.width(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large)
+                            // 头像行名称不要用头像宽度限制，避免正常昵称被提前截断；
+                            // LazyRow 仍会在屏幕边缘自然裁切超出视口的内容。
+                            modifier = Modifier.widthIn(
+                                min = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large,
+                                max = 112.dp,
+                            )
                         )
                     }
 
