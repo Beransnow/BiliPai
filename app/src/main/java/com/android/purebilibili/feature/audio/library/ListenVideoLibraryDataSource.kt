@@ -149,7 +149,7 @@ internal class ListenVideoLibraryLoader(
             onFolderIndexed(index + 1, validFolders.size)
         }
 
-        ListenVideoIndexResult(
+        return ListenVideoIndexResult(
             resources = resources.distinctBy { resource ->
                     if (resource.type == 21) {
                         "album:${resource.season_id.takeIf { it > 0L } ?: resource.id}"

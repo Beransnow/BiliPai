@@ -54,6 +54,8 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.VideoStatRow
 import com.android.purebilibili.core.ui.feedContentTypography
+import com.android.purebilibili.core.ui.videoCardTitleMaxLines
+import com.android.purebilibili.core.ui.videoCardTitleOverflow
 import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
@@ -975,9 +977,11 @@ private fun LandingInfoTexts(
         style = contentTypography.title,
         color = MaterialTheme.colorScheme.onSurface,
         fontWeight = FontWeight.Medium,
-        minLines = 2,
-        maxLines = 2,
-        overflow = TextOverflow.Ellipsis,
+        // Match the measured source card. Forcing minLines here makes a one-line
+        // dynamic-card title taller than its frozen info bounds, so the landing
+        // overlay clips the glyphs while the sharedBounds animation settles.
+        maxLines = videoCardTitleMaxLines(),
+        overflow = videoCardTitleOverflow(),
     )
     if (model.infoPresentation.showStatsInInfo) {
         VideoStatRow(
