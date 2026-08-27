@@ -104,7 +104,7 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
     blockRichTextNodes: List<RichTextNode> = emptyList(),
 ): DynamicDesc? {
     if (blockText.isBlank()) return null
-    if (blockRichTextNodes.isNotEmpty()) {
+    if (blockRichTextNodes.any { it.type.isNotBlank() }) {
         return DynamicDesc(text = blockText, rich_text_nodes = blockRichTextNodes)
     }
     if (preferredDesc == null) return null

@@ -332,7 +332,6 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
     private fun extractParagraphRichTextNodes(paragraph: JsonObject): List<RichTextNode> {
         val nodes = (paragraph["text"] as? JsonObject)?.get("nodes") as? JsonArray
             ?: return emptyList()
-        var hasActionableRichNode = false
         val parsedNodes = nodes.mapNotNull { nodeElement ->
             val node = nodeElement as? JsonObject ?: return@mapNotNull null
             (node["rich"] as? JsonObject)?.let { rich ->
@@ -343,8 +342,6 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
                     jump_url = rich["jump_url"]?.jsonPrimitive?.contentOrNull,
                     rid = rich["rid"]?.jsonPrimitive?.contentOrNull,
                 )
-                hasActionableRichNode = hasActionableRichNode ||
-                    richNode.type.isNotBlank() || richNode.rid != null || richNode.jump_url != null
                 richNode
             } ?: (node["word"] as? JsonObject)
                 ?.get("words")
@@ -353,7 +350,7 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { words -> RichTextNode(type = "RICH_TEXT_NODE_TYPE_TEXT", text = words) }
         }
-        return parsedNodes.takeIf { hasActionableRichNode }.orEmpty()
+        return parsedNodes.filter { it.text.isNotBlank() || it.orig_text.isNotBlank() }
     }
 
     private fun extractParagraphPics(
