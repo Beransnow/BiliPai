@@ -19,8 +19,10 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import kotlinx.coroutines.flow.distinctUntilChanged // [Fix] Missing import
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -1049,9 +1051,15 @@ fun DynamicScreen(
                                 enter = expandVertically(
                                     expandFrom = Alignment.Top,
                                     animationSpec = AppMotionTokens.standardSpec(),
+                                ) + slideInVertically(
+                                    initialOffsetY = { -it },
+                                    animationSpec = AppMotionTokens.standardSpec(),
                                 ) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
                                 exit = shrinkVertically(
                                     shrinkTowards = Alignment.Top,
+                                    animationSpec = AppMotionTokens.standardSpec(),
+                                ) + slideOutVertically(
+                                    targetOffsetY = { -it },
                                     animationSpec = AppMotionTokens.standardSpec(),
                                 ) + fadeOut(animationSpec = AppMotionTokens.standardSpec())
                             ) {
