@@ -105,7 +105,23 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
 ): DynamicDesc? {
     if (blockText.isBlank()) return null
     if (blockRichTextNodes.any { it.type.isNotBlank() }) {
-        return DynamicDesc(text = blockText, rich_text_nodes = blockRichTextNodes)
+        // Detail paragraphs can expose only TEXT nodes while the preview desc carries
+        // the actionable AT/rid metadata. Keep that metadata so the second response
+        // cannot downgrade a briefly-highlighted mention into plain text.
+        val blockHasMention = blockRichTextNodes.any {
+            it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_").equals("AT", ignoreCase = true)
+        }
+        val preferredMentions = preferredDesc?.rich_text_nodes.orEmpty().filter {
+            it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_").equals("AT", ignoreCase = true)
+        }
+        return DynamicDesc(
+            text = blockText,
+            rich_text_nodes = if (!blockHasMention && preferredMentions.isNotEmpty()) {
+                preferredDesc?.rich_text_nodes.orEmpty()
+            } else {
+                blockRichTextNodes
+            },
+        )
     }
     if (preferredDesc == null) return null
     // Detail opus payloads often omit emoji nodes while retaining shortcode text. Always
