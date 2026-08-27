@@ -9,42 +9,6 @@ import kotlin.test.assertTrue
 class FloatingBottomBarPagerFollowPolicyTest {
 
     @Test
-    fun `unselected item click starts indicator selection synchronously`() {
-        assertTrue(
-            shouldStartIndicatorSelectionFromItemClick(
-                itemIndex = 3,
-                selectedIndex = 1,
-                indicatorTarget = 1f,
-                isDragging = false,
-            ),
-        )
-        assertFalse(
-            shouldStartIndicatorSelectionFromItemClick(
-                itemIndex = 1,
-                selectedIndex = 1,
-                indicatorTarget = 1f,
-                isDragging = false,
-            ),
-        )
-        assertFalse(
-            shouldStartIndicatorSelectionFromItemClick(
-                itemIndex = 3,
-                selectedIndex = 1,
-                indicatorTarget = 3f,
-                isDragging = false,
-            ),
-        )
-        assertFalse(
-            shouldStartIndicatorSelectionFromItemClick(
-                itemIndex = 3,
-                selectedIndex = 1,
-                indicatorTarget = 1f,
-                isDragging = true,
-            ),
-        )
-    }
-
-    @Test
     fun `drag onto a new tab owns that target when pager position is provided`() {
         assertEquals(
             0,

@@ -118,9 +118,6 @@ internal val LocalFloatingBottomBarItemAlignmentOffset =
 internal val LocalFloatingBottomBarBaseContentAlpha =
     staticCompositionLocalOf<(Int) -> Float> { { 1f } }
 
-internal val LocalFloatingBottomBarItemSelectionRequest =
-    staticCompositionLocalOf<(Int) -> Unit> { {} }
-
 /** 激活内容捕获层会为指示器提供每个槽位的选中态图标。 */
 internal val LocalFloatingBottomBarActiveContent = staticCompositionLocalOf { false }
 
@@ -241,16 +238,6 @@ internal fun resolveIndicatorOwnedTargetOnDragStop(
     return targetIndex
 }
 
-internal fun shouldStartIndicatorSelectionFromItemClick(
-    itemIndex: Int,
-    selectedIndex: Int,
-    indicatorTarget: Float,
-    isDragging: Boolean,
-): Boolean {
-    if (isDragging || itemIndex == selectedIndex) return false
-    return abs(indicatorTarget - itemIndex.toFloat()) > 0.001f
-}
-
 /**
  * Swallow pager-follow (snap + press) for the whole indicator-driven page animation.
  * Dropping ownership as soon as the pager is close re-enters follow `press()` and the
@@ -320,10 +307,9 @@ fun RowScope.FloatingBottomBarItem(
     val indicatorPosition = LocalFloatingBottomBarIndicatorPosition.current
     val alignmentOffset = LocalFloatingBottomBarItemAlignmentOffset.current
     val baseContentAlpha = LocalFloatingBottomBarBaseContentAlpha.current
-    val requestItemSelection = LocalFloatingBottomBarItemSelectionRequest.current
     val activeContent = LocalFloatingBottomBarActiveContent.current
     val contentColor = LocalFloatingBottomBarContentColor.current
-    val selectionScale = remember(itemIndex, indicatorPosition, iconCrossScaleEnabled) {
+    val selectionScale = remember(itemIndex, indicatorPosition) {
         {
             if (!iconCrossScaleEnabled || itemIndex == null) {
                 1f
@@ -346,10 +332,7 @@ fun RowScope.FloatingBottomBarItem(
                 interactionSource = null,
                 indication = null,
                 role = Role.Tab,
-                onClick = {
-                    itemIndex?.let(requestItemSelection)
-                    onClick()
-                }
+                onClick = onClick
             )
             .semantics {
                 this.selected = selected
@@ -640,23 +623,6 @@ fun FloatingBottomBar(
             .coerceIn(0f, 1f)
         1f - coverage
     }
-    val itemSelectionRequest: (Int) -> Unit = { itemIndex ->
-        val safeItemIndex = itemIndex.coerceIn(0, maxTabIndex)
-        if (
-            shouldStartIndicatorSelectionFromItemClick(
-                itemIndex = safeItemIndex,
-                selectedIndex = selectedIndexLatest.value().coerceIn(0, maxTabIndex),
-                indicatorTarget = dampedDragAnimation.targetValue,
-                isDragging = dampedDragAnimation.isDragging,
-            )
-        ) {
-            if (indicatorPositionLatest != null) {
-                pagerFollowGate.ownedTargetIndex = safeItemIndex
-                pagerFollowGate.previousExternalPosition = null
-            }
-            dampedDragAnimation.animateToValue(safeItemIndex.toFloat())
-        }
-    }
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow {
@@ -773,7 +739,6 @@ fun FloatingBottomBar(
             LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
             LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
             LocalFloatingBottomBarBaseContentAlpha provides baseContentAlphaProvider,
-            LocalFloatingBottomBarItemSelectionRequest provides itemSelectionRequest,
         ) {
             Row(
                 Modifier
@@ -1037,7 +1002,6 @@ fun FloatingBottomBar(
                         LocalFloatingBottomBarActiveContent provides true,
                         LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
                         LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
-                        LocalFloatingBottomBarItemSelectionRequest provides itemSelectionRequest,
                     ) {
                         Row(
                             Modifier
