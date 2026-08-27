@@ -3663,7 +3663,7 @@ private fun SpaceArticleListItem(
         }
         Spacer(modifier = Modifier.height(10.dp))
         AppText(
-            text = "${article.category?.name ?: "图文"} · ${FormatUtils.formatStat(article.stats?.view?.toLong() ?: 0)}阅读 · ${FormatUtils.formatStat(article.stats?.like?.toLong() ?: 0)}点赞",
+            text = buildSpaceArticleStatsText(article),
             fontSize = 13.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
