@@ -2028,28 +2028,15 @@ fun HomeHeader(
         tabRowHeight = currentTabHeight,
         searchToTabsSpacing = currentTabToSearchSpacing,
         renderMode = effectiveContinuousSlabRenderMode,
-        // Keep the complete tab track inside the pinned top chrome. The floating dock may own
-        // its local glass shell, but excluding its row made the parent blur stop at the dock's
-        // top edge and exposed feed pixels behind the lower half of the tabs.
+        // 连续背景始终覆盖顶部 Dock；独立轨道只负责自身材质与前景可读性。
         includeTabInBlur = true,
     )
     val progressiveBlurBottomExtension = resolveProgressiveTopBlurBottomExtension(
-        enabled = shouldExtendProgressiveTopBlurBelowTabs(
-            progressiveBlurEnabled = homeSettings?.androidNativeLiquidGlassEnabled == true &&
-                liquidGlassTuning.progressiveBlurRadius > 0.001f,
-            tabRowIncludedInBlur = true,
-        ),
+        enabled = homeSettings?.androidNativeLiquidGlassEnabled == true &&
+            liquidGlassTuning.progressiveBlurRadius > 0.001f,
         endFraction = liquidGlassTuning.progressiveBlurEndFraction,
     )
-    val floatingTabBackdropOverlap = if (
-        topTabInnerOwnsFloatingDockShell && !isHeaderBlurEnabled
-    ) {
-        FloatingBottomBarDefaultShellHeight / 2
-    } else {
-        AppSpacingTokens.None
-    }
-    val continuousSlabHeight = pinnedChromeLayout.blurHeight +
-        floatingTabBackdropOverlap + progressiveBlurBottomExtension
+    val continuousSlabHeight = pinnedChromeLayout.blurHeight + progressiveBlurBottomExtension
     val pinnedChromeContentHeight = pinnedChromeLayout.tabTop + currentTabHeight
     val isTopTabViewportSyncEnabled = resolveHomeTopTabViewportSyncEnabled(
         currentTabHeightDp = currentTabHeight.value,
@@ -2067,10 +2054,7 @@ fun HomeHeader(
             containerZIndex = if (useUnifiedTopPanel) 0f else -1f,
             // 分栏 dock 最大宽度 = 顶部三控件合计宽度，保证左右对齐。
             maxDockWidth = maxDockWidth,
-            tabHorizontalPadding = if (topTabInnerOwnsFloatingDockShell) {
-                // FloatingBottomBar owns the same screen-edge inset as the bottom dock.
-                AppSpacingTokens.None
-            } else if (embedTopTabsInUnifiedPanel) {
+            tabHorizontalPadding = if (embedTopTabsInUnifiedPanel) {
                 resolveNonNegativeHomeTopPadding(resolveHomeTopEmbeddedTabHorizontalPadding(topChromePolicy))
             } else {
                 resolveNonNegativeHomeTopPadding(tabHorizontalPadding)
@@ -2154,12 +2138,6 @@ fun HomeHeader(
                 isLiquidGlassEnabled = resolveHomeTopTabIndicatorLiquidGlassEnabled(
                     homeSettings = homeSettings,
                 ),
-                floatingDockBlurEnabled = isHeaderBlurEnabled,
-                // This is a user-facing setting decision, not a renderer-mode decision: some
-                // themes flatten the local mode to PLAIN even while the header blur is enabled.
-                // In blurred headers the continuous slab is the container; keep only tab
-                // glyphs/text plus the selected indicator capsule.
-                floatingDockContainerVisible = !isHeaderBlurEnabled,
                 liquidGlassStyle = liquidStyle,
                 liquidGlassTuning = liquidGlassTuning,
                 liquidGlassPreset = bottomBarLiquidGlassPreset,

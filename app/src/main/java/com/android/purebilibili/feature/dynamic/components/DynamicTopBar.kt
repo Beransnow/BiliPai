@@ -28,7 +28,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -141,11 +140,7 @@ fun DynamicTopBarWithTabs(
                 items = tabs,
                 selectedIndex = selectedTab,
                 onSelected = onTabSelected,
-                // Liquid indicator/shell can draw beyond its measured bounds for backdrop
-                // capture. Clip the tab slot so it cannot bleed under the action Dock.
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RectangleShape),
+                modifier = Modifier.weight(1f),
                 height = liquidTabSpec.heightDp.dp,
                 indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
                 labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
@@ -185,19 +180,10 @@ fun DynamicTopBarWithTabs(
                                     liquidGlassTuning = liquidGlassTuning,
                                 )
                             } else {
-                                // Non-glass action docks should use a compact field
-                                // radius; the glass pill radius is visually oversized
-                                // and can make the dock overlap dense tab labels.
-                                Modifier.background(
-                                    dockColor,
-                                    AppShapes.container(ContainerLevel.Field),
-                                )
+                                Modifier.background(dockColor, dockShape)
                             }
                         )
-                        .clip(
-                            if (liquidGlassEnabled) dockShape
-                            else AppShapes.container(ContainerLevel.Field)
-                        ),
+                        .clip(dockShape),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     AppWindowActionMenu(

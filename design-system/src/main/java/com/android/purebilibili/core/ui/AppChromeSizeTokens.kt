@@ -5,16 +5,9 @@ import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import androidx.compose.ui.unit.dp
 
 object AppChromeSizeTokens {
-    // Accessibility target only. Do not use this as a visible component size;
-    // use the compact/chrome-specific tokens below for Miuix geometry.
     val MinimumTouchTarget = 48.dp
     const val CompactControlHeightDp = 44
     const val CompactControlCornerRadiusDp = 20
-    const val MiuixNativeCompactControlHeightDp = 36
-    const val MiuixNativeCompactControlMinWidthDp = 52
-    // Visual radius for compact native controls. The 48dp touch target remains
-    // an accessibility minimum, never the basis for corner geometry.
-    const val MiuixNativeCompactCornerRadiusDp = 10
     // Compact liquid docks keep the home bottom-bar rest fill (48/64).
     const val BottomBarMatchedSegmentedControlHeightDp = 40
     const val BottomBarMatchedSegmentedIndicatorHeightDp = 30
@@ -51,12 +44,10 @@ fun resolveCompactCapsuleChromeSpec(
         // primaryCornerRadius must stay well below height/2 or search/filter bars
         // become full sausages (same failure mode as 48dp TabRow + 22–28dp Pill).
         AppUiStyle.MIUIX -> {
-            // Visual chrome follows the compact 36dp Miuix row. The 48dp
-            // minimum touch target is provided by the surrounding hit area.
-            val primaryHeight = 36
+            val primaryHeight = 48
             CompactCapsuleChromeSpec(
                 primaryHeightDp = primaryHeight,
-                secondaryButtonSizeDp = 36,
+                secondaryButtonSizeDp = chromeTokens.rowMinTouchTargetDp,
                 chipHeightDp = 32,
                 compactChipHeightDp = 28,
                 primaryCornerRadiusDp = minOf(
@@ -65,7 +56,7 @@ fun resolveCompactCapsuleChromeSpec(
                 ),
                 secondaryButtonCornerRadiusDp = minOf(
                     chromeTokens.containerCornerRadiusDp,
-                    (36 * 0.3f).toInt(),
+                    (chromeTokens.rowMinTouchTargetDp * 0.3f).toInt(),
                 ),
                 chipCornerRadiusDp = minOf(16, (32 * 0.3f).toInt()), // 9 → keep 9
                 compactChipCornerRadiusDp = minOf(14, (28 * 0.3f).toInt()),

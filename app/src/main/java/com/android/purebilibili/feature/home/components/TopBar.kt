@@ -944,8 +944,6 @@ private fun LightweightHomeTopTabs(
     skinPlainStyle: Boolean = false,
     skinPlainContentColor: Color? = null,
     isLiquidGlassEnabled: Boolean = false,
-    floatingDockBlurEnabled: Boolean = isLiquidGlassEnabled,
-    floatingDockContainerVisible: Boolean = true,
     liquidGlassStyle: LiquidGlassStyle = LiquidGlassStyle.CLASSIC,
     liquidGlassTuning: LiquidGlassTuning? = null,
     liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
@@ -961,9 +959,6 @@ private fun LightweightHomeTopTabs(
      * legacy full-bleed docks.
      */
     maxDockWidthDp: Float = Float.POSITIVE_INFINITY,
-    hazeState: HazeState? = null,
-    motionTier: MotionTier = MotionTier.Normal,
-    forceLowBlurBudget: Boolean = false,
     isTransitionRunning: Boolean = false,
     showPartitionAction: Boolean = true,
     isViewportSyncEnabled: Boolean = true,
@@ -1011,15 +1006,8 @@ private fun LightweightHomeTopTabs(
             liquidGlassEnabled = isLiquidGlassEnabled,
         ),
     )
-    val useOfficialMd3HomeTopToolbar = useFloatingBottomBarDock &&
-        shouldUseOfficialMd3HomeTopToolbar(
-            uiStyle = LocalAppUiStyle.current,
-            liquidGlassEnabled = isLiquidGlassEnabled,
-        )
     val topTabMotionSpec = remember { resolveSegmentedControlMotionSpec() }
-    val baseRowHeight = if (useOfficialMd3HomeTopToolbar) {
-        FloatingToolbarDefaults.ContainerSize
-    } else if (useFloatingBottomBarDock) {
+    val baseRowHeight = if (useFloatingBottomBarDock) {
         resolveBiliPaiBottomBarDockHeight(searchExpanded = false)
     } else if (skinPlainStyle) {
         resolveHomeSkinTopTabRowHeight()
@@ -1219,12 +1207,6 @@ private fun LightweightHomeTopTabs(
                         showText = showText,
                     ),
                     liquidGlassEffectsEnabled = isLiquidGlassEnabled,
-                    backdropBlurEnabled = floatingDockBlurEnabled,
-                    hazeState = hazeState,
-                    motionTier = motionTier,
-                    isTransitionRunning = isTransitionRunning,
-                    forceLowBlurBudget = forceLowBlurBudget,
-                    containerChromeVisible = floatingDockContainerVisible,
                     miuixBackdrop = miuixBackdrop,
                     liquidGlassPreset = liquidGlassPreset,
                     liquidGlassTuning = resolvedLiquidGlassTuning,
@@ -2328,8 +2310,6 @@ fun CategoryTabRow(
     pagerState: androidx.compose.foundation.pager.PagerState? = null, // [New] PagerState for sync
     labelMode: Int = 2,
     isLiquidGlassEnabled: Boolean = false,
-    floatingDockBlurEnabled: Boolean = isLiquidGlassEnabled,
-    floatingDockContainerVisible: Boolean = true,
     liquidGlassStyle: LiquidGlassStyle = LiquidGlassStyle.CLASSIC,
     liquidGlassTuning: LiquidGlassTuning? = null,
     liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
@@ -2374,8 +2354,6 @@ fun CategoryTabRow(
         skinPlainStyle = skinPlainStyle,
         skinPlainContentColor = skinPlainContentColor,
         isLiquidGlassEnabled = isLiquidGlassEnabled,
-        floatingDockBlurEnabled = floatingDockBlurEnabled,
-        floatingDockContainerVisible = floatingDockContainerVisible,
         liquidGlassStyle = liquidGlassStyle,
         liquidGlassTuning = liquidGlassTuning,
         liquidGlassPreset = liquidGlassPreset,
@@ -2385,9 +2363,6 @@ fun CategoryTabRow(
         hasOuterChromeSurface = hasOuterChromeSurface,
         wrapDockWidth = wrapDockWidth,
         maxDockWidthDp = maxDockWidthDp,
-        hazeState = hazeState,
-        motionTier = motionTier,
-        forceLowBlurBudget = forceLowBlurBudget,
         isTransitionRunning = isTransitionRunning,
         showPartitionAction = showPartitionAction,
         isViewportSyncEnabled = isViewportSyncEnabled,

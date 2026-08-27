@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.adaptiveSquircleBackground
-import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSegmentedControlColors
 import com.android.purebilibili.core.ui.components.resolveAppMiuixSegmentedColors
@@ -34,7 +33,7 @@ internal fun <T> AppMiuixSegmentedControl(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val itemGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
+        nativeMinimumHeight = TabRowDefaults.TabRowHeight,
     )
     val outerGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
@@ -80,7 +79,6 @@ internal fun <T> AppMiuixTabRow(
     enabled: Boolean,
     scrollable: Boolean,
     minTabWidth: Dp,
-    height: Dp?,
     colors: AppSegmentedControlColors,
     preferredCornerRadius: Dp,
     modifier: Modifier,
@@ -92,10 +90,7 @@ internal fun <T> AppMiuixTabRow(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val geometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = minOf(
-            height ?: AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
-            AppChromeSizeTokens.MiuixNativeCompactControlHeightDp.dp,
-        ),
+        nativeMinimumHeight = TabRowDefaults.TabRowHeight,
     )
     TabRow(
         tabs = options.map { it.label },
@@ -103,10 +98,7 @@ internal fun <T> AppMiuixTabRow(
         onTabSelected = { index ->
             if (enabled) options.getOrNull(index)?.let { onSelectionChange(it.value) }
         },
-        // Respect an explicit compact width supplied by AppNativeTabRow. Calling
-        // fillMaxWidth here expands two-option controls to the whole parent and
-        // makes the detail-page tabs consume the action area.
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth(),
         colors = TabRowDefaults.tabRowColors(
             backgroundColor = tabColors.backgroundColor,
             contentColor = tabColors.contentColor,

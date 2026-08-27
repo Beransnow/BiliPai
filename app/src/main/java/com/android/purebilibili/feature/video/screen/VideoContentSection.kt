@@ -166,11 +166,6 @@ internal fun resolveVideoContentTabBarDockItemWidthDp(labelFontSizeSp: Int): Int
     return (labelFontSizeSp * 2) + 40
 }
 
-internal fun resolveVideoContentTabBarControlWidthDp(
-    itemWidthDp: Int,
-    itemCount: Int,
-): Int = itemWidthDp.coerceAtLeast(0) * itemCount.coerceAtLeast(0)
-
 internal fun shouldReuseVideoContentTabBarLiquidGlassDock(
     androidNativeLiquidGlassEnabled: Boolean,
     hasBackdrop: Boolean,
@@ -215,10 +210,10 @@ internal fun resolveVideoContentTabBarLayoutSpec(widthDp: Int): VideoContentTabB
             tabHorizontalPaddingDp = 8,
             tabVerticalPaddingDp = 7,
             tabSpacingDp = 10,
-            selectedTabFontSizeSp = 14,
-            unselectedTabFontSizeSp = 14,
+            selectedTabFontSizeSp = 16,
+            unselectedTabFontSizeSp = 15,
             indicatorWidthDp = 28,
-            segmentedControlHeightDp = 32,
+            segmentedControlHeightDp = 40,
             segmentedControlIndicatorHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp
         )
     } else {
@@ -232,7 +227,7 @@ internal fun resolveVideoContentTabBarLayoutSpec(widthDp: Int): VideoContentTabB
             selectedTabFontSizeSp = 17,
             unselectedTabFontSizeSp = 16,
             indicatorWidthDp = 32,
-            segmentedControlHeightDp = 36,
+            segmentedControlHeightDp = 40,
             segmentedControlIndicatorHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp
         )
     }
@@ -855,6 +850,14 @@ fun VideoContentSection(
                 onDanmakuSendClick = onDanmakuSendClick,
                 danmakuEnabled = danmakuEnabled,
                 onDanmakuToggle = onDanmakuToggle,
+                tabSwipeModifier = Modifier.verticalPriorityHorizontalPagerSwipe(
+                    state = pagerState,
+                    enabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                        currentPage = pagerState.currentPage,
+                        commentPageIndex = 1,
+                        isPagerScrollInProgress = pagerState.isScrollInProgress,
+                    ),
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(unbounded = tabBarMaxHeightPx > 0f)
@@ -1590,7 +1593,7 @@ private fun VideoHeaderContent(
             videoCount = ownerVideoCount,
             transitionEnabled = transitionEnabled,  // 🔗 传递共享元素开关
             isQuickReturnLimitedForSharedElements = isQuickReturnLimitedForSharedElements,
-            sourceRouteForSharedElement = sourceRouteForSharedElement,
+            sourceRouteForSharedElement = sourceRouteForSharedElement
         )
 
         VideoTitleWithDesc(
@@ -1695,6 +1698,7 @@ private fun VideoContentTabBar(
     danmakuEnabled: Boolean,
     onDanmakuToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    tabSwipeModifier: Modifier = Modifier,
     isPlayerCollapsed: Boolean = false,
     miuixBackdrop: MiuixBackdrop? = null,
     indicatorPositionProvider: (() -> Float)? = null,
@@ -1722,14 +1726,6 @@ private fun VideoContentTabBar(
             layoutSpec = layoutSpec,
         )
     }
-    // Native fallback keeps the exact same item geometry as the liquid Dock. Only the
-    // Dock shell/effects are removed; the tab indicator and its dimensions are not redesigned.
-    val tabItemWidthDp = liquidChromeSpec.itemWidthDp
-        ?: resolveVideoContentTabBarDockItemWidthDp(liquidChromeSpec.labelFontSizeSp)
-    val tabControlWidthDp = resolveVideoContentTabBarControlWidthDp(
-        itemWidthDp = tabItemWidthDp,
-        itemCount = tabs.size,
-    )
     Column(
         modifier = modifier
     ) {
@@ -1751,58 +1747,63 @@ private fun VideoContentTabBar(
                     end = layoutSpec.containerHorizontalPaddingDp.dp,
                 ),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = if (liquidChromeSpec.reusesLiquidGlassDock) {
+                Arrangement.spacedBy(8.dp)
+            } else {
+                Arrangement.Start
+            }
         ) {
             AppThemeAdaptiveTabRow(
                 options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
                 selectedValue = selectedTabIndex,
                 onSelectionChange = onTabSelected,
-                // Use the liquid Dock's measured item geometry in both branches. A weight here
-                // would hand the native fallback the entire space before the danmaku actions.
-                modifier = Modifier.width(tabControlWidthDp.dp),
-                compactMiuixWhenTwoOptions = true,
-                scrollable = liquidChromeSpec.itemWidthDp != null,
-                minTabWidth = tabItemWidthDp.dp,
+                modifier = tabSwipeModifier.width(
+                    (resolveVideoContentTabBarDockItemWidthDp(
+                        layoutSpec.unselectedTabFontSizeSp,
+                    ) * tabs.size).dp,
+                ),
                 height = liquidChromeSpec.segmentedControlHeightDp.dp,
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
-                // 指示器自身支持跟手拖拽，Pager 位置则继续驱动其页面横滑表现。
-                dragSelectionEnabled = true,
+                // 该栏的指示器由 HorizontalPager 实时位置驱动，禁止自身再 settle 一次。
+                dragSelectionEnabled = false,
                 tapPressRefractionEnabled = true,
                 miuixBackdrop = miuixBackdrop,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = isScrollInProgressProvider,
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            if (shouldShowVideoContentTabBarDanmakuActions(selectedTabIndex)) {
+                Spacer(modifier = Modifier.weight(1f))
 
-            AnimatedVisibility(
-                visible = shouldShowDanmakuSendInput(isPlayerCollapsed = isPlayerCollapsed),
-                enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
-                exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
-            ) {
-                AppText(
-                    text = danmakuActionLayoutPolicy.sendLabel,
-                    fontSize = danmakuActionLayoutPolicy.sendTextSizeSp.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    tapToCopyEnabled = false,
+                AnimatedVisibility(
+                    visible = shouldShowDanmakuSendInput(isPlayerCollapsed = isPlayerCollapsed),
+                    enter = fadeIn() + expandHorizontally(expandFrom = Alignment.Start),
+                    exit = fadeOut() + shrinkHorizontally(shrinkTowards = Alignment.Start),
+                ) {
+                    AppText(
+                        text = danmakuActionLayoutPolicy.sendLabel,
+                        fontSize = danmakuActionLayoutPolicy.sendTextSizeSp.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tapToCopyEnabled = false,
+                        modifier = Modifier
+                            .heightIn(min = danmakuActionLayoutPolicy.sendMinHeightDp.dp)
+                            .wrapContentHeight(align = Alignment.CenterVertically)
+                            .clickable(onClick = onDanmakuSendClick),
+                    )
+                }
+
+                NativeDanmakuToggleButton(
+                    enabled = danmakuEnabled,
+                    onToggle = onDanmakuToggle,
+                    activeTint = MaterialTheme.colorScheme.secondary,
+                    inactiveTint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier
-                        .heightIn(min = danmakuActionLayoutPolicy.sendMinHeightDp.dp)
-                        .wrapContentHeight(align = Alignment.CenterVertically)
-                        .clickable(onClick = onDanmakuSendClick),
+                        .padding(end = danmakuActionLayoutPolicy.toggleTrailingPaddingDp.dp)
+                        .size(danmakuActionLayoutPolicy.toggleButtonSizeDp.dp),
+                    iconSize = danmakuActionLayoutPolicy.toggleIconSizeDp.dp,
                 )
             }
-            NativeDanmakuToggleButton(
-                enabled = danmakuEnabled,
-                onToggle = onDanmakuToggle,
-                activeTint = MaterialTheme.colorScheme.secondary,
-                inactiveTint = MaterialTheme.colorScheme.outline,
-                modifier = Modifier
-                    .padding(end = danmakuActionLayoutPolicy.toggleTrailingPaddingDp.dp)
-                    .size(danmakuActionLayoutPolicy.toggleButtonSizeDp.dp),
-                iconSize = danmakuActionLayoutPolicy.toggleIconSizeDp.dp,
-            )
-
         }
         AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
     }

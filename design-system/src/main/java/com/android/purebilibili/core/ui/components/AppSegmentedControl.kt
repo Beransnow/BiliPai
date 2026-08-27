@@ -1,8 +1,6 @@
 package com.android.purebilibili.core.ui.components
 
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -85,29 +83,6 @@ fun shouldFillMaxWidthAppSegmentedControl(
     optionCount: Int,
     longestLabelLength: Int,
 ): Boolean = optionCount >= 2 || longestLabelLength >= 1
-
-fun shouldUseCompactMiuixTabRow(
-    optionCount: Int,
-    scrollable: Boolean,
-    compactWhenTwoOptions: Boolean,
-): Boolean = compactWhenTwoOptions && !scrollable && optionCount == 2
-
-/**
- * Native scrollable tab rows use one shared minimum width for every item. Expand that width
- * across Miuix and Material3 when complete labels are requested so longer entries such as
- * “默认排序” fit inside their own slot instead of relying on overflow drawing. Short labels
- * keep the caller's existing geometry.
- */
-fun resolveReadableNativeTabMinWidth(
-    requestedMinWidth: Dp,
-    labels: List<String>,
-    allowLabelOverflow: Boolean,
-): Dp {
-    if (!allowLabelOverflow || labels.isEmpty()) return requestedMinWidth
-    val longestLabelLength = labels.maxOf(String::length)
-    val readableWidth = (longestLabelLength * 16 + 24).dp
-    return maxOf(requestedMinWidth, readableWidth)
-}
 
 fun resolveAppLiquidSegmentedControlSpec(
     itemCount: Int,
@@ -233,22 +208,11 @@ fun <T> AppNativeTabRow(
     enabled: Boolean = true,
     scrollable: Boolean = false,
     minTabWidth: Dp = 72.dp,
-    compactMiuixWhenTwoOptions: Boolean = true,
-    height: Dp? = null,
-    allowLabelOverflow: Boolean = true,
+    allowLabelOverflow: Boolean = false,
     indicatorPositionProvider: (() -> Float)? = null,
     onSelectionChange: (T) -> Unit,
 ) {
     if (options.isEmpty()) return
-    val readableMinTabWidth = resolveReadableNativeTabMinWidth(
-        requestedMinWidth = minTabWidth,
-        labels = options.map { it.label },
-        allowLabelOverflow = allowLabelOverflow,
-    )
-    // Dense or content-expanded native rows scroll instead of squeezing labels.
-    val effectiveScrollable = scrollable ||
-        options.size > 3 ||
-        readableMinTabWidth > minTabWidth
     val viewportBoundedModifier = modifier.widthIn(
         max = LocalConfiguration.current.screenWidthDp.dp,
     )
@@ -270,50 +234,24 @@ fun <T> AppNativeTabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
-            scrollable = effectiveScrollable,
-            minTabWidth = readableMinTabWidth,
+            scrollable = scrollable,
+            minTabWidth = minTabWidth,
             allowLabelOverflow = allowLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
             modifier = viewportBoundedModifier,
             onSelectionChange = onSelectionChange,
         )
-        AppSegmentedRenderer.MIUIX -> {
-            val compact = shouldUseCompactMiuixTabRow(
-                optionCount = options.size,
-                scrollable = effectiveScrollable,
-                compactWhenTwoOptions = compactMiuixWhenTwoOptions,
-            )
-            if (compact) {
-                Box(modifier = viewportBoundedModifier) {
-                    AppMiuixTabRow(
-                        options = options,
-                        selectedValue = selectedValue,
-                        enabled = enabled,
-                        scrollable = false,
-                        minTabWidth = readableMinTabWidth,
-                        height = height,
-                        colors = colors,
-                        preferredCornerRadius = policy.preferredCornerRadius,
-                        modifier = Modifier.width(readableMinTabWidth * options.size),
-                        indicatorPositionProvider = indicatorPositionProvider,
-                        onSelectionChange = onSelectionChange,
-                    )
-                }
-            } else {
-                AppMiuixTabRow(
-                    options = options,
-                    selectedValue = selectedValue,
-                    enabled = enabled,
-                    scrollable = effectiveScrollable,
-                    minTabWidth = readableMinTabWidth,
-                    height = height,
-                    colors = colors,
-                    preferredCornerRadius = policy.preferredCornerRadius,
-                    modifier = viewportBoundedModifier,
-                    indicatorPositionProvider = indicatorPositionProvider,
-                    onSelectionChange = onSelectionChange,
-                )
-            }
-        }
+        AppSegmentedRenderer.MIUIX -> AppMiuixTabRow(
+            options = options,
+            selectedValue = selectedValue,
+            enabled = enabled,
+            scrollable = scrollable,
+            minTabWidth = minTabWidth,
+            colors = colors,
+            preferredCornerRadius = policy.preferredCornerRadius,
+            modifier = viewportBoundedModifier,
+            indicatorPositionProvider = indicatorPositionProvider,
+            onSelectionChange = onSelectionChange,
+        )
     }
 }
