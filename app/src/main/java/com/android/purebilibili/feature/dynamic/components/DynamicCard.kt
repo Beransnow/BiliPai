@@ -145,8 +145,12 @@ fun DynamicCardV2(
     // documented `opus.pics` entries in those blocks. In that case use the
     // image-grid path below so pictures are not hidden after the network
     // response replaces the cached feed item.
-    val hasFullOpusDetailContent = fullOpusContentBlocks.isNotEmpty() &&
-        (fullOpusContentBlocks.any { it is OpusContentBlock.Image } || opus?.pics.isNullOrEmpty())
+    val hasFullOpusDetailContent = opus?.let {
+        shouldRenderDynamicOpusBlocksAsFullBody(
+            opus = it,
+            presentationBlocks = fullOpusContentBlocks,
+        )
+    } == true
     val type = DynamicType.fromApiValue(item.type)
     val cardClickAction = remember(item) { resolveDynamicCardPrimaryAction(item) }
     val watchLaterAid = remember(item) { resolveDynamicWatchLaterAid(item) }
@@ -822,7 +826,7 @@ fun DynamicCardV2(
             // 正文已在上方 preferredBodyDesc 渲染；此处不再重复摘要
             
             // 显示图片 (转换为 DrawItem 格式复用现有组件)
-            if (fullOpusContentBlocks.isNotEmpty()) {
+            if (hasFullOpusDetailContent) {
                 val previewImages = remember(opus.pics) { opus.pics.map { it.url } }
                 // The desktop opus API documents width/height as nullable. The
                 // paragraph image can therefore have dimensions while the same
