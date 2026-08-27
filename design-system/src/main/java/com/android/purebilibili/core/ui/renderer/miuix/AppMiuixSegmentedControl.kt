@@ -33,7 +33,7 @@ internal fun <T> AppMiuixSegmentedControl(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val itemGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = TabRowDefaults.TabRowHeight,
+        nativeMinimumHeight = height ?: TabRowDefaults.TabRowHeight,
     )
     val outerGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
@@ -81,6 +81,7 @@ internal fun <T> AppMiuixTabRow(
     minTabWidth: Dp,
     colors: AppSegmentedControlColors,
     preferredCornerRadius: Dp,
+    height: Dp? = null,
     modifier: Modifier,
     indicatorPositionProvider: (() -> Float)? = null,
     onSelectionChange: (T) -> Unit,
@@ -90,7 +91,7 @@ internal fun <T> AppMiuixTabRow(
     val tabColors = resolveAppMiuixSegmentedColors(colors)
     val geometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = TabRowDefaults.TabRowHeight,
+        nativeMinimumHeight = height ?: TabRowDefaults.TabRowHeight,
     )
     TabRow(
         tabs = options.map { it.label },
