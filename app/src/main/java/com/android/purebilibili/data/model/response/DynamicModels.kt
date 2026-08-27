@@ -349,6 +349,17 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
                 ?.contentOrNull
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { words -> RichTextNode(type = "RICH_TEXT_NODE_TYPE_TEXT", text = words) }
+                ?: (node["formula"] as? JsonObject)
+                    ?.get("latex_content")
+                    ?.jsonPrimitive
+                    ?.contentOrNull
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let { formula ->
+                        // Keep formula nodes in the stream so an otherwise complete
+                        // paragraph is not downgraded to plain text (which would also
+                        // lose AT metadata next to the formula).
+                        RichTextNode(type = "RICH_TEXT_NODE_TYPE_TEXT", text = formula)
+                    }
         }
         return parsedNodes.filter { it.text.isNotBlank() || it.orig_text.isNotBlank() }
     }
