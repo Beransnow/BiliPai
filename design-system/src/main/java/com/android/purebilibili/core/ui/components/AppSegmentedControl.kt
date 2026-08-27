@@ -1,7 +1,6 @@
 package com.android.purebilibili.core.ui.components
 
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -94,13 +93,6 @@ fun resolveReadableNativeTabMinWidth(
     val longestLabelLength = labels.maxOf(String::length)
     return maxOf(requestedMinWidth, (longestLabelLength * 16 + 24).dp)
 }
-
-fun resolveCompactMiuixTabRowWidth(
-    viewportModifierWidth: Dp,
-    itemWidth: Dp,
-    optionCount: Int,
-    scrollable: Boolean,
-): Dp = if (!scrollable && optionCount == 2) itemWidth * optionCount else viewportModifierWidth
 
 fun resolveAppLiquidSegmentedControlSpec(
     itemCount: Int,
@@ -233,6 +225,12 @@ fun <T> AppNativeTabRow(
     onSelectionChange: (T) -> Unit,
 ) {
     if (options.isEmpty()) return
+    val readableMinTabWidth = resolveReadableNativeTabMinWidth(
+        requestedMinWidth = minTabWidth,
+        labels = options.map { it.label },
+        allowLabelOverflow = allowLabelOverflow,
+    )
+    val effectiveScrollable = scrollable || options.size > 3 || readableMinTabWidth > minTabWidth
     val viewportBoundedModifier = modifier.widthIn(
         max = LocalConfiguration.current.screenWidthDp.dp,
     )
@@ -254,35 +252,22 @@ fun <T> AppNativeTabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
-            scrollable = scrollable,
-            minTabWidth = minTabWidth,
+            scrollable = effectiveScrollable,
+            minTabWidth = readableMinTabWidth,
             allowLabelOverflow = allowLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
-            modifier = if (!effectiveScrollable && options.size == 2) {
-                viewportBoundedModifier.width(readableMinTabWidth * options.size)
-            } else {
-                viewportBoundedModifier
-            },
+            modifier = viewportBoundedModifier,
             onSelectionChange = onSelectionChange,
         )
         AppSegmentedRenderer.MIUIX -> AppMiuixTabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
-            scrollable = scrollable,
-            minTabWidth = minTabWidth,
+            scrollable = effectiveScrollable,
+            minTabWidth = readableMinTabWidth,
             colors = colors,
             preferredCornerRadius = policy.preferredCornerRadius,
-            modifier = if (!effectiveScrollable && options.size == 2) {
-                viewportBoundedModifier.width(
-                    resolveCompactMiuixTabRowWidth(
-                    viewportModifierWidth = LocalConfiguration.current.screenWidthDp.dp,
-                    itemWidth = readableMinTabWidth,
-                    optionCount = options.size,
-                    scrollable = effectiveScrollable,
-                    ),
-                )
-            } else viewportBoundedModifier,
+            modifier = viewportBoundedModifier,
             indicatorPositionProvider = indicatorPositionProvider,
             onSelectionChange = onSelectionChange,
         )

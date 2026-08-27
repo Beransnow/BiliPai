@@ -28,7 +28,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -141,7 +140,7 @@ fun DynamicTopBarWithTabs(
                 items = tabs,
                 selectedIndex = selectedTab,
                 onSelected = onTabSelected,
-                modifier = Modifier.weight(1f).clip(RectangleShape),
+                modifier = Modifier.weight(1f),
                 height = liquidTabSpec.heightDp.dp,
                 indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
                 labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
