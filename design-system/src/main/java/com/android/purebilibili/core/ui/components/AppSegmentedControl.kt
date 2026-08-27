@@ -208,6 +208,8 @@ fun <T> AppNativeTabRow(
     enabled: Boolean = true,
     scrollable: Boolean = false,
     minTabWidth: Dp = 72.dp,
+    compactMiuixWhenTwoOptions: Boolean = true,
+    height: Dp? = null,
     allowLabelOverflow: Boolean = false,
     indicatorPositionProvider: (() -> Float)? = null,
     onSelectionChange: (T) -> Unit,
