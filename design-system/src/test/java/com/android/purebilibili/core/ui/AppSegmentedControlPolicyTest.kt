@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.ui.components.shouldUseCompactMiuixTabRow
 import com.android.purebilibili.core.ui.components.resolveReadableNativeTabMinWidth
+import com.android.purebilibili.core.ui.components.resolveCompactMiuixTabRowWidth
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,6 +12,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AppSegmentedControlPolicyTest {
+
+    @Test
+    fun `compact two option rows do not consume viewport`() {
+        assertEquals(144.dp, resolveCompactMiuixTabRowWidth(400.dp, 72.dp, 2, false))
+        assertEquals(400.dp, resolveCompactMiuixTabRowWidth(400.dp, 72.dp, 2, true))
+        assertEquals(400.dp, resolveCompactMiuixTabRowWidth(400.dp, 72.dp, 3, false))
+    }
 
     @Test
     fun `native tabs expand shared item width across themes for complete long labels`() {
