@@ -289,6 +289,28 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
+    fun `shared item click requests indicator motion before host selection`() {
+        val source = loadFloatingBottomBarSource()
+        val item = source
+            .substringAfter("fun RowScope.FloatingBottomBarItem(")
+            .substringBefore("fun FloatingBottomBar(")
+        val click = item
+            .substringAfter("onClick = {")
+            .substringBefore("}")
+
+        assertTrue(click.contains("itemIndex?.let(requestItemSelection)"))
+        assertTrue(click.contains("onClick()"))
+        assertTrue(
+            click.indexOf("requestItemSelection") < click.indexOf("onClick()"),
+        )
+        assertTrue(
+            source.contains(
+                "LocalFloatingBottomBarItemSelectionRequest provides itemSelectionRequest",
+            ),
+        )
+    }
+
+    @Test
     fun `selected dock label fades under the indicator in every visual mode`() {
         val source = loadFloatingBottomBarSource()
         val alphaProvider = source

@@ -118,6 +118,9 @@ internal val LocalFloatingBottomBarItemAlignmentOffset =
 internal val LocalFloatingBottomBarBaseContentAlpha =
     staticCompositionLocalOf<(Int) -> Float> { { 1f } }
 
+internal val LocalFloatingBottomBarItemSelectionRequest =
+    staticCompositionLocalOf<(Int) -> Unit> { {} }
+
 /** 激活内容捕获层会为指示器提供每个槽位的选中态图标。 */
 internal val LocalFloatingBottomBarActiveContent = staticCompositionLocalOf { false }
 
@@ -238,19 +241,14 @@ internal fun resolveIndicatorOwnedTargetOnDragStop(
     return targetIndex
 }
 
-/**
- * A tap updates the selected index before its programmatic pager scroll starts. Let the
- * indicator own that destination so the pager's first stale frame cannot replace the target
- * and prematurely release the press bloom. An already-running pager remains the owner of a
- * content swipe.
- */
-internal fun resolveIndicatorOwnedTargetOnSelectionAnimation(
-    targetIndex: Int,
-    hasExternalPagerPosition: Boolean,
-    isPagerScrolling: Boolean,
-): Int? {
-    if (!hasExternalPagerPosition || isPagerScrolling) return null
-    return targetIndex
+internal fun shouldStartIndicatorSelectionFromItemClick(
+    itemIndex: Int,
+    selectedIndex: Int,
+    indicatorTarget: Float,
+    isDragging: Boolean,
+): Boolean {
+    if (isDragging || itemIndex == selectedIndex) return false
+    return abs(indicatorTarget - itemIndex.toFloat()) > 0.001f
 }
 
 /**
@@ -322,6 +320,7 @@ fun RowScope.FloatingBottomBarItem(
     val indicatorPosition = LocalFloatingBottomBarIndicatorPosition.current
     val alignmentOffset = LocalFloatingBottomBarItemAlignmentOffset.current
     val baseContentAlpha = LocalFloatingBottomBarBaseContentAlpha.current
+    val requestItemSelection = LocalFloatingBottomBarItemSelectionRequest.current
     val activeContent = LocalFloatingBottomBarActiveContent.current
     val contentColor = LocalFloatingBottomBarContentColor.current
     val selectionScale = remember(itemIndex, indicatorPosition, iconCrossScaleEnabled) {
@@ -347,7 +346,10 @@ fun RowScope.FloatingBottomBarItem(
                 interactionSource = null,
                 indication = null,
                 role = Role.Tab,
-                onClick = onClick
+                onClick = {
+                    itemIndex?.let(requestItemSelection)
+                    onClick()
+                }
             )
             .semantics {
                 this.selected = selected
@@ -638,16 +640,30 @@ fun FloatingBottomBar(
             .coerceIn(0f, 1f)
         1f - coverage
     }
+    val itemSelectionRequest: (Int) -> Unit = { itemIndex ->
+        val safeItemIndex = itemIndex.coerceIn(0, maxTabIndex)
+        if (
+            shouldStartIndicatorSelectionFromItemClick(
+                itemIndex = safeItemIndex,
+                selectedIndex = selectedIndexLatest.value().coerceIn(0, maxTabIndex),
+                indicatorTarget = dampedDragAnimation.targetValue,
+                isDragging = dampedDragAnimation.isDragging,
+            )
+        ) {
+            if (indicatorPositionLatest != null) {
+                pagerFollowGate.ownedTargetIndex = safeItemIndex
+                pagerFollowGate.previousExternalPosition = null
+            }
+            dampedDragAnimation.animateToValue(safeItemIndex.toFloat())
+        }
+    }
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow {
-            Triple(
-                selectedIndexLatest.value().coerceIn(0, maxTabIndex),
-                dampedDragAnimation.isDragging,
-                isScrollInProgressLatest(),
-            )
+            selectedIndexLatest.value().coerceIn(0, maxTabIndex) to
+                dampedDragAnimation.isDragging
         }
-            .collectLatest { (index, isDragging, isPagerScrolling) ->
+            .collectLatest { (index, isDragging) ->
                 if (
                     shouldAnimateIndicatorToSelectedIndex(
                         isDragging = isDragging,
@@ -656,14 +672,6 @@ fun FloatingBottomBar(
                         ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
                     )
                 ) {
-                    resolveIndicatorOwnedTargetOnSelectionAnimation(
-                        targetIndex = index,
-                        hasExternalPagerPosition = indicatorPositionLatest != null,
-                        isPagerScrolling = isPagerScrolling,
-                    )?.let { ownedTarget ->
-                        pagerFollowGate.ownedTargetIndex = ownedTarget
-                        pagerFollowGate.previousExternalPosition = null
-                    }
                     dampedDragAnimation.animateToValue(index.toFloat())
                 }
             }
@@ -765,6 +773,7 @@ fun FloatingBottomBar(
             LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
             LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
             LocalFloatingBottomBarBaseContentAlpha provides baseContentAlphaProvider,
+            LocalFloatingBottomBarItemSelectionRequest provides itemSelectionRequest,
         ) {
             Row(
                 Modifier
@@ -1028,6 +1037,7 @@ fun FloatingBottomBar(
                         LocalFloatingBottomBarActiveContent provides true,
                         LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
                         LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
+                        LocalFloatingBottomBarItemSelectionRequest provides itemSelectionRequest,
                     ) {
                         Row(
                             Modifier

@@ -9,27 +9,37 @@ import kotlin.test.assertTrue
 class FloatingBottomBarPagerFollowPolicyTest {
 
     @Test
-    fun `tap selection owns its target before programmatic pager scroll starts`() {
-        assertEquals(
-            3,
-            resolveIndicatorOwnedTargetOnSelectionAnimation(
-                targetIndex = 3,
-                hasExternalPagerPosition = true,
-                isPagerScrolling = false,
+    fun `unselected item click starts indicator selection synchronously`() {
+        assertTrue(
+            shouldStartIndicatorSelectionFromItemClick(
+                itemIndex = 3,
+                selectedIndex = 1,
+                indicatorTarget = 1f,
+                isDragging = false,
             ),
         )
-        assertNull(
-            resolveIndicatorOwnedTargetOnSelectionAnimation(
-                targetIndex = 3,
-                hasExternalPagerPosition = true,
-                isPagerScrolling = true,
+        assertFalse(
+            shouldStartIndicatorSelectionFromItemClick(
+                itemIndex = 1,
+                selectedIndex = 1,
+                indicatorTarget = 1f,
+                isDragging = false,
             ),
         )
-        assertNull(
-            resolveIndicatorOwnedTargetOnSelectionAnimation(
-                targetIndex = 3,
-                hasExternalPagerPosition = false,
-                isPagerScrolling = false,
+        assertFalse(
+            shouldStartIndicatorSelectionFromItemClick(
+                itemIndex = 3,
+                selectedIndex = 1,
+                indicatorTarget = 3f,
+                isDragging = false,
+            ),
+        )
+        assertFalse(
+            shouldStartIndicatorSelectionFromItemClick(
+                itemIndex = 3,
+                selectedIndex = 1,
+                indicatorTarget = 1f,
+                isDragging = true,
             ),
         )
     }
