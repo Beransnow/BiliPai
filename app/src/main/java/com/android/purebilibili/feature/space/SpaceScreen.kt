@@ -110,6 +110,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.MediaContrastPalette
+import com.android.purebilibili.core.ui.OpticalContrastPalette
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeSpec
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeTone
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
@@ -2550,6 +2551,11 @@ private fun SpaceSecondarySwitchRow(
         val itemWidthPx = with(density) { itemWidth.toPx() }
         val containerHorizontalPaddingPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() }
         val dragFollowEdgePaddingPx = with(density) { 12.dp.toPx() }
+        val liquidDockRim = Modifier.border(
+            width = AppSpacingTokens.Micro / 2,
+            color = OpticalContrastPalette.Highlight.copy(alpha = 0.16f),
+            shape = CircleShape,
+        )
 
         LaunchedEffect(spec.selectedIndex, useScrollableRail, itemWidthPx, viewportWidthPx) {
             if (useScrollableRail) {
@@ -2596,8 +2602,11 @@ private fun SpaceSecondarySwitchRow(
                     Modifier
                         .clip(CircleShape)
                         .horizontalScroll(scrollState)
+                        .then(liquidDockRim)
                 } else {
-                    Modifier.fillMaxWidth()
+                    Modifier
+                        .fillMaxWidth()
+                        .then(liquidDockRim)
                 }
             )
         } else {
