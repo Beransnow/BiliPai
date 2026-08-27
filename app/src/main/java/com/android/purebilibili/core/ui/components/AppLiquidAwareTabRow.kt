@@ -110,7 +110,6 @@ fun <T> AppLiquidAwareTabRow(
             compactMiuixWhenTwoOptions = compactMiuixWhenTwoOptions,
             height = height,
             allowLabelOverflow = true,
-            forceMaterial3 = true,
             indicatorPositionProvider = indicatorPositionProvider,
         )
         return

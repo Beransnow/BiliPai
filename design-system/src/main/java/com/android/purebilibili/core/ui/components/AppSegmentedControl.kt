@@ -268,7 +268,11 @@ fun <T> AppNativeTabRow(
             minTabWidth = readableMinTabWidth,
             colors = colors,
             preferredCornerRadius = policy.preferredCornerRadius,
-            modifier = viewportBoundedModifier,
+            modifier = if (!effectiveScrollable && options.size == 2) {
+                viewportBoundedModifier.width(readableMinTabWidth * options.size)
+            } else {
+                viewportBoundedModifier
+            },
             indicatorPositionProvider = indicatorPositionProvider,
             onSelectionChange = onSelectionChange,
         )
