@@ -101,8 +101,13 @@ internal fun shouldUseDynamicRichTextNodes(desc: DynamicDesc): Boolean {
 internal fun resolveDynamicOpusTextBlockRichDesc(
     blockText: String,
     preferredDesc: DynamicDesc?,
+    blockRichTextNodes: List<RichTextNode> = emptyList(),
 ): DynamicDesc? {
-    if (blockText.isBlank() || preferredDesc == null) return null
+    if (blockText.isBlank()) return null
+    if (blockRichTextNodes.isNotEmpty()) {
+        return DynamicDesc(text = blockText, rich_text_nodes = blockRichTextNodes)
+    }
+    if (preferredDesc == null) return null
     // Detail opus payloads often omit emoji nodes while retaining shortcode text. Always
     // route text blocks through RichTextContent so its existing catalog fallback can expand
     // those shortcodes just as it does in the dynamic preview.

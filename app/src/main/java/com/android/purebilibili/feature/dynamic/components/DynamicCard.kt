@@ -847,6 +847,7 @@ fun DynamicCardV2(
                             val richBlockDesc = resolveDynamicOpusTextBlockRichDesc(
                                 blockText = block.text,
                                 preferredDesc = preferredBodyDesc,
+                                blockRichTextNodes = block.richTextNodes,
                             )
                             if (richBlockDesc != null) {
                                 Box(

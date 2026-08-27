@@ -13,6 +13,53 @@ class DynamicModulesFlexibleSerializerTest {
     }
 
     @Test
+    fun opusDetailParagraph_preservesAtMentionMetadata() {
+        val payload = """
+            {
+              "code": 0,
+              "data": {
+                "item": {
+                  "modules": [
+                    {
+                      "module_type": "MODULE_TYPE_CONTENT",
+                      "module_content": {
+                        "paragraphs": [
+                          {
+                            "para_type": 1,
+                            "text": {
+                              "nodes": [
+                                { "type": "TEXT_NODE_TYPE_WORD", "word": { "words": "谢谢" } },
+                                {
+                                  "type": "TEXT_NODE_TYPE_RICH",
+                                  "rich": {
+                                    "type": "RICH_TEXT_NODE_TYPE_AT",
+                                    "text": "@叽米",
+                                    "orig_text": "@叽米",
+                                    "rid": "12345"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+        """.trimIndent()
+
+        val response = json.decodeFromString<DynamicDetailResponse>(payload)
+        val block = response.data?.item?.modules?.module_dynamic?.major?.opus
+            ?.contentBlocks?.single() as? OpusContentBlock.Text
+
+        assertEquals("谢谢@叽米", block?.text)
+        assertEquals("12345", block?.richTextNodes?.last()?.rid)
+        assertEquals("RICH_TEXT_NODE_TYPE_AT", block?.richTextNodes?.last()?.type)
+    }
+
+    @Test
     fun dynamicDetailResponse_parsesModulesWhenModulesIsArray() {
         val payload = """
             {

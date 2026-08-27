@@ -484,6 +484,23 @@ class DynamicRichTextPolicyTest {
     }
 
     @Test
+    fun resolveDynamicOpusTextBlockRichDesc_prefersBodyMentionMetadata() {
+        val bodyNodes = listOf(
+            RichTextNode(type = "RICH_TEXT_NODE_TYPE_TEXT", text = "谢谢"),
+            RichTextNode(type = "RICH_TEXT_NODE_TYPE_AT", text = "@叽米", rid = "12345"),
+        )
+
+        val resolved = resolveDynamicOpusTextBlockRichDesc(
+            blockText = "谢谢@叽米",
+            preferredDesc = DynamicDesc(text = "预览摘要"),
+            blockRichTextNodes = bodyNodes,
+        )
+
+        assertEquals(bodyNodes, resolved?.rich_text_nodes)
+        assertEquals(12345L, resolveDynamicRichTextUserMid(resolved!!.rich_text_nodes.last()))
+    }
+
+    @Test
     fun buildDynamicRichText_usesMergedSummaryEmojiMetadataForFullBodyShortcode() {
         val shortcode = "[UPOWER_3546635395139954_舔舔]"
         val iconUrl = "https://i0.hdslb.com/bfs/garb/upower.png"
