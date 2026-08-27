@@ -112,6 +112,7 @@ class SpaceScreenStructureTest {
         assertTrue(secondaryRow.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(secondaryRow.contains("shouldScrollSpaceSecondarySwitch("))
         assertTrue(secondaryRow.contains("resolveSpaceSecondarySwitchAdaptiveItemWidthDp("))
+        assertTrue(secondaryRow.contains("itemWidthDp = preferredItemWidthDp"))
         assertTrue(secondaryRow.contains(".clip(CircleShape)"))
         assertTrue(secondaryRow.contains(".horizontalScroll(scrollState)"))
         assertTrue(secondaryRow.contains("dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail"))

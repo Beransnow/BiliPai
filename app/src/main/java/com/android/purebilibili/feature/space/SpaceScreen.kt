@@ -2528,18 +2528,23 @@ private fun SpaceSecondarySwitchRow(
             .padding(horizontal = spec.horizontalPaddingDp.dp, vertical = 6.dp),
     ) {
         val containerHorizontalPaddingDp = AppSpacingTokens.ExtraSmall.value.roundToInt()
-        val itemWidthDp = resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
-            preferredItemWidthDp = spec.itemWidthDp ?: 104,
-            itemCount = items.size,
-            viewportWidthDp = maxWidth.value.roundToInt(),
-            containerHorizontalPaddingDp = containerHorizontalPaddingDp
-        )
+        val preferredItemWidthDp = spec.itemWidthDp ?: 104
         val useScrollableRail = shouldScrollSpaceSecondarySwitch(
             itemCount = items.size,
-            itemWidthDp = itemWidthDp,
+            itemWidthDp = preferredItemWidthDp,
             viewportWidthDp = maxWidth.value.roundToInt(),
             containerHorizontalPaddingDp = containerHorizontalPaddingDp
         )
+        val itemWidthDp = if (useScrollableRail) {
+            preferredItemWidthDp
+        } else {
+            resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
+                preferredItemWidthDp = preferredItemWidthDp,
+                itemCount = items.size,
+                viewportWidthDp = maxWidth.value.roundToInt(),
+                containerHorizontalPaddingDp = containerHorizontalPaddingDp
+            )
+        }
         val itemWidth = itemWidthDp.dp
         val viewportWidthPx = with(density) { maxWidth.toPx() }
         val itemWidthPx = with(density) { itemWidth.toPx() }
