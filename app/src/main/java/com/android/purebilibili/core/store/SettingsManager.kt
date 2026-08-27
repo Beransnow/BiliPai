@@ -595,7 +595,7 @@ enum class BottomBarLiquidGlassPreset(
 data class HomeSettings(
     val displayMode: Int = 0,              // 展示模式 (0=网格, 1=故事卡片)
     val isBottomBarFloating: Boolean = true,
-    val navigationIconCrossScaleEnabled: Boolean = false,
+    val navigationIconCrossScaleEnabled: Boolean = true,
     val bottomBarLabelMode: Int = 0,       // (0=图标+文字, 1=仅图标, 2=仅文字)
     val topTabLabelMode: Int = 2,          // (0=图标+文字, 1=仅图标, 2=仅文字)
     val homeTopRightAction: HomeTopRightAction = HomeTopRightAction.SETTINGS,
@@ -1627,7 +1627,7 @@ object SettingsManager {
             displayMode = preferences[KEY_DISPLAY_MODE] ?: 0,
             isBottomBarFloating = preferences[KEY_BOTTOM_BAR_FLOATING] ?: true,
             navigationIconCrossScaleEnabled =
-                preferences[KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED] ?: false,
+                preferences[KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED] ?: true,
             bottomBarLabelMode = preferences[KEY_BOTTOM_BAR_LABEL_MODE] ?: BottomBarLabelMode.ICON_AND_TEXT,
             topTabLabelMode = preferences[KEY_TOP_TAB_LABEL_MODE] ?: TopTabLabelMode.TEXT_ONLY,
             homeTopRightAction = HomeTopRightAction.fromValue(
@@ -4039,8 +4039,8 @@ object SettingsManager {
     // ==========  弹幕设置 ==========
     
     private const val DANMAKU_DEFAULTS_VERSION = 5
-    // v3: force-refresh the bottom navigation once, restoring Recommend (HOME) as item one.
-    private const val HOME_VISUAL_DEFAULTS_VERSION = 3
+    // v4: restore navigation icon cross-scale as the default without resetting other visual choices.
+    private const val HOME_VISUAL_DEFAULTS_VERSION = 4
     private const val DEFAULT_DANMAKU_OPACITY = DANMAKU_DEFAULT_OPACITY
     private const val DEFAULT_DANMAKU_FONT_SCALE = 1.0f
     private const val DEFAULT_DANMAKU_SPEED = 1.0f
@@ -5074,22 +5074,24 @@ object SettingsManager {
 
     /**
      * 启动时一次性迁移首页视觉默认值（仅在版本未迁移时覆盖）。
-     * 目标：默认开启底栏悬浮、顶/底液态玻璃、顶部模糊，并在 v3 一次性
-     * 覆盖底栏项目，确保“推荐”（HOME）恢复为第一项。版本标记写入后不再重复覆盖。
+     * 目标：默认开启底栏悬浮、导航图标交叉缩放、顶/底液态玻璃、顶部模糊，
+     * 并覆盖底栏项目，确保“推荐”（HOME）恢复为第一项。版本标记写入后不再重复覆盖。
      */
     suspend fun ensureHomeVisualDefaults(context: Context) {
         context.settingsDataStore.edit { preferences ->
             val currentVersion = preferences[KEY_HOME_VISUAL_DEFAULTS_VERSION] ?: 0
             if (currentVersion < HOME_VISUAL_DEFAULTS_VERSION) {
-                preferences[KEY_BOTTOM_BAR_FLOATING] = true
-                preferences[KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED] = false
-                preferences[KEY_LIQUID_GLASS_ENABLED] = true
-                preferences[KEY_BOTTOM_BAR_LIQUID_GLASS_ENABLED] = true
-                preferences[KEY_TOP_BAR_LIQUID_GLASS_ENABLED] = true
-                preferences[KEY_HOME_SEARCH_LIQUID_GLASS_ENABLED] = true
-                preferences[KEY_HEADER_BLUR_ENABLED] = true
-                preferences[KEY_BOTTOM_BAR_ORDER] = DEFAULT_BOTTOM_BAR_ORDER
-                preferences[KEY_BOTTOM_BAR_VISIBLE_TABS] = DEFAULT_BOTTOM_BAR_VISIBLE_TABS
+                if (currentVersion < 3) {
+                    preferences[KEY_BOTTOM_BAR_FLOATING] = true
+                    preferences[KEY_LIQUID_GLASS_ENABLED] = true
+                    preferences[KEY_BOTTOM_BAR_LIQUID_GLASS_ENABLED] = true
+                    preferences[KEY_TOP_BAR_LIQUID_GLASS_ENABLED] = true
+                    preferences[KEY_HOME_SEARCH_LIQUID_GLASS_ENABLED] = true
+                    preferences[KEY_HEADER_BLUR_ENABLED] = true
+                    preferences[KEY_BOTTOM_BAR_ORDER] = DEFAULT_BOTTOM_BAR_ORDER
+                    preferences[KEY_BOTTOM_BAR_VISIBLE_TABS] = DEFAULT_BOTTOM_BAR_VISIBLE_TABS
+                }
+                preferences[KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED] = true
                 preferences[KEY_HOME_VISUAL_DEFAULTS_VERSION] = HOME_VISUAL_DEFAULTS_VERSION
             }
         }
