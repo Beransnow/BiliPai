@@ -8,12 +8,12 @@ import kotlin.test.assertEquals
 class SpaceArticlePresentationPolicyTest {
 
     @Test
-    fun `empty remote view does not render a fake zero reading count`() {
+    fun `empty remote view renders an unavailable reading count instead of fake zero`() {
         val article = SpaceArticleItem(
             stats = SpaceArticleStats(view = 0, like = 11_000),
         )
 
-        assertEquals("图文 · 1.1万点赞", buildSpaceArticleStatsText(article))
+        assertEquals("图文 · —阅读 · 1.1万点赞", buildSpaceArticleStatsText(article))
     }
 
     @Test
