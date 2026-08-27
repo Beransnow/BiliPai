@@ -321,7 +321,10 @@ fun RelatedVideoItem(
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            // Keep the follow badge clear of the trailing overflow action.
+                            .padding(end = if (onMoreClick != null) 32.dp else 0.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                     ) {
