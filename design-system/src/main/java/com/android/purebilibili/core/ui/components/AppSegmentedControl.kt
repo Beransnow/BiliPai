@@ -256,7 +256,11 @@ fun <T> AppNativeTabRow(
             minTabWidth = readableMinTabWidth,
             allowLabelOverflow = allowLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
-            modifier = viewportBoundedModifier,
+            modifier = if (!effectiveScrollable && options.size == 2) {
+                viewportBoundedModifier.width(readableMinTabWidth * options.size)
+            } else {
+                viewportBoundedModifier
+            },
             onSelectionChange = onSelectionChange,
         )
         AppSegmentedRenderer.MIUIX -> AppMiuixTabRow(
@@ -267,7 +271,9 @@ fun <T> AppNativeTabRow(
             minTabWidth = readableMinTabWidth,
             colors = colors,
             preferredCornerRadius = policy.preferredCornerRadius,
-            modifier = viewportBoundedModifier,
+            modifier = if (!effectiveScrollable && options.size == 2) {
+                viewportBoundedModifier.width(readableMinTabWidth * options.size)
+            } else viewportBoundedModifier,
             indicatorPositionProvider = indicatorPositionProvider,
             onSelectionChange = onSelectionChange,
         )
