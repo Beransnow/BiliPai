@@ -133,7 +133,8 @@ class DynamicScreenStatePolicyTest {
             -32,
             resolveDynamicScrollCollapsedHeaderOffsetYPx(
                 expandedHeightPx = 84,
-                visibleHeightPx = 52,
+                firstVisibleItemIndex = 0,
+                firstVisibleItemScrollOffset = 32,
             )
         )
         assertEquals(

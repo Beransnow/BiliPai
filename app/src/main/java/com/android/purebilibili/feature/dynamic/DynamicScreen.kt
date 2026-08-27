@@ -1731,16 +1731,12 @@ private fun Modifier.dynamicScrollCollapseLayout(
         constraints.copy(minHeight = fixedHeightPx, maxHeight = fixedHeightPx)
     )
     val state = listStateProvider()
-    val visibleHeightPx = resolveDynamicScrollCollapsedHeaderHeightPx(
+    val contentOffsetYPx = resolveDynamicScrollCollapsedHeaderOffsetYPx(
         expandedHeightPx = fixedHeightPx,
         firstVisibleItemIndex = state?.firstVisibleItemIndex ?: 0,
         firstVisibleItemScrollOffset = state?.firstVisibleItemScrollOffset ?: 0,
     )
-    val contentOffsetYPx = resolveDynamicScrollCollapsedHeaderOffsetYPx(
-        expandedHeightPx = fixedHeightPx,
-        visibleHeightPx = visibleHeightPx,
-    )
-    layout(placeable.width, visibleHeightPx) {
+    layout(placeable.width, fixedHeightPx) {
         placeable.placeRelative(0, contentOffsetYPx)
     }
 }
