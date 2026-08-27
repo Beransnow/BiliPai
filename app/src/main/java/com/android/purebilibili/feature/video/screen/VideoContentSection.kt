@@ -1757,7 +1757,10 @@ private fun VideoContentTabBar(
                 options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
                 selectedValue = selectedTabIndex,
                 onSelectionChange = onTabSelected,
-                modifier = tabSwipeModifier.width(
+                // Let the liquid indicator receive horizontal drags. Applying the
+                // pager-priority pointer modifier directly to this row consumes the
+                // gesture before FloatingBottomBar can track the indicator.
+                modifier = Modifier.width(
                     (resolveVideoContentTabBarDockItemWidthDp(
                         layoutSpec.unselectedTabFontSizeSp,
                     ) * tabs.size).dp,
