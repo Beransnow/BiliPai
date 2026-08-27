@@ -114,17 +114,17 @@ class DynamicScreenStatePolicyTest {
     @Test
     fun `horizontal user list height follows scroll like home header`() {
         assertEquals(
-            84,
+            96,
             resolveDynamicScrollCollapsedHeaderHeightPx(
-                expandedHeightPx = 84,
+                expandedHeightPx = 96,
                 firstVisibleItemIndex = 0,
                 firstVisibleItemScrollOffset = 0,
             )
         )
         assertEquals(
-            52,
+            64,
             resolveDynamicScrollCollapsedHeaderHeightPx(
-                expandedHeightPx = 84,
+                expandedHeightPx = 96,
                 firstVisibleItemIndex = 0,
                 firstVisibleItemScrollOffset = 32,
             )
@@ -132,7 +132,7 @@ class DynamicScreenStatePolicyTest {
         assertEquals(
             -32,
             resolveDynamicScrollCollapsedHeaderOffsetYPx(
-                expandedHeightPx = 84,
+                expandedHeightPx = 96,
                 firstVisibleItemIndex = 0,
                 firstVisibleItemScrollOffset = 32,
             )
@@ -140,7 +140,7 @@ class DynamicScreenStatePolicyTest {
         assertEquals(
             0,
             resolveDynamicScrollCollapsedHeaderHeightPx(
-                expandedHeightPx = 84,
+                expandedHeightPx = 96,
                 firstVisibleItemIndex = 1,
                 firstVisibleItemScrollOffset = 0,
             )
