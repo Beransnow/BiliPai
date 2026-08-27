@@ -215,8 +215,6 @@ internal fun HomeTopTabFloatingDock(
         containerHorizontalPadding = AppSpacingTokens.ExtraSmall,
         containerVerticalPadding = AppSpacingTokens.ExtraSmall,
         liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
-        backdropBlurEnabled = backdropBlurEnabled,
-        containerChromeVisible = containerChromeVisible,
         dragSelectionEnabled = true,
         longPressDragSelectionEnabled = false,
         miuixBackdrop = miuixBackdrop,

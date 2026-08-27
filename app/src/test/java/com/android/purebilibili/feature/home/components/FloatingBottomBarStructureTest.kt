@@ -109,7 +109,7 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains("pagerFollowGate.ownedTargetIndex = null"))
         assertTrue(body.contains("onDragStopped = {"))
         assertTrue(body.contains("updateValue("))
-        assertTrue(body.contains("selectedIndexLatest.value().coerceIn(0, maxTabIndex),"))
+        assertTrue(body.contains("selectedIndexLatest.value().coerceIn(0, maxTabIndex) to"))
         assertTrue(body.contains("dampedDragAnimation.isDragging"))
         assertTrue(body.contains("shouldAnimateIndicatorToSelectedIndex("))
         assertTrue(body.contains("shouldSuppressExternalPagerIndicatorFollow("))
@@ -315,7 +315,7 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("LocalFloatingBottomBarIndicatorPosition"))
         assertTrue(source.contains("LocalFloatingBottomBarItemSelectionScale"))
         assertTrue(source.contains("itemIndex: Int? = null"))
-        assertTrue(source.contains("resolveNavigationIconCrossScale("))
+        assertTrue(source.contains("lerp(1f, NavigationSelectionScale, coverage)"))
         assertFalse(body.contains("indicatorSettlePulseKey"))
         assertFalse(body.contains("rememberNavigationIndicatorSettleTransform("))
 
@@ -324,22 +324,6 @@ class FloatingBottomBarStructureTest {
         )
         assertTrue(bottomBar.contains("itemIndex = index"))
         assertTrue(bottomBar.contains("LocalFloatingBottomBarItemSelectionScale.current"))
-    }
-
-    @Test
-    fun `non liquid selected content stays clipped to its indicator`() {
-        val source = loadFloatingBottomBarSource()
-        val indicatorSection = source
-            .substringAfter("if (isLiquidGlassMode && combinedBackdrop != null)")
-            .substringBefore("// The selected capsule can be wider than its tab")
-        val nonLiquidIndicator = indicatorSection.substringAfter("} else {")
-
-        assertTrue(
-            nonLiquidIndicator.contains(
-                ".background(colors.indicatorColor.copy(alpha = 0.15f), pillShape)"
-            )
-        )
-        assertTrue(nonLiquidIndicator.contains(".clip(pillShape)"))
     }
 
     @Test

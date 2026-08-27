@@ -128,7 +128,6 @@ class FloatingBottomBarPagerFollowPolicyTest {
         assertFalse(
             shouldAnimateIndicatorToSelectedIndex(
                 isDragging = false,
-                isPagerScrolling = false,
                 indicatorTarget = 0f,
                 selectedIndex = 1,
                 ownedTargetIndex = 0,
@@ -137,7 +136,6 @@ class FloatingBottomBarPagerFollowPolicyTest {
         assertTrue(
             shouldAnimateIndicatorToSelectedIndex(
                 isDragging = false,
-                isPagerScrolling = false,
                 indicatorTarget = 1f,
                 selectedIndex = 0,
                 ownedTargetIndex = null,
@@ -146,7 +144,6 @@ class FloatingBottomBarPagerFollowPolicyTest {
         assertFalse(
             shouldAnimateIndicatorToSelectedIndex(
                 isDragging = true,
-                isPagerScrolling = false,
                 indicatorTarget = 0.4f,
                 selectedIndex = 1,
                 ownedTargetIndex = null,
@@ -155,23 +152,9 @@ class FloatingBottomBarPagerFollowPolicyTest {
         assertFalse(
             shouldAnimateIndicatorToSelectedIndex(
                 isDragging = false,
-                isPagerScrolling = false,
                 indicatorTarget = 0f,
                 selectedIndex = 0,
                 ownedTargetIndex = 0,
-            ),
-        )
-    }
-
-    @Test
-    fun `bottom bar tap keeps liquid indicator spring while pager starts scrolling`() {
-        assertTrue(
-            shouldAnimateIndicatorToSelectedIndex(
-                isDragging = false,
-                isPagerScrolling = true,
-                indicatorTarget = 0f,
-                selectedIndex = 1,
-                ownedTargetIndex = null,
             ),
         )
     }
