@@ -189,6 +189,7 @@ fun SpaceScreen(
     onAudioClick: (Long) -> Unit = {},
     onBangumiClick: (Long) -> Unit = {},
     onWebClick: (String, String) -> Unit = { _, _ -> },
+    onLiveClick: (Long, String, String) -> Unit = { _, _, _ -> },
     onUserClick: (Long) -> Unit = {},
     onPlayAllAudioClick: ((String, Long) -> Unit)? = null,
     onDynamicDetailClick: (String) -> Unit = {},
@@ -539,6 +540,7 @@ fun SpaceScreen(
                             onAudioClick = onAudioClick,
                             onBangumiClick = onBangumiClick,
                             onWebClick = onWebClick,
+                            onLiveClick = onLiveClick,
                             onUserClick = onUserClick,
                             onPlayAllAudioClick = onPlayAllAudioClick,
                             onDynamicDetailClick = onDynamicDetailClick,
@@ -869,6 +871,7 @@ private fun SpaceContent(
     onAudioClick: (Long) -> Unit,
     onBangumiClick: (Long) -> Unit,
     onWebClick: (String, String) -> Unit,
+    onLiveClick: (Long, String, String) -> Unit,
     onUserClick: (Long) -> Unit,
     onPlayAllAudioClick: ((String, Long) -> Unit)?,
     onDynamicDetailClick: (String) -> Unit,
@@ -1179,7 +1182,7 @@ private fun SpaceContent(
                     onFansClick = onFansClick,
                     onTopPhotoClick = onTopPhotoClick,
                     onAvatarClick = onAvatarClick,
-                    onLiveClick = { url, title -> onWebClick(url, title) },
+                    onLiveClick = { roomId, title, uname -> onLiveClick(roomId, title, uname) },
                     sharedTransitionScope = lazyGridSharedTransitionScope,
                     animatedVisibilityScope = lazyGridAnimatedVisibilityScope
                 )
@@ -1538,10 +1541,7 @@ private fun SpaceContent(
                             onBangumiClick = { seasonId, _ -> onBangumiClick(seasonId) },
                             onUserClick = onUserClick,
                             onLiveClick = { roomId, title, uname ->
-                                onWebClick(
-                                    "https://live.bilibili.com/$roomId",
-                                    title.ifBlank { uname }
-                                )
+                                onLiveClick(roomId, title, uname)
                             },
                             onArticleClick = onArticleClick,
                             onDynamicDetailClick = onDynamicDetailClick,
@@ -2145,7 +2145,7 @@ private fun SpaceHeader(
     onFansClick: () -> Unit,
     onTopPhotoClick: () -> Unit,
     onAvatarClick: () -> Unit,
-    onLiveClick: (String, String) -> Unit,
+    onLiveClick: (Long, String, String) -> Unit,
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?
 ) {
@@ -2409,9 +2409,16 @@ private fun SpaceHeader(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
                         contentColor = MaterialTheme.colorScheme.onErrorContainer,
                         onClick = {
+                            val roomId = userInfo.liveRoom.roomId.takeIf { it > 0L }
+                                ?: userInfo.liveRoom.url
+                                    .substringAfterLast('/')
+                                    .substringBefore('?')
+                                    .toLongOrNull()
+                                ?: 0L
                             onLiveClick(
-                                userInfo.liveRoom.url,
-                                userInfo.liveRoom.title.ifBlank { userInfo.name }
+                                roomId,
+                                userInfo.liveRoom.title.ifBlank { userInfo.name },
+                                userInfo.name
                             )
                         }
                     )

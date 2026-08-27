@@ -3337,6 +3337,17 @@ fun AppNavigation(
                                     onWebClick = { url, title ->
                                         pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = title))
                                     },
+                                    onLiveClick = { roomId, title, uname ->
+                                        if (roomId > 0L) {
+                                            pushNavigation3Key(
+                                                BiliPaiNavKey.Live(
+                                                    roomId = roomId.toString(),
+                                                    title = title,
+                                                    uname = uname
+                                                )
+                                            )
+                                        }
+                                    },
                                     onPlayAllAudioClick = { bvid, resumePositionMs ->
                                         navigateToVideoInNavigation3(
                                             bvid = bvid,
