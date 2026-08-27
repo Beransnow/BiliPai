@@ -80,10 +80,14 @@ internal fun mergeRicherOpusDetailContent(
     candidates: List<DynamicItem>
 ): DynamicItem {
     val richest = candidates.maxByOrNull(::resolveDynamicOpusContentScore) ?: return base
-    if (resolveDynamicOpusContentScore(richest) <= resolveDynamicOpusContentScore(base)) {
-        return base
-    }
-    val richestOpus = richest.modules.module_dynamic?.major?.opus ?: return base
+    val richestOpus = if (
+        resolveDynamicOpusContentScore(richest) > resolveDynamicOpusContentScore(base)
+    ) {
+        richest.modules.module_dynamic?.major?.opus
+    } else {
+        base.modules.module_dynamic?.major?.opus
+            ?: richest.modules.module_dynamic?.major?.opus
+    } ?: return base
     val baseContent = base.modules.module_dynamic ?: return richest
     val baseMajor = baseContent.major
     val baseOpus = baseMajor?.opus

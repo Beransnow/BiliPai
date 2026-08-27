@@ -47,7 +47,11 @@ class DynamicDetailFallbackPolicyTest {
                 )
             )
         )
-        val merged = mergeRicherOpusDetailContent(detail, listOf(detail, seed))
+        val candidates = listOf(detail, seed)
+        val resolved = requireNotNull(resolvePreferredDynamicDetailItem(candidates))
+        val merged = mergeRicherOpusDetailContent(resolved, candidates)
+
+        assertEquals(detail, resolved)
         assertEquals("https://img.example/a.jpg", merged.modules.module_dynamic?.major?.opus?.pics?.single()?.url)
     }
 
