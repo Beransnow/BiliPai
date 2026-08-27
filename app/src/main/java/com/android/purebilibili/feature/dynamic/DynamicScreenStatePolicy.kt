@@ -6,7 +6,9 @@ import com.android.purebilibili.data.model.response.DynamicItem
 import kotlinx.collections.immutable.toImmutableList
 
 internal const val DynamicTopBarReservedHeightDp = 60
-internal const val DynamicHorizontalExpandedHeaderReservedHeightDp = 184
+// 60dp 顶栏 + 约 80dp 头像/名称行；仅留少量呼吸空间，避免选中 UP 标题下沉。
+internal const val DynamicHorizontalExpandedHeaderReservedHeightDp = 144
+internal const val DynamicHeaderCollapseTriggerPx = 0
 
 internal data class DynamicPagePresentation(
     val items: List<DynamicItem>,

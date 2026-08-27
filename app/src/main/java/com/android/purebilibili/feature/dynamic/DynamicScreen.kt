@@ -324,12 +324,6 @@ fun DynamicScreen(
 
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
-    val topBarCollapseThresholdPx = with(density) {
-        DynamicTopBarReservedHeightDp.dp.roundToPx()
-    }
-    val horizontalUserListCollapseThresholdPx = with(density) {
-        DynamicHorizontalExpandedHeaderReservedHeightDp.dp.roundToPx()
-    }
     val dynamicListBottomPadding = LocalBottomBarContentPadding.current
     val pullRefreshState = rememberPullToRefreshState()
 
@@ -348,7 +342,6 @@ fun DynamicScreen(
         activeListState,
         displayMode,
         shouldShowHorizontalUserList,
-        horizontalUserListCollapseThresholdPx,
     ) {
         derivedStateOf {
             val state = activeListState ?: return@derivedStateOf false
@@ -357,14 +350,13 @@ fun DynamicScreen(
                 shouldCollapseDynamicHorizontalUserList(
                     firstVisibleItemIndex = state.firstVisibleItemIndex,
                     firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset,
-                    topTolerancePx = horizontalUserListCollapseThresholdPx,
+                    topTolerancePx = DynamicHeaderCollapseTriggerPx,
                 )
         }
     }
     val shouldCollapseTopBar by remember(
         activeListState,
         dynamicTopBarCollapseOnScroll,
-        topBarCollapseThresholdPx,
     ) {
         derivedStateOf {
             val state = activeListState ?: return@derivedStateOf false
@@ -372,7 +364,7 @@ fun DynamicScreen(
                 collapseOnScrollEnabled = dynamicTopBarCollapseOnScroll,
                 firstVisibleItemIndex = state.firstVisibleItemIndex,
                 firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset,
-                topTolerancePx = topBarCollapseThresholdPx,
+                topTolerancePx = DynamicHeaderCollapseTriggerPx,
             )
         }
     }
@@ -1052,8 +1044,16 @@ fun DynamicScreen(
 
                             AnimatedVisibility(
                                 visible = shouldShowHorizontalUserList && !shouldCollapseHorizontalUserList,
-                                enter = expandVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
-                                exit = shrinkVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeOut(animationSpec = AppMotionTokens.standardSpec())
+                                // Target changes interrupt AnimatedVisibility in place. Continuity easing
+                                // moves quickly at first and settles softly without waiting for scroll idle.
+                                enter = expandVertically(
+                                    expandFrom = Alignment.Top,
+                                    animationSpec = AppMotionTokens.standardSpec(),
+                                ) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
+                                exit = shrinkVertically(
+                                    shrinkTowards = Alignment.Top,
+                                    animationSpec = AppMotionTokens.standardSpec(),
+                                ) + fadeOut(animationSpec = AppMotionTokens.standardSpec())
                             ) {
                                 HorizontalUserList(
                                     users = displayUsers,

@@ -16,7 +16,7 @@ class DynamicScreenStatePolicyTest {
     @Test
     fun `dynamic list top padding stays independent from scroll driven chrome collapse`() {
         assertEquals(
-            184,
+            144,
             resolveDynamicListTopPaddingExtraDp(
                 isHorizontalMode = true,
                 shouldShowHorizontalUserList = true
@@ -85,7 +85,8 @@ class DynamicScreenStatePolicyTest {
         assertTrue(
             shouldCollapseDynamicHorizontalUserList(
                 firstVisibleItemIndex = 0,
-                firstVisibleItemScrollOffset = 12
+                firstVisibleItemScrollOffset = 1,
+                topTolerancePx = DynamicHeaderCollapseTriggerPx,
             )
         )
         assertTrue(
@@ -117,6 +118,14 @@ class DynamicScreenStatePolicyTest {
                 collapseOnScrollEnabled = false,
                 firstVisibleItemIndex = 1,
                 firstVisibleItemScrollOffset = 20
+            )
+        )
+        assertTrue(
+            shouldCollapseDynamicTopBar(
+                collapseOnScrollEnabled = true,
+                firstVisibleItemIndex = 0,
+                firstVisibleItemScrollOffset = 1,
+                topTolerancePx = DynamicHeaderCollapseTriggerPx,
             )
         )
         assertTrue(
