@@ -84,6 +84,16 @@ fun shouldFillMaxWidthAppSegmentedControl(
     longestLabelLength: Int,
 ): Boolean = optionCount >= 2 || longestLabelLength >= 1
 
+fun resolveReadableNativeTabMinWidth(
+    requestedMinWidth: Dp,
+    labels: List<String>,
+    allowLabelOverflow: Boolean,
+): Dp {
+    if (!allowLabelOverflow || labels.isEmpty()) return requestedMinWidth
+    val longestLabelLength = labels.maxOf(String::length)
+    return maxOf(requestedMinWidth, (longestLabelLength * 16 + 24).dp)
+}
+
 fun resolveAppLiquidSegmentedControlSpec(
     itemCount: Int,
     hasExternalBackdrop: Boolean,
