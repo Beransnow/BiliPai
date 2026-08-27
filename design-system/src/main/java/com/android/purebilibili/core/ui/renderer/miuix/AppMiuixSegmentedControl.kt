@@ -19,6 +19,7 @@ import com.android.purebilibili.core.ui.components.resolveAppMiuixSegmentedColor
 import com.android.purebilibili.core.ui.components.resolveAppSegmentedSelectionIndex
 import com.android.purebilibili.core.ui.resolveRoundedControlVisualGeometry
 import top.yukonga.miuix.kmp.basic.TabRow
+import top.yukonga.miuix.kmp.basic.TabRowDefaults
 
 @Composable
 internal fun <T> AppMiuixSegmentedControl(
