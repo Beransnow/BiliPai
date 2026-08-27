@@ -54,9 +54,22 @@ internal fun buildDynamicRichText(
         putAll(nodeEmoteMap)
     }
     val usedEmojiIds = linkedMapOf<String, String>()
+    // A preview/detail response can contain the complete `text` alongside a
+    // shortened node stream. Keep the complete text, but splice any actionable
+    // node metadata (AT/link/vote/emoji) back into its exact range instead of
+    // downgrading the whole paragraph to plain text.
+    val renderNodes = resolveDynamicRichTextNodesForText(
+        text = desc.text,
+        nodes = desc.rich_text_nodes,
+    )
     val annotated = buildAnnotatedString {
-        if (shouldUseDynamicRichTextNodes(desc)) {
-            desc.rich_text_nodes.forEach { node ->
+        val shouldRenderNodes = renderNodes.isNotEmpty() && (
+            desc.text.isBlank() ||
+                shouldUseDynamicRichTextNodes(desc) ||
+                renderNodes != desc.rich_text_nodes
+            )
+        if (shouldRenderNodes) {
+            renderNodes.forEach { node ->
                 appendDynamicRichTextNode(
                     node = node,
                     primaryColor = primaryColor,
@@ -114,25 +127,34 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
         val preferredMentions = preferredDesc?.rich_text_nodes.orEmpty().filter {
             it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_").equals("AT", ignoreCase = true)
         }
-        val mergedPreferredNodes = if (!blockHasMention && preferredMentions.isNotEmpty()) {
+        val blockHasActionableNode = blockRichTextNodes.any {
+            it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_")
+                .let { type -> type.isNotBlank() && !type.equals("TEXT", ignoreCase = true) }
+        }
+        val metadataNodes = if (blockHasActionableNode) {
+            blockRichTextNodes
+        } else if (preferredMentions.isNotEmpty()) {
+            blockRichTextNodes + preferredDesc?.rich_text_nodes.orEmpty()
+        } else {
+            emptyList()
+        }
+        val mergedPreferredNodes = if (metadataNodes.isNotEmpty()) {
             mergeDynamicRichTextMetadataIntoText(
                 text = blockText,
-                metadataNodes = preferredDesc?.rich_text_nodes.orEmpty(),
+                metadataNodes = metadataNodes,
             )
         } else {
             emptyList()
         }
+        val resolvedBlockNodes = when {
+            mergedPreferredNodes.isNotEmpty() -> mergedPreferredNodes
+            blockHasMention -> blockRichTextNodes
+            preferredMentions.isNotEmpty() -> preferredDesc?.rich_text_nodes.orEmpty()
+            else -> blockRichTextNodes
+        }
         return DynamicDesc(
             text = blockText,
-            rich_text_nodes = if (mergedPreferredNodes.isNotEmpty()) {
-                mergedPreferredNodes
-            } else if (!blockHasMention && preferredMentions.isNotEmpty()) {
-                // Keep the previous fallback for shortcodes whose metadata token is not
-                // present verbatim in this paragraph (the emote catalog can still resolve it).
-                preferredDesc?.rich_text_nodes.orEmpty()
-            } else {
-                blockRichTextNodes
-            },
+            rich_text_nodes = resolvedBlockNodes,
         )
     }
     if (preferredDesc == null) return null
@@ -164,9 +186,9 @@ internal fun mergeDynamicRichTextMetadataIntoText(
     val result = mutableListOf<RichTextNode>()
     var cursor = 0
     actionableNodes.forEach { node ->
-        val token = resolveDynamicRichTextNodeToken(node)
-        val start = text.indexOf(token, startIndex = cursor)
-        if (start < 0) return@forEach
+        val match = findDynamicRichTextNodeMatch(text, node, cursor) ?: return@forEach
+        val token = match.token
+        val start = match.start
         if (start > cursor) {
             result += RichTextNode(
                 type = "RICH_TEXT_NODE_TYPE_TEXT",
@@ -187,6 +209,58 @@ internal fun mergeDynamicRichTextMetadataIntoText(
         )
     }
     return result
+}
+
+private data class DynamicRichTextNodeMatch(
+    val start: Int,
+    val token: String,
+)
+
+/**
+ * Match using both API display fields. AT nodes in particular are inconsistent:
+ * some responses put `@name` in `text`, others put it only in `orig_text` (often
+ * with a trailing space). Matching the original form first preserves the exact
+ * mention range and avoids annotating an unrelated occurrence of the bare name.
+ */
+private fun findDynamicRichTextNodeMatch(
+    text: String,
+    node: RichTextNode,
+    startIndex: Int,
+): DynamicRichTextNodeMatch? {
+    val candidates = buildList {
+        add(node.orig_text)
+        add(node.text)
+        add(node.emoji?.text.orEmpty())
+    }
+        .map(String::trim)
+        .filter(String::isNotBlank)
+        .distinct()
+        .sortedWith(
+            compareByDescending<String> { it.startsWith("@") }
+                .thenByDescending(String::length)
+        )
+
+    candidates.forEach { candidate ->
+        val start = text.indexOf(candidate, startIndex = startIndex)
+        if (start >= 0) return DynamicRichTextNodeMatch(start = start, token = candidate)
+    }
+    return null
+}
+
+/**
+ * Returns a node stream aligned to [text] whenever at least one actionable node
+ * can be located. Plain TEXT-only streams are intentionally left to the existing
+ * completeness check, while a shortened stream containing an AT node still gets
+ * a full-text TEXT prefix/suffix around that annotation.
+ */
+internal fun resolveDynamicRichTextNodesForText(
+    text: String,
+    nodes: List<RichTextNode>,
+): List<RichTextNode> {
+    if (nodes.isEmpty()) return emptyList()
+    if (text.isBlank()) return nodes
+    if (resolveDynamicRichTextNodeDisplayText(nodes) == text) return nodes
+    return mergeDynamicRichTextMetadataIntoText(text, nodes)
 }
 
 internal fun collectDynamicEmojiUrlMap(nodes: List<RichTextNode>): Map<String, String> {
