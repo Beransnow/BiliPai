@@ -221,6 +221,7 @@ fun <T> AppNativeTabRow(
     compactMiuixWhenTwoOptions: Boolean = true,
     height: Dp? = null,
     allowLabelOverflow: Boolean = false,
+    forceMaterial3: Boolean = false,
     indicatorPositionProvider: (() -> Float)? = null,
     onSelectionChange: (T) -> Unit,
 ) {
@@ -247,7 +248,7 @@ fun <T> AppNativeTabRow(
         miuixSurfaceContainerHigh = AppSurfaceTokens.surfaceContainerHigh(),
         miuixOnSurfaceVariantSummary = AppSurfaceTokens.onSurfaceVariantSummary(),
     )
-    when (resolveAppSegmentedRenderer(policy.usesNativeTabRow)) {
+    when (if (forceMaterial3) AppSegmentedRenderer.MATERIAL3 else resolveAppSegmentedRenderer(policy.usesNativeTabRow)) {
         AppSegmentedRenderer.MATERIAL3 -> AppMaterial3TabRow(
             options = options,
             selectedValue = selectedValue,

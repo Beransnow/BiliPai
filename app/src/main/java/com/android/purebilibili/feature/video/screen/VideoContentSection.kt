@@ -1757,7 +1757,7 @@ private fun VideoContentTabBar(
                 options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
                 selectedValue = selectedTabIndex,
                 onSelectionChange = onTabSelected,
-                modifier = tabSwipeModifier.width(
+                modifier = Modifier.width(
                     (resolveVideoContentTabBarDockItemWidthDp(
                         layoutSpec.unselectedTabFontSizeSp,
                     ) * tabs.size).dp,
@@ -1766,7 +1766,7 @@ private fun VideoContentTabBar(
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
                 // 该栏的指示器由 HorizontalPager 实时位置驱动，禁止自身再 settle 一次。
-                dragSelectionEnabled = false,
+                dragSelectionEnabled = true,
                 tapPressRefractionEnabled = true,
                 miuixBackdrop = miuixBackdrop,
                 indicatorPositionProvider = indicatorPositionProvider,
