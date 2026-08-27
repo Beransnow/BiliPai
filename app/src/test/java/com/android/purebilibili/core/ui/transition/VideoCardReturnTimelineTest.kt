@@ -65,9 +65,9 @@ class VideoCardReturnTimelineTest {
 
     @Test
     fun liveMorphContentAlpha_prefersMorphDepthOverDualSourceMax() {
-        // 来源 chrome 从返回开始同步接管；settle 0.1 时详情正文已让位 10%。
+        // settle 0.1 还未进入 live → cover 的同步交接窗口。
         assertEquals(
-            0.9f,
+            1f,
             resolveVideoCardLiveMorphSecondaryContentAlpha(
                 transitionProgress = 0.2f,
                 depthBlurProgress = 0.2f,
@@ -75,11 +75,11 @@ class VideoCardReturnTimelineTest {
             ),
             0.0001f,
         )
-        // morphDepth=0.1 → settle 0.9 → 整段反向内容形变的后段。
+        // morphDepth=0.1 → settle 0.9 → 82%–98% 交接窗口中点。
         val late = resolveVideoCardLiveMorphSecondaryContentAlpha(
             morphDepthProgress = 0.1f,
         )
-        assertTrue(late < 0.3f)
+        assertEquals(0.5f, late, 0.0001f)
     }
 
     @Test
@@ -394,11 +394,17 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
-    fun sourceChromeFollowsTheWholeReverseTransitionBeforeTheLateLiveCoverHandoff() {
-        assertEquals(0.28f, resolveVideoCardSourceChromeReturnAlpha(0.72f), 0.001f)
-        assertEquals(0.5f, resolveVideoCardSourceChromeReturnAlpha(0.5f), 0.001f)
-        assertEquals(0.96f, resolveVideoCardSourceChromeReturnAlpha(0.04f), 0.001f)
-        assertEquals(0f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.16f), 0.001f)
+    fun sourceChromeUsesTheExactLiveToCoverHandoff() {
+        assertEquals(0f, resolveVideoCardSourceChromeReturnAlpha(0.18f), 0.001f)
+        assertEquals(0.5f, resolveVideoCardSourceChromeReturnAlpha(0.1f), 0.001f)
+        assertEquals(1f, resolveVideoCardSourceChromeReturnAlpha(0.02f), 0.001f)
+        listOf(0.18f, 0.1f, 0.02f).forEach { depth ->
+            assertEquals(
+                resolveVideoCardLiveReturnVisualHandoffAlpha(depth),
+                resolveVideoCardSourceChromeReturnAlpha(depth),
+                0.001f,
+            )
+        }
     }
 
     @Test
@@ -409,13 +415,13 @@ class VideoCardReturnTimelineTest {
             resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 1f),
             0.001f,
         )
-        // settle 0.96：来源文字已接管 96%，保留互补的 4% 详情正文。
+        // settle 0.96：交接进度 87.5%，详情正文保留 12.5%。
         assertEquals(
-            0.04f,
+            0.125f,
             resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.04f),
             0.001f,
         )
-        val mid = resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.5f)
+        val mid = resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.1f)
         assertEquals(0.5f, mid, 0.001f)
     }
 
@@ -444,23 +450,23 @@ class VideoCardReturnTimelineTest {
             isReturnGestureInProgress = false,
             motionTier = MotionTier.Normal,
         )
-        assertEquals(0.72f, returnEnd.alpha, 0.001f)
-        assertEquals(2.24f, returnEnd.translationYDp, 0.001f)
+        assertEquals(1f, returnEnd.alpha, 0.001f)
+        assertEquals(0f, returnEnd.translationYDp, 0.001f)
 
         val returnTransform = resolveVideoCardSecondaryContentVisualFrame(
-            morphDepthProgress = 0.16f,
+            morphDepthProgress = 0.1f,
             phase = VideoCardTransitionBackgroundPhase.RETURNING,
             isReturnGestureInProgress = false,
             motionTier = MotionTier.Normal,
         )
-        assertEquals(0.16f, returnTransform.alpha, 0.001f)
-        assertEquals(6.72f, returnTransform.translationYDp, 0.001f)
-        assertEquals(0.84f, returnTransform.handoffProgress, 0.001f)
+        assertEquals(0.5f, returnTransform.alpha, 0.001f)
+        assertEquals(4f, returnTransform.translationYDp, 0.001f)
+        assertEquals(0.5f, returnTransform.handoffProgress, 0.001f)
         // Mid-handoff: secondary has started shrinking toward card-info size.
         assertTrue(returnTransform.scale in VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE..0.999f)
 
         val reduced = resolveVideoCardSecondaryContentVisualFrame(
-            morphDepthProgress = 0.5f,
+            morphDepthProgress = 0.1f,
             phase = VideoCardTransitionBackgroundPhase.OPENING,
             isReturnGestureInProgress = false,
             motionTier = MotionTier.Reduced,
@@ -475,7 +481,7 @@ class VideoCardReturnTimelineTest {
     fun heldDepthSeekYieldsSecondaryContentLikeCommittedReturn() {
         // Predictive seek often stays HELD while morph depth drops — must still hand off.
         val mid = resolveVideoCardSecondaryContentVisualFrame(
-            morphDepthProgress = 0.5f,
+            morphDepthProgress = 0.1f,
             phase = VideoCardTransitionBackgroundPhase.HELD,
             isReturnGestureInProgress = false,
             motionTier = MotionTier.Normal,
@@ -483,7 +489,7 @@ class VideoCardReturnTimelineTest {
         assertEquals(0.5f, mid.alpha, 0.001f)
         assertTrue(mid.scale < 1f)
         val chrome = resolveVideoCardSourceChromeVisualFrame(
-            morphDepthProgress = 0.5f,
+            morphDepthProgress = 0.1f,
             phase = VideoCardTransitionBackgroundPhase.HELD,
             isReturnGestureInProgress = false,
         )
@@ -496,15 +502,15 @@ class VideoCardReturnTimelineTest {
     @Test
     fun detailAndSourceChromeSizeHandoffMeetInTheMiddle() {
         val t = 0.5f
-        // Full reverse timeline: morphDepth 0.5 is the complementary handoff midpoint.
+        // The media/source-chrome window midpoint is morphDepth 0.1 (settle 0.9).
         val secondary = resolveVideoCardSecondaryContentVisualFrame(
-            morphDepthProgress = 0.5f,
+            morphDepthProgress = 0.1f,
             phase = VideoCardTransitionBackgroundPhase.RETURNING,
             isReturnGestureInProgress = true,
             motionTier = MotionTier.Normal,
         )
         val chrome = resolveVideoCardSourceChromeVisualFrame(
-            morphDepthProgress = 0.5f,
+            morphDepthProgress = 0.1f,
             phase = VideoCardTransitionBackgroundPhase.RETURNING,
             isReturnGestureInProgress = true,
         )
@@ -542,7 +548,7 @@ class VideoCardReturnTimelineTest {
             0.001f,
         )
         assertEquals(
-            0.6666667f,
+            1f,
             resolveVideoCardDetailChromeAlpha(
                 morphDepthProgress = 0.2f,
                 phase = VideoCardTransitionBackgroundPhase.RETURNING,
@@ -681,13 +687,13 @@ class VideoCardReturnTimelineTest {
             resolveVideoCardReturnSettleProgress(transitionProgress = 0.8f),
             0.001f,
         )
-        // 景深更靠后时 content 应更早让位
+        // 两路 settle 都进入 82%–98% 窗口时，景深更靠后应更早让位。
         val withDepth = resolveVideoCardLiveMorphSecondaryContentAlpha(
-            transitionProgress = 0.8f,
-            depthBlurProgress = 0.3f,
+            transitionProgress = 0.15f,
+            depthBlurProgress = 0.1f,
         )
         val withoutDepth = resolveVideoCardLiveMorphSecondaryContentAlpha(
-            transitionProgress = 0.8f,
+            transitionProgress = 0.15f,
         )
         assertTrue(withDepth < withoutDepth)
     }

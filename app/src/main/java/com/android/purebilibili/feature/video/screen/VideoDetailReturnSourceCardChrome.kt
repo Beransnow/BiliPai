@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Subtitles
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -673,6 +675,7 @@ private fun VideoCardSourceCoverPresentation.hasVisibleChrome(): Boolean =
 @Composable
 internal fun VideoDetailReturnCoverChrome(
     sourceChromeSnapshot: VideoCardSourceChromeSnapshot?,
+    sourceScale: Float,
     modifier: Modifier = Modifier,
 ) {
     val snapshot = sourceChromeSnapshot ?: return
@@ -681,10 +684,30 @@ internal fun VideoDetailReturnCoverChrome(
         info = null,
         snapshot = snapshot,
     ) ?: return
+    val baseDensity = LocalDensity.current
+    val densityScale = resolveVideoDetailReturnCoverChromeDensityScale(sourceScale)
+    val compensatedDensity = remember(
+        baseDensity.density,
+        baseDensity.fontScale,
+        densityScale,
+    ) {
+        Density(
+            density = baseDensity.density * densityScale,
+            fontScale = baseDensity.fontScale,
+        )
+    }
     Box(modifier = modifier) {
-        LandingCoverChrome(model = model)
+        CompositionLocalProvider(LocalDensity provides compensatedDensity) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                LandingCoverChrome(model = model)
+            }
+        }
     }
 }
+
+/** Inverse source scaling keeps cover text/icons at the same resting size as the list card. */
+internal fun resolveVideoDetailReturnCoverChromeDensityScale(sourceScale: Float): Float =
+    1f / sourceScale.coerceIn(0.01f, 1f)
 
 /** The same cover chrome that is visible on the stationary home card, without cover pixels. */
 @Composable

@@ -72,6 +72,13 @@ class VideoDetailReturnSourceCardChromeTest {
     }
 
     @Test
+    fun coverChromeDensityCompensatesTheSourceCardScale() {
+        assertEquals(1f, resolveVideoDetailReturnCoverChromeDensityScale(1f), 0.0001f)
+        assertEquals(2f, resolveVideoDetailReturnCoverChromeDensityScale(0.5f), 0.0001f)
+        assertEquals(4f, resolveVideoDetailReturnCoverChromeDensityScale(0.25f), 0.0001f)
+    }
+
+    @Test
     fun landedMediaIsRemeasuredToTheExactStationaryCover() {
         val landing = resolveVideoDetailReturnSourceCardLayout(
             viewportWidthPx = 1000f,
@@ -166,32 +173,32 @@ class VideoDetailReturnSourceCardChromeTest {
     }
 
     @Test
-    fun sideBySideSharesTheFullReverseChromeHandoffWithStacked() {
-        // Both layouts attach stationary-card chrome from the beginning of the reverse morph.
+    fun sideBySideSharesTheMediaChromeHandoffWithStacked() {
+        // Both layouts attach stationary-card chrome in the same live → cover window.
         val sideMid = com.android.purebilibili.core.ui.transition
             .resolveVideoCardSourceChromeVisualFrame(
-                morphDepthProgress = 0.5f,
+                morphDepthProgress = 0.1f,
                 phase = com.android.purebilibili.core.ui.transition
                     .VideoCardTransitionBackgroundPhase.RETURNING,
                 sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
             )
         val stackedMid = com.android.purebilibili.core.ui.transition
             .resolveVideoCardSourceChromeVisualFrame(
-                morphDepthProgress = 0.5f,
+                morphDepthProgress = 0.1f,
                 phase = com.android.purebilibili.core.ui.transition
                     .VideoCardTransitionBackgroundPhase.RETURNING,
                 sourceLayout = VideoCardSourceLayout.STACKED,
             )
         val sideNearLand = com.android.purebilibili.core.ui.transition
             .resolveVideoCardSourceChromeVisualFrame(
-                morphDepthProgress = 0.04f,
+                morphDepthProgress = 0.02f,
                 phase = com.android.purebilibili.core.ui.transition
                     .VideoCardTransitionBackgroundPhase.RETURNING,
                 sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
             )
         assertEquals(0.5f, sideMid.alpha, 0.001f)
         assertEquals(stackedMid.alpha, sideMid.alpha, 0.001f)
-        assertEquals(0.96f, sideNearLand.alpha, 0.001f)
+        assertEquals(1f, sideNearLand.alpha, 0.001f)
     }
 
     @Test
@@ -331,6 +338,7 @@ class VideoDetailReturnSourceCardChromeTest {
         assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
         assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
         assertTrue(holder.contains("returnMediaHandoffProgressProvider"))
+        assertTrue(holder.contains("alpha = returnMediaFrameProvider().coverAlpha"))
         assertTrue(holder.contains(".videoDetailReturnMediaLayout("))
     }
 }
