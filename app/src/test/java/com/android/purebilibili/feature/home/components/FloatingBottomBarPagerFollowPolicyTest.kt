@@ -9,6 +9,32 @@ import kotlin.test.assertTrue
 class FloatingBottomBarPagerFollowPolicyTest {
 
     @Test
+    fun `tap selection owns its target before programmatic pager scroll starts`() {
+        assertEquals(
+            3,
+            resolveIndicatorOwnedTargetOnSelectionAnimation(
+                targetIndex = 3,
+                hasExternalPagerPosition = true,
+                isPagerScrolling = false,
+            ),
+        )
+        assertNull(
+            resolveIndicatorOwnedTargetOnSelectionAnimation(
+                targetIndex = 3,
+                hasExternalPagerPosition = true,
+                isPagerScrolling = true,
+            ),
+        )
+        assertNull(
+            resolveIndicatorOwnedTargetOnSelectionAnimation(
+                targetIndex = 3,
+                hasExternalPagerPosition = false,
+                isPagerScrolling = false,
+            ),
+        )
+    }
+
+    @Test
     fun `drag onto a new tab owns that target when pager position is provided`() {
         assertEquals(
             0,

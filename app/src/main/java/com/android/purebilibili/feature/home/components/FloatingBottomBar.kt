@@ -239,6 +239,21 @@ internal fun resolveIndicatorOwnedTargetOnDragStop(
 }
 
 /**
+ * A tap updates the selected index before its programmatic pager scroll starts. Let the
+ * indicator own that destination so the pager's first stale frame cannot replace the target
+ * and prematurely release the press bloom. An already-running pager remains the owner of a
+ * content swipe.
+ */
+internal fun resolveIndicatorOwnedTargetOnSelectionAnimation(
+    targetIndex: Int,
+    hasExternalPagerPosition: Boolean,
+    isPagerScrolling: Boolean,
+): Int? {
+    if (!hasExternalPagerPosition || isPagerScrolling) return null
+    return targetIndex
+}
+
+/**
  * Swallow pager-follow (snap + press) for the whole indicator-driven page animation.
  * Dropping ownership as soon as the pager is close re-enters follow `press()` and the
  * pill visibly blooms a second time while it is still moving.
@@ -309,7 +324,7 @@ fun RowScope.FloatingBottomBarItem(
     val baseContentAlpha = LocalFloatingBottomBarBaseContentAlpha.current
     val activeContent = LocalFloatingBottomBarActiveContent.current
     val contentColor = LocalFloatingBottomBarContentColor.current
-    val selectionScale = remember(itemIndex, indicatorPosition) {
+    val selectionScale = remember(itemIndex, indicatorPosition, iconCrossScaleEnabled) {
         {
             if (!iconCrossScaleEnabled || itemIndex == null) {
                 1f
@@ -626,10 +641,13 @@ fun FloatingBottomBar(
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow {
-            selectedIndexLatest.value().coerceIn(0, maxTabIndex) to
-                dampedDragAnimation.isDragging
+            Triple(
+                selectedIndexLatest.value().coerceIn(0, maxTabIndex),
+                dampedDragAnimation.isDragging,
+                isScrollInProgressLatest(),
+            )
         }
-            .collectLatest { (index, isDragging) ->
+            .collectLatest { (index, isDragging, isPagerScrolling) ->
                 if (
                     shouldAnimateIndicatorToSelectedIndex(
                         isDragging = isDragging,
@@ -638,6 +656,14 @@ fun FloatingBottomBar(
                         ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
                     )
                 ) {
+                    resolveIndicatorOwnedTargetOnSelectionAnimation(
+                        targetIndex = index,
+                        hasExternalPagerPosition = indicatorPositionLatest != null,
+                        isPagerScrolling = isPagerScrolling,
+                    )?.let { ownedTarget ->
+                        pagerFollowGate.ownedTargetIndex = ownedTarget
+                        pagerFollowGate.previousExternalPosition = null
+                    }
                     dampedDragAnimation.animateToValue(index.toFloat())
                 }
             }

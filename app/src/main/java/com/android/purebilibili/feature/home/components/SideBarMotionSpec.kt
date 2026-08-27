@@ -14,6 +14,8 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.delay
 
 internal const val NavigationSelectionScale = 1.1f
+// Cross-scale is only a transition accent. Keep both settled endpoints at the authored size.
+internal const val FloatingBottomBarSelectionScale = 1.12f
 internal const val NavigationSelectionWobbleDegrees = 4f
 internal const val NavigationSelectionCounterWobbleDegrees = -3f
 
@@ -22,11 +24,9 @@ internal fun resolveNavigationIconCrossScale(
     coverage: Float,
 ): Float {
     if (!enabled) return 1f
-    return androidx.compose.ui.util.lerp(
-        1f,
-        NavigationSelectionScale,
-        coverage.coerceIn(0f, 1f),
-    )
+    val transitionProgress = coverage.coerceIn(0f, 1f)
+    val transitionArc = kotlin.math.sin(Math.PI.toFloat() * transitionProgress)
+    return androidx.compose.ui.util.lerp(1f, FloatingBottomBarSelectionScale, transitionArc)
 }
 
 internal fun <T> navigationSelectionScaleMotionSpec(): SpringSpec<T> = spring(
