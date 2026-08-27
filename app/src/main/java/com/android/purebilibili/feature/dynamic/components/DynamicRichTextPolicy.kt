@@ -114,9 +114,21 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
         val preferredMentions = preferredDesc?.rich_text_nodes.orEmpty().filter {
             it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_").equals("AT", ignoreCase = true)
         }
+        val mergedPreferredNodes = if (!blockHasMention && preferredMentions.isNotEmpty()) {
+            mergeDynamicRichTextMetadataIntoText(
+                text = blockText,
+                metadataNodes = preferredDesc?.rich_text_nodes.orEmpty(),
+            )
+        } else {
+            emptyList()
+        }
         return DynamicDesc(
             text = blockText,
-            rich_text_nodes = if (!blockHasMention && preferredMentions.isNotEmpty()) {
+            rich_text_nodes = if (mergedPreferredNodes.isNotEmpty()) {
+                mergedPreferredNodes
+            } else if (!blockHasMention && preferredMentions.isNotEmpty()) {
+                // Keep the previous fallback for shortcodes whose metadata token is not
+                // present verbatim in this paragraph (the emote catalog can still resolve it).
                 preferredDesc?.rich_text_nodes.orEmpty()
             } else {
                 blockRichTextNodes
@@ -128,6 +140,53 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
     // route text blocks through RichTextContent so its existing catalog fallback can expand
     // those shortcodes just as it does in the dynamic preview.
     return preferredDesc.copy(text = blockText)
+}
+
+/**
+ * Rebuild a node stream for a full opus paragraph while retaining actionable metadata from
+ * the shorter preview description. The desktop opus API may return the complete paragraph as
+ * WORD/TEXT nodes and expose the same AT node only in the preview response. Matching by the
+ * displayed token keeps the full body text intact and gives RichTextContent an exact range on
+ * which to place the user annotation.
+ */
+internal fun mergeDynamicRichTextMetadataIntoText(
+    text: String,
+    metadataNodes: List<RichTextNode>,
+): List<RichTextNode> {
+    if (text.isBlank() || metadataNodes.isEmpty()) return emptyList()
+    val actionableNodes = metadataNodes.filter { node ->
+        val type = node.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_")
+        type.isNotBlank() && !type.equals("TEXT", ignoreCase = true) &&
+            resolveDynamicRichTextNodeToken(node).isNotBlank()
+    }
+    if (actionableNodes.isEmpty()) return emptyList()
+
+    val result = mutableListOf<RichTextNode>()
+    var cursor = 0
+    actionableNodes.forEach { node ->
+        val token = resolveDynamicRichTextNodeToken(node)
+        val start = text.indexOf(token, startIndex = cursor)
+        if (start < 0) return@forEach
+        if (start > cursor) {
+            result += RichTextNode(
+                type = "RICH_TEXT_NODE_TYPE_TEXT",
+                text = text.substring(cursor, start),
+            )
+        }
+        result += node.copy(
+            text = token,
+            orig_text = node.orig_text.ifBlank { token },
+        )
+        cursor = start + token.length
+    }
+    if (result.isEmpty()) return emptyList()
+    if (cursor < text.length) {
+        result += RichTextNode(
+            type = "RICH_TEXT_NODE_TYPE_TEXT",
+            text = text.substring(cursor),
+        )
+    }
+    return result
 }
 
 internal fun collectDynamicEmojiUrlMap(nodes: List<RichTextNode>): Map<String, String> {
