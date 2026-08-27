@@ -159,7 +159,10 @@ internal fun mergeDynamicDetailInteractionMetadata(
     val seedBasic = seedItem.basic?.takeIf {
         it.comment_type > 0 && it.comment_id_str.toLongOrNull()?.let { oid -> oid > 0L } == true
     }
-    val detailContent = detailItem.modules.module_dynamic
+    val detailContent = mergeDynamicDetailContentWithSeedMedia(
+        detailContent = detailItem.modules.module_dynamic,
+        seedContent = seedItem.modules.module_dynamic,
+    )
     val seedEmojiNodes = collectDynamicDetailSeedEmojiNodes(seedItem)
     val mergedContent = if (detailContent != null && seedEmojiNodes.isNotEmpty()) {
         detailContent.copy(
@@ -181,6 +184,43 @@ internal fun mergeDynamicDetailInteractionMetadata(
             module_stat = detailItem.modules.module_stat ?: seedItem.modules.module_stat,
         )
     )
+}
+
+internal fun mergeDynamicDetailContentWithSeedMedia(
+    detailContent: DynamicContentModule?,
+    seedContent: DynamicContentModule?,
+): DynamicContentModule? {
+    val seedMajor = seedContent?.major ?: return detailContent
+    val seedPics = buildList {
+        addAll(seedMajor.opus?.pics.orEmpty())
+        seedMajor.draw?.items.orEmpty().mapTo(this) { item ->
+            OpusPic(url = item.src, width = item.width, height = item.height)
+        }
+    }.filter { it.url.isNotBlank() }
+        .distinctBy { it.url }
+    if (seedPics.isEmpty()) return detailContent
+    if (detailContent == null) return seedContent
+
+    val detailMajor = detailContent.major
+        ?: return detailContent.copy(major = seedMajor)
+    val detailHasMedia = detailMajor.draw?.items?.any { it.src.isNotBlank() } == true ||
+        detailMajor.opus?.pics?.any { it.url.isNotBlank() } == true ||
+        detailMajor.opus?.contentBlocks?.any { block ->
+            block is OpusContentBlock.Image && block.pic.url.isNotBlank()
+        } == true
+    if (detailHasMedia) return detailContent
+
+    val mergedMajor = when {
+        detailMajor.opus != null || detailMajor.type == "MAJOR_TYPE_OPUS" -> detailMajor.copy(
+            opus = (detailMajor.opus ?: OpusMajor()).copy(pics = seedPics),
+        )
+        detailMajor.draw != null || detailMajor.type == "MAJOR_TYPE_DRAW" -> {
+            seedMajor.draw?.let { seedDraw -> detailMajor.copy(draw = seedDraw) } ?: seedMajor
+        }
+        detailMajor.type.isBlank() || detailMajor.type == "MAJOR_TYPE_NONE" -> seedMajor
+        else -> detailMajor
+    }
+    return detailContent.copy(major = mergedMajor)
 }
 
 /**
@@ -230,6 +270,16 @@ internal fun shouldFetchOpusDetailForDynamicDetail(item: DynamicItem): Boolean {
     if (major?.type == "MAJOR_TYPE_DRAW" || major?.draw != null) return true
     if (item.type.equals("DYNAMIC_TYPE_DRAW", ignoreCase = true)) return true
     return item.basic?.comment_type == 11
+}
+
+internal fun shouldRequestOpusDetailForDynamicDetail(
+    webItem: DynamicItem?,
+    seedItem: DynamicItem?,
+): Boolean {
+    return webItem == null ||
+        shouldFallbackForDynamicDetail(webItem) ||
+        shouldFetchOpusDetailForDynamicDetail(webItem) ||
+        seedItem?.let(::shouldFetchOpusDetailForDynamicDetail) == true
 }
 
 internal fun resolveOpusArticleFallbackCvId(

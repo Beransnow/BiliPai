@@ -233,6 +233,40 @@ class DynamicDetailFallbackPolicyTest {
     }
 
     @Test
+    fun shouldRequestOpusDetail_usesImageSeedWhenWebDetailDropsMedia() {
+        val webItem = DynamicItem(
+            id_str = "1236527093179744277",
+            type = "2",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    desc = DynamicDesc(text = "详情接口只剩文字")
+                )
+            )
+        )
+        val seedItem = DynamicItem(
+            id_str = webItem.id_str,
+            type = "DYNAMIC_TYPE_DRAW",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_DRAW",
+                        draw = DrawMajor(
+                            items = listOf(DrawItem(src = "https://img.example/seed.jpg"))
+                        )
+                    )
+                )
+            )
+        )
+
+        assertTrue(
+            shouldRequestOpusDetailForDynamicDetail(
+                webItem = webItem,
+                seedItem = seedItem,
+            )
+        )
+    }
+
+    @Test
     fun mergeRicherOpusDetailContent_replacesNineGridPreviewWithFullParagraphs() {
         val preview = DynamicItem(
             id_str = "opus-preview",
@@ -439,6 +473,42 @@ class DynamicDetailFallbackPolicyTest {
         assertEquals("326122895", merged.basic?.comment_id_str)
         assertEquals(11, merged.basic?.comment_type)
         assertEquals(17, merged.modules.module_stat?.comment?.count)
+    }
+
+    @Test
+    fun mergeInteractionMetadata_retainsSeedDrawWhenDetailOnlyHasText() {
+        val detail = DynamicItem(
+            id_str = "dynamic-id",
+            type = "2",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    desc = DynamicDesc(text = "完整正文")
+                )
+            )
+        )
+        val seed = DynamicItem(
+            id_str = detail.id_str,
+            type = "DYNAMIC_TYPE_DRAW",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    desc = DynamicDesc(text = "预览正文"),
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_DRAW",
+                        draw = DrawMajor(
+                            items = listOf(DrawItem(src = "https://img.example/seed.jpg"))
+                        )
+                    )
+                )
+            )
+        )
+
+        val merged = mergeDynamicDetailInteractionMetadata(detail, seed)
+
+        assertEquals("完整正文", merged.modules.module_dynamic?.desc?.text)
+        assertEquals(
+            "https://img.example/seed.jpg",
+            merged.modules.module_dynamic?.major?.draw?.items?.single()?.src,
+        )
     }
 
     @Test
