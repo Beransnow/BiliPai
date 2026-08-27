@@ -151,6 +151,7 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.FavFolder
+import com.android.purebilibili.data.model.response.DynamicDesc
 import kotlin.math.roundToInt
 import com.android.purebilibili.data.model.response.FollowBangumiItem
 import com.android.purebilibili.data.model.response.SpaceAggregateArchiveItem
@@ -168,6 +169,7 @@ import com.android.purebilibili.data.model.response.VideoSortOrder
 import com.android.purebilibili.feature.dynamic.DynamicDeleteAction
 import com.android.purebilibili.feature.dynamic.DynamicViewModel
 import com.android.purebilibili.feature.dynamic.components.DynamicCardV2
+import com.android.purebilibili.feature.dynamic.components.RichTextContent
 import com.android.purebilibili.feature.dynamic.components.DynamicCommentOverlayHost
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.RepostDialog
@@ -3625,8 +3627,10 @@ private fun SpaceArticleListItem(
             .clickable { onClick() }
             .padding(vertical = 6.dp)
     ) {
-        AppText(
-            text = article.title,
+        RichTextContent(
+            desc = remember(article.title) { DynamicDesc(text = article.title) },
+            onUserClick = {},
+            onBlankTap = onClick,
             fontSize = 17.sp,
             fontWeight = FontWeight.SemiBold,
             lineHeight = 24.sp,

@@ -47,6 +47,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
@@ -1478,7 +1479,13 @@ fun RichTextContent(
     desc: DynamicDesc,
     onUserClick: (Long) -> Unit,
     onVoteClick: (Long) -> Unit = {},
-    onBlankTap: (() -> Unit)? = null
+    onBlankTap: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = MaterialTheme.typography.bodyMedium.fontSize,
+    fontWeight: FontWeight? = null,
+    lineHeight: TextUnit = MaterialTheme.typography.bodyLarge.lineHeight,
+    maxLines: Int = Int.MAX_VALUE,
+    overflow: TextOverflow = TextOverflow.Clip,
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -1531,11 +1538,14 @@ fun RichTextContent(
     AppText(
         text = annotatedText,
         inlineContent = inlineContent,
-        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
+        fontSize = fontSize,
+        fontWeight = fontWeight,
+        lineHeight = lineHeight,
+        maxLines = maxLines,
+        overflow = overflow,
         color = textColor,
         onTextLayout = { textLayoutResult = it },
-        modifier = Modifier.pointerInput(copyText, annotatedText, onVoteClick, onBlankTap) {
+        modifier = modifier.pointerInput(copyText, annotatedText, onVoteClick, onBlankTap) {
             detectTapGestures(
                 onLongPress = {
                     if (copyText.isNotEmpty()) {
