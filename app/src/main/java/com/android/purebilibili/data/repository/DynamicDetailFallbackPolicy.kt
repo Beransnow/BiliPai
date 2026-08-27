@@ -232,7 +232,7 @@ internal fun collectDynamicDetailSeedEmojiNodes(item: DynamicItem): List<RichTex
     val content = item.modules.module_dynamic ?: return emptyList()
     return (content.desc?.rich_text_nodes.orEmpty() +
         content.major?.opus?.summary?.rich_text_nodes.orEmpty())
-        .filter(::containsDynamicEmojiMetadata)
+        .filter(::containsDynamicRichTextMetadata)
         .distinctBy(::dynamicEmojiMetadataKey)
 }
 
@@ -242,19 +242,22 @@ internal fun mergeDynamicDetailRichTextNodes(
 ): List<RichTextNode> {
     if (seedEmojiNodes.isEmpty()) return detailNodes
     val existingEmojiKeys = detailNodes
-        .filter(::containsDynamicEmojiMetadata)
+        .filter(::containsDynamicRichTextMetadata)
         .mapTo(mutableSetOf(), ::dynamicEmojiMetadataKey)
     return detailNodes + seedEmojiNodes
         .distinctBy(::dynamicEmojiMetadataKey)
         .filter { node -> dynamicEmojiMetadataKey(node) !in existingEmojiKeys }
 }
 
-private fun containsDynamicEmojiMetadata(node: RichTextNode): Boolean {
+private fun containsDynamicRichTextMetadata(node: RichTextNode): Boolean {
     val type = node.type.removePrefix("RICH_TEXT_NODE_TYPE_")
-    return type.equals("EMOJI", ignoreCase = true) &&
-        node.emoji?.let { emoji ->
+    return when {
+        type.equals("AT", ignoreCase = true) -> node.rid?.toLongOrNull()?.let { it > 0L } == true
+        type.equals("EMOJI", ignoreCase = true) -> node.emoji?.let { emoji ->
             emoji.icon_url.isNotBlank() || emoji.webp_url.isNotBlank() || emoji.gif_url.isNotBlank()
         } == true
+        else -> false
+    }
 }
 
 private fun dynamicEmojiMetadataKey(node: RichTextNode): String = sequenceOf(
