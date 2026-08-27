@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.video.screen
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceInfoPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeVisualFrame
@@ -165,9 +166,8 @@ class VideoDetailReturnSourceCardChromeTest {
     }
 
     @Test
-    fun sideBySideSharesHomeLateChromeHandoffWithStacked() {
-        // SIDE_BY_SIDE no longer paints a solid facade for the whole morph; it uses the same
-        // late 72%–96% chrome window as STACKED so live media stays visible early.
+    fun sideBySideSharesTheFullReverseChromeHandoffWithStacked() {
+        // Both layouts attach stationary-card chrome from the beginning of the reverse morph.
         val sideMid = com.android.purebilibili.core.ui.transition
             .resolveVideoCardSourceChromeVisualFrame(
                 morphDepthProgress = 0.5f,
@@ -189,9 +189,9 @@ class VideoDetailReturnSourceCardChromeTest {
                     .VideoCardTransitionBackgroundPhase.RETURNING,
                 sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
             )
-        assertEquals(0f, sideMid.alpha, 0.001f)
+        assertEquals(0.5f, sideMid.alpha, 0.001f)
         assertEquals(stackedMid.alpha, sideMid.alpha, 0.001f)
-        assertEquals(1f, sideNearLand.alpha, 0.001f)
+        assertEquals(0.96f, sideNearLand.alpha, 0.001f)
     }
 
     @Test
@@ -268,6 +268,12 @@ class VideoDetailReturnSourceCardChromeTest {
             infoPresentation = VideoCardSourceInfoPresentation(
                 publishTimeText = "发布于 2026-07-30",
                 showStatsInInfo = false,
+                showOverflowMenu = true,
+            ),
+            coverPresentation = VideoCardSourceCoverPresentation(
+                showGradientMask = true,
+                showStatsOnCover = true,
+                showDurationAsStat = true,
             ),
         )
         val info = ViewInfo(
@@ -282,6 +288,9 @@ class VideoDetailReturnSourceCardChromeTest {
         assertEquals("list-up", model.ownerName)
         assertTrue(model.followed)
         assertFalse(model.infoPresentation.showStatsInInfo)
+        assertTrue(model.infoPresentation.showOverflowMenu)
+        assertTrue(model.coverPresentation.showGradientMask)
+        assertTrue(model.coverPresentation.showStatsOnCover)
         assertEquals("发布于 2026-07-30", resolveVideoDetailReturnInfoSecondaryLine(model))
     }
 
@@ -320,6 +329,7 @@ class VideoDetailReturnSourceCardChromeTest {
         assertTrue(holder.contains("shouldDrawFlyingReturnSourceCardChrome()"))
         assertTrue(shouldDrawFlyingReturnSourceCardChrome())
         assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
+        assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
         assertTrue(holder.contains("returnMediaHandoffProgressProvider"))
         assertTrue(holder.contains(".videoDetailReturnMediaLayout("))
     }
