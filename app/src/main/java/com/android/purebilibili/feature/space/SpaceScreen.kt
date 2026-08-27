@@ -2532,9 +2532,7 @@ private fun SpaceSecondarySwitchRow(
     ) {
         val containerHorizontalPaddingDp = AppSpacingTokens.ExtraSmall.value.roundToInt()
         val preferredItemWidthDp = spec.itemWidthDp ?: 104
-        // Keep the standard 视频/图文/音频 trio visible together. Only larger
-        // server-provided rails become horizontally scrollable.
-        val useScrollableRail = items.size > 3 && shouldScrollSpaceSecondarySwitch(
+        val useScrollableRail = shouldScrollSpaceSecondarySwitch(
             itemCount = items.size,
             itemWidthDp = preferredItemWidthDp,
             viewportWidthDp = maxWidth.value.roundToInt(),
