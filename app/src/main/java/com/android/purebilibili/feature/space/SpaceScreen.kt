@@ -2538,16 +2538,15 @@ private fun SpaceSecondarySwitchRow(
             viewportWidthDp = maxWidth.value.roundToInt(),
             containerHorizontalPaddingDp = containerHorizontalPaddingDp
         )
-        val itemWidthDp = if (useScrollableRail) {
-            preferredItemWidthDp
-        } else {
-            resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
-                preferredItemWidthDp = preferredItemWidthDp,
-                itemCount = items.size,
-                viewportWidthDp = maxWidth.value.roundToInt(),
-                containerHorizontalPaddingDp = containerHorizontalPaddingDp
-            )
-        }
+        // Keep three slots visible in the viewport even when later library entries
+        // make the rail scrollable; long contribution titles then use the same
+        // compact width as the legacy three-tab dock.
+        val itemWidthDp = resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
+            preferredItemWidthDp = preferredItemWidthDp,
+            itemCount = items.size,
+            viewportWidthDp = maxWidth.value.roundToInt(),
+            containerHorizontalPaddingDp = containerHorizontalPaddingDp
+        )
         val itemWidth = itemWidthDp.dp
         val viewportWidthPx = with(density) { maxWidth.toPx() }
         val itemWidthPx = with(density) { itemWidth.toPx() }
