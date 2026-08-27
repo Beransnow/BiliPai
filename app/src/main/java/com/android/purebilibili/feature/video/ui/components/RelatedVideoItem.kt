@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.video.ui.components
 
 import android.widget.Toast
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -58,10 +59,18 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
+import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
+import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
+import com.android.purebilibili.core.ui.transition.LocalVideoTransitionAdaptiveInfo
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
+import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
+import com.android.purebilibili.core.ui.transition.shouldUseVideoCardShellSharedBounds
+import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrEmpty
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.HapticType
@@ -158,9 +167,10 @@ internal fun rememberRelatedVideoCardLayout(): HomeFeedCardLayout {
 }
 
 /**
- * 相关推荐单列横卡：点击时冻结来源标识、几何与 chrome，供嵌套卡片 Morph 及逐层返回。
- * 导航宿主统一驱动动效，卡片本身不额外叠加 AnimatedContent 或封面 crossfade。
+ * 相关推荐单列横卡：点击时冻结来源标识、几何与 chrome，供整卡 Morph 及逐层返回。
+ * 与首页视频卡一致，由一个 sharedBounds 容器承载封面、标题、UP 信息和统计内容。
  */
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun RelatedVideoItem(
     video: RelatedVideo,
@@ -182,6 +192,31 @@ fun RelatedVideoItem(
     val densityValue = density.density
     val sourceRoute = resolveRelatedVideoSharedElementSourceRoute(
         LocalVideoCardSharedElementSourceRoute.current
+    )
+    val sharedTransitionScope = LocalSharedTransitionScope.current
+    val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
+    val sharedTransitionEnabled = LocalSharedTransitionEnabled.current
+    val sharedReady = sharedTransitionEnabled &&
+        sharedTransitionScope != null &&
+        animatedVisibilityScope != null
+    val sharedTransitionSpeedSettings = LocalVideoSharedTransitionSpeedSettings.current
+    val transitionAdaptiveInfo = LocalVideoTransitionAdaptiveInfo.current
+    val sharedTransitionMotionSpec = remember(
+        sourceRoute,
+        sharedTransitionEnabled,
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
+    ) {
+        resolveVideoCardSharedTransitionMotionSpec(
+            sourceRoute = sourceRoute,
+            transitionEnabled = sharedTransitionEnabled,
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
+        )
+    }
+    val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
+        sourceRoute = sourceRoute,
+        transitionEnabled = sharedReady,
     )
     val cardCoordinatesRef = remember { object { var value: LayoutCoordinates? = null } }
     val coverCoordinatesRef = remember { object { var value: LayoutCoordinates? = null } }
@@ -254,6 +289,16 @@ fun RelatedVideoItem(
             .onGloballyPositioned { coordinates ->
                 cardCoordinatesRef.value = coordinates
             }
+            .videoCardShellSharedBoundsOrEmpty(
+                enabled = useCardShellSharedBounds,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
+                bvid = video.bvid,
+                sourceRoute = sourceRoute,
+                motionSpec = sharedTransitionMotionSpec,
+                clipShape = cardShape,
+                crossfadeSourceContent = true,
+            )
             .clip(cardShape)
             .background(AppSurfaceTokens.cardContainer())
             .clickable(onClick = triggerRelatedVideoClick)

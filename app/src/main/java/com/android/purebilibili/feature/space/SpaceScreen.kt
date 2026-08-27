@@ -3405,7 +3405,8 @@ private fun SpaceArchiveListItemRow(
                 bvid = sharedTransitionKey.orEmpty(),
                 sourceRoute = sourceRoute,
                 motionSpec = cardSharedTransitionMotionSpec,
-                clipShape = cardShellShape
+                clipShape = cardShellShape,
+                crossfadeSourceContent = true,
             )
             .clip(cardShellShape)
             .background(AppSurfaceTokens.cardContainer())
