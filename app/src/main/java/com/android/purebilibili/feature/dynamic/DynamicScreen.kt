@@ -1054,14 +1054,14 @@ fun DynamicScreen(
                                 ) + slideInVertically(
                                     initialOffsetY = { -it },
                                     animationSpec = AppMotionTokens.standardSpec(),
-                                ) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
+                                ),
                                 exit = shrinkVertically(
                                     shrinkTowards = Alignment.Top,
                                     animationSpec = AppMotionTokens.standardSpec(),
                                 ) + slideOutVertically(
                                     targetOffsetY = { -it },
                                     animationSpec = AppMotionTokens.standardSpec(),
-                                ) + fadeOut(animationSpec = AppMotionTokens.standardSpec())
+                                )
                             ) {
                                 HorizontalUserList(
                                     users = displayUsers,
