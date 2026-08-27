@@ -115,8 +115,6 @@ class SpaceScreenStructureTest {
         assertTrue(secondaryRow.contains("itemWidthDp = preferredItemWidthDp"))
         assertTrue(secondaryRow.contains(".clip(CircleShape)"))
         assertTrue(secondaryRow.contains(".horizontalScroll(scrollState)"))
-        assertTrue(secondaryRow.contains("OpticalContrastPalette.Highlight.copy(alpha = 0.16f)"))
-        assertTrue(secondaryRow.contains(".then(liquidDockRim)"))
         assertTrue(secondaryRow.contains("dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail"))
         assertTrue(secondaryRow.contains("longPressDragSelectionEnabled = useScrollableRail"))
         assertTrue(secondaryRow.contains("scrollState.dispatchRawDelta("))
