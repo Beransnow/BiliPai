@@ -12,17 +12,13 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideInVertically
 import kotlinx.coroutines.flow.distinctUntilChanged // [Fix] Missing import
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -58,6 +54,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
@@ -338,22 +335,6 @@ fun DynamicScreen(
                 firstVisibleItemIndex = state.firstVisibleItemIndex,
                 firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset
             )
-        }
-    }
-    val shouldCollapseHorizontalUserList by remember(
-        activeListState,
-        displayMode,
-        shouldShowHorizontalUserList,
-    ) {
-        derivedStateOf {
-            val state = activeListState ?: return@derivedStateOf false
-            shouldShowHorizontalUserList &&
-                displayMode.isHorizontalUserList() &&
-                shouldCollapseDynamicHorizontalUserList(
-                    firstVisibleItemIndex = state.firstVisibleItemIndex,
-                    firstVisibleItemScrollOffset = state.firstVisibleItemScrollOffset,
-                    topTolerancePx = DynamicHeaderCollapseTriggerPx,
-                )
         }
     }
     val shouldCollapseTopBar by remember(
@@ -1044,25 +1025,10 @@ fun DynamicScreen(
                                 )
                             }
 
-                            AnimatedVisibility(
-                                visible = shouldShowHorizontalUserList && !shouldCollapseHorizontalUserList,
-                                // Target changes interrupt AnimatedVisibility in place. Continuity easing
-                                // moves quickly at first and settles softly without waiting for scroll idle.
-                                enter = expandVertically(
-                                    expandFrom = Alignment.Top,
-                                    animationSpec = AppMotionTokens.standardSpec(),
-                                ) + slideInVertically(
-                                    initialOffsetY = { -it },
-                                    animationSpec = AppMotionTokens.standardSpec(),
-                                ),
-                                exit = shrinkVertically(
-                                    shrinkTowards = Alignment.Top,
-                                    animationSpec = AppMotionTokens.standardSpec(),
-                                ) + slideOutVertically(
-                                    targetOffsetY = { -it },
-                                    animationSpec = AppMotionTokens.standardSpec(),
-                                )
-                            ) {
+                            if (shouldShowHorizontalUserList) {
+                                val expandedUserListHeightPx = with(density) {
+                                    DynamicHorizontalUserListReservedHeightDp.dp.roundToPx()
+                                }
                                 HorizontalUserList(
                                     users = displayUsers,
                                     selectedUserId = selectedUserId,
@@ -1075,7 +1041,15 @@ fun DynamicScreen(
                                     onToggleShowHidden = { viewModel.toggleShowHiddenUsers() },
                                     onTogglePin = { viewModel.togglePinUser(it) },
                                     onToggleHidden = { viewModel.toggleHiddenUser(it) },
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        // 与首页搜索行一致：内容保持固定高度，滚动逐帧改变父布局
+                                        // 的可见高度并裁切，不启动独立的显隐动画。
+                                        .clip(androidx.compose.ui.graphics.RectangleShape)
+                                        .dynamicScrollCollapseLayout(
+                                            expandedHeightPx = expandedUserListHeightPx,
+                                            listStateProvider = { activeListState },
+                                        )
                                 )
                             }
                         }
@@ -1746,6 +1720,25 @@ private fun HorizontalUserList(
             }
         }
     }
+
+private fun Modifier.dynamicScrollCollapseLayout(
+    expandedHeightPx: Int,
+    listStateProvider: () -> LazyStaggeredGridState?,
+): Modifier = layout { measurable, constraints ->
+    val fixedHeightPx = expandedHeightPx.coerceIn(constraints.minHeight, constraints.maxHeight)
+    val placeable = measurable.measure(
+        constraints.copy(minHeight = fixedHeightPx, maxHeight = fixedHeightPx)
+    )
+    val state = listStateProvider()
+    val visibleHeightPx = resolveDynamicScrollCollapsedHeaderHeightPx(
+        expandedHeightPx = fixedHeightPx,
+        firstVisibleItemIndex = state?.firstVisibleItemIndex ?: 0,
+        firstVisibleItemScrollOffset = state?.firstVisibleItemScrollOffset ?: 0,
+    )
+    layout(placeable.width, visibleHeightPx) {
+        placeable.placeRelative(0, 0)
+    }
+}
 
 /**
  * 错误提示覆盖层

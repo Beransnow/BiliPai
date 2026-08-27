@@ -6,8 +6,9 @@ import com.android.purebilibili.data.model.response.DynamicItem
 import kotlinx.collections.immutable.toImmutableList
 
 internal const val DynamicTopBarReservedHeightDp = 60
-// 60dp 顶栏 + 约 80dp 头像/名称行；仅留少量呼吸空间，避免选中 UP 标题下沉。
-internal const val DynamicHorizontalExpandedHeaderReservedHeightDp = 144
+internal const val DynamicHorizontalUserListReservedHeightDp = 84
+internal const val DynamicHorizontalExpandedHeaderReservedHeightDp =
+    DynamicTopBarReservedHeightDp + DynamicHorizontalUserListReservedHeightDp
 internal const val DynamicHeaderCollapseTriggerPx = 0
 
 internal data class DynamicPagePresentation(
@@ -99,6 +100,15 @@ internal fun shouldCollapseDynamicHorizontalUserList(
     topTolerancePx: Int = 8
 ): Boolean {
     return firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset > topTolerancePx
+}
+
+internal fun resolveDynamicScrollCollapsedHeaderHeightPx(
+    expandedHeightPx: Int,
+    firstVisibleItemIndex: Int,
+    firstVisibleItemScrollOffset: Int,
+): Int {
+    if (expandedHeightPx <= 0 || firstVisibleItemIndex > 0) return 0
+    return (expandedHeightPx - firstVisibleItemScrollOffset).coerceIn(0, expandedHeightPx)
 }
 
 /**

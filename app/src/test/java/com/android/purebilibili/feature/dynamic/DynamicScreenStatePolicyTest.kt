@@ -112,6 +112,34 @@ class DynamicScreenStatePolicyTest {
     }
 
     @Test
+    fun `horizontal user list height follows scroll like home header`() {
+        assertEquals(
+            84,
+            resolveDynamicScrollCollapsedHeaderHeightPx(
+                expandedHeightPx = 84,
+                firstVisibleItemIndex = 0,
+                firstVisibleItemScrollOffset = 0,
+            )
+        )
+        assertEquals(
+            52,
+            resolveDynamicScrollCollapsedHeaderHeightPx(
+                expandedHeightPx = 84,
+                firstVisibleItemIndex = 0,
+                firstVisibleItemScrollOffset = 32,
+            )
+        )
+        assertEquals(
+            0,
+            resolveDynamicScrollCollapsedHeaderHeightPx(
+                expandedHeightPx = 84,
+                firstVisibleItemIndex = 1,
+                firstVisibleItemScrollOffset = 0,
+            )
+        )
+    }
+
+    @Test
     fun `dynamic top bar collapse respects optional setting`() {
         assertFalse(
             shouldCollapseDynamicTopBar(
