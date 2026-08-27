@@ -233,12 +233,6 @@ fun <T> AppNativeTabRow(
     onSelectionChange: (T) -> Unit,
 ) {
     if (options.isEmpty()) return
-    val readableMinTabWidth = resolveReadableNativeTabMinWidth(
-        requestedMinWidth = minTabWidth,
-        labels = options.map { it.label },
-        allowLabelOverflow = allowLabelOverflow,
-    )
-    val effectiveScrollable = scrollable || options.size > 3 || readableMinTabWidth > minTabWidth
     val viewportBoundedModifier = modifier.widthIn(
         max = LocalConfiguration.current.screenWidthDp.dp,
     )
@@ -260,8 +254,8 @@ fun <T> AppNativeTabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
-            scrollable = effectiveScrollable,
-            minTabWidth = readableMinTabWidth,
+            scrollable = scrollable,
+            minTabWidth = minTabWidth,
             allowLabelOverflow = allowLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
             modifier = if (!effectiveScrollable && options.size == 2) {
@@ -275,8 +269,8 @@ fun <T> AppNativeTabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
-            scrollable = effectiveScrollable,
-            minTabWidth = readableMinTabWidth,
+            scrollable = scrollable,
+            minTabWidth = minTabWidth,
             colors = colors,
             preferredCornerRadius = policy.preferredCornerRadius,
             modifier = if (!effectiveScrollable && options.size == 2) {
