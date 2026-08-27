@@ -98,7 +98,10 @@ internal fun <T> AppMiuixTabRow(
         onTabSelected = { index ->
             if (enabled) options.getOrNull(index)?.let { onSelectionChange(it.value) }
         },
-        modifier = modifier.fillMaxWidth(),
+        // Native fallback rows (non-scrollable) distribute two-option tabs across
+        // the full available width. Scrollable liquid-style rows keep the caller's
+        // measured Dock width so their indicator geometry remains compact.
+        modifier = if (scrollable) modifier else modifier.fillMaxWidth(),
         colors = TabRowDefaults.tabRowColors(
             backgroundColor = tabColors.backgroundColor,
             contentColor = tabColors.contentColor,
