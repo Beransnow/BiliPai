@@ -1762,10 +1762,6 @@ private fun VideoContentTabBar(
                         layoutSpec.unselectedTabFontSizeSp,
                     ) * tabs.size).dp,
                 ),
-                scrollable = true,
-                minTabWidth = resolveVideoContentTabBarDockItemWidthDp(
-                    layoutSpec.unselectedTabFontSizeSp,
-                ).dp,
                 height = liquidChromeSpec.segmentedControlHeightDp.dp,
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
