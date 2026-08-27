@@ -161,7 +161,11 @@ class FloatingBottomBarPagerFollowPolicyTest {
                 ownedTargetIndex = 0,
             ),
         )
-        assertFalse(
+    }
+
+    @Test
+    fun `bottom bar tap keeps liquid indicator spring while pager starts scrolling`() {
+        assertTrue(
             shouldAnimateIndicatorToSelectedIndex(
                 isDragging = false,
                 isPagerScrolling = true,
