@@ -111,6 +111,11 @@ internal fun resolveDynamicScrollCollapsedHeaderHeightPx(
     return (expandedHeightPx - firstVisibleItemScrollOffset).coerceIn(0, expandedHeightPx)
 }
 
+internal fun resolveDynamicScrollCollapsedHeaderOffsetYPx(
+    expandedHeightPx: Int,
+    visibleHeightPx: Int,
+): Int = visibleHeightPx.coerceIn(0, expandedHeightPx) - expandedHeightPx
+
 /**
  * Tab top-bar collapse is optional. When [collapseOnScrollEnabled] is false the bar stays pinned;
  * the horizontal UP list still uses [shouldCollapseDynamicHorizontalUserList] independently.

@@ -61,6 +61,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.ImageLoader
 import coil.compose.AsyncImage
@@ -1009,6 +1010,7 @@ fun DynamicScreen(
                             BottomBarMatchedDockVisibility(
                                 visible = !shouldCollapseTopBar,
                                 edge = BottomBarMatchedDockEdge.TOP,
+                                modifier = Modifier.zIndex(1f),
                                 animateScale = false,
                             ) {
                                 DynamicTopBarWithTabs(
@@ -1043,9 +1045,8 @@ fun DynamicScreen(
                                     onToggleHidden = { viewModel.toggleHiddenUser(it) },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        // 与首页搜索行一致：内容保持固定高度，滚动逐帧改变父布局
-                                        // 的可见高度并裁切，不启动独立的显隐动画。
-                                        .clip(androidx.compose.ui.graphics.RectangleShape)
+                                        // 与首页顶部一致：滚动逐帧压缩占位，并让固定内容向
+                                        // Dock 方向移动；Dock 保持在更高层覆盖收起中的内容。
                                         .dynamicScrollCollapseLayout(
                                             expandedHeightPx = expandedUserListHeightPx,
                                             listStateProvider = { activeListState },
@@ -1735,8 +1736,12 @@ private fun Modifier.dynamicScrollCollapseLayout(
         firstVisibleItemIndex = state?.firstVisibleItemIndex ?: 0,
         firstVisibleItemScrollOffset = state?.firstVisibleItemScrollOffset ?: 0,
     )
+    val contentOffsetYPx = resolveDynamicScrollCollapsedHeaderOffsetYPx(
+        expandedHeightPx = fixedHeightPx,
+        visibleHeightPx = visibleHeightPx,
+    )
     layout(placeable.width, visibleHeightPx) {
-        placeable.placeRelative(0, 0)
+        placeable.placeRelative(0, contentOffsetYPx)
     }
 }
 
