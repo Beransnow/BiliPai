@@ -22,3 +22,9 @@ internal fun resolveTopicParticipateChrome(
 
 internal fun resolveTopicSortControlWidthDp(optionCount: Int): Int =
     TOPIC_SORT_ITEM_WIDTH_DP * optionCount.coerceIn(1, 4)
+
+internal fun shouldShowTopicInitialSkeleton(
+    isLoading: Boolean,
+    hasDetails: Boolean,
+    itemCount: Int,
+): Boolean = isLoading && !hasDetails && itemCount == 0

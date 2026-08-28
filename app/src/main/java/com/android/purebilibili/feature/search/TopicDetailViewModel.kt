@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 
 data class TopicDetailUiState(
     val isLoading: Boolean = false,
+    val isSwitchingSort: Boolean = false,
     val isLoadingMore: Boolean = false,
     val details: TopicTopDetails? = null,
     val items: List<DynamicItem> = emptyList(),
@@ -68,19 +69,31 @@ class TopicDetailViewModel : ViewModel() {
     fun loadMore() {
         val state = _uiState.value
         val topicId = loadedTopicId
-        if (topicId <= 0L || !state.hasMore || state.isLoading || state.isLoadingMore) return
+        if (
+            topicId <= 0L ||
+            !state.hasMore ||
+            state.isLoading ||
+            state.isSwitchingSort ||
+            state.isLoadingMore
+        ) return
+        val requestedSortBy = state.selectedSortBy
         _uiState.update { it.copy(isLoadingMore = true) }
         viewModelScope.launch {
             TopicRepository.getTopicFeed(
                 topicId = topicId,
                 offset = state.offset,
-                sortBy = state.selectedSortBy,
+                sortBy = requestedSortBy,
             )
                 .onSuccess { page ->
-                    _uiState.update {
-                        it.copy(
+                    _uiState.update { current ->
+                        if (
+                            current.selectedSortBy != requestedSortBy ||
+                            current.isSwitchingSort
+                        ) {
+                            current
+                        } else current.copy(
                             isLoadingMore = false,
-                            items = mergeDynamicItems(it.items, page.items),
+                            items = mergeDynamicItems(current.items, page.items),
                             offset = page.offset,
                             hasMore = page.hasMore,
                             error = null
@@ -88,8 +101,10 @@ class TopicDetailViewModel : ViewModel() {
                     }
                 }
                 .onFailure { error ->
-                    _uiState.update {
-                        it.copy(
+                    _uiState.update { current ->
+                        if (current.selectedSortBy != requestedSortBy) {
+                            current
+                        } else current.copy(
                             isLoadingMore = false,
                             error = error.message ?: "加载更多失败"
                         )
@@ -101,14 +116,22 @@ class TopicDetailViewModel : ViewModel() {
     fun selectSort(sortBy: Int) {
         val state = _uiState.value
         val topicId = loadedTopicId
-        if (topicId <= 0L || sortBy == state.selectedSortBy || state.isLoading) return
+        if (
+            topicId <= 0L ||
+            sortBy == state.selectedSortBy ||
+            state.isLoading ||
+            state.isSwitchingSort
+        ) return
+        val previousSortBy = state.selectedSortBy
+        val previousOffset = state.offset
+        val previousHasMore = state.hasMore
         _uiState.update {
             it.copy(
-                items = emptyList(),
                 offset = "",
                 hasMore = false,
                 selectedSortBy = sortBy,
-                isLoading = true,
+                isSwitchingSort = true,
+                isLoadingMore = false,
                 error = null,
             )
         }
@@ -117,7 +140,7 @@ class TopicDetailViewModel : ViewModel() {
                 .onSuccess { page ->
                     _uiState.update {
                         it.copy(
-                            isLoading = false,
+                            isSwitchingSort = false,
                             items = page.items,
                             offset = page.offset,
                             hasMore = page.hasMore,
@@ -129,7 +152,10 @@ class TopicDetailViewModel : ViewModel() {
                 .onFailure { error ->
                     _uiState.update {
                         it.copy(
-                            isLoading = false,
+                            isSwitchingSort = false,
+                            selectedSortBy = previousSortBy,
+                            offset = previousOffset,
+                            hasMore = previousHasMore,
                             error = error.message ?: "话题动态加载失败",
                         )
                     }

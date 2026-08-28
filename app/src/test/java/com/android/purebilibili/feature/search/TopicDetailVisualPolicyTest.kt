@@ -3,6 +3,8 @@ package com.android.purebilibili.feature.search
 import com.android.purebilibili.core.theme.AppUiStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class TopicDetailVisualPolicyTest {
 
@@ -32,5 +34,23 @@ class TopicDetailVisualPolicyTest {
     fun sortControlNeverExpandsBeyondFourCompactItems() {
         assertEquals(144, resolveTopicSortControlWidthDp(optionCount = 2))
         assertEquals(288, resolveTopicSortControlWidthDp(optionCount = 8))
+    }
+
+    @Test
+    fun skeletonOnlyAppearsForTheFirstEmptyLoad() {
+        assertTrue(
+            shouldShowTopicInitialSkeleton(
+                isLoading = true,
+                hasDetails = false,
+                itemCount = 0,
+            )
+        )
+        assertFalse(
+            shouldShowTopicInitialSkeleton(
+                isLoading = true,
+                hasDetails = true,
+                itemCount = 12,
+            )
+        )
     }
 }

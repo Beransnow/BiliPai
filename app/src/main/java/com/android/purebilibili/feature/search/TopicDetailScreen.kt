@@ -132,6 +132,11 @@ fun TopicDetailScreen(
             )
         },
     ) { padding ->
+        val showInitialSkeleton = shouldShowTopicInitialSkeleton(
+            isLoading = state.isLoading,
+            hasDetails = state.details != null,
+            itemCount = state.items.size,
+        )
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -140,7 +145,7 @@ fun TopicDetailScreen(
                 .padding(padding)
         ) {
             when {
-                state.isLoading -> {
+                showInitialSkeleton -> {
                     TopicDetailLoadingSkeleton(modifier = Modifier.fillMaxSize())
                 }
                 state.error != null && state.details == null && state.items.isEmpty() -> {
@@ -180,6 +185,7 @@ fun TopicDetailScreen(
                                     selectedIndex = state.sortOptions
                                         .indexOfFirst { it.sortBy == state.selectedSortBy }
                                         .coerceAtLeast(0),
+                                    switching = state.isSwitchingSort,
                                     onSelected = { index ->
                                         state.sortOptions.getOrNull(index)?.let { option ->
                                             viewModel.selectSort(option.sortBy)
@@ -321,25 +327,35 @@ private fun TopicDetailLoadingSkeleton(modifier: Modifier = Modifier) {
 private fun TopicSortControl(
     options: List<String>,
     selectedIndex: Int,
+    switching: Boolean,
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val itemWidth = TOPIC_SORT_ITEM_WIDTH_DP.dp
-    DynamicAdaptiveSegmentedControl(
-        items = options,
-        selectedIndex = selectedIndex,
-        onSelected = onSelected,
-        itemWidth = itemWidth,
-        height = 40.dp,
-        indicatorHeight = 34.dp,
-        labelFontSize = 13.sp,
-        // This control is inside the page source captured by topicBackdrop. Reusing that
-        // same source here would make the liquid lens sample an ancestor that contains
-        // the lens itself, producing a cyclic RenderNode graph and RenderThread overflow.
-        // Let the segmented control own its isolated local backdrop instead.
-        backdrop = null,
-        modifier = modifier.width(resolveTopicSortControlWidthDp(options.size).dp),
-    )
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        DynamicAdaptiveSegmentedControl(
+            items = options,
+            selectedIndex = selectedIndex,
+            onSelected = onSelected,
+            itemWidth = itemWidth,
+            height = 40.dp,
+            indicatorHeight = 34.dp,
+            labelFontSize = 13.sp,
+            // This control is inside the page source captured by topicBackdrop. Reusing that
+            // same source here would make the liquid lens sample an ancestor that contains
+            // the lens itself, producing a cyclic RenderNode graph and RenderThread overflow.
+            // Let the segmented control own its isolated local backdrop instead.
+            backdrop = null,
+            modifier = Modifier.width(resolveTopicSortControlWidthDp(options.size).dp),
+        )
+        if (switching) {
+            Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
+            AdaptiveLoadingIndicator(size = 18.dp, strokeWidth = 2.dp)
+        }
+    }
 }
 
 @Composable
