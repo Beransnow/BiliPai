@@ -4062,6 +4062,10 @@ internal fun VideoDetailScreenStateHolder(
                                 hasResidentCover = hasResidentReturnCover,
                                 liveReturnMorph = liveReturnMorph,
                                 isReturnGestureInProgress = returnGestureInProgress,
+                                showResidentCoverUntilFirstFrame =
+                                    entryOwnsMiuixCardTransition &&
+                                        currentBvid == bvid &&
+                                        !hasRenderedFirstFrameForReturn,
                             )
                         }
                         val flyingSourceChromeAlphaProvider: () -> Float = {

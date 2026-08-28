@@ -113,6 +113,24 @@ class AppNavigationNavigation3BridgeStructureTest {
     }
 
     @Test
+    fun videoCardOpeningIsPrearmedBeforeTheDetailDestinationMounts() {
+        val source = appNavigationSource()
+        val prearmHelper = source
+            .substringAfter("fun prearmVideoCardOpening(")
+            .substringBefore("var lastVideoDetailOpenId")
+        val videoNavigation = source
+            .substringAfter("fun navigateToVideoRouteInNavigation3(")
+            .substringBefore("fun navigateToVideoInNavigation3(")
+
+        assertTrue(prearmHelper.contains("beginOpeningIfNeeded(session.sourceRoute)"))
+        assertTrue(videoNavigation.contains("prearmVideoCardOpening(transitionSession)"))
+        assertTrue(
+            videoNavigation.indexOf("prearmVideoCardOpening(transitionSession)") <
+                videoNavigation.indexOf("pushNavigation3Key(key)")
+        )
+    }
+
+    @Test
     fun immediateVideoDetailBackTargetKeepsLoadedPreviewContent() {
         val videoDetailBranch = appNavigationSource()
             .substringAfter("BiliPaiNavEntryContentRole.VIDEO_DETAIL ->")

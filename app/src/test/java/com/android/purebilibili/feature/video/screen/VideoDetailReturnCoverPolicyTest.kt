@@ -940,6 +940,30 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
+    fun `entry keeps resident cover above black surface until first player frame`() {
+        assertEquals(
+            1f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = 0f,
+                isCommittedCardReturn = false,
+                hasResidentCover = true,
+                showResidentCoverUntilFirstFrame = true,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = 0f,
+                isCommittedCardReturn = false,
+                hasResidentCover = true,
+                showResidentCoverUntilFirstFrame = true,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
     fun `predictive cover-first return immediately uses resident cover`() {
         assertEquals(
             1f,

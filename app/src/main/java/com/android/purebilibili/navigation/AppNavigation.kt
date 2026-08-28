@@ -202,6 +202,8 @@ import com.android.purebilibili.navigation3.shouldBindVideoDetailBackPreviewPlay
 import com.android.purebilibili.navigation3.shouldActivateVideoDetailPlaybackSession
 import com.android.purebilibili.navigation3.shouldRecoverVideoPlayerAfterBackCancellation
 import com.android.purebilibili.navigation3.resolveBiliPaiVideoSource
+import com.android.purebilibili.navigation3.resolveVideoCardTransitionEnabledForSource
+import com.android.purebilibili.navigation3.shouldUseMiuixVideoCardMorph
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackAnimationStyle
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
 import com.android.purebilibili.navigation3.resolveInitialBiliPaiBackStack
@@ -756,6 +758,27 @@ fun AppNavigation(
             sourceChromeSnapshot = CardPositionManager.lastClickedVideoSourceChromeSnapshot,
             hostOriginInRoot = navigationHostOriginInRoot,
         )
+        fun prearmVideoCardOpening(session: VideoCardTransitionSession) {
+            val transitionEnabledForSource = resolveVideoCardTransitionEnabledForSource(
+                cardTransitionEnabled = sharedVideoCardTransitionEnabled,
+                relatedVideoTransitionEnabled = relatedVideoTransitionEnabled,
+                sourceRoute = session.sourceRoute,
+            )
+            val hasUsableSourceBounds = session.cardBounds
+                ?.let { it.width > 1f && it.height > 1f } == true
+            if (
+                shouldUseMiuixVideoCardMorph(
+                    cardTransitionEnabled = transitionEnabledForSource,
+                    reduceMotion = systemReduceMotion,
+                    sourceRoute = session.sourceRoute,
+                    hasUsableSourceBounds = hasUsableSourceBounds,
+                )
+            ) {
+                // Activate the source-cover session before NavDisplay mounts the destination.
+                // Waiting for its stack-observer effect exposes the black player Surface for one frame.
+                videoCardTransitionClock.beginOpeningIfNeeded(session.sourceRoute)
+            }
+        }
         var lastVideoDetailOpenId by remember { mutableLongStateOf(0L) }
         var lastLiveAreaDetailOpenId by remember { mutableLongStateOf(0L) }
         fun pushNavigation3KeyDirect(key: BiliPaiNavKey) {
@@ -905,15 +928,15 @@ fun AppNavigation(
                 previousSourceRoute = navigation3ReturnSession.lastVideoSourceRoute
             )
             if (source.route != null) {
+                val transitionSession = captureVideoCardTransitionSession(
+                    bvid = seed.bvid,
+                    source = source,
+                    coverIdentity = seed.coverUrl,
+                )
                 navigation3ReturnSession = navigation3ReturnSession
-                    .recordTransitionSession(
-                        captureVideoCardTransitionSession(
-                            bvid = seed.bvid,
-                            source = source,
-                            coverIdentity = seed.coverUrl,
-                        )
-                    )
+                    .recordTransitionSession(transitionSession)
                     .markDetailEntered(SystemClock.uptimeMillis())
+                prearmVideoCardOpening(transitionSession)
             }
             pushNavigation3Key(
                 BiliPaiNavKey.Story(
@@ -1006,15 +1029,15 @@ fun AppNavigation(
                 currentKey = navigation3BackStack.lastOrNull(),
                 previousSourceRoute = navigation3ReturnSession.lastVideoSourceRoute
             )
+            val transitionSession = captureVideoCardTransitionSession(
+                bvid = videoBvid,
+                source = source,
+                coverIdentity = videoKey?.coverUrl,
+            )
             navigation3ReturnSession = navigation3ReturnSession
-                .recordTransitionSession(
-                    captureVideoCardTransitionSession(
-                        bvid = videoBvid,
-                        source = source,
-                        coverIdentity = videoKey?.coverUrl,
-                    )
-                )
+                .recordTransitionSession(transitionSession)
                 .markDetailEntered(SystemClock.uptimeMillis())
+            prearmVideoCardOpening(transitionSession)
             miniPlayerManager?.isNavigatingToVideo = true
             // 合集列表 / 详情压详情：进新片前立刻挂起上一级仍在响的 player，避免只听见旧声音。
             if (videoBvid.isNotBlank()) {
