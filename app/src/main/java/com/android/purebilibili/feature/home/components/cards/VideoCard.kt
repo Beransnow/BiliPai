@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -726,7 +727,9 @@ internal fun ElegantVideoCard(
     //  [性能优化] 存储 LayoutCoordinates 引用而非 Rect，boundsInRoot() 仅在交互时惰性计算，
     //  避免滚动期间每帧 4 次坐标树遍历开销。
     val cardCoordsRef = remember { object { var value: LayoutCoordinates? = null } }
-    val sharedSourceInstanceId = remember { CardPositionManager.newVideoCardSourceInstanceId() }
+    val sharedSourceInstanceId = rememberSaveable(video.bvid) {
+        CardPositionManager.newVideoCardSourceInstanceId()
+    }
     val coverCoordsRef = remember { object { var value: LayoutCoordinates? = null } }
     val titleCoordsRef = remember { object { var value: LayoutCoordinates? = null } }
     val menuButtonCoordsRef = remember { object { var value: LayoutCoordinates? = null } }
