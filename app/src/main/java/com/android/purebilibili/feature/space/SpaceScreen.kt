@@ -191,6 +191,7 @@ fun SpaceScreen(
     onWebClick: (String, String) -> Unit = { _, _ -> },
     onLiveClick: (Long, String, String) -> Unit = { _, _, _ -> },
     onUserClick: (Long) -> Unit = {},
+    onTopicClick: (Long) -> Unit = {},
     onPlayAllAudioClick: ((String, Long) -> Unit)? = null,
     onDynamicDetailClick: (String) -> Unit = {},
     onArticleClick: (Long, String) -> Unit = { _, _ -> },
@@ -542,6 +543,7 @@ fun SpaceScreen(
                             onWebClick = onWebClick,
                             onLiveClick = onLiveClick,
                             onUserClick = onUserClick,
+                            onTopicClick = onTopicClick,
                             onPlayAllAudioClick = onPlayAllAudioClick,
                             onDynamicDetailClick = onDynamicDetailClick,
                             onArticleClick = onArticleClick,
@@ -873,6 +875,7 @@ private fun SpaceContent(
     onWebClick: (String, String) -> Unit,
     onLiveClick: (Long, String, String) -> Unit,
     onUserClick: (Long) -> Unit,
+    onTopicClick: (Long) -> Unit,
     onPlayAllAudioClick: ((String, Long) -> Unit)?,
     onDynamicDetailClick: (String) -> Unit,
     onArticleClick: (Long, String) -> Unit,
@@ -1540,6 +1543,7 @@ private fun SpaceContent(
                             onVideoClick = playVideoFromSpace,
                             onBangumiClick = { seasonId, _ -> onBangumiClick(seasonId) },
                             onUserClick = onUserClick,
+                            onTopicClick = onTopicClick,
                             onLiveClick = { roomId, title, uname ->
                                 onLiveClick(roomId, title, uname)
                             },

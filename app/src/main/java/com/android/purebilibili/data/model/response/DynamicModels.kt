@@ -144,7 +144,25 @@ data class TopicCardList(
     @SerialName("has_more")
     val hasMore: Boolean = false,
     val offset: String = "",
-    val items: List<TopicDynamicCardItem> = emptyList()
+    val items: List<TopicDynamicCardItem> = emptyList(),
+    @SerialName("topic_sort_by_conf")
+    val topicSortByConf: TopicSortByConf? = null,
+)
+
+@Serializable
+data class TopicSortByConf(
+    @SerialName("all_sort_by")
+    val allSortBy: List<TopicSortOption> = emptyList(),
+    @SerialName("show_sort_by")
+    val showSortBy: Int = 0,
+)
+
+@Serializable
+data class TopicSortOption(
+    @SerialName("sort_by")
+    val sortBy: Int = 0,
+    @SerialName("sort_name")
+    val sortName: String = "",
 )
 
 @Serializable

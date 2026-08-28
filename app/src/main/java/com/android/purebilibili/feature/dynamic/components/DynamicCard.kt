@@ -93,6 +93,7 @@ fun DynamicCardV2(
     onVideoClick: (String) -> Unit,
     onBangumiClick: (Long, Long) -> Unit = { _, _ -> },
     onUserClick: (Long) -> Unit,
+    onTopicClick: (Long) -> Unit = {},
     onLiveClick: (roomId: Long, title: String, uname: String) -> Unit = { _, _, _ -> },
     onArticleClick: ((articleId: Long, title: String) -> Unit)? = null,
     onDynamicDetailClick: ((dynamicId: String) -> Unit)? = null,
@@ -712,6 +713,7 @@ fun DynamicCardV2(
                 RichTextContent(
                     desc = desc,
                     onUserClick = onUserClick,
+                    onTopicClick = onTopicClick,
                     onVoteClick = { voteId -> pendingVoteId = voteId },
                 )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
@@ -858,6 +860,7 @@ fun DynamicCardV2(
                                     RichTextContent(
                                         desc = richBlockDesc,
                                         onUserClick = onUserClick,
+                                        onTopicClick = onTopicClick,
                                         onVoteClick = { voteId -> pendingVoteId = voteId },
                                     )
                                 }
@@ -1479,6 +1482,7 @@ private fun openDynamicUrl(
 fun RichTextContent(
     desc: DynamicDesc,
     onUserClick: (Long) -> Unit,
+    onTopicClick: (Long) -> Unit = {},
     onVoteClick: (Long) -> Unit = {},
     onBlankTap: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -1546,7 +1550,14 @@ fun RichTextContent(
         overflow = overflow,
         color = textColor,
         onTextLayout = { textLayoutResult = it },
-        modifier = modifier.pointerInput(copyText, annotatedText, onVoteClick, onBlankTap) {
+        modifier = modifier.pointerInput(
+            copyText,
+            annotatedText,
+            onUserClick,
+            onVoteClick,
+            onTopicClick,
+            onBlankTap,
+        ) {
             detectTapGestures(
                 onLongPress = {
                     if (copyText.isNotEmpty()) {
@@ -1579,6 +1590,18 @@ fun RichTextContent(
                         ?.takeIf { it > 0L }
                         ?.let { voteId ->
                             onVoteClick(voteId)
+                            return@detectTapGestures
+                        }
+
+                    annotatedText.getStringAnnotations(
+                        tag = DYNAMIC_RICH_TEXT_TOPIC_TAG,
+                        start = searchStart,
+                        end = searchEnd
+                    ).firstOrNull()?.item
+                        ?.toLongOrNull()
+                        ?.takeIf { it > 0L }
+                        ?.let { topicId ->
+                            onTopicClick(topicId)
                             return@detectTapGestures
                         }
 

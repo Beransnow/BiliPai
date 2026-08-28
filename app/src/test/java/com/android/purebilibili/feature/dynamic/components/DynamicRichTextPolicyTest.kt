@@ -288,6 +288,48 @@ class DynamicRichTextPolicyTest {
     }
 
     @Test
+    fun buildDynamicRichTextAnnotatedString_marksTopicWithNativeTopicAnnotation() {
+        val annotated = buildDynamicRichTextAnnotatedString(
+            desc = DynamicDesc(
+                text = "#新机来了!# 后续正文",
+                rich_text_nodes = listOf(
+                    RichTextNode(
+                        type = "RICH_TEXT_NODE_TYPE_TOPIC",
+                        orig_text = "#新机来了!#",
+                        rid = "1314000",
+                    ),
+                    RichTextNode(type = "TEXT", text = " 后续正文"),
+                ),
+            ),
+            primaryColor = Color.Blue,
+            textColor = Color.Black,
+        )
+
+        val annotation = annotated.getStringAnnotations(
+            tag = DYNAMIC_RICH_TEXT_TOPIC_TAG,
+            start = 0,
+            end = annotated.length,
+        ).single()
+
+        assertEquals("1314000", annotation.item)
+        assertEquals("#新机来了!#", annotated.text.substring(annotation.start, annotation.end))
+    }
+
+    @Test
+    fun resolveDynamicRichTextTopicId_fallsBackToTopicJumpUrl() {
+        assertEquals(
+            1028161L,
+            resolveDynamicRichTextTopicId(
+                RichTextNode(
+                    type = "TOPIC",
+                    text = "#话题#",
+                    jump_url = "bilibili://m.bilibili.com/topic-detail?topic_id=1028161",
+                )
+            )
+        )
+    }
+
+    @Test
     fun buildDynamicRichTextAnnotatedString_keepsMentionWhenPreviewNodesAreTruncated() {
         val annotated = buildDynamicRichTextAnnotatedString(
             desc = DynamicDesc(

@@ -2292,6 +2292,11 @@ fun AppNavigation(
                                 pushNavigation3Route(ScreenRoutes.DynamicDetail.createRoute(dynamicId))
                             },
                             onUserClick = { mid -> pushNavigation3Route(ScreenRoutes.Space.createRoute(mid)) },
+                            onTopicClick = { topicId ->
+                                if (topicId > 0L) {
+                                    pushNavigation3Key(BiliPaiNavKey.TopicDetail(topicId))
+                                }
+                            },
                             onLiveClick = { roomId, title, uname ->
                                 pushNavigation3Route(ScreenRoutes.Live.createRoute(roomId, title, uname))
                             },
@@ -2392,8 +2397,18 @@ fun AppNavigation(
                                         }
                                     },
                                     onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) },
+                                    onTopicClick = { nestedTopicId ->
+                                        if (nestedTopicId > 0L) {
+                                            pushNavigation3Key(BiliPaiNavKey.TopicDetail(nestedTopicId))
+                                        }
+                                    },
                                     onLiveClick = { roomId, title, uname ->
                                         pushNavigation3Key(BiliPaiNavKey.Live(roomId = roomId.toString(), title = title, uname = uname))
+                                    },
+                                    onArticleClick = { articleId, title ->
+                                        pushNavigation3Key(
+                                            BiliPaiNavKey.ArticleDetail(articleId = articleId, title = title)
+                                        )
                                     },
                                     onDynamicDetailClick = { dynamicId ->
                                         pushNavigation3Key(BiliPaiNavKey.DynamicDetail(dynamicId))
@@ -3361,6 +3376,11 @@ fun AppNavigation(
                                     onDynamicDetailClick = { dynamicId ->
                                         pushNavigation3Key(BiliPaiNavKey.DynamicDetail(dynamicId))
                                     },
+                                    onTopicClick = { topicId ->
+                                        if (topicId > 0L) {
+                                            pushNavigation3Key(BiliPaiNavKey.TopicDetail(topicId))
+                                        }
+                                    },
                                     onArticleClick = { articleId, title ->
                                         if (canNavigate(false)) {
                                             coroutineScope.launch {
@@ -3476,6 +3496,11 @@ fun AppNavigation(
                                             )
                                         },
                                         onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) },
+                                        onTopicClick = { topicId ->
+                                            if (topicId > 0L) {
+                                                pushNavigation3Key(BiliPaiNavKey.TopicDetail(topicId))
+                                            }
+                                        },
                                         onArticleClick = { articleId, title ->
                                             pushNavigation3Key(
                                                 BiliPaiNavKey.ArticleDetail(articleId = articleId, title = title)

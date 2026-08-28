@@ -17,6 +17,7 @@ import com.android.purebilibili.data.model.response.RichTextNode
 internal const val DYNAMIC_RICH_TEXT_URL_TAG = "URL"
 internal const val DYNAMIC_RICH_TEXT_USER_TAG = "USER"
 internal const val DYNAMIC_RICH_TEXT_VOTE_TAG = "VOTE"
+internal const val DYNAMIC_RICH_TEXT_TOPIC_TAG = "TOPIC"
 
 internal enum class DynamicRichTextOpenMode {
     IN_APP,
@@ -119,13 +120,11 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
     if (blockText.isBlank()) return null
     if (blockRichTextNodes.any { it.type.isNotBlank() }) {
         // Detail paragraphs can expose only TEXT nodes while the preview desc carries
-        // the actionable AT/rid metadata. Keep that metadata so the second response
-        // cannot downgrade a briefly-highlighted mention into plain text.
-        val blockHasMention = blockRichTextNodes.any {
-            it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_").equals("AT", ignoreCase = true)
-        }
-        val preferredMentions = preferredDesc?.rich_text_nodes.orEmpty().filter {
-            it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_").equals("AT", ignoreCase = true)
+        // actionable mention/topic/link metadata. Keep it so the detail response cannot
+        // downgrade briefly highlighted content into plain text.
+        val preferredActionableNodes = preferredDesc?.rich_text_nodes.orEmpty().filter {
+            val type = it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_")
+            type.isNotBlank() && !type.equals("TEXT", ignoreCase = true)
         }
         val blockHasActionableNode = blockRichTextNodes.any {
             it.type.trim().removePrefix("RICH_TEXT_NODE_TYPE_")
@@ -133,7 +132,7 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
         }
         val metadataNodes = if (blockHasActionableNode) {
             blockRichTextNodes
-        } else if (preferredMentions.isNotEmpty()) {
+        } else if (preferredActionableNodes.isNotEmpty()) {
             blockRichTextNodes + preferredDesc?.rich_text_nodes.orEmpty()
         } else {
             emptyList()
@@ -148,8 +147,8 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
         }
         val resolvedBlockNodes = when {
             mergedPreferredNodes.isNotEmpty() -> mergedPreferredNodes
-            blockHasMention -> blockRichTextNodes
-            preferredMentions.isNotEmpty() -> preferredDesc?.rich_text_nodes.orEmpty()
+            blockHasActionableNode -> blockRichTextNodes
+            preferredActionableNodes.isNotEmpty() -> preferredDesc?.rich_text_nodes.orEmpty()
             else -> blockRichTextNodes
         }
         return DynamicDesc(
@@ -443,6 +442,13 @@ private fun AnnotatedString.Builder.appendDynamicRichTextNode(
             )
         }
 
+        nodeType.equals("TOPIC", ignoreCase = true) -> {
+            appendDynamicRichTextTopic(
+                node = node,
+                primaryColor = primaryColor,
+            )
+        }
+
         shouldRenderDynamicRichTextLink(nodeType, node) -> {
             appendDynamicRichTextLink(
                 displayText = displayToken,
@@ -468,6 +474,50 @@ private fun AnnotatedString.Builder.appendDynamicRichTextNode(
             )
         }
     }
+}
+
+internal fun resolveDynamicRichTextTopicId(node: RichTextNode): Long? {
+    node.rid
+        ?.trim()
+        ?.toLongOrNull()
+        ?.takeIf { it > 0L }
+        ?.let { return it }
+
+    val jumpUrl = node.jump_url.orEmpty()
+    DYNAMIC_TOPIC_QUERY_ID_PATTERN.find(jumpUrl)
+        ?.groupValues
+        ?.getOrNull(1)
+        ?.toLongOrNull()
+        ?.takeIf { it > 0L }
+        ?.let { return it }
+
+    return DYNAMIC_TOPIC_PATH_ID_PATTERN.find(jumpUrl)
+        ?.groupValues
+        ?.getOrNull(1)
+        ?.toLongOrNull()
+        ?.takeIf { it > 0L }
+}
+
+private val DYNAMIC_TOPIC_QUERY_ID_PATTERN =
+    """(?:[?&](?:topic_id|topicId)=)(\d+)""".toRegex(RegexOption.IGNORE_CASE)
+private val DYNAMIC_TOPIC_PATH_ID_PATTERN =
+    """(?:topic|topic-detail)/(\d+)""".toRegex(RegexOption.IGNORE_CASE)
+
+private fun AnnotatedString.Builder.appendDynamicRichTextTopic(
+    node: RichTextNode,
+    primaryColor: Color,
+) {
+    val topicId = resolveDynamicRichTextTopicId(node)
+    if (topicId != null) {
+        pushStringAnnotation(
+            tag = DYNAMIC_RICH_TEXT_TOPIC_TAG,
+            annotation = topicId.toString(),
+        )
+    }
+    withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.SemiBold)) {
+        append(resolveDynamicRichTextNodeToken(node))
+    }
+    if (topicId != null) pop()
 }
 
 internal fun resolveDynamicRichTextUserMid(node: RichTextNode): Long? {
