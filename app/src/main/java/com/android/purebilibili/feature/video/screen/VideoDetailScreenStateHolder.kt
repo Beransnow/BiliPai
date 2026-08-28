@@ -4245,21 +4245,23 @@ internal fun VideoDetailScreenStateHolder(
                             )
                             }
                             }
-                            VideoDetailReturnCoverChrome(
-                                sourceChromeSnapshot = miuixLandingState.sourceChromeSnapshot,
-                                sourceScale = landingLayoutForMedia?.sourceScale ?: 1f,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .videoDetailReturnMediaLayout(
-                                        landingLayout = landingLayoutForMedia,
-                                        handoffProgressProvider =
-                                            returnMediaHandoffProgressProvider,
-                                    )
-                                    .zIndex(1.5f)
-                                    .graphicsLayer {
-                                        alpha = flyingSourceChromeAlphaProvider()
-                                    },
-                            )
+                            if (miuixVisualAssetsActive) {
+                                VideoDetailReturnCoverChrome(
+                                    sourceChromeSnapshot = miuixLandingState.sourceChromeSnapshot,
+                                    sourceScale = landingLayoutForMedia?.sourceScale ?: 1f,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .videoDetailReturnMediaLayout(
+                                            landingLayout = landingLayoutForMedia,
+                                            handoffProgressProvider =
+                                                returnMediaHandoffProgressProvider,
+                                        )
+                                        .zIndex(1.5f)
+                                        .graphicsLayer {
+                                            alpha = flyingSourceChromeAlphaProvider()
+                                        },
+                                )
+                            }
                             CollapsedPlayerNavigationBar(
                                 scrollRatio = layoutCollapseProgress,
                                 topInset = collapsedSystemBarInset,
@@ -4605,6 +4607,10 @@ internal fun VideoDetailScreenStateHolder(
                             .LocalMiuixVideoCardTransitionState.current
                     val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
                     if (
+                        // Nested detail entries share the host CompositionLocals. Only the
+                        // outgoing child owns this session; the retained parent must not draw
+                        // the child's frozen cover/chrome over its related-video list.
+                        miuixVisualAssetsActive &&
                         miuixCardTransitionState.enabled &&
                         !suppressPhoneDetailBodyForDirectPortrait &&
                         (sourceCardInfo != null ||

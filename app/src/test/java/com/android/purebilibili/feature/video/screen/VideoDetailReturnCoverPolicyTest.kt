@@ -202,6 +202,14 @@ class VideoDetailReturnCoverPolicyTest {
         assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
         assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
         assertTrue(holder.contains("alpha = flyingSourceChromeAlphaProvider()"))
+        val coverChromeGuard = holder
+            .substringBefore("VideoDetailReturnCoverChrome(")
+            .takeLast(500)
+        assertTrue(coverChromeGuard.contains("if (miuixVisualAssetsActive)"))
+        val sourceChromeGuard = holder
+            .substringBefore("VideoDetailReturnSourceCardChrome(")
+            .takeLast(1_000)
+        assertTrue(sourceChromeGuard.contains("miuixVisualAssetsActive"))
     }
 
     @Test
