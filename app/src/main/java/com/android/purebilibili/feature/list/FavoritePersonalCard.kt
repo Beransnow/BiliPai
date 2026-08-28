@@ -136,6 +136,7 @@ internal fun FavoritePersonalCard(
                             .resolveVideoCardSourceInfoPresentation(
                                 publishTimeText = resolveFavoriteDateLabel(item.view_at),
                                 showStatsInInfo = true,
+                                showOverflowMenu = !batchMode && canRemove && onRemove != null,
                             ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,

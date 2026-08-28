@@ -242,6 +242,7 @@ internal fun HistoryPersonalCard(
                                 publishTimeText = FormatUtils.formatPublishTime(video.view_at),
                                 // History cards show owner + viewed time, not play/danmaku stats.
                                 showStatsInInfo = false,
+                                showOverflowMenu = !batchMode,
                             ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,

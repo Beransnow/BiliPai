@@ -1318,6 +1318,7 @@ private fun WatchLaterVideoCard(
                             .resolveVideoCardSourceInfoPresentation(
                                 publishTimeText = "",
                                 showStatsInInfo = true,
+                                showOverflowMenu = !isBatchMode,
                             ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
