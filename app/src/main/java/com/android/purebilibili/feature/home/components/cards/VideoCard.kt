@@ -98,6 +98,7 @@ import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionVisualSpec
@@ -933,10 +934,12 @@ internal fun ElegantVideoCard(
         val isCoverSharedReturnTarget = routeMatchesSharedReturnTarget && sharedSourceOwnershipAllowed
         val useCardShellSharedBounds = sharedTransitionOwnership.useCardContainerSharedBounds &&
             sharedSourceOwnershipAllowed
+        val miuixCardPixelOwnership =
+            LocalMiuixVideoCardTransitionState.current.enabled && isCoverSharedReturnTarget
         val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
             isScrollInProgress = scrollLiteModeEnabled,
             isReturningFromDetail = isReturningFromVideoDetail,
-            useCoverSharedBounds = useCardShellSharedBounds,
+            useCoverSharedBounds = useCardShellSharedBounds || miuixCardPixelOwnership,
             isSharedReturnTarget = isCoverSharedReturnTarget
         )
         // lastClicked 生命周期内钉住点击时的封面源，避免返回途中换 URL/质量触发重解码闪烁。

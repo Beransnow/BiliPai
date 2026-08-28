@@ -1,7 +1,9 @@
 package com.android.purebilibili.feature.video.screen
 
-import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
+import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionPlaybackIntent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -43,6 +45,32 @@ class VideoDetailReturnCoverPolicyTest {
             ),
             0.001f,
         )
+    }
+
+    @Test
+    fun flyingCoverUsesTheFrozenStationaryCardPresentation() {
+        val coverPresentation = VideoCardSourceCoverPresentation(
+            showGradientMask = true,
+            showStatsOnCover = true,
+            showSecondaryStatOnCover = true,
+            showDurationOnCover = true,
+            showHistoryProgressBar = true,
+            historyProgressFraction = 0.42f,
+        )
+        val model = resolveVideoDetailReturnSourceCardChromeModel(
+            info = null,
+            snapshot = VideoCardSourceChromeSnapshot(
+                title = "title",
+                ownerName = "owner",
+                viewText = "12.3万",
+                danmakuText = "456",
+                durationText = "05:20",
+                coverPresentation = coverPresentation,
+            ),
+        )
+
+        assertEquals(coverPresentation, model?.coverPresentation)
+        assertEquals(2f, resolveVideoDetailReturnCoverChromeDensityScale(0.5f), 0.001f)
     }
 
     @Test
@@ -164,7 +192,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun flyingEntryOwnsReturnChrome() {
+    fun flyingEntryOwnsInformationAndCoverChrome() {
         val holder = File(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
         ).takeIf { it.isFile }?.readText()
@@ -172,7 +200,8 @@ class VideoDetailReturnCoverPolicyTest {
                 "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
             ).readText()
         assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
-        assertFalse(holder.contains("VideoDetailReturnCoverChrome("))
+        assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
+        assertTrue(holder.contains("alpha = flyingSourceChromeAlphaProvider()"))
     }
 
     @Test

@@ -68,6 +68,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
@@ -231,7 +232,8 @@ fun CinematicVideoCard(
     val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
         isScrollInProgress = false,
         isReturningFromDetail = isReturningFromVideoDetail,
-        useCoverSharedBounds = useCardShellSharedBounds,
+        useCoverSharedBounds = useCardShellSharedBounds ||
+            (LocalMiuixVideoCardTransitionState.current.enabled && isSharedReturnTarget),
         isSharedReturnTarget = isSharedReturnTarget,
     )
     val cardShellShape = cardShape

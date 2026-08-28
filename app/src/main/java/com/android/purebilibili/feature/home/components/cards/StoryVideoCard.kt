@@ -65,6 +65,7 @@ import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.shouldEnableVideoCoverSharedTransition
@@ -254,7 +255,8 @@ internal fun StoryVideoCard(
     val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
         isScrollInProgress = scrollLiteModeEnabled,
         isReturningFromDetail = isReturningFromVideoDetail,
-        useCoverSharedBounds = useCardShellSharedBounds,
+        useCoverSharedBounds = useCardShellSharedBounds ||
+            (LocalMiuixVideoCardTransitionState.current.enabled && isSharedReturnTarget),
         isSharedReturnTarget = isSharedReturnTarget,
     )
     val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition

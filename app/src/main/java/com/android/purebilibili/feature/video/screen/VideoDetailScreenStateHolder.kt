@@ -4064,6 +4064,19 @@ internal fun VideoDetailScreenStateHolder(
                                 isReturnGestureInProgress = returnGestureInProgress,
                             )
                         }
+                        val flyingSourceChromeAlphaProvider: () -> Float = {
+                            resolveVideoDetailFlyingSourceChromeAlpha(
+                                morphDepthProgress = miuixLandingState.progressProvider(),
+                                phase = videoCardDepthBackgroundState.phaseProvider(),
+                                isReturnGestureInProgress =
+                                    videoCardDepthBackgroundState
+                                        .isReturnGestureInProgressProvider() ||
+                                        videoCardDepthBackgroundState
+                                            .isGestureRestoreInProgressProvider(),
+                                sourceLayout = landingLayoutForMedia?.layout
+                                    ?: miuixLandingState.sourceLayout,
+                            )
+                        }
                         Box(
                             modifier = playerContainerModifier
                                 .fillMaxWidth()
@@ -4232,6 +4245,21 @@ internal fun VideoDetailScreenStateHolder(
                             )
                             }
                             }
+                            VideoDetailReturnCoverChrome(
+                                sourceChromeSnapshot = miuixLandingState.sourceChromeSnapshot,
+                                sourceScale = landingLayoutForMedia?.sourceScale ?: 1f,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .videoDetailReturnMediaLayout(
+                                        landingLayout = landingLayoutForMedia,
+                                        handoffProgressProvider =
+                                            returnMediaHandoffProgressProvider,
+                                    )
+                                    .zIndex(1.5f)
+                                    .graphicsLayer {
+                                        alpha = flyingSourceChromeAlphaProvider()
+                                    },
+                            )
                             CollapsedPlayerNavigationBar(
                                 scrollRatio = layoutCollapseProgress,
                                 topInset = collapsedSystemBarInset,
