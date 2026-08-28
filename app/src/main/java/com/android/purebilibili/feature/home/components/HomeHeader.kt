@@ -1798,16 +1798,12 @@ fun HomeHeader(
     }
     
     val searchBarHeightDp = resolveHomeTopSearchBarHeight(topChromePolicy)
-    val effectiveTopTabLabelMode = if (useLegacyHomeTopTabs) {
-        com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
-    } else {
-        homeSettings?.topTabLabelMode
-            ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
-    }
+    val topTabLabelMode = homeSettings?.topTabLabelMode
+        ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
     val tabRowHeightDp = resolveHomeTopTabRowHeight(
         isTabFloating = isTabFloating,
         chromePolicy = topChromePolicy,
-        labelMode = effectiveTopTabLabelMode
+        labelMode = topTabLabelMode
     )
     val searchCollapseDistanceDp = resolveHomeTopSearchCollapseDistance(
         searchBarHeight = searchBarHeightDp,
@@ -2021,7 +2017,6 @@ fun HomeHeader(
     val useTopTabBottomBarMatchedDock = drawTopTabDockChrome
     val topTabInnerOwnsFloatingDockShell =
         useTopTabBottomBarMatchedDock || topTabLiquidGlassEnabled
-    val topTabLabelMode = effectiveTopTabLabelMode
     // Floating dock shell + tabs share one wrap decision so glass length matches content.
     val wrapTopTabDockFloatingStyle = if (embedTopTabsInUnifiedPanel) false else isTabFloating
     val wrapTopTabDockHasOuterChrome = drawTopTabDockChrome && !embedTopTabsInUnifiedPanel
