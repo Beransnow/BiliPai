@@ -3604,9 +3604,9 @@ fun AppNavigation(
                         appNavigationSettings.videoSharedReturnGestureFollowEnabled,
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
-                    // 来源卡内容进入飞行 shared-bounds 壳，在后段由播放器/详情信息
-                    // 形变为封面、标题和统计；不能把完整源卡留在列表原位直接揭示。
-                    preferWholeCardReturn = false,
+                    // 返回由仍在 NavDisplay 中存活的真实来源卡片承接。sharedBounds 只反向
+                    // 还原几何，不再由详情页重新拼装标题、UP、时间和统计信息。
+                    preferWholeCardReturn = true,
                     onBack = { performSystemBackAction() },
                     onPrepareVideoCardSharedReturn = {
                         // 普通返回(顶部按钮/系统手势提交)兜底预热。

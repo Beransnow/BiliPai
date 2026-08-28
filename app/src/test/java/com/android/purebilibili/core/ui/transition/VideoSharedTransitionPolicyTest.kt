@@ -441,7 +441,7 @@ class VideoSharedTransitionPolicyTest {
                 delaySourceCardEnterForLiveReturn = true,
             ) != EnterTransition.None
         )
-        // 横卡打开时源内容让位给播放器；返回只在最后 100ms 接回整卡内容。
+        // 旧的飞行 facade 模式仍可请求末段交叉淡入。
         assertEquals(260, resolveVideoCardShellCrossfadeSourceEnterDelayMillis(360))
         assertTrue(
             resolveVideoCardShellSharedBoundsEnter(
@@ -449,6 +449,14 @@ class VideoSharedTransitionPolicyTest {
                 transitionDurationMillis = 360,
                 crossfadeSourceContent = true,
             ) != EnterTransition.None
+        )
+        // 全局整卡反向还原时，真实来源卡片从返回第一帧保持可见。
+        assertFalse(
+            shouldCrossfadeVideoCardSourceContentOnReturn(
+                requested = true,
+                isQuickReturnFromDetail = false,
+                preferWholeCardReturn = true,
+            )
         )
         // ratio 已为 0 → delay ms 为 0
         assertEquals(0, resolveVideoCardShellSourceEnterFadeDelayMillis(360))

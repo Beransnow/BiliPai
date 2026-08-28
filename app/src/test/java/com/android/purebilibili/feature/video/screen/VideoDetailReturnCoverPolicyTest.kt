@@ -129,8 +129,15 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun flyingReturnSourceCardChromeMustDrawBecauseOverlayCoversList() {
-        assertTrue(shouldDrawFlyingReturnSourceCardChrome())
+    fun retainedSourceCardOwnsReturnChrome() {
+        val holder = File(
+            "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
+        ).takeIf { it.isFile }?.readText()
+            ?: File(
+                "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
+            ).readText()
+        assertFalse(holder.contains("VideoDetailReturnSourceCardChrome("))
+        assertFalse(holder.contains("VideoDetailReturnCoverChrome("))
     }
 
     @Test

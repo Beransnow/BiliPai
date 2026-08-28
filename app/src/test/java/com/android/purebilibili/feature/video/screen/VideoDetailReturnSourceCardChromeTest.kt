@@ -326,17 +326,16 @@ class VideoDetailReturnSourceCardChromeTest {
     }
 
     @Test
-    fun flyingReturnChromeIsDrawnOnOverlayBecauseListIsCovered() {
+    fun detailDoesNotDrawSyntheticReturnCardChrome() {
         val holder = File(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
         ).takeIf { it.isFile }?.readText()
             ?: File(
                 "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
             ).readText()
-        assertTrue(holder.contains("shouldDrawFlyingReturnSourceCardChrome()"))
-        assertTrue(shouldDrawFlyingReturnSourceCardChrome())
-        assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
-        assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
+        assertFalse(holder.contains("shouldDrawFlyingReturnSourceCardChrome()"))
+        assertFalse(holder.contains("VideoDetailReturnSourceCardChrome("))
+        assertFalse(holder.contains("VideoDetailReturnCoverChrome("))
         assertTrue(holder.contains("returnMediaHandoffProgressProvider"))
         assertTrue(holder.contains("alpha = returnMediaFrameProvider().coverAlpha"))
         assertTrue(holder.contains(".videoDetailReturnMediaLayout("))

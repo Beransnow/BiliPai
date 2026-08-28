@@ -4232,23 +4232,6 @@ internal fun VideoDetailScreenStateHolder(
                             )
                             }
                             }
-                            if (shouldDrawFlyingReturnSourceCardChrome()) {
-                                VideoDetailReturnCoverChrome(
-                                    sourceChromeSnapshot = miuixLandingState.sourceChromeSnapshot,
-                                    sourceScale = landingLayoutForMedia?.sourceScale ?: 1f,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .videoDetailReturnMediaLayout(
-                                            landingLayout = landingLayoutForMedia,
-                                            handoffProgressProvider =
-                                                returnMediaHandoffProgressProvider,
-                                        )
-                                        .zIndex(1.5f)
-                                        .graphicsLayer {
-                                            alpha = returnMediaFrameProvider().coverAlpha
-                                        },
-                                )
-                            }
                             CollapsedPlayerNavigationBar(
                                 scrollRatio = layoutCollapseProgress,
                                 topInset = collapsedSystemBarInset,
@@ -4587,53 +4570,6 @@ internal fun VideoDetailScreenStateHolder(
                     }  // Detail body
                     }  // 📱 手机竖屏布局结束（Column）
                     }  // phone portrait branch of useTabletLayout
-                    // 返回信息区必须画在飞行壳上：sharedBounds 遮罩盖住列表，真卡露不出来。
-                    // 文案用点击快照 + ViewInfo，尽量对齐列表；卸层后再露列表真卡。
-                    if (
-                        shouldConsumeMiuixTransitionVisualAssets(
-                            entryOwnsMiuixCardTransition = entryOwnsMiuixCardTransition,
-                            phase = videoCardDepthBackgroundState.phaseProvider(),
-                            isReturnGestureInProgress = videoCardDepthBackgroundState
-                                .isReturnGestureInProgressProvider(),
-                            isGestureRestoreInProgress = videoCardDepthBackgroundState
-                                .isGestureRestoreInProgressProvider(),
-                        ) &&
-                        shouldDrawFlyingReturnSourceCardChrome() &&
-                        !suppressPhoneDetailBodyForDirectPortrait
-                    ) {
-                        val miuixCardTransitionState =
-                            com.android.purebilibili.core.ui.transition
-                                .LocalMiuixVideoCardTransitionState.current
-                        val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
-                        if (
-                            miuixCardTransitionState.enabled &&
-                            (
-                                sourceCardInfo != null ||
-                                    miuixCardTransitionState.sourceChromeSnapshot != null
-                                )
-                        ) {
-                            VideoDetailReturnSourceCardChrome(
-                                info = sourceCardInfo,
-                                sourceChromeSnapshot =
-                                    miuixCardTransitionState.sourceChromeSnapshot,
-                                sourceLayout = miuixCardTransitionState.sourceLayout,
-                                sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
-                                sourceCoverBounds =
-                                    miuixCardTransitionState.sourceCoverBoundsProvider(),
-                                coverUrl = coverUrl,
-                                morphDepthProgressProvider =
-                                    miuixCardTransitionState.progressProvider,
-                                phaseProvider = videoCardDepthBackgroundState.phaseProvider,
-                                isReturnGestureInProgressProvider = {
-                                    videoCardDepthBackgroundState
-                                        .isReturnGestureInProgressProvider() ||
-                                        videoCardDepthBackgroundState
-                                            .isGestureRestoreInProgressProvider()
-                                },
-                                modifier = Modifier.align(Alignment.TopStart),
-                            )
-                        }
-                    }
                     }  // Full-viewport source-card chrome host (phone + tablet)
                 }  // else shouldUseSplitLayout / immersive parent
             }  // else targetIsLandscape
