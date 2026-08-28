@@ -351,8 +351,7 @@ fun RelatedVideoItem(
 
             Column(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
+                    .weight(1f),
                 // Keep the headline in normal flow. A weighted headline inside a
                 // SpaceBetween column can collapse during the shared return remeasure,
                 // leaving only the date/UP and stats rows visible.
