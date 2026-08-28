@@ -475,7 +475,11 @@ internal fun shouldExpandPlayerViewportForSharedReturn(
  *
  * 文案来自点击时冻结的 [VideoCardSourceChromeSnapshot] + 详情 ViewInfo，尽量与列表卡一致。
  */
-internal fun shouldDrawFlyingReturnSourceCardChrome(): Boolean = true
+/**
+ * The source card already owns its complete chrome and participates in the shared-bounds
+ * return. Rebuilding a second card facade here causes title/metadata drift and clips rows.
+ */
+internal fun shouldDrawFlyingReturnSourceCardChrome(): Boolean = false
 
 /**
  * 布局用折叠进度：返回 morph 中强制 0（展开），其余沿用手势/评论折叠进度。

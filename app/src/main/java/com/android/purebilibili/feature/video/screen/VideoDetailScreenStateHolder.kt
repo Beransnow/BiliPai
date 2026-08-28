@@ -4232,21 +4232,23 @@ internal fun VideoDetailScreenStateHolder(
                             )
                             }
                             }
-                            VideoDetailReturnCoverChrome(
-                                sourceChromeSnapshot = miuixLandingState.sourceChromeSnapshot,
-                                sourceScale = landingLayoutForMedia?.sourceScale ?: 1f,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .videoDetailReturnMediaLayout(
-                                        landingLayout = landingLayoutForMedia,
-                                        handoffProgressProvider =
-                                            returnMediaHandoffProgressProvider,
-                                    )
-                                    .zIndex(1.5f)
-                                    .graphicsLayer {
-                                        alpha = returnMediaFrameProvider().coverAlpha
-                                    },
-                            )
+                            if (shouldDrawFlyingReturnSourceCardChrome()) {
+                                VideoDetailReturnCoverChrome(
+                                    sourceChromeSnapshot = miuixLandingState.sourceChromeSnapshot,
+                                    sourceScale = landingLayoutForMedia?.sourceScale ?: 1f,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .videoDetailReturnMediaLayout(
+                                            landingLayout = landingLayoutForMedia,
+                                            handoffProgressProvider =
+                                                returnMediaHandoffProgressProvider,
+                                        )
+                                        .zIndex(1.5f)
+                                        .graphicsLayer {
+                                            alpha = returnMediaFrameProvider().coverAlpha
+                                        },
+                                )
+                            }
                             CollapsedPlayerNavigationBar(
                                 scrollRatio = layoutCollapseProgress,
                                 topInset = collapsedSystemBarInset,
