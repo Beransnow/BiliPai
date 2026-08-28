@@ -1004,6 +1004,7 @@ private fun LightweightHomeTopTabs(
         selectionIndicatorStyle = resolveHomeSelectionIndicatorStyle(
             uiStyle = LocalAppUiStyle.current,
             liquidGlassEnabled = isLiquidGlassEnabled,
+            forceMaterialUnderline = forceMaterialUnderline,
         ),
     )
     val topTabMotionSpec = remember { resolveSegmentedControlMotionSpec() }
@@ -1468,6 +1469,7 @@ private fun LightweightHomeTopTabs(
         val homeSelectionIndicatorStyle = resolveHomeSelectionIndicatorStyle(
             uiStyle = LocalAppUiStyle.current,
             liquidGlassEnabled = isLiquidGlassEnabled,
+            forceMaterialUnderline = forceMaterialUnderline,
         )
         val shouldUseHomeCapsule =
             homeSelectionIndicatorStyle == HomeSelectionIndicatorStyle.CAPSULE

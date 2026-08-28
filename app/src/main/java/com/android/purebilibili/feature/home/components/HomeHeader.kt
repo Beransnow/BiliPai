@@ -190,6 +190,11 @@ internal fun resolveHomeTopLinkedBottomBarAppearance(
     )
 }
 
+internal fun shouldUseLegacyHomeTopTabs(
+    liquidGlassEnabled: Boolean,
+    bottomBarFloating: Boolean,
+): Boolean = !liquidGlassEnabled && !bottomBarFloating
+
 internal fun formatHomeTopRightUnreadBadge(
     action: HomeTopRightAction,
     unreadCount: Int
@@ -1519,6 +1524,10 @@ fun HomeHeader(
     val topChromeLiquidGlassEnabled = resolveHomeTopChromeLiquidGlassEnabled(
         homeSettings = homeSettings,
     )
+    val useLegacyHomeTopTabs = shouldUseLegacyHomeTopTabs(
+        liquidGlassEnabled = topChromeLiquidGlassEnabled,
+        bottomBarFloating = linkedBottomBarAppearance.isFloating,
+    )
 
     // 状态栏高度
     val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -1607,7 +1616,7 @@ fun HomeHeader(
         materialMode = topChromeMaterialMode,
         interactionBudget = interactionBudget
     )
-    // 分栏 presentation 由主题决定（两主题均走移动胶囊），不再随液态玻璃开关切换。
+    // 同时关闭液态玻璃与悬浮底栏时恢复旧式纯文字分栏：选中项仅显示短下划线。
     val drawTopTabOuterChromeSurface = shouldDrawHomeTopTabOuterChromeSurface(
         presentation = topChromePolicy.tabPresentation,
         materialMode = effectiveTabMaterialMode
@@ -2154,7 +2163,7 @@ fun HomeHeader(
                 forceLowBlurBudget = forceLowBlurBudget,
                 isViewportSyncEnabled = isTopTabViewportSyncEnabled,
                 maxDockWidthDp = maxDockWidth.value,
-                forceMaterialUnderline = false
+                forceMaterialUnderline = useLegacyHomeTopTabs
             )
         }
     }
