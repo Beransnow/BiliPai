@@ -1357,6 +1357,12 @@ private fun MobileSettingsNavLayout(
                             onCategoryClick = onCategoryClick,
                         )
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Box(modifier = Modifier.entrance()) {
+                        SupportAuthorCompactSection(
+                            onDonateClick = onDonateClick,
+                        )
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
