@@ -22,7 +22,7 @@ class MiuixVideoCardNavTransitionTest {
     }
 
     @Test
-    fun landedEntryReleasesPixelsOnTheSameIdleFrameAsTheSourceCard() {
+    fun landedEntryReleasesPixelsOnTheActualReturnEndpoint() {
         assertEquals(
             0f,
             resolveMiuixVideoCardEntryAlpha(
@@ -31,7 +31,7 @@ class MiuixVideoCardNavTransitionTest {
             ),
         )
         assertEquals(
-            1f,
+            0f,
             resolveMiuixVideoCardEntryAlpha(
                 morphProgress = 0f,
                 phase = VideoCardTransitionBackgroundPhase.RETURNING,

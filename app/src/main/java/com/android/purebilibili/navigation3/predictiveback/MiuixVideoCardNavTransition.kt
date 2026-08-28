@@ -77,7 +77,11 @@ internal fun resolveMiuixVideoCardEntryAlpha(
     morphProgress: Float,
     phase: VideoCardTransitionBackgroundPhase,
 ): Float = if (
-    phase == VideoCardTransitionBackgroundPhase.IDLE && morphProgress <= 0.001f
+    // On return the Nav transition can keep its final frame alive after the host clock has
+    // completed the fallback settle. Release that frame from the actual morph endpoint instead
+    // of waiting for a phase write, otherwise the landed entry can cover the resident card with
+    // a black player surface for one frame. Opening still needs its zero-depth first frame.
+    phase != VideoCardTransitionBackgroundPhase.OPENING && morphProgress <= 0.001f
 ) {
     0f
 } else {

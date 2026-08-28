@@ -35,6 +35,7 @@ internal fun Modifier.videoCardShellReturnChromeAlpha(
     val visualOwnershipEnabled = enabled || LocalMiuixVideoCardTransitionState.current.enabled
     if (!visualOwnershipEnabled || bvid.isBlank()) return this
     val sharedTransitionScope = LocalSharedTransitionScope.current
+    val miuixTransitionEnabled = LocalMiuixVideoCardTransitionState.current.enabled
     val bgState = LocalVideoCardTransitionBackgroundState.current
     val followDistancePx = with(LocalDensity.current) { AppSpacingTokens.Small.toPx() }
     val isSharedMorphSourceCard = remember(
@@ -61,7 +62,8 @@ internal fun Modifier.videoCardShellReturnChromeAlpha(
         val phase = bgState.phaseProvider()
         val returnGestureInProgress = bgState.isReturnGestureInProgressProvider() ||
             bgState.isGestureRestoreInProgressProvider()
-        val transitionActive = sharedTransitionScope?.isTransitionActive == true
+        val transitionActive = !miuixTransitionEnabled &&
+            sharedTransitionScope?.isTransitionActive == true
         val progress = bgState.progressProvider()
         val quickReturn = isQuickReturnFromDetail ||
             bgState.isQuickReturnFromDetailProvider()
@@ -115,6 +117,7 @@ internal fun Modifier.videoCardShellReturnCoverAlpha(
     val visualOwnershipEnabled = enabled || LocalMiuixVideoCardTransitionState.current.enabled
     if (!visualOwnershipEnabled || bvid.isBlank()) return this
     val sharedTransitionScope = LocalSharedTransitionScope.current
+    val miuixTransitionEnabled = LocalMiuixVideoCardTransitionState.current.enabled
     val bgState = LocalVideoCardTransitionBackgroundState.current
     val isSharedMorphSourceCard = remember(
         bvid,
@@ -136,7 +139,8 @@ internal fun Modifier.videoCardShellReturnCoverAlpha(
             isVideoCardReturnGestureInProgress =
                 bgState.isReturnGestureInProgressProvider() ||
                     bgState.isGestureRestoreInProgressProvider(),
-            isSharedTransitionActive = sharedTransitionScope?.isTransitionActive == true,
+            isSharedTransitionActive = !miuixTransitionEnabled &&
+                sharedTransitionScope?.isTransitionActive == true,
             transitionBackgroundProgress = bgState.progressProvider(),
             // 来源封面位于 sharedBounds 飞行层，在最后 82%–98% 把播放器变为封面。
             preferWholeCardReturn = bgState.preferWholeCardReturnProvider(),

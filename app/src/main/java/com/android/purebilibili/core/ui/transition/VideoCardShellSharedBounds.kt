@@ -216,6 +216,7 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
 ): Modifier {
     val bgState = LocalVideoCardTransitionBackgroundState.current
     val miuixState = LocalMiuixVideoCardTransitionState.current
+    val miuixTransitionEnabled = miuixState.enabled
     val preferWholeCardReturn = bgState.preferWholeCardReturnProvider()
     val sourcePixelOwner = remember(
         role,
@@ -233,20 +234,36 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
             sourceKey == CardPositionManager.lastClickedVideoSourceKey
     }
     val modifierWithMiuixOwnership = if (
-        miuixState.enabled && sourcePixelOwner && !preferWholeCardReturn
+        miuixTransitionEnabled && sourcePixelOwner && !preferWholeCardReturn
     ) {
         graphicsLayer {
             val phase = bgState.phaseProvider()
+            val morphProgress = miuixState.progressProvider().coerceIn(0f, 1f)
+            val landedReturnFrame = phase == VideoCardTransitionBackgroundPhase.RETURNING &&
+                morphProgress <= 0.001f &&
+                !bgState.isReturnGestureInProgressProvider() &&
+                !bgState.isGestureRestoreInProgressProvider()
             val transitionOwnsPixels =
-                phase != VideoCardTransitionBackgroundPhase.IDLE ||
+                !landedReturnFrame &&
+                    (phase != VideoCardTransitionBackgroundPhase.IDLE ||
                     bgState.isReturnGestureInProgressProvider() ||
-                    bgState.isGestureRestoreInProgressProvider()
+                    bgState.isGestureRestoreInProgressProvider())
             alpha = if (transitionOwnsPixels) 0f else 1f
         }
     } else {
         this
     }
-    if (!enabled || sharedTransitionScope == null || animatedVisibilityScope == null || bvid.isBlank()) {
+    // Miuix's NavTransition transforms the complete detail entry directly. Keeping the legacy
+    // Compose sharedBounds attached here leaves its transition-active flag alive for one or more
+    // frames after landing, while the Miuix clock has already returned to IDLE; the source cover
+    // then stays transparent and the card briefly becomes a black plate.
+    if (
+        !enabled ||
+        miuixTransitionEnabled ||
+        sharedTransitionScope == null ||
+        animatedVisibilityScope == null ||
+        bvid.isBlank()
+    ) {
         return modifierWithMiuixOwnership
     }
     // 快速返回：源卡 Enter.None，标题/UP 与封面同步落位，避免先占位后出字。
