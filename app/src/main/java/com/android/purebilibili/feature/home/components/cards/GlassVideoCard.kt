@@ -1,7 +1,6 @@
 // 文件路径: feature/home/components/cards/GlassVideoCard.kt
 package com.android.purebilibili.feature.home.components.cards
 import com.android.purebilibili.core.ui.components.AppText
-import com.android.purebilibili.core.ui.components.VideoStatRow
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
@@ -491,7 +490,7 @@ fun GlassVideoCard(
                         
                         // 播放量与弹幕统一使用相关推荐统计组件。
                         if (video.stat.view > 0) {
-                            VideoStatRow(
+                            HorizontalVideoStatRow(
                                 playText = FormatUtils.formatStat(video.stat.view.toLong()),
                                 danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
                             )

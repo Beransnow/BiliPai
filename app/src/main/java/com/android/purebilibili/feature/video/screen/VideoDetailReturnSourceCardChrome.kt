@@ -187,7 +187,7 @@ internal fun resolveVideoDetailReturnInfoSecondaryLine(
                     append("弹幕")
                 }
             }
-            if (model.durationText.isNotBlank()) {
+            if (model.infoPresentation.showDurationInInfo && model.durationText.isNotBlank()) {
                 if (isNotEmpty()) append("  ·  ")
                 append(model.durationText)
             }
@@ -200,7 +200,9 @@ internal fun resolveVideoDetailReturnInfoSecondaryLine(
 internal fun resolveVideoDetailReturnInfoFooterLine(
     model: VideoDetailReturnSourceCardChromeModel,
 ): String = buildList {
-    if (model.durationText.isNotBlank()) add(model.durationText)
+    if (model.infoPresentation.showDurationInInfo && model.durationText.isNotBlank()) {
+        add(model.durationText)
+    }
     if (model.infoPresentation.publishTimeText.isNotBlank()) {
         add(model.infoPresentation.publishTimeText)
     }
@@ -534,7 +536,6 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
     val cardHeight = with(density) { layout.cardHeightPx.toDp() }
     val cardAnchorX = with(density) { layout.cardAnchorXInViewportPx.toDp() }
     val cardAnchorY = with(density) { layout.cardAnchorYInViewportPx.toDp() }
-    val coverHeight = with(density) { layout.coverHeightPx.toDp() }
     val infoWidth = with(density) { layout.infoWidthPx.toDp() }
     val infoHeight = with(density) { layout.infoHeightPx.toDp() }
     val infoAnchorX = with(density) { layout.infoAnchorXInViewportPx.toDp() }
@@ -620,9 +621,12 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                 LandingInfoContent(
                     model = model,
                     info = info,
-                    constrainedHeight = coverHeight.coerceAtMost(
-                        cardHeight - AppSpacingTokens.Small * 2,
-                    ),
+                    sourceLayout = layout.layout,
+                    // Some horizontal cards grow taller than their cover when metadata needs
+                    // another line. Reuse the measured card height instead of clipping the UP
+                    // row to the cover height.
+                    constrainedHeight = (cardHeight - AppSpacingTokens.Small * 2)
+                        .coerceAtLeast(AppSpacingTokens.None),
                 )
             }
         }
@@ -652,7 +656,11 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                         vertical = AppSpacingTokens.Small,
                     ),
             ) {
-                LandingInfoContent(model = model, info = info)
+                LandingInfoContent(
+                    model = model,
+                    info = info,
+                    sourceLayout = layout.layout,
+                )
             }
         }
         VideoCardSourceLayout.COVER_ONLY -> Unit
@@ -922,6 +930,7 @@ private fun LandingCoverStat(
 private fun BoxScope.LandingInfoContent(
     model: VideoDetailReturnSourceCardChromeModel,
     info: ViewInfo?,
+    sourceLayout: VideoCardSourceLayout,
     constrainedHeight: Dp? = null,
 ) {
     val sizeModifier = if (constrainedHeight != null) {
@@ -942,7 +951,11 @@ private fun BoxScope.LandingInfoContent(
             ),
         verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
     ) {
-        LandingInfoTexts(model = model, info = info)
+        LandingInfoTexts(
+            model = model,
+            info = info,
+            sourceLayout = sourceLayout,
+        )
     }
     if (model.infoPresentation.showOverflowMenu) {
         AppText(
@@ -968,6 +981,7 @@ private fun BoxScope.LandingInfoContent(
 private fun LandingInfoTexts(
     model: VideoDetailReturnSourceCardChromeModel,
     @Suppress("UNUSED_PARAMETER") info: ViewInfo?,
+    sourceLayout: VideoCardSourceLayout,
 ) {
     val contentTypography = feedContentTypography()
     // Only paint rows the list card froze in [model.infoPresentation] — no invented 弹幕.
@@ -980,9 +994,30 @@ private fun LandingInfoTexts(
         // Match the measured source card. Forcing minLines here makes a one-line
         // dynamic-card title taller than its frozen info bounds, so the landing
         // overlay clips the glyphs while the sharedBounds animation settles.
-        maxLines = videoCardTitleMaxLines(),
-        overflow = videoCardTitleOverflow(),
+        maxLines = if (sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE) {
+            2
+        } else {
+            videoCardTitleMaxLines()
+        },
+        overflow = if (sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE) {
+            TextOverflow.Ellipsis
+        } else {
+            videoCardTitleOverflow()
+        },
     )
+
+    if (sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE) {
+        LandingSideBySideMetadata(model = model)
+        if (model.infoPresentation.showStatsInInfo) {
+            VideoStatRow(
+                playText = model.viewText,
+                danmakuText = model.danmakuText,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        return
+    }
+
     if (model.infoPresentation.showStatsInInfo) {
         VideoStatRow(
             playText = model.viewText,
@@ -990,9 +1025,67 @@ private fun LandingInfoTexts(
             modifier = Modifier.fillMaxWidth(),
         )
     }
+    LandingOwnerMetadata(model = model)
+    val footerLine = resolveVideoDetailReturnInfoFooterLine(model)
+    if (footerLine.isNotBlank()) {
+        AppText(
+            text = footerLine,
+            modifier = Modifier.fillMaxWidth(),
+            style = contentTypography.statistic,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+/** Horizontal cards keep UP/publish metadata on one row and statistics on the final row. */
+@Composable
+private fun LandingSideBySideMetadata(
+    model: VideoDetailReturnSourceCardChromeModel,
+) {
+    val publishTimeText = model.infoPresentation.publishTimeText
+    val hasOwner = model.ownerName.isNotBlank() || model.followed
+    if (publishTimeText.isBlank() && !hasOwner) return
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+    ) {
+        if (publishTimeText.isNotBlank()) {
+            AppText(
+                text = publishTimeText,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                modifier = if (hasOwner) {
+                    Modifier.widthIn(max = AppSpacingTokens.TripleExtraLarge * 2)
+                } else {
+                    Modifier.fillMaxWidth()
+                },
+            )
+        }
+        if (hasOwner) {
+            LandingOwnerMetadata(
+                model = model,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LandingOwnerMetadata(
+    model: VideoDetailReturnSourceCardChromeModel,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+) {
+    val contentTypography = feedContentTypography()
     if (model.ownerName.isNotBlank() || model.followed) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = modifier,
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
         ) {
@@ -1015,16 +1108,5 @@ private fun LandingInfoTexts(
                 )
             }
         }
-    }
-    val footerLine = resolveVideoDetailReturnInfoFooterLine(model)
-    if (footerLine.isNotBlank()) {
-        AppText(
-            text = footerLine,
-            modifier = Modifier.fillMaxWidth(),
-            style = contentTypography.statistic,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
     }
 }

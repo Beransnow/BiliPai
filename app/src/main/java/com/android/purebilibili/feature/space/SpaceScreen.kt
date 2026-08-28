@@ -130,7 +130,7 @@ import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpe
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP
-import com.android.purebilibili.core.ui.components.VideoStatRow
+import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
 import com.android.purebilibili.feature.home.components.cards.VideoCardCoverDurationText
 import com.android.purebilibili.feature.home.components.cards.resolveVideoCardCoverOverlayTextShadow
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
@@ -2868,7 +2868,7 @@ private fun SpaceHomeVideoCard(
                             durationText = video.length,
                             infoPresentation = com.android.purebilibili.core.ui.transition
                                 .resolveVideoCardSourceInfoPresentation(
-                                    publishTimeText = "",
+                                    publishTimeText = FormatUtils.formatPublishTime(video.created),
                                     showStatsInInfo = true,
                                 ),
                             coverUrl = stationaryCoverUrl,
@@ -2991,7 +2991,7 @@ private fun SpaceHomeVideoCard(
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            VideoStatRow(
+            HorizontalVideoStatRow(
                 playText = FormatUtils.formatStat(video.play.toLong()),
                 danmakuText = FormatUtils.formatStat(video.comment.toLong()),
                 modifier = Modifier.fillMaxWidth(),
@@ -3442,8 +3442,9 @@ private fun SpaceArchiveListItemRow(
                             durationText = duration,
                             infoPresentation = com.android.purebilibili.core.ui.transition
                                 .resolveVideoCardSourceInfoPresentation(
-                                    publishTimeText = "",
+                                    publishTimeText = publishTime,
                                     showStatsInInfo = true,
+                                    showOverflowMenu = true,
                                 ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
@@ -3548,7 +3549,7 @@ private fun SpaceArchiveListItemRow(
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            VideoStatRow(
+            HorizontalVideoStatRow(
                 playText = FormatUtils.formatStat(play),
                 danmakuText = FormatUtils.formatStat(secondaryCount),
                 modifier = Modifier.fillMaxWidth(),

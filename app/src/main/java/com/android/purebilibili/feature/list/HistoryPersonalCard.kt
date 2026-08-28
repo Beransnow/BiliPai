@@ -239,8 +239,9 @@ internal fun HistoryPersonalCard(
                         durationText = FormatUtils.formatDuration(video.duration),
                         infoPresentation = com.android.purebilibili.core.ui.transition
                             .resolveVideoCardSourceInfoPresentation(
-                                publishTimeText = "",
-                                showStatsInInfo = true,
+                                publishTimeText = FormatUtils.formatPublishTime(video.view_at),
+                                // History cards show owner + viewed time, not play/danmaku stats.
+                                showStatsInInfo = false,
                             ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,

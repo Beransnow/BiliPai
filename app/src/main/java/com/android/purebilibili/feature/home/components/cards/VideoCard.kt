@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.home.components.cards
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
-import com.android.purebilibili.core.ui.components.VideoStatRow
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
@@ -804,6 +803,7 @@ internal fun ElegantVideoCard(
                         .resolveVideoCardSourceInfoPresentation(
                             publishTimeText = publishTimeRowText,
                             showStatsInInfo = scrollLitePolicy.showSecondaryStatsRow,
+                            showDurationInInfo = showDurationOutside,
                             useTintedInfoSurface = infoSurfaceAppearance.useTintedSurface,
                             showOverflowMenu = hasOverflowMenu,
                         ),
@@ -1477,7 +1477,7 @@ internal fun ElegantVideoCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall)
             ) {
-                VideoStatRow(
+                HorizontalVideoStatRow(
                     playText = primaryStatText,
                     danmakuText = secondaryStatText.orEmpty(),
                     modifier = Modifier.fillMaxWidth(),

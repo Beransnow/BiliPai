@@ -28,7 +28,6 @@ import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppText
-import com.android.purebilibili.core.ui.components.VideoStatRow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -404,7 +403,7 @@ fun CinematicVideoCard(
                          modifier = Modifier.weight(1f)
                      )
                      
-                    VideoStatRow(
+                    HorizontalVideoStatRow(
                         playText = FormatUtils.formatStat(video.stat.view.toLong()),
                         danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
                         contentColor = MediaContrastPalette.Foreground.copy(alpha = 0.8f),

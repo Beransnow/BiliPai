@@ -46,7 +46,7 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.personal.PersonalMediaCardFrame
-import com.android.purebilibili.core.ui.components.VideoStatRow
+import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
 import com.android.purebilibili.feature.home.components.cards.VideoCardCoverDurationText
 import kotlin.math.roundToInt
 
@@ -134,7 +134,7 @@ internal fun FavoritePersonalCard(
                         durationText = FormatUtils.formatDuration(item.duration),
                         infoPresentation = com.android.purebilibili.core.ui.transition
                             .resolveVideoCardSourceInfoPresentation(
-                                publishTimeText = "",
+                                publishTimeText = resolveFavoriteDateLabel(item.view_at),
                                 showStatsInInfo = true,
                             ),
                         coverUrl = stationaryCoverUrl,
@@ -188,7 +188,7 @@ internal fun FavoritePersonalCard(
                         overflow = TextOverflow.Visible,
                     )
                 }
-                VideoStatRow(
+                HorizontalVideoStatRow(
                     playText = FormatUtils.formatStat(item.stat.view.toLong()),
                     danmakuText = FormatUtils.formatStat(item.stat.danmaku.toLong()),
                 )

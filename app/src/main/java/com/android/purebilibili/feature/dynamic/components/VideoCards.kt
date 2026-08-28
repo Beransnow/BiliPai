@@ -68,7 +68,7 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.feature.home.components.cards.resolveVideoCardCoverOverlayTextShadow
 import com.android.purebilibili.feature.home.components.cards.videoCardShellReturnChromeAlpha
 import com.android.purebilibili.feature.home.components.cards.videoCardShellReturnCoverAlpha
-import com.android.purebilibili.core.ui.components.VideoStatRow
+import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
 import com.android.purebilibili.data.model.response.ArchiveMajor
 
 /**
@@ -332,7 +332,7 @@ private fun VideoCardLargeCover(
                     Spacer(modifier = Modifier.size(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro))
                 }
 
-                VideoStatRow(
+                HorizontalVideoStatRow(
                     playText = archive.stat.play,
                     danmakuText = archive.stat.danmaku,
                     contentColor = MediaContrastPalette.Foreground,
