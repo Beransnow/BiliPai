@@ -1004,6 +1004,10 @@ private fun LandingInfoTexts(
         } else {
             videoCardTitleOverflow()
         },
+        // Keep a one-line title slot even when the metadata below it is short. This
+        // prevents the title from disappearing during the return morph when the source
+        // card has a compact (single-line) headline.
+        minLines = 1,
     )
 
     if (sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE) {
@@ -1048,33 +1052,32 @@ private fun LandingSideBySideMetadata(
     val hasOwner = model.ownerName.isNotBlank() || model.followed
     if (publishTimeText.isBlank() && !hasOwner) return
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-    ) {
-        if (publishTimeText.isNotBlank()) {
-            AppText(
-                text = publishTimeText,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                softWrap = false,
-                overflow = TextOverflow.Ellipsis,
-                modifier = if (hasOwner) {
-                    Modifier.widthIn(max = AppSpacingTokens.TripleExtraLarge * 2)
-                } else {
-                    Modifier.fillMaxWidth()
-                },
-            )
-        }
-        if (hasOwner) {
-            LandingOwnerMetadata(
-                model = model,
-                modifier = Modifier.weight(1f),
-            )
+    if (model.infoPresentation.ownerBeforePublish) {
+        if (hasOwner) LandingOwnerMetadata(model = model)
+        if (publishTimeText.isNotBlank()) LandingPublishMetadata(publishTimeText)
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+        ) {
+            if (publishTimeText.isNotBlank()) LandingPublishMetadata(publishTimeText, Modifier.weight(1f, fill = false))
+            if (hasOwner) LandingOwnerMetadata(model = model, modifier = Modifier.weight(1f))
         }
     }
+}
+
+@Composable
+private fun LandingPublishMetadata(text: String, modifier: Modifier = Modifier.fillMaxWidth()) {
+    AppText(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        softWrap = false,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier,
+    )
 }
 
 @Composable
