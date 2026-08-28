@@ -387,7 +387,7 @@ internal fun SettingsRootCategoryListSection(
         }
         SettingsRootCategoryRow(
             title = "打赏作者",
-            subtitle = "自愿支持项目后续开发和维护",
+            subtitle = "支持项目后续开发和维护",
             icon = donateVisual.icon,
             iconPainter = donateVisual.iconResId?.let { painterResource(id = it) },
             iconTint = siblingTints.last(),
