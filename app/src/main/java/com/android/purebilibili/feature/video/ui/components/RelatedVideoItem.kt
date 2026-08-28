@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -308,7 +309,9 @@ fun RelatedVideoItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(coverHeight),
+                // Keep the cover as the minimum row height, but let the information column
+                // grow when title + UP/publish + statistics need more vertical space.
+                .heightIn(min = coverHeight),
             horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP.dp),
             verticalAlignment = Alignment.Top,
         ) {
