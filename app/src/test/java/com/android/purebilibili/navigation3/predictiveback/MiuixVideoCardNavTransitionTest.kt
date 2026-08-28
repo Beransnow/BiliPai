@@ -2,7 +2,6 @@ package com.android.purebilibili.navigation3.predictiveback
 
 import androidx.compose.ui.graphics.TransformOrigin
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
-import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import java.io.File
 import kotlin.math.abs
 import kotlin.test.Test
@@ -16,34 +15,9 @@ class MiuixVideoCardNavTransitionTest {
         ).readText()
         val transform = source.substringAfter("override fun Modifier.transformEntry")
 
-        assertEquals(true, transform.contains("alpha = resolveMiuixVideoCardEntryAlpha("))
+        assertEquals(true, transform.contains("alpha = 1f"))
         assertEquals(false, transform.contains("visibleHeightFraction"))
         assertEquals(false, transform.contains("outgoingClipFraction"))
-    }
-
-    @Test
-    fun landedEntryReleasesPixelsOnTheActualReturnEndpoint() {
-        assertEquals(
-            0f,
-            resolveMiuixVideoCardEntryAlpha(
-                morphProgress = 0f,
-                phase = VideoCardTransitionBackgroundPhase.IDLE,
-            ),
-        )
-        assertEquals(
-            0f,
-            resolveMiuixVideoCardEntryAlpha(
-                morphProgress = 0f,
-                phase = VideoCardTransitionBackgroundPhase.RETURNING,
-            ),
-        )
-        assertEquals(
-            1f,
-            resolveMiuixVideoCardEntryAlpha(
-                morphProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.IDLE,
-            ),
-        )
     }
 
     @Test

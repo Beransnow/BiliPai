@@ -14,61 +14,6 @@ import java.io.File
 class VideoDetailReturnCoverPolicyTest {
 
     @Test
-    fun miuixEntryDoesNotReattachLegacyShellAfterLanding() {
-        assertFalse(
-            shouldAttachVideoDetailShellSharedBounds(
-                detailShellSharedBoundsEnabled = true,
-                isNavigatingToVideo = false,
-                miuixTransitionEnabled = true,
-                entryOwnsMiuixCardTransition = true,
-            )
-        )
-        assertTrue(
-            shouldAttachVideoDetailShellSharedBounds(
-                detailShellSharedBoundsEnabled = true,
-                isNavigatingToVideo = false,
-                miuixTransitionEnabled = false,
-                entryOwnsMiuixCardTransition = false,
-            )
-        )
-        assertFalse(
-            shouldAttachVideoDetailShellSharedBounds(
-                detailShellSharedBoundsEnabled = true,
-                isNavigatingToVideo = true,
-                miuixTransitionEnabled = false,
-                entryOwnsMiuixCardTransition = false,
-            )
-        )
-    }
-
-    @Test
-    fun miuixSourceCardsDoNotKeepLegacySharedBoundsAttached() {
-        val shellSource = File(
-            "src/main/java/com/android/purebilibili/core/ui/transition/VideoCardShellSharedBounds.kt"
-        ).readText()
-        val chromeSource = File(
-            "src/main/java/com/android/purebilibili/feature/home/components/cards/VideoCardShellReturnChrome.kt"
-        ).readText()
-        assertTrue(shellSource.contains("miuixTransitionEnabled ||"))
-        assertTrue(chromeSource.contains("val transitionActive = !miuixTransitionEnabled"))
-    }
-
-    @Test
-    fun residentCardRevealsOnReturnClockTerminalFrameBeforeIdleWrite() {
-        assertEquals(
-            1f,
-            com.android.purebilibili.feature.home.components.cards.resolveHomeCardStationaryRevealAlpha(
-                isReturnContext = true,
-                preferWholeCardReturn = false,
-                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
-                isVideoCardReturnGestureInProgress = false,
-                isSharedTransitionActive = false,
-                transitionBackgroundProgress = 0f,
-            ),
-        )
-    }
-
-    @Test
     fun flyingSourceChromeOwnsClickFrameAndReturnLandingFrame() {
         assertEquals(
             1f,

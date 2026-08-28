@@ -461,10 +461,11 @@ class VideoSharedTransitionPolicyTest {
         // ratio 已为 0 → delay ms 为 0
         assertEquals(0, resolveVideoCardShellSourceEnterFadeDelayMillis(360))
         assertTrue(canCoexistLiveSurfaceStableCoverAndChromeOnReturn())
-        assertTrue(
+        assertEquals(
+            ExitTransition.None,
             resolveVideoCardShellSharedBoundsExit(
                 role = VideoCardShellSharedBoundsRole.DetailShell,
-            ) != ExitTransition.None
+            )
         )
         // shell 竖卡进场：源卡不淡出。
         assertEquals(

@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
-import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import top.yukonga.miuix.kmp.nav.transition.NavMotion
 import top.yukonga.miuix.kmp.nav.transition.NavRole
 import top.yukonga.miuix.kmp.nav.transition.NavSettleSpec
@@ -67,26 +66,6 @@ internal data class MiuixVideoCardGestureTransform(
     val rotationZ: Float,
     val transformOrigin: TransformOrigin,
 )
-
-/**
- * The outgoing entry must release its pixels on the same terminal frame that the retained
- * source card becomes visible. Otherwise the fully landed detail entry can cover it for one
- * extra frame and produce a whole-card flash.
- */
-internal fun resolveMiuixVideoCardEntryAlpha(
-    morphProgress: Float,
-    phase: VideoCardTransitionBackgroundPhase,
-): Float = if (
-    // On return the Nav transition can keep its final frame alive after the host clock has
-    // completed the fallback settle. Release that frame from the actual morph endpoint instead
-    // of waiting for a phase write, otherwise the landed entry can cover the resident card with
-    // a black player surface for one frame. Opening still needs its zero-depth first frame.
-    phase != VideoCardTransitionBackgroundPhase.OPENING && morphProgress <= 0.001f
-) {
-    0f
-} else {
-    1f
-}
 
 internal fun resolveMiuixVideoCardGestureTransform(
     morphProgress: Float,
@@ -239,7 +218,6 @@ internal fun miuixVideoCardNavTransition(
     durationMillis: Int,
     fallback: NavTransition,
     progress: MiuixVideoCardTransitionProgress,
-    phaseProvider: () -> VideoCardTransitionBackgroundPhase,
     contentScale: MiuixVideoCardContentScale = MiuixVideoCardContentScale.FillWidthTop,
     gestureFollowEnabled: Boolean = true,
 ): NavTransition {
@@ -307,13 +285,10 @@ internal fun miuixVideoCardNavTransition(
                     transformOrigin = TransformOrigin(0f, 0f)
                     translationX = bounds.left.coerceIn(-width, width) * (1f - morph)
                     translationY = bounds.top.coerceIn(-height, height) * (1f - morph)
-                    // The flying detail entry is the only pixel owner until it lands. Source-card
-                    // chrome is reconstructed inside this entry; the retained list card stays
-                    // transparent, so no entry-level reveal or alpha blend is needed here.
-                    alpha = resolveMiuixVideoCardEntryAlpha(
-                        morphProgress = morph,
-                        phase = phaseProvider(),
-                    )
+                    // Keep the complete flying entry opaque. The source card and the detail entry
+                    // already share the same geometry driver; an entry-level alpha handoff would
+                    // expose the player's black Surface frame at landing.
+                    alpha = 1f
                     clip = morph < 0.999f
                     val clipRadii = resolveMiuixVideoCardClipRadii(
                         sourceCornerPx = corner.dp.toPx(),

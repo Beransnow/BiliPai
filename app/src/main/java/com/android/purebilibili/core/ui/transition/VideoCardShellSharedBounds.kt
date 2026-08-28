@@ -7,7 +7,6 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.scaleToBounds
-import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -16,9 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import com.android.purebilibili.core.util.CardPositionManager
 
 /**
  * shell sharedBounds 角色。
@@ -126,10 +123,10 @@ internal fun resolveVideoCardShellSourceExitFadeDurationMillis(
 }
 
 internal fun shouldCrossfadeVideoCardSourceContentOnReturn(
-    @Suppress("UNUSED_PARAMETER") requested: Boolean,
-    @Suppress("UNUSED_PARAMETER") isQuickReturnFromDetail: Boolean,
-    @Suppress("UNUSED_PARAMETER") preferWholeCardReturn: Boolean,
-): Boolean = false
+    requested: Boolean,
+    isQuickReturnFromDetail: Boolean,
+    preferWholeCardReturn: Boolean,
+): Boolean = requested && !isQuickReturnFromDetail && !preferWholeCardReturn
 
 internal fun resolveVideoCardShellSharedBoundsEnter(
     role: VideoCardShellSharedBoundsRole,
@@ -171,12 +168,6 @@ internal fun resolveVideoCardShellSharedBoundsExit(
     fadeOutSourceCardOnOpen: Boolean = false,
     transitionDurationMillis: Int = 0,
 ): ExitTransition {
-    if (role == VideoCardShellSharedBoundsRole.DetailShell) {
-        // sharedBounds renders both outgoing and incoming content in the same overlay.
-        // Keeping the detail shell at ExitTransition.None leaves its black page surface above
-        // the retained source card after the player has shrunk into the cover band.
-        return fadeOut(animationSpec = snap())
-    }
     if (
         role == VideoCardShellSharedBoundsRole.SourceCard &&
         fadeOutSourceCardOnOpen
@@ -214,64 +205,16 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
      */
     crossfadeSourceContent: Boolean = false,
 ): Modifier {
+    if (!enabled || sharedTransitionScope == null || animatedVisibilityScope == null || bvid.isBlank()) {
+        return this
+    }
     val bgState = LocalVideoCardTransitionBackgroundState.current
-    val miuixState = LocalMiuixVideoCardTransitionState.current
-    val miuixTransitionEnabled = miuixState.enabled
-    val preferWholeCardReturn = bgState.preferWholeCardReturnProvider()
-    val sourcePixelOwner = remember(
-        role,
-        bvid,
-        sourceRoute,
-        CardPositionManager.lastClickedVideoSourceKey,
-    ) {
-        val normalizedRoute = normalizeSharedElementSourceRoute(sourceRoute)
-        val sourceKey = if (normalizedRoute != null && bvid.isNotBlank()) {
-            "$normalizedRoute:${bvid.trim()}"
-        } else {
-            null
-        }
-        role == VideoCardShellSharedBoundsRole.SourceCard &&
-            sourceKey == CardPositionManager.lastClickedVideoSourceKey
-    }
-    val modifierWithMiuixOwnership = if (
-        miuixTransitionEnabled && sourcePixelOwner && !preferWholeCardReturn
-    ) {
-        graphicsLayer {
-            val phase = bgState.phaseProvider()
-            val morphProgress = miuixState.progressProvider().coerceIn(0f, 1f)
-            val landedReturnFrame = phase == VideoCardTransitionBackgroundPhase.RETURNING &&
-                morphProgress <= 0.001f &&
-                !bgState.isReturnGestureInProgressProvider() &&
-                !bgState.isGestureRestoreInProgressProvider()
-            val transitionOwnsPixels =
-                !landedReturnFrame &&
-                    (phase != VideoCardTransitionBackgroundPhase.IDLE ||
-                    bgState.isReturnGestureInProgressProvider() ||
-                    bgState.isGestureRestoreInProgressProvider())
-            alpha = if (transitionOwnsPixels) 0f else 1f
-        }
-    } else {
-        this
-    }
-    // Miuix's NavTransition transforms the complete detail entry directly. Keeping the legacy
-    // Compose sharedBounds attached here leaves its transition-active flag alive for one or more
-    // frames after landing, while the Miuix clock has already returned to IDLE; the source cover
-    // then stays transparent and the card briefly becomes a black plate.
-    if (
-        !enabled ||
-        miuixTransitionEnabled ||
-        sharedTransitionScope == null ||
-        animatedVisibilityScope == null ||
-        bvid.isBlank()
-    ) {
-        return modifierWithMiuixOwnership
-    }
     // 快速返回：源卡 Enter.None，标题/UP 与封面同步落位，避免先占位后出字。
     val isQuickReturnFromDetail = bgState.isQuickReturnFromDetailProvider()
     val crossfadeSourceContentOnReturn = shouldCrossfadeVideoCardSourceContentOnReturn(
         requested = crossfadeSourceContent,
         isQuickReturnFromDetail = isQuickReturnFromDetail,
-        preferWholeCardReturn = preferWholeCardReturn,
+        preferWholeCardReturn = bgState.preferWholeCardReturnProvider(),
     )
     val delaySourceCardEnter = shouldDelaySourceCardEnterForLiveReturnMorph(
         sourceRoute = sourceRoute,
@@ -303,7 +246,7 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
     val resizeMode = remember(fillFullscreenShell) {
         resolveVideoCardSharedBoundsResizeMode(fillFullscreenShell = fillFullscreenShell)
     }
-    return modifierWithMiuixOwnership.then(
+    return then(
         with(sharedTransitionScope) {
             val sharedContentState = rememberSharedContentState(
                 key = videoCardShellSharedElementKey(

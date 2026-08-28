@@ -174,9 +174,6 @@ internal fun BiliPaiNavDisplayHost(
         )
     }
     val videoCardTransitionProgress = remember { MiuixVideoCardTransitionProgress() }
-    val videoCardPhaseProvider = remember(videoCardClock) {
-        { videoCardClock.phase }
-    }
     val videoCardContentScale = resolveMiuixVideoCardContentScaleForSourceLayout(
         sourceLayout = sourceMetadata.sourceLayout,
         fullscreen = false,
@@ -189,7 +186,6 @@ internal fun BiliPaiNavDisplayHost(
         globalTransition,
         videoCardContentScale,
         videoSharedReturnGestureFollowEnabled,
-        videoCardPhaseProvider,
     ) {
         if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
@@ -198,7 +194,6 @@ internal fun BiliPaiNavDisplayHost(
                 durationMillis = videoSharedTransitionDurationMillis,
                 fallback = globalTransition,
                 progress = videoCardTransitionProgress,
-                phaseProvider = videoCardPhaseProvider,
                 contentScale = videoCardContentScale,
                 gestureFollowEnabled = videoSharedReturnGestureFollowEnabled,
             )
@@ -213,7 +208,6 @@ internal fun BiliPaiNavDisplayHost(
         videoSharedTransitionDurationMillis,
         globalTransition,
         videoSharedReturnGestureFollowEnabled,
-        videoCardPhaseProvider,
     ) {
         if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
@@ -222,7 +216,6 @@ internal fun BiliPaiNavDisplayHost(
                 durationMillis = videoSharedTransitionDurationMillis,
                 fallback = globalTransition,
                 progress = videoCardTransitionProgress,
-                phaseProvider = videoCardPhaseProvider,
                 contentScale = MiuixVideoCardContentScale.CropCenter,
                 gestureFollowEnabled = videoSharedReturnGestureFollowEnabled,
             )
