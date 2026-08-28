@@ -38,6 +38,21 @@ internal fun isVideoDetailEntryActiveMiuixTransitionSource(
 }
 
 /**
+ * Miuix owns the complete video-detail entry morph. Attaching the legacy Compose
+ * [sharedBounds] shell after the delayed navigation flag is cleared would create a second
+ * overlay handoff on the terminal frame, which briefly hides or redraws the whole card.
+ */
+internal fun shouldAttachVideoDetailShellSharedBounds(
+    detailShellSharedBoundsEnabled: Boolean,
+    isNavigatingToVideo: Boolean,
+    miuixTransitionEnabled: Boolean,
+    entryOwnsMiuixCardTransition: Boolean,
+): Boolean {
+    if (!detailShellSharedBoundsEnabled || isNavigatingToVideo) return false
+    return !(miuixTransitionEnabled && entryOwnsMiuixCardTransition)
+}
+
+/**
  * A restored parent session is armed for its next return, but must not retake visual ownership
  * while the navigation clock is idle. Nested pop restores that session after the child lands;
  * consuming its cover/chrome at that point causes a deterministic delayed parent-cover flash.

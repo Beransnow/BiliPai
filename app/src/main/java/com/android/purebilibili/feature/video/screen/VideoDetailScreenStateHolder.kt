@@ -1340,6 +1340,14 @@ internal fun VideoDetailScreenStateHolder(
     val coverSharedBoundsActive = transitionState.coverSharedBoundsActive
     val sharedBoundsActive = transitionState.sharedBoundsActive
     val routeSheetFrameProvider = transitionState.routeSheetFrameProvider
+    val attachDetailShellSharedBounds = shouldAttachVideoDetailShellSharedBounds(
+        detailShellSharedBoundsEnabled = detailShellSharedBoundsEnabled,
+        isNavigatingToVideo = isNavigatingToVideo,
+        miuixTransitionEnabled =
+            com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
+                .current.enabled,
+        entryOwnsMiuixCardTransition = entryOwnsMiuixCardTransition,
+    )
     val detailShellShape = remember(sharedTransitionSourceCornerDp) {
         RoundedCornerShape(sharedTransitionSourceCornerDp.dp)
     }
@@ -1352,8 +1360,7 @@ internal fun VideoDetailScreenStateHolder(
         }
     }
     val detailShellModifier = Modifier.videoCardShellSharedBoundsOrEmpty(
-        enabled = detailShellSharedBoundsEnabled &&
-            !isNavigatingToVideo,
+        enabled = attachDetailShellSharedBounds,
         sharedTransitionScope = rootSharedTransitionScope,
         animatedVisibilityScope = rootAnimatedVisibilityScope,
         bvid = bvid,

@@ -14,6 +14,34 @@ import java.io.File
 class VideoDetailReturnCoverPolicyTest {
 
     @Test
+    fun miuixEntryDoesNotReattachLegacyShellAfterLanding() {
+        assertFalse(
+            shouldAttachVideoDetailShellSharedBounds(
+                detailShellSharedBoundsEnabled = true,
+                isNavigatingToVideo = false,
+                miuixTransitionEnabled = true,
+                entryOwnsMiuixCardTransition = true,
+            )
+        )
+        assertTrue(
+            shouldAttachVideoDetailShellSharedBounds(
+                detailShellSharedBoundsEnabled = true,
+                isNavigatingToVideo = false,
+                miuixTransitionEnabled = false,
+                entryOwnsMiuixCardTransition = false,
+            )
+        )
+        assertFalse(
+            shouldAttachVideoDetailShellSharedBounds(
+                detailShellSharedBoundsEnabled = true,
+                isNavigatingToVideo = true,
+                miuixTransitionEnabled = false,
+                entryOwnsMiuixCardTransition = false,
+            )
+        )
+    }
+
+    @Test
     fun flyingSourceChromeOwnsClickFrameAndReturnLandingFrame() {
         assertEquals(
             1f,
