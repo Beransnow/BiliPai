@@ -2353,7 +2353,11 @@ fun HomeHeader(
                 ) {
                     if (topLayoutOrder == HomeTopLayoutOrder.TABS_THEN_SEARCH) {
                         topTabsContent(
-                            if (topTabInnerOwnsFloatingDockShell) fullTopDockWidth else topControlsContentWidth
+                            if (topTabInnerOwnsFloatingDockShell || useLegacyHomeTopTabs) {
+                                fullTopDockWidth
+                            } else {
+                                topControlsContentWidth
+                            }
                         )
                         if (drawTopSearchDivider) {
                             Spacer(modifier = Modifier.height(currentSearchToTabsSpacing))
@@ -2889,7 +2893,11 @@ fun HomeHeader(
                         }
 
                         topTabsContent(
-                            if (topTabInnerOwnsFloatingDockShell) fullTopDockWidth else topControlsContentWidth
+                            if (topTabInnerOwnsFloatingDockShell || useLegacyHomeTopTabs) {
+                                fullTopDockWidth
+                            } else {
+                                topControlsContentWidth
+                            }
                         )
                     }
                 }

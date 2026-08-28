@@ -410,6 +410,14 @@ internal fun resolveMd3TopTabItemWidthDp(
     return (containerWidthDp / visibleSlots.coerceAtLeast(1)).coerceAtLeast(minWidth.coerceAtLeast(88f))
 }
 
+internal fun resolveFixedHomeTopTabItemWidthDp(
+    containerWidthDp: Float,
+    categoryCount: Int,
+): Float {
+    if (containerWidthDp <= 0f || categoryCount <= 0) return 0f
+    return containerWidthDp / categoryCount
+}
+
 internal fun resolveMd3TopTabContentPaddingDp(
     containerWidthDp: Float,
     itemWidthDp: Float,
@@ -1140,17 +1148,24 @@ private fun LightweightHomeTopTabs(
                 labelMode = normalizedLabelMode
             )
             AppTopTabPresentation.MATERIAL_UNDERLINE,
-            AppTopTabPresentation.TONAL_CAPSULE -> resolveMd3TopTabItemWidthDp(
-                containerWidthDp = effectiveMaxDockWidth,
-                visibleSlots = resolveMd3TopTabLayoutVisibleSlots(
+            AppTopTabPresentation.TONAL_CAPSULE -> if (forceMaterialUnderline) {
+                resolveFixedHomeTopTabItemWidthDp(
+                    containerWidthDp = effectiveMaxDockWidth,
                     categoryCount = categories.size,
-                    labelMode = normalizedLabelMode,
-                    showPartitionAction = showPartitionAction,
-                    fontScale = density.fontScale,
-                    containerWidthDp = effectiveMaxDockWidth
-                ),
-                labelMode = normalizedLabelMode
-            )
+                )
+            } else {
+                resolveMd3TopTabItemWidthDp(
+                    containerWidthDp = effectiveMaxDockWidth,
+                    visibleSlots = resolveMd3TopTabLayoutVisibleSlots(
+                        categoryCount = categories.size,
+                        labelMode = normalizedLabelMode,
+                        showPartitionAction = showPartitionAction,
+                        fontScale = density.fontScale,
+                        containerWidthDp = effectiveMaxDockWidth
+                    ),
+                    labelMode = normalizedLabelMode
+                )
+            }
         }
         val itemWidthDp = resolveTopTabDockItemWidthDp(
             maxWidthDp = effectiveMaxDockWidth,
