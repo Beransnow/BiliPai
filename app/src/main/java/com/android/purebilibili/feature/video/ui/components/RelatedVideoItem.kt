@@ -353,7 +353,10 @@ fun RelatedVideoItem(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween,
+                // Keep the headline in normal flow. A weighted headline inside a
+                // SpaceBetween column can collapse during the shared return remeasure,
+                // leaving only the date/UP and stats rows visible.
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             ) {
                 AppText(
                     text = video.title,
@@ -361,11 +364,11 @@ fun RelatedVideoItem(
                     // This side-by-side card has a cover-bound fixed height. Never let the
                     // global "full card content" preference make its title overlap metadata.
                     maxLines = 2,
+                    minLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f, fill = false),
+                        .fillMaxWidth(),
                 )
                 Column(
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
