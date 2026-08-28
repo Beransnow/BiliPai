@@ -347,7 +347,6 @@ internal fun HistoryPersonalCard(
                 overflow = TextOverflow.Ellipsis,
                 tapToCopyEnabled = false,
             )
-            Spacer(modifier = Modifier.weight(1f))
             AppText(
                 text = owner,
                 style = contentTypography.author,
