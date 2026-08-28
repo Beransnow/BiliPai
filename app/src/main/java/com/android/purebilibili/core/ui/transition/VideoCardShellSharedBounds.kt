@@ -123,10 +123,10 @@ internal fun resolveVideoCardShellSourceExitFadeDurationMillis(
 }
 
 internal fun shouldCrossfadeVideoCardSourceContentOnReturn(
-    requested: Boolean,
-    isQuickReturnFromDetail: Boolean,
-    preferWholeCardReturn: Boolean,
-): Boolean = requested && !isQuickReturnFromDetail && !preferWholeCardReturn
+    @Suppress("UNUSED_PARAMETER") requested: Boolean,
+    @Suppress("UNUSED_PARAMETER") isQuickReturnFromDetail: Boolean,
+    @Suppress("UNUSED_PARAMETER") preferWholeCardReturn: Boolean,
+): Boolean = false
 
 internal fun resolveVideoCardShellSharedBoundsEnter(
     role: VideoCardShellSharedBoundsRole,

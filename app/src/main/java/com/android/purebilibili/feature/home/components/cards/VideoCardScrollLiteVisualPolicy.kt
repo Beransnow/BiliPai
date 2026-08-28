@@ -97,24 +97,16 @@ internal fun isVideoCardFlyingReturnContext(
  * @return 0 while flying owns cover, 1 when the list cover may show again (or whole-card fallback).
  */
 internal fun resolveHomeCardStationaryRevealAlpha(
-    isReturnContext: Boolean,
-    preferWholeCardReturn: Boolean,
-    transitionBackgroundPhase: VideoCardTransitionBackgroundPhase,
-    isVideoCardReturnGestureInProgress: Boolean,
-    isSharedTransitionActive: Boolean,
-    transitionBackgroundProgress: Float,
+    @Suppress("UNUSED_PARAMETER") isReturnContext: Boolean,
+    @Suppress("UNUSED_PARAMETER") preferWholeCardReturn: Boolean,
+    @Suppress("UNUSED_PARAMETER") transitionBackgroundPhase: VideoCardTransitionBackgroundPhase,
+    @Suppress("UNUSED_PARAMETER") isVideoCardReturnGestureInProgress: Boolean,
+    @Suppress("UNUSED_PARAMETER") isSharedTransitionActive: Boolean,
+    @Suppress("UNUSED_PARAMETER") transitionBackgroundProgress: Float,
 ): Float {
-    if (!isReturnContext || preferWholeCardReturn) return 1f
-    if (isVideoCardReturnGestureInProgress || isSharedTransitionActive) return 0f
-    return when (transitionBackgroundPhase) {
-        VideoCardTransitionBackgroundPhase.OPENING,
-        VideoCardTransitionBackgroundPhase.RETURNING,
-        -> 0f
-        VideoCardTransitionBackgroundPhase.HELD ->
-            // Predictive seek keeps HELD while depth < 1; only full detail rest may show list cover.
-            if (transitionBackgroundProgress.coerceIn(0f, 1f) < 0.999f) 0f else 1f
-        VideoCardTransitionBackgroundPhase.IDLE -> 1f
-    }
+    // The real source card is the shared-bounds target. Hiding any of its children during
+    // return produces a cover-only/black card because no synthetic facade exists anymore.
+    return 1f
 }
 
 /**
@@ -222,9 +214,7 @@ internal fun resolveHorizontalCardChromeMotionFrame(
  * 规则：
  * - 非源卡 / 无 shell：恒 1
  * - 进场（OPENING 或 shared 进行中且非返回）：0，避免字叠播放器
- * - 返回 + 飞行壳：列表原位 **0**（飞行层盖住列表，真卡露不出来）；字在飞行壳绘制
- * - morph 结束后再亮列表真卡
- * - preferWholeCardReturn：列表立即完整显示
+ * - 返回：真实来源卡片始终为 1，由 sharedBounds 反向还原完整内容
  */
 internal fun resolveHomeCardChromeAlphaDuringShellReturnMorph(
     useCardContainerSharedBounds: Boolean,

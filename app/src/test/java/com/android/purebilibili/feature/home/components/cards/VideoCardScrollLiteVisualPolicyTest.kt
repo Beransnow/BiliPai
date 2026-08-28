@@ -357,9 +357,9 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun stationaryListStaysHiddenUntilFlyingMorphIsIdle() {
+    fun retainedSourceCardStaysVisibleForEveryReturnPhase() {
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardStationaryRevealAlpha(
                 isReturnContext = true,
                 preferWholeCardReturn = false,
@@ -371,7 +371,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardStationaryRevealAlpha(
                 isReturnContext = true,
                 preferWholeCardReturn = false,
@@ -437,9 +437,9 @@ class VideoCardScrollLiteVisualPolicyTest {
                 transitionBackgroundProgress = 0.4f,
             )
         )
-        // List chrome+cover stay 0 while flying layer owns the morph (under overlay).
+        // The retained source card owns both chrome and cover during return.
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -452,7 +452,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -467,9 +467,9 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun homeCardChromeStaysHiddenUntilFlyingMorphParks() {
+    fun homeCardChromeStaysVisibleThroughoutReverseReturn() {
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -480,7 +480,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -491,7 +491,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // Morph finished: list chrome can show again.
+        // Morph finished: the same source chrome remains visible.
         assertEquals(
             1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
@@ -546,7 +546,7 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun horizontalCardChrome_followsOpeningAndReappearsBeforeLanding() {
+    fun horizontalCardChrome_followsOpeningAndStaysVisibleOnReturn() {
         val openingStart = resolveHorizontalCardChromeMotionFrame(
             useCardContainerSharedBounds = true,
             isSharedMorphSourceCard = true,
@@ -581,8 +581,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
             transitionBackgroundProgress = 0.19f,
         )
-        // List chrome stays hidden while flying entry owns the return morph.
-        assertEquals(0f, returnReveal.alpha, 0.001f)
+        assertEquals(1f, returnReveal.alpha, 0.001f)
         assertEquals(0f, returnReveal.translationProgress, 0.001f)
 
         val landed = resolveHorizontalCardChromeMotionFrame(
