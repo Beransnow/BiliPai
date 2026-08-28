@@ -692,6 +692,14 @@ fun DynamicCardV2(
                 }
             }
         }
+
+        content?.topic?.takeIf { it.id > 0L && it.name.isNotBlank() }?.let { topic ->
+            DynamicTopicLabel(
+                topicName = topic.name,
+                onClick = { onTopicClick(topic.id) },
+                modifier = Modifier.padding(bottom = AppSpacingTokens.ExtraSmall),
+            )
+        }
         
         //  动态内容文字（支持@高亮 / 表情）；优先可渲染表情的 desc 或 opus summary
         val visibleOpusSummaryDescForBody = remember(content?.major?.opus?.summary, content?.major?.opus?.pics) {
@@ -1246,6 +1254,7 @@ fun DynamicCardV2(
                 onVideoClick = onVideoClick,
                 onBangumiClick = onBangumiClick,
                 onUserClick = onUserClick,
+                onTopicClick = onTopicClick,
                 onDynamicDetailClick = openDynamicDetail,
                 gifImageLoader = gifImageLoader,
                 defaultPreviewTextVisible = dynamicPreviewTextVisible
@@ -1455,6 +1464,45 @@ private fun DynamicNativeLinkCard(
                     )
                 }
             },
+        )
+    }
+}
+
+@Composable
+internal fun DynamicTopicLabel(
+    topicName: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .heightIn(min = AppChromeSizeTokens.MinimumTouchTarget)
+            .clip(AppShapes.container(ContainerLevel.Chip))
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
+                .clip(RoundedCornerShape(AppSpacingTokens.ExtraSmall))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppText(
+                text = "#",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
+        AppText(
+            text = topicName,
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

@@ -717,7 +717,8 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
                 } else {
                     existingMajor
                 },
-                additional = existing?.additional
+                additional = existing?.additional,
+                topic = existing?.topic,
             )
         )
     }
@@ -914,7 +915,15 @@ data class DecorateInfo(
 data class DynamicContentModule(
     val desc: DynamicDesc? = null,
     val major: DynamicMajor? = null,
-    val additional: DynamicAdditional? = null
+    val additional: DynamicAdditional? = null,
+    val topic: DynamicTopic? = null,
+)
+
+@Serializable
+data class DynamicTopic(
+    @Serializable(with = FlexibleLongSerializer::class)
+    val id: Long = 0,
+    val name: String = "",
 )
 
 @Serializable
