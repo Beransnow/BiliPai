@@ -66,6 +66,7 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.data.model.response.ViewInfo
 import com.android.purebilibili.feature.home.resolveHomeCardInfoSurfaceAppearance
+import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
 import com.android.purebilibili.feature.home.components.cards.resolveVideoCardCoverOverlayTextShadow
 import com.android.purebilibili.feature.home.components.cards.resolveVideoCardPrimaryStatBadgeMinWidthDp
 import com.android.purebilibili.feature.home.components.cards.resolveVideoCardSecondaryStatBadgeMinWidthDp
@@ -285,7 +286,10 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                         start = AppSpacingTokens.Medium,
                         end = AppSpacingTokens.Small,
                         top = AppSpacingTokens.Small,
-                        bottom = AppSpacingTokens.Small,
+                        // The measured source height already contains the horizontal card's
+                        // outer inset. Reserving another bottom inset here shortens the flying
+                        // info column and clips the statistics row at the landing boundary.
+                        bottom = AppSpacingTokens.None,
                     ),
                 contentAlignment = Alignment.CenterStart,
             ) {
@@ -293,7 +297,7 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     model = model,
                     sourceLayout = layout.layout,
                     modifier = Modifier,
-                    constrainedHeight = (cardHeight - AppSpacingTokens.Small * 2)
+                    constrainedHeight = (cardHeight - AppSpacingTokens.Small)
                         .coerceAtLeast(AppSpacingTokens.None),
                 )
             }
@@ -647,7 +651,9 @@ private fun LandingInfoTexts(
     if (sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE) {
         LandingSideBySideMetadata(model)
         if (model.infoPresentation.showStatsInInfo) {
-            VideoStatRow(
+            // Match the source horizontal card's 13dp icons. The generic row uses 16dp
+            // icons, which can extend below the measured source bounds during landing.
+            HorizontalVideoStatRow(
                 playText = model.viewText,
                 danmakuText = model.danmakuText,
                 modifier = Modifier.fillMaxWidth(),
