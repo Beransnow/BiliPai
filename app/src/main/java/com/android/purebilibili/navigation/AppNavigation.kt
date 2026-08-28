@@ -754,6 +754,7 @@ fun AppNavigation(
             isSingleColumnCard = CardPositionManager.isSingleColumnCard,
             sourceLayout = CardPositionManager.lastClickedVideoSourceLayout,
             sourceChromeSnapshot = CardPositionManager.lastClickedVideoSourceChromeSnapshot,
+            hostOriginInRoot = navigationHostOriginInRoot,
         )
         var lastVideoDetailOpenId by remember { mutableLongStateOf(0L) }
         var lastLiveAreaDetailOpenId by remember { mutableLongStateOf(0L) }
@@ -1179,7 +1180,10 @@ fun AppNavigation(
             }
         }
         val navigation3SourceMetadata = currentNavigation3SourceMetadata()
-            .relativeToHost(navigationHostOriginInRoot)
+            .relativeToHost(
+                navigation3ReturnSession.transitionSession?.hostOriginInRoot
+                    ?: navigationHostOriginInRoot,
+            )
         val previousNavigation3Key = navigation3BackStack.getOrNull(navigation3BackStack.lastIndex - 1)
         val activeBottomTabRoute = resolveActiveBottomTabRoute(
             currentKey = currentNavigation3Key,
@@ -1273,12 +1277,12 @@ fun AppNavigation(
             shouldHideBottomBarOnTablet = shouldHideBottomBarOnTablet,
             shouldDeferReveal = false
         )
+        // Keep the rail's layout slot for the whole detail round trip. Removing it at HELD moves
+        // the NavHost after click and invalidates the frozen card coordinates on return.
         val sideBarMountGate = sideBarRouteGate &&
             (!isVideoDetailDestination ||
                 (sharedVideoCardTransitionEnabled &&
-                    navigation3SourceMetadata.sharedTransitionReady &&
-                    videoCardTransitionClock.phase !=
-                        com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase.HELD))
+                    navigation3SourceMetadata.sharedTransitionReady))
         val showBottomBar = shouldShowBottomBarForNavigation(
             activeRoute = activeBottomTabRoute,
             visibleBottomBarRoutes = visibleBottomBarRoutes,
@@ -3629,9 +3633,8 @@ fun AppNavigation(
                         appNavigationSettings.videoSharedReturnGestureFollowEnabled,
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
-                    // 返回由仍在 NavDisplay 中存活的真实来源卡片承接。sharedBounds 只反向
-                    // 还原几何，不再由详情页重新拼装标题、UP、时间和统计信息。
-                    preferWholeCardReturn = true,
+                    // Miuix 飞行 entry 独占过渡像素；列表真卡只保留布局，落位完成后再显示。
+                    preferWholeCardReturn = false,
                     onBack = { performSystemBackAction() },
                     onPrepareVideoCardSharedReturn = {
                         // 普通返回(顶部按钮/系统手势提交)兜底预热。

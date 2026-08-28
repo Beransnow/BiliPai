@@ -16,7 +16,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import com.android.purebilibili.core.util.CardPositionManager
 
 /**
  * shell sharedBounds 角色。
@@ -212,11 +214,41 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
      */
     crossfadeSourceContent: Boolean = false,
 ): Modifier {
-    if (!enabled || sharedTransitionScope == null || animatedVisibilityScope == null || bvid.isBlank()) {
-        return this
-    }
     val bgState = LocalVideoCardTransitionBackgroundState.current
+    val miuixState = LocalMiuixVideoCardTransitionState.current
     val preferWholeCardReturn = bgState.preferWholeCardReturnProvider()
+    val sourcePixelOwner = remember(
+        role,
+        bvid,
+        sourceRoute,
+        CardPositionManager.lastClickedVideoSourceKey,
+    ) {
+        val normalizedRoute = normalizeSharedElementSourceRoute(sourceRoute)
+        val sourceKey = if (normalizedRoute != null && bvid.isNotBlank()) {
+            "$normalizedRoute:${bvid.trim()}"
+        } else {
+            null
+        }
+        role == VideoCardShellSharedBoundsRole.SourceCard &&
+            sourceKey == CardPositionManager.lastClickedVideoSourceKey
+    }
+    val modifierWithMiuixOwnership = if (
+        miuixState.enabled && sourcePixelOwner && !preferWholeCardReturn
+    ) {
+        graphicsLayer {
+            val phase = bgState.phaseProvider()
+            val transitionOwnsPixels =
+                phase != VideoCardTransitionBackgroundPhase.IDLE ||
+                    bgState.isReturnGestureInProgressProvider() ||
+                    bgState.isGestureRestoreInProgressProvider()
+            alpha = if (transitionOwnsPixels) 0f else 1f
+        }
+    } else {
+        this
+    }
+    if (!enabled || sharedTransitionScope == null || animatedVisibilityScope == null || bvid.isBlank()) {
+        return modifierWithMiuixOwnership
+    }
     // 快速返回：源卡 Enter.None，标题/UP 与封面同步落位，避免先占位后出字。
     val isQuickReturnFromDetail = bgState.isQuickReturnFromDetailProvider()
     val crossfadeSourceContentOnReturn = shouldCrossfadeVideoCardSourceContentOnReturn(
@@ -254,7 +286,7 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
     val resizeMode = remember(fillFullscreenShell) {
         resolveVideoCardSharedBoundsResizeMode(fillFullscreenShell = fillFullscreenShell)
     }
-    return then(
+    return modifierWithMiuixOwnership.then(
         with(sharedTransitionScope) {
             val sharedContentState = rememberSharedContentState(
                 key = videoCardShellSharedElementKey(

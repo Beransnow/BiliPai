@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.video.screen
 
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
+import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionPlaybackIntent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -9,6 +10,40 @@ import org.junit.Test
 import java.io.File
 
 class VideoDetailReturnCoverPolicyTest {
+
+    @Test
+    fun flyingSourceChromeOwnsClickFrameAndReturnLandingFrame() {
+        assertEquals(
+            1f,
+            resolveVideoDetailFlyingSourceChromeAlpha(
+                morphDepthProgress = 0f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            0f,
+            resolveVideoDetailFlyingSourceChromeAlpha(
+                morphDepthProgress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoDetailFlyingSourceChromeAlpha(
+                morphDepthProgress = 0f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+            0.001f,
+        )
+    }
 
     @Test
     fun restoredParentSessionDoesNotRetakeVisualAssetsWhileClockIsIdle() {
@@ -129,14 +164,14 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun retainedSourceCardOwnsReturnChrome() {
+    fun flyingEntryOwnsReturnChrome() {
         val holder = File(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
         ).takeIf { it.isFile }?.readText()
             ?: File(
                 "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
             ).readText()
-        assertFalse(holder.contains("VideoDetailReturnSourceCardChrome("))
+        assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
         assertFalse(holder.contains("VideoDetailReturnCoverChrome("))
     }
 

@@ -179,7 +179,7 @@ class AppNavigationAppearancePolicyTest {
     }
 
     @Test
-    fun appNavigationRestoresRetainedSourceCardInsteadOfFlyingFacade() {
+    fun appNavigationKeepsFlyingEntryAsTheOnlyTransitionPixelOwner() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
         val navHostSource = loadSource(
             "app/src/main/java/com/android/purebilibili/navigation3/BiliPaiNavDisplayHost.kt"
@@ -190,9 +190,9 @@ class AppNavigationAppearancePolicyTest {
 
         assertFalse(source.contains("getVideoTransitionLiveReturnPreviewEnabled"))
         assertFalse(source.contains("videoTransitionLiveReturnPreviewEnabled"))
-        assertTrue(navHostCall.contains("preferWholeCardReturn = true"))
+        assertTrue(navHostCall.contains("preferWholeCardReturn = false"))
         assertTrue(navHostSource.contains("preferWholeCardReturnProvider"))
-        assertTrue(navHostSource.contains("preferWholeCardReturn: Boolean = true"))
+        assertTrue(navHostSource.contains("preferWholeCardReturn: Boolean = false"))
     }
 
     @Test

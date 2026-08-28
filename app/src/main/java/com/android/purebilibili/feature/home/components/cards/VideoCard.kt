@@ -960,6 +960,12 @@ internal fun ElegantVideoCard(
                     .matchParentSize()
                     .clip(cardShellShape)
                     .background(AppSurfaceTokens.cardContainer())
+                    .videoCardShellReturnCoverAlpha(
+                        enabled = useCardShellSharedBounds,
+                        bvid = video.bvid,
+                        sourceRoute = effectiveSharedElementSourceRoute,
+                        isReturningFromDetail = isReturningFromVideoDetail,
+                    )
             )
             Column(
                 modifier = Modifier

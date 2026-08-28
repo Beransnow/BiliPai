@@ -4570,6 +4570,37 @@ internal fun VideoDetailScreenStateHolder(
                     }  // Detail body
                     }  // 📱 手机竖屏布局结束（Column）
                     }  // phone portrait branch of useTabletLayout
+                    // The Miuix entry owns the complete flying card. Rebuild the click-time
+                    // information region here while the retained list card is transparent.
+                    val miuixCardTransitionState =
+                        com.android.purebilibili.core.ui.transition
+                            .LocalMiuixVideoCardTransitionState.current
+                    val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
+                    if (
+                        miuixCardTransitionState.enabled &&
+                        !suppressPhoneDetailBodyForDirectPortrait &&
+                        (sourceCardInfo != null ||
+                            miuixCardTransitionState.sourceChromeSnapshot != null)
+                    ) {
+                        VideoDetailReturnSourceCardChrome(
+                            info = sourceCardInfo,
+                            sourceChromeSnapshot = miuixCardTransitionState.sourceChromeSnapshot,
+                            sourceLayout = miuixCardTransitionState.sourceLayout,
+                            sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
+                            sourceCoverBounds =
+                                miuixCardTransitionState.sourceCoverBoundsProvider(),
+                            morphDepthProgressProvider =
+                                miuixCardTransitionState.progressProvider,
+                            phaseProvider = videoCardDepthBackgroundState.phaseProvider,
+                            isReturnGestureInProgressProvider = {
+                                videoCardDepthBackgroundState
+                                    .isReturnGestureInProgressProvider() ||
+                                    videoCardDepthBackgroundState
+                                        .isGestureRestoreInProgressProvider()
+                            },
+                            modifier = Modifier.align(Alignment.TopStart),
+                        )
+                    }
                     }  // Full-viewport source-card chrome host (phone + tablet)
                 }  // else shouldUseSplitLayout / immersive parent
             }  // else targetIsLandscape

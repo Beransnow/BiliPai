@@ -98,15 +98,21 @@ internal fun isVideoCardFlyingReturnContext(
  */
 internal fun resolveHomeCardStationaryRevealAlpha(
     @Suppress("UNUSED_PARAMETER") isReturnContext: Boolean,
-    @Suppress("UNUSED_PARAMETER") preferWholeCardReturn: Boolean,
-    @Suppress("UNUSED_PARAMETER") transitionBackgroundPhase: VideoCardTransitionBackgroundPhase,
-    @Suppress("UNUSED_PARAMETER") isVideoCardReturnGestureInProgress: Boolean,
-    @Suppress("UNUSED_PARAMETER") isSharedTransitionActive: Boolean,
+    preferWholeCardReturn: Boolean,
+    transitionBackgroundPhase: VideoCardTransitionBackgroundPhase,
+    isVideoCardReturnGestureInProgress: Boolean,
+    isSharedTransitionActive: Boolean,
     @Suppress("UNUSED_PARAMETER") transitionBackgroundProgress: Float,
 ): Float {
-    // The real source card is the shared-bounds target. Hiding any of its children during
-    // return produces a cover-only/black card because no synthetic facade exists anymore.
-    return 1f
+    if (preferWholeCardReturn) return 1f
+    if (isVideoCardReturnGestureInProgress || isSharedTransitionActive) return 0f
+    return when (transitionBackgroundPhase) {
+        VideoCardTransitionBackgroundPhase.OPENING,
+        VideoCardTransitionBackgroundPhase.RETURNING,
+        VideoCardTransitionBackgroundPhase.HELD,
+        -> 0f
+        VideoCardTransitionBackgroundPhase.IDLE -> 1f
+    }
 }
 
 /**

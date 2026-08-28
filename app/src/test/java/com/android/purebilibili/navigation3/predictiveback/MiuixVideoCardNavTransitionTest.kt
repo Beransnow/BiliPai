@@ -6,44 +6,19 @@ import java.io.File
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import top.yukonga.miuix.kmp.nav.transition.NavRole
 
 class MiuixVideoCardNavTransitionTest {
     @Test
-    fun transitionUsesOpaqueRevealMaskInsteadOfLeavingDetailPageOverSourceChrome() {
+    fun transitionKeepsOneOpaqueFlyingCardWithoutStationaryRevealMask() {
         val source = File(
             "src/main/java/com/android/purebilibili/navigation3/predictiveback/MiuixVideoCardNavTransition.kt"
         ).readText()
         val transform = source.substringAfter("override fun Modifier.transformEntry")
 
         assertEquals(true, transform.contains("alpha = 1f"))
-        assertEquals(true, transform.contains("visibleHeightFraction = outgoingClipFraction"))
+        assertEquals(false, transform.contains("visibleHeightFraction"))
+        assertEquals(false, transform.contains("outgoingClipFraction"))
         assertEquals(false, transform.contains("alpha = resolveMiuixVideoCard"))
-    }
-
-    @Test
-    fun predictiveSeekIsAReturnEvenWhenMiuixReportsIncomingRole() {
-        assertEquals(
-            true,
-            isMiuixVideoCardReturning(
-                role = NavRole.Incoming,
-                hasGesture = true,
-            ),
-        )
-        assertEquals(
-            false,
-            isMiuixVideoCardReturning(
-                role = NavRole.Incoming,
-                hasGesture = false,
-            ),
-        )
-        assertEquals(
-            true,
-            isMiuixVideoCardReturning(
-                role = NavRole.Outgoing,
-                hasGesture = false,
-            ),
-        )
     }
 
     @Test
@@ -75,59 +50,6 @@ class MiuixVideoCardNavTransitionTest {
 
         assertEquals(12f, radii.radiusX * 0.5f, absoluteTolerance = 0.0001f)
         assertEquals(12f, radii.radiusY * 0.25f, absoluteTolerance = 0.0001f)
-    }
-
-    @Test
-    fun videoDetailUncoversRetainedCardChromeDuringReturnHandoff() {
-        assertEquals(
-            1f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.45f,
-                isReturning = true,
-                handoffWholeSourceCard = true,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
-        assertEquals(
-            0.5f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.275f,
-                isReturning = true,
-                handoffWholeSourceCard = true,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
-        assertEquals(
-            0f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.10f,
-                isReturning = true,
-                handoffWholeSourceCard = true,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
-    }
-
-    @Test
-    fun openingAndFullscreenMediaNeverUseWholeCardRevealMask() {
-        assertEquals(
-            1f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.10f,
-                isReturning = false,
-                handoffWholeSourceCard = true,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
-        assertEquals(
-            1f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.10f,
-                isReturning = true,
-                handoffWholeSourceCard = false,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
     }
 
     @Test

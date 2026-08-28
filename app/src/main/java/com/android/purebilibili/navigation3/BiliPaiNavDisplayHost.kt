@@ -101,7 +101,7 @@ internal fun BiliPaiNavDisplayHost(
     videoSharedReturnGestureFollowEnabled: Boolean = true,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
-    preferWholeCardReturn: Boolean = true,
+    preferWholeCardReturn: Boolean = false,
     onBack: () -> Unit,
     onPrepareVideoCardSharedReturn: () -> Boolean = { false },
     onRelatedVideoDetailReturned: () -> Unit = {},
