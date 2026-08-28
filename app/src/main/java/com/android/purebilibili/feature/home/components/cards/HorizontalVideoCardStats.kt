@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.PlayCircleOutline
+import androidx.compose.material.icons.outlined.Subtitles
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,8 +32,8 @@ import com.android.purebilibili.core.ui.feedContentTypography
 internal fun HorizontalVideoStatRow(
     playText: String,
     danmakuText: String,
-    playIcon: ImageVector = androidx.compose.material.icons.Icons.Outlined.PlayCircleOutline,
-    danmakuIcon: ImageVector = androidx.compose.material.icons.Icons.Outlined.Subtitles,
+    playIcon: ImageVector = Icons.Outlined.PlayCircleOutline,
+    danmakuIcon: ImageVector = Icons.Outlined.Subtitles,
     modifier: Modifier = Modifier,
     contentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     textStyle: TextStyle = feedContentTypography().statistic,
