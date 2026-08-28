@@ -180,7 +180,6 @@ fun TopicDetailScreen(
                                     selectedIndex = state.sortOptions
                                         .indexOfFirst { it.sortBy == state.selectedSortBy }
                                         .coerceAtLeast(0),
-                                    backdrop = topicBackdrop,
                                     onSelected = { index ->
                                         state.sortOptions.getOrNull(index)?.let { option ->
                                             viewModel.selectSort(option.sortBy)
@@ -322,7 +321,6 @@ private fun TopicDetailLoadingSkeleton(modifier: Modifier = Modifier) {
 private fun TopicSortControl(
     options: List<String>,
     selectedIndex: Int,
-    backdrop: top.yukonga.miuix.kmp.blur.Backdrop,
     onSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -335,7 +333,11 @@ private fun TopicSortControl(
         height = 40.dp,
         indicatorHeight = 34.dp,
         labelFontSize = 13.sp,
-        backdrop = backdrop,
+        // This control is inside the page source captured by topicBackdrop. Reusing that
+        // same source here would make the liquid lens sample an ancestor that contains
+        // the lens itself, producing a cyclic RenderNode graph and RenderThread overflow.
+        // Let the segmented control own its isolated local backdrop instead.
+        backdrop = null,
         modifier = modifier.width(resolveTopicSortControlWidthDp(options.size).dp),
     )
 }
