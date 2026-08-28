@@ -7,6 +7,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.scaleToBounds
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -168,6 +169,12 @@ internal fun resolveVideoCardShellSharedBoundsExit(
     fadeOutSourceCardOnOpen: Boolean = false,
     transitionDurationMillis: Int = 0,
 ): ExitTransition {
+    if (role == VideoCardShellSharedBoundsRole.DetailShell) {
+        // sharedBounds renders both outgoing and incoming content in the same overlay.
+        // Keeping the detail shell at ExitTransition.None leaves its black page surface above
+        // the retained source card after the player has shrunk into the cover band.
+        return fadeOut(animationSpec = snap())
+    }
     if (
         role == VideoCardShellSharedBoundsRole.SourceCard &&
         fadeOutSourceCardOnOpen
