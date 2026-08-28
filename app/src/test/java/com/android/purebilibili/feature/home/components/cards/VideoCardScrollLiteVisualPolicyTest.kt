@@ -551,6 +551,34 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
+    fun sourceCardTakesOverAtTerminalDepthBeforeClockReachesIdle() {
+        assertEquals(
+            1f,
+            resolveHomeCardStationaryRevealAlpha(
+                isReturnContext = true,
+                preferWholeCardReturn = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isVideoCardReturnGestureInProgress = false,
+                isSharedTransitionActive = false,
+                transitionBackgroundProgress = 0f,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            0f,
+            resolveHomeCardStationaryRevealAlpha(
+                isReturnContext = true,
+                preferWholeCardReturn = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isVideoCardReturnGestureInProgress = false,
+                isSharedTransitionActive = false,
+                transitionBackgroundProgress = 0.01f,
+            ),
+            0.001f,
+        )
+    }
+
+    @Test
     fun duplicateLargeScreenCards_onlyClickedInstanceOwnsSharedReturn() {
         assertTrue(isVideoCardSharedSourceInstanceOwner(12L, null))
         assertTrue(isVideoCardSharedSourceInstanceOwner(12L, 12L))

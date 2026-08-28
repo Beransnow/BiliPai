@@ -102,10 +102,18 @@ internal fun resolveHomeCardStationaryRevealAlpha(
     transitionBackgroundPhase: VideoCardTransitionBackgroundPhase,
     isVideoCardReturnGestureInProgress: Boolean,
     isSharedTransitionActive: Boolean,
-    @Suppress("UNUSED_PARAMETER") transitionBackgroundProgress: Float,
+    transitionBackgroundProgress: Float,
 ): Float {
     if (preferWholeCardReturn) return 1f
     if (isVideoCardReturnGestureInProgress || isSharedTransitionActive) return 0f
+    // The host marks the clock IDLE immediately after settle; the retained source card can
+    // observe that phase one frame later. Reveal at terminal depth to avoid a handoff gap.
+    if (
+        transitionBackgroundPhase == VideoCardTransitionBackgroundPhase.RETURNING &&
+        transitionBackgroundProgress <= 0.001f
+    ) {
+        return 1f
+    }
     return when (transitionBackgroundPhase) {
         VideoCardTransitionBackgroundPhase.OPENING,
         VideoCardTransitionBackgroundPhase.RETURNING,
