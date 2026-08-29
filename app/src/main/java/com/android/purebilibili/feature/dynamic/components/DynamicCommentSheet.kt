@@ -62,6 +62,7 @@ import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCa
 import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
 import com.android.purebilibili.feature.video.ui.components.ReplyMemberAvatar
+import com.android.purebilibili.feature.video.ui.components.ReplyItemView
 import com.android.purebilibili.feature.video.ui.components.VideoCommentTypographyTokens
 import com.android.purebilibili.feature.video.ui.components.FanGroupDecorationBadge
 import com.android.purebilibili.feature.video.ui.components.resolveFanGroupDecorationCardBgs
@@ -375,17 +376,26 @@ fun DynamicCommentSheet(
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
                 ) {
                     items(comments, key = { it.rpid }) { reply ->
-                        CommentItem(
-                            reply = reply,
-                            onViewReplies = onViewReplies,
-                            onReply = onReply,
-                            onLike = onLike,
+                        val embeddedReplies = if (
+                            subReplyState.visible && subReplyState.rootReply?.rpid == reply.rpid
+                        ) {
+                            subReplyState.items
+                        } else {
+                            reply.replies
+                        }
+                        ReplyItemView(
+                            item = reply.copy(replies = embeddedReplies),
+                            onClick = { onViewReplies(reply) },
+                            onSubClick = { root, _ -> onViewReplies(root) },
+                            onReplyClick = { onReply(reply) },
+                            onLikeClick = { onLike(reply) },
+                            isLiked = isDynamicCommentLiked(reply),
                             dynamicAuthorMid = dynamicAuthorMid,
-                            currentUserMid = currentUserMid,
-                            onDelete = onDelete,
-                            onToggleTop = onToggleTop,
-                            onReport = onReport,
-                            onUserClick = onUserClick,
+                            onDeleteClick = { onDelete(reply) },
+                            onReportClick = { reason -> onReport(reply, reason) },
+                            canToggleTop = dynamicAuthorMid > 0L,
+                            onToggleTopClick = { onToggleTop(reply) },
+                            onAvatarClick = { mid -> mid.toLongOrNull()?.let(onUserClick) },
                             onImagePreview = { images, index, rect, textContent ->
                                 previewImages = images
                                 previewInitialIndex = index
@@ -393,7 +403,6 @@ fun DynamicCommentSheet(
                                 previewTextContent = textContent
                                 showImagePreview = true
                             },
-                            subReplyState = subReplyState,
                         )
                     }
                     if (isLoadingMore) {
