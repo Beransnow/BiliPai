@@ -281,7 +281,14 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     .width(infoWidth)
                     .height(cardHeight)
                     .landingLayer()
-                    .infoSurface(AppShapes.container(ContainerLevel.Field))
+                    // This surface joins the cover on its start edge. Keeping start corners
+                    // square prevents the two independently clipped rounded shapes from
+                    // exposing the shell/background at the seam during the morph.
+                    .infoSurface(
+                        AppShapes.endRounded(
+                            AppShapes.containerCornerDp(ContainerLevel.Field),
+                        ),
+                    )
                     .padding(
                         start = AppSpacingTokens.Medium,
                         end = AppSpacingTokens.Small,
