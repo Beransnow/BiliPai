@@ -125,7 +125,7 @@ internal fun VideoDetailPortraitOverlayAdapter(
     }
     val portraitOnlyVerticalRecommendations by com.android.purebilibili.core.store.SettingsManager
         .getPortraitOnlyVerticalRecommendations(context)
-        .collectAsStateWithLifecycle(initialValue = true)
+        .collectAsStateWithLifecycle(initialValue = false)
     AnimatedVisibility(
         visible = showPortraitFullscreen && success != null,
         enter = if (shouldAnimatePortraitPager) {

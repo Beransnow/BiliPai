@@ -735,24 +735,15 @@ private fun PortraitVideoInfo(
             modifier = Modifier.clickable { onTitleClick() }
         )
         if (ugcSeason != null && ugcSeason.id > 0L) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(Color.Black.copy(alpha = 0.62f), Color.Black.copy(alpha = 0.18f), Color.Transparent)
-                        )
-                    )
-            ) {
-                CollectionRow(
+            CollectionRow(
                     ugcSeason = ugcSeason,
                     currentBvid = currentBvid,
                     currentCid = currentCid,
                     isPlaying = isPlaying,
+                    immersive = true,
                     onClick = onCollectionClick,
                     modifier = Modifier.padding(bottom = 6.dp)
-                )
-            }
+            )
         }
     }
 }

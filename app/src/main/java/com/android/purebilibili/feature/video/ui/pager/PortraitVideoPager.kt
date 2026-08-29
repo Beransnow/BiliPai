@@ -144,6 +144,7 @@ import com.android.purebilibili.data.repository.VideoRepository
 import com.android.purebilibili.data.model.response.Dash
 import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.model.response.Stat
+import com.android.purebilibili.data.model.response.UgcSeason
 import com.android.purebilibili.data.model.response.ViewInfo
 import com.android.purebilibili.feature.video.player.PlaylistManager
 import com.android.purebilibili.feature.video.danmaku.DanmakuManager
@@ -1565,6 +1566,8 @@ fun PortraitVideoPager(
                 recommendationVideos = recommendationItems,
                 knownVideoAspectRatio = knownVideoAspectRatios[itemBvid]
                     ?: (item as? ViewInfo)?.dimension?.let(::resolveAspectRatioFromDimension),
+                loadedPageInfo = lastLoadedCollectionInfo
+                    ?.takeIf { loadedInfo -> loadedInfo.bvid == itemBvid },
                 qualityLabel = portraitQualityLabel,
                 selectedQualityId = portraitSelectedQuality,
                 availableQualityIds = portraitAvailableQualityIds,
@@ -1648,13 +1651,19 @@ fun PortraitVideoPager(
                         }
                     }
                 },
-                onRequestCollectionItem = { targetBvid, targetCid ->
+                onRequestCollectionItem = { targetBvid, targetCid, collectionContext ->
                     val targetIndex = resolvePortraitCollectionPageIndex(
                         pageItems = pageItems,
                         targetBvid = targetBvid,
                         targetCid = targetCid
                     )
                     if (targetIndex >= 0) {
+                        pageItems[targetIndex] = buildPortraitCollectionPageItem(
+                            existing = pageItems[targetIndex],
+                            targetBvid = targetBvid,
+                            targetCid = targetCid,
+                            collectionContext = collectionContext,
+                        )
                         scope.launch {
                             pagerState.animateScrollToPage(targetIndex)
                         }
@@ -1662,17 +1671,20 @@ fun PortraitVideoPager(
                     }
                     // Not yet in the pager list: insert as a dedicated page after current, then jump.
                     val insertAt = (pagerState.currentPage + 1).coerceIn(0, pageItems.size)
-                    val item = RelatedVideo(
-                        bvid = targetBvid.trim(),
-                        cid = targetCid.coerceAtLeast(0L),
-                        title = targetBvid
+                    val item = buildPortraitCollectionPageItem(
+                        existing = null,
+                        targetBvid = targetBvid,
+                        targetCid = targetCid,
+                        collectionContext = collectionContext,
                     )
-                    val key = portraitCollectionIdentityKey(item.bvid, item.cid)
+                    val itemIdentity = resolvePortraitPagePlaybackIdentity(item)
+                        ?: return@VideoPageItem
+                    val key = portraitCollectionIdentityKey(itemIdentity.bvid, itemIdentity.cid)
                     val exists = pageItems.any { candidate ->
                         val identity = resolvePortraitPagePlaybackIdentity(candidate) ?: return@any false
                         portraitCollectionIdentityKey(identity.bvid, identity.cid) == key
                     }
-                    if (!exists && item.bvid.isNotBlank()) {
+                    if (!exists && itemIdentity.bvid.isNotBlank()) {
                         pageItems.add(insertAt, item)
                         scope.launch {
                             pagerState.animateScrollToPage(insertAt)
@@ -1727,6 +1739,7 @@ private fun VideoPageItem(
     watchLaterVideos: List<RelatedVideo>,
     recommendationVideos: List<RelatedVideo>,
     knownVideoAspectRatio: Float?,
+    loadedPageInfo: ViewInfo?,
     qualityLabel: String,
     selectedQualityId: Int,
     availableQualityIds: List<Int>,
@@ -1748,7 +1761,7 @@ private fun VideoPageItem(
     portraitOverlayVisible: Boolean,
     onPortraitOverlayVisibleChange: (Boolean) -> Unit,
     onRequestVideoChange: (String) -> Unit,
-    onRequestCollectionItem: (bvid: String, cid: Long) -> Unit
+    onRequestCollectionItem: (bvid: String, cid: Long, collectionContext: UgcSeason?) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -3026,11 +3039,12 @@ private fun VideoPageItem(
         is RelatedVideo -> toViewInfoForPortraitDetail(item)
         else -> null
     }
-    val portraitDetailInfo = if (isCurrentModelVideo && currentSuccess != null) {
-        currentSuccess.info
-    } else {
-        fallbackDetailInfo
-    }
+    val portraitDetailInfo = resolvePortraitDetailInfo(
+        targetBvid = bvid,
+        sharedInfo = currentSuccess?.info,
+        loadedPageInfo = loadedPageInfo,
+        fallbackInfo = fallbackDetailInfo,
+    )
     // seed 进场可能没有 owner；加载成功后用 Success.info 补齐 UP 名/头像。
     val authorName = portraitDetailInfo?.owner?.name?.takeIf { it.isNotBlank() } ?: seedAuthorName
     val authorFace = portraitDetailInfo?.owner?.face?.takeIf { it.isNotBlank() } ?: seedAuthorFace
@@ -3398,7 +3412,16 @@ private fun VideoPageItem(
         )
 
         if (showQualityMenu && isCurrentPage) {
-            val qualityIds = availableQualityIds.ifEmpty { listOf(selectedQualityId) }
+            val detailQualityIds = if (isCurrentModelVideo) {
+                currentSuccess?.qualityIds.orEmpty()
+            } else {
+                emptyList()
+            }
+            val qualityIds = resolvePortraitQualityMenuIds(
+                portraitQualityIds = availableQualityIds,
+                detailQualityIds = detailQualityIds,
+                selectedQualityId = selectedQualityId,
+            )
             QualitySelectionMenu(
                 qualities = resolvePortraitQualityMenuLabels(qualityIds),
                 qualityIds = qualityIds,
@@ -3428,22 +3451,14 @@ private fun VideoPageItem(
         }
 
         if (showRatioMenu && isCurrentPage) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
-                    .clickable { showRatioMenu = false },
-                contentAlignment = Alignment.Center
-            ) {
-                AspectRatioMenu(
-                    currentRatio = aspectRatio,
-                    onRatioSelected = { ratio ->
-                        onAspectRatioChange(ratio)
-                        showRatioMenu = false
-                    },
-                    onDismiss = { showRatioMenu = false }
-                )
-            }
+            AspectRatioMenu(
+                currentRatio = aspectRatio,
+                onRatioSelected = { ratio ->
+                    onAspectRatioChange(ratio)
+                    showRatioMenu = false
+                },
+                onDismiss = { showRatioMenu = false }
+            )
         }
 
         if (showSpeedMenu && isCurrentPage) {
@@ -3558,7 +3573,11 @@ private fun VideoPageItem(
             },
             onCollectionItemClick = { targetBvid, targetCid ->
                 showDetailSheet = false
-                onRequestCollectionItem(targetBvid, targetCid)
+                onRequestCollectionItem(
+                    targetBvid,
+                    targetCid,
+                    portraitDetailInfo?.ugc_season,
+                )
             },
             onAuthorClick = { mid ->
                 showDetailSheet = false

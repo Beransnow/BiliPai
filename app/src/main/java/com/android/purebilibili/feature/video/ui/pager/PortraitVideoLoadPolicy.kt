@@ -102,6 +102,29 @@ internal fun resolvePortraitQualityMenuLabels(qualityIds: List<Int>): List<Strin
 }
 
 /**
+ * Keep the portrait quality menu useful while its dedicated playurl request is still warming up.
+ * The detail player often already has the complete advertised list; if neither source does,
+ * expose the universally requestable lower rungs instead of rendering a one-row, non-scrollable menu.
+ */
+internal fun resolvePortraitQualityMenuIds(
+    portraitQualityIds: List<Int>,
+    detailQualityIds: List<Int>,
+    selectedQualityId: Int,
+): List<Int> {
+    val merged = (portraitQualityIds + detailQualityIds + selectedQualityId)
+        .filter { it > 0 }
+        .distinct()
+        .sortedDescending()
+    if (merged.size > 1) return merged
+
+    val fallbackLowerQualities = listOf(80, 64, 32, 16)
+        .filter { it < selectedQualityId }
+    return (merged + fallbackLowerQualities)
+        .distinct()
+        .sortedDescending()
+}
+
+/**
  * After a quality switch or reload, pick the label to show from the actual track when possible.
  */
 internal fun resolvePortraitDisplayedQualityId(
@@ -193,6 +216,30 @@ internal fun enrichPortraitPageItemWithLoadedInfo(
         )
         else -> existing
     }
+}
+
+/**
+ * Resolve the complete detail model used by portrait chrome.
+ *
+ * Collection pages are intentionally stored as lightweight [RelatedVideo] items in the pager,
+ * so their freshly loaded [ViewInfo] must remain a separate source of truth. Otherwise fields
+ * unavailable on [RelatedVideo], especially `ugc_season`, disappear after selecting an episode.
+ */
+internal fun resolvePortraitDetailInfo(
+    targetBvid: String,
+    sharedInfo: ViewInfo?,
+    loadedPageInfo: ViewInfo?,
+    fallbackInfo: ViewInfo?,
+): ViewInfo? {
+    val matchingSharedInfo = sharedInfo?.takeIf { it.bvid == targetBvid }
+    val matchingLoadedInfo = loadedPageInfo?.takeIf { it.bvid == targetBvid }
+    val matchingFallbackInfo = fallbackInfo?.takeIf { it.bvid == targetBvid }
+    val primaryInfo = matchingSharedInfo ?: matchingLoadedInfo ?: matchingFallbackInfo ?: fallbackInfo
+    return primaryInfo?.copy(
+        ugc_season = primaryInfo.ugc_season
+            ?: matchingLoadedInfo?.ugc_season
+            ?: matchingFallbackInfo?.ugc_season,
+    )
 }
 
 /** Overlay label: never show a bare `@` when seed/owner is still empty. */
