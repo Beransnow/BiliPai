@@ -265,11 +265,16 @@ private fun ChatMessageItem(
     var showMenu by remember { mutableStateOf(false) }
     val tokens = resolveLiveBiliPaiChatBubbleTokens(isOverlay = isOverlay, isDark = palette.isDark)
     val bubbleShape = RoundedCornerShape(tokens.cornerRadiusDp.dp)
+    val colorScheme = MaterialTheme.colorScheme
     val bubbleBackground = when {
         isOverlay -> LiveStatusPalette.MediaScrim.copy(alpha = tokens.backgroundAlpha)
-        else -> palette.surfaceMuted
+        else -> colorScheme.surfaceContainerHigh
     }
 
+    // Match video/dynamic comments: semantic theme colors keep contrast consistent in both
+    // light and dark themes instead of relying on a separate hardcoded live palette.
+    val readableText = colorScheme.onSurface
+    val readableSecondaryText = colorScheme.onSurfaceVariant
     val usernameColor = if (item.isAdmin) {
         LiveStatusPalette.AdminName
     } else if (item.isSelf) {
@@ -277,11 +282,11 @@ private fun ChatMessageItem(
     } else if (isOverlay) {
         LiveStatusPalette.MediaContent.copy(alpha = tokens.nameAlpha)
     } else {
-        palette.primaryText.copy(alpha = tokens.nameAlpha)
+        readableText.copy(alpha = tokens.nameAlpha.coerceAtLeast(0.9f))
     }
-    val bodyColor = if (isOverlay) LiveStatusPalette.MediaContent else palette.primaryText
+    val bodyColor = if (isOverlay) LiveStatusPalette.MediaContent else readableText
     val emoticonMap by DanmakuEmoticonMapper.emoticonMap.collectAsStateWithLifecycle()
-    val replyColor = if (isOverlay) LiveStatusPalette.Reply else palette.accent
+    val replyColor = if (isOverlay) LiveStatusPalette.Reply else readableSecondaryText
 
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val bubbleWidthFraction = if (isOverlay) 0.90f else 0.86f
