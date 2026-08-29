@@ -150,6 +150,7 @@ import com.android.purebilibili.core.util.resolveScrollToTopPlan
 import coil.imageLoader
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged  //  性能优化：防止重复触发
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map as mapFlow
@@ -2592,6 +2593,9 @@ fun HomeScreen(
             lastVisibleIndex to currentGridState.isScrollInProgress
         }
             .distinctUntilChanged()
+            // Coalesce the burst of layout updates after a fling and wait until the feed has
+            // been settled briefly. A new scroll event cancels this pending preload batch.
+            .debounce(180)
             .collect { (lastVisibleIndex, isScrollInProgress) ->
                 val videos = viewModel.getPreloadVideosSnapshot(
                     category = currentCategory,

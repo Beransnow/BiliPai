@@ -55,7 +55,6 @@ import com.android.purebilibili.feature.home.components.cards.StoryVideoCard
 import androidx.compose.ui.Alignment
 import coil.compose.AsyncImage
 import kotlinx.coroutines.yield
-import androidx.compose.runtime.snapshots.Snapshot
 
 internal fun resolveHomeCategoryVideoGridKey(
     video: VideoItem,
@@ -214,6 +213,9 @@ internal fun HomeCategoryPageContent(
         scrollableState = gridState,
         stateName = "home:feed:${category.name.lowercase()}"
     )
+    // This is a coarse-grained state (only changes at scroll start/end), so reading it here
+    // updates visible cards without sampling the per-frame scroll offset in composition.
+    val isScrollInProgress = gridState.isScrollInProgress
 
     // Check for load more
     val shouldLoadMore by remember {
@@ -385,11 +387,6 @@ internal fun HomeCategoryPageContent(
                         key = videoGridKeys[index],
                         contentType = "home_video_card"
                     ) {
-                        val mountedDuringScroll = remember(video.bvid, video.id, video.cid) {
-                            Snapshot.withoutReadObservation {
-                                gridState.isScrollInProgress
-                            }
-                        }
                         val isDynamicDetailCard = video.dynamicId.isNotBlank() && !video.bvid.startsWith("BV", ignoreCase = true)
                         val isDissolving = video.bvid in dissolvingVideos
 
@@ -416,7 +413,7 @@ internal fun HomeCategoryPageContent(
                                         transitionEnabled = cardTransitionEnabled,
                                         isReturningFromVideoDetail = isReturningFromVideoDetail,
                                         isQuickReturningFromVideoDetail = isQuickReturningFromVideoDetail,
-                                        scrollLiteModeEnabled = mountedDuringScroll,
+                                        scrollLiteModeEnabled = isScrollInProgress,
                                         isDataSaverActive = isDataSaverActive,
                                         preferLowQualityCover = preferLowQualityCover,
                                         coverRequestSpec = coverRequestSpec,
@@ -461,7 +458,7 @@ internal fun HomeCategoryPageContent(
                                         transitionEnabled = cardTransitionEnabled,
                                         isReturningFromVideoDetail = isReturningFromVideoDetail,
                                         isQuickReturningFromVideoDetail = isQuickReturningFromVideoDetail,
-                                        scrollLiteModeEnabled = mountedDuringScroll,
+                                        scrollLiteModeEnabled = isScrollInProgress,
                                         showPublishTime = true,
                                         isDataSaverActive = isDataSaverActive,
                                         preferLowQualityCover = preferLowQualityCover,
