@@ -561,17 +561,18 @@ fun LazyListScope.dynamicInlineCommentItems(
         }
 
         else -> items(comments, key = { it.rpid }) { reply ->
-            CommentItem(
-                reply = reply,
-                onViewReplies = onViewReplies,
-                onReply = onReply,
-                onLike = onLike,
-                dynamicAuthorMid = dynamicAuthorMid,
-                currentUserMid = currentUserMid,
-                onDelete = onDelete,
-                onToggleTop = onToggleTop,
-                onReport = onReport,
-                onUserClick = onUserClick,
+            ReplyItemView(
+                item = reply,
+                onClick = { onViewReplies(reply) },
+                onSubClick = { root, _ -> onViewReplies(root) },
+                onReplyClick = { onReply(reply) },
+                onLikeClick = { onLike(reply) },
+                isLiked = isDynamicCommentLiked(reply),
+                onDeleteClick = { onDelete(reply) },
+                onReportClick = { reason -> onReport(reply, reason) },
+                canToggleTop = dynamicAuthorMid > 0L,
+                onToggleTopClick = { onToggleTop(reply) },
+                onAvatarClick = { mid -> mid.toLongOrNull()?.let(onUserClick) },
                 onImagePreview = onImagePreview,
                 modifier = Modifier.padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small),
             )
