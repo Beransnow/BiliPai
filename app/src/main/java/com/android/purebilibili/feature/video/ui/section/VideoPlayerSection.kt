@@ -2047,7 +2047,8 @@ fun VideoPlayerSection(
                 fullscreenSwipeSeekSeconds,
                 fullscreenGestureReverse,
                 bottomGestureExclusionHeightDp,
-                gestureSeekFallbackDurationMs
+                gestureSeekFallbackDurationMs,
+                isPortraitFullscreen
             ) {
                 if (!isInPipMode) {
                     detectDragGestures(
@@ -2067,7 +2068,19 @@ fun VideoPlayerSection(
                             //  [新增] 边缘防误触检测
                             //  如果在屏幕顶部或底部区域开始滑动，则视为系统手势（如下拉通知栏），不触发播放器手势
                             val requestedBottomGestureExclusionPx = if (showControls) {
-                                with(localDensity) { bottomGestureExclusionHeightDp.dp.toPx() }
+                                // 竖屏全屏的进度条位于底部控制区上方；扩大排除区，
+                                // 避免外层“横向滑动快进”与进度条拖动同时响应，导致跨度叠加。
+                                val portraitControlsExclusionDp = if (isPortraitFullscreen) {
+                                    220.dp
+                                } else {
+                                    0.dp
+                                }
+                                with(localDensity) {
+                                    maxOf(
+                                        bottomGestureExclusionHeightDp.dp,
+                                        portraitControlsExclusionDp
+                                    ).toPx()
+                                }
                             } else {
                                 0f
                             }
@@ -4752,6 +4765,7 @@ fun VideoPlayerSection(
                 insightMode = playerInsightMode,
                 debugInfo = debugInfo,
                 playerViewportSize = measuredPlayerViewportSize,
+                viewportWidthDpOverride = uiLayoutWidthDp,
                 diagnosticEvents = diagnosticEvents,
                 pendingUserAction = pendingUserAction,
                 hasPendingSeekResume = sharedSeekSession.pendingSeekPositionMs != null,

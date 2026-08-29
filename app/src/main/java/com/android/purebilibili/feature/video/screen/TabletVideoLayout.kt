@@ -57,6 +57,7 @@ import com.android.purebilibili.feature.video.ui.section.resolveAllowLivePlayerS
 import com.android.purebilibili.feature.video.ui.section.resolveNavigationLiveSurfaceTextureEnabled
 import com.android.purebilibili.core.store.DanmakuSettings
 import com.android.purebilibili.core.store.DanmakuSettingsScope
+import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
@@ -181,6 +182,15 @@ internal fun TabletSecondaryLiquidTabRow(
     isScrollInProgressProvider: () -> Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(
+            // The disabled state must be safe before the persisted setting is emitted.
+            initialValue = HomeSettings(
+                androidNativeLiquidGlassEnabled = false,
+            ),
+        )
     BottomBarLiquidSegmentedControl(
         items = labels,
         selectedIndex = selectedIndex,
@@ -190,7 +200,7 @@ internal fun TabletSecondaryLiquidTabRow(
         height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
         indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
         labelFontSize = 15.sp,
-        liquidGlassEffectsEnabled = true,
+        liquidGlassEffectsEnabled = homeSettings.androidNativeLiquidGlassEnabled,
         dragSelectionEnabled = true,
         tapPressRefractionEnabled = true,
         indicatorPositionProvider = indicatorPositionProvider,
@@ -229,6 +239,7 @@ internal fun TabletVideoLayout(
     onUpClick: (Long) -> Unit,
     onNavigateToAudioMode: () -> Unit,
     onToggleFullscreen: () -> Unit,  // 📺 全屏切换回调
+    onPortraitFullscreen: () -> Unit,
     isInPipMode: Boolean,
     onPipClick: () -> Unit,
     isPortraitFullscreen: Boolean = false,
@@ -379,7 +390,7 @@ internal fun TabletVideoLayout(
                             videoshotData = (uiState as? VideoPlaybackUiState.Success)?.videoshotData,
                             viewPoints = viewPoints,
                             isVerticalVideo = isVerticalVideo,
-                            onPortraitFullscreen = { playerState.setPortraitFullscreen(true) },
+                            onPortraitFullscreen = onPortraitFullscreen,
                             isPortraitFullscreen = isPortraitFullscreen,
 
                             onPipClick = onPipClick,

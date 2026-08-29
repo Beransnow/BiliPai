@@ -350,11 +350,12 @@ fun RelatedVideoItem(
 
             Column(
                 modifier = Modifier
-                    .weight(1f),
-                // Keep the headline in normal flow. A weighted headline inside a
-                // SpaceBetween column can collapse during the shared return remeasure,
-                // leaving only the date/UP and stats rows visible.
-                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                    .weight(1f)
+                    .heightIn(min = coverHeight),
+                // Keep both sections in normal flow while pinning metadata to the bottom.
+                // Unlike the old weighted-headline layout, the title cannot collapse during
+                // a shared return remeasure; taller content can still grow beyond the cover.
+                verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 AppText(
                     text = video.title,

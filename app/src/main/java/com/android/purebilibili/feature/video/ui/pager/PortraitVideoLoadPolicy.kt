@@ -32,9 +32,8 @@ import kotlin.math.min
  */
 internal const val PORTRAIT_PLAYBACK_TARGET_QUALITY = 64
 internal const val PORTRAIT_SWIPE_PREFETCH_OFFSET_THRESHOLD = 0.25f
-internal const val PORTRAIT_EARLY_PLAYBACK_OFFSET_THRESHOLD = 0.58f
-private const val PORTRAIT_VIDEO_HEAD_PREFETCH_BYTES = 512L * 1024L
-private const val PORTRAIT_AUDIO_HEAD_PREFETCH_BYTES = 128L * 1024L
+internal const val PORTRAIT_VIDEO_HEAD_PREFETCH_BYTES = 1536L * 1024L
+internal const val PORTRAIT_AUDIO_HEAD_PREFETCH_BYTES = 256L * 1024L
 
 internal data class PortraitPagePlaybackIdentity(
     val bvid: String,
@@ -308,24 +307,15 @@ internal fun resolvePortraitSwipePrefetchTargetPage(
 internal fun resolvePortraitEarlyPlaybackPage(
     isScrollInProgress: Boolean,
     currentPage: Int,
-    currentPageOffsetFraction: Float,
+    lastCommittedPage: Int,
     lastPageIndex: Int,
-    earlyPlaybackThreshold: Float = PORTRAIT_EARLY_PLAYBACK_OFFSET_THRESHOLD
 ): Int? {
     if (!isScrollInProgress) return null
-    return when {
-        currentPageOffsetFraction <= -earlyPlaybackThreshold -> {
-            val targetPage = currentPage + 1
-            targetPage.takeIf { it <= lastPageIndex }
-        }
-
-        currentPageOffsetFraction >= earlyPlaybackThreshold -> {
-            val targetPage = currentPage - 1
-            targetPage.takeIf { it >= 0 }
-        }
-
-        else -> null
-    }
+    // Pager's currentPage changes as soon as the drag crosses the snap midpoint. Binding that
+    // page immediately is both reachable (offset is normally bounded near ±0.5) and stable in
+    // either direction; the previous 0.58 offset threshold could never fire.
+    if (currentPage == lastCommittedPage) return null
+    return currentPage.takeIf { it in 0..lastPageIndex }
 }
 
 internal fun resolvePortraitPlayUrlPreloadCount(
@@ -333,8 +323,13 @@ internal fun resolvePortraitPlayUrlPreloadCount(
     isWifi: Boolean,
     availableTargets: Int
 ): Int {
-    if (availableTargets <= 0 || !isWifi) return 0
-    val maxCount = if (prefetchVideoEnabled) 2 else 1
+    if (availableTargets <= 0) return 0
+    val maxCount = when {
+        isWifi && prefetchVideoEnabled -> 3
+        isWifi -> 2
+        prefetchVideoEnabled -> 1
+        else -> 0
+    }
     return min(availableTargets, maxCount)
 }
 

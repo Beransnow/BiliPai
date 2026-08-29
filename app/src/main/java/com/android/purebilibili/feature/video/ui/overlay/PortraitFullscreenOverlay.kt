@@ -51,6 +51,8 @@ import com.android.purebilibili.core.ui.components.AppIconButtonDefaults
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.VideoshotData
+import com.android.purebilibili.data.model.response.UgcSeason
+import com.android.purebilibili.feature.video.ui.components.CollectionRow
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 
@@ -80,6 +82,9 @@ internal fun resolvePortraitProgressTimeLabel(
 @Composable
 fun PortraitFullscreenOverlay(
     title: String,
+    ugcSeason: UgcSeason? = null,
+    currentBvid: String = "",
+    currentCid: Long = 0L,
     authorName: String = "",
     authorFace: String = "",
     isPlaying: Boolean,
@@ -257,6 +262,10 @@ fun PortraitFullscreenOverlay(
                         authorName = authorName,
                         authorFace = authorFace,
                         title = title,
+                        ugcSeason = ugcSeason,
+                        currentBvid = currentBvid,
+                        currentCid = currentCid,
+                        onCollectionClick = onDetailClick,
                         isFollowing = isFollowing,
                         onFollowClick = onFollowClick,
                         onTitleClick = onTitleClick,
@@ -629,6 +638,10 @@ private fun PortraitVideoInfo(
     authorName: String,
     authorFace: String,
     title: String,
+    ugcSeason: UgcSeason? = null,
+    currentBvid: String = "",
+    currentCid: Long = 0L,
+    onCollectionClick: () -> Unit = {},
     isFollowing: Boolean,
     onFollowClick: () -> Unit,
     onTitleClick: () -> Unit,
@@ -719,5 +732,15 @@ private fun PortraitVideoInfo(
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.clickable { onTitleClick() }
         )
+        if (ugcSeason != null && ugcSeason.id > 0L) {
+            CollectionRow(
+                ugcSeason = ugcSeason,
+                currentBvid = currentBvid,
+                currentCid = currentCid,
+                isPlaying = true,
+                onClick = onCollectionClick,
+                modifier = Modifier.padding(bottom = 6.dp)
+            )
+        }
     }
 }

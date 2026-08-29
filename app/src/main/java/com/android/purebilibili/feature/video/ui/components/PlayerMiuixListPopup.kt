@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
@@ -93,7 +95,7 @@ fun PlayerMiuixListPopup(
     }
 
     val popupContent: @Composable () -> Unit = {
-        ListPopupColumn {
+        ListPopupColumn(modifier = Modifier.verticalScroll(rememberScrollState())) {
             SmallTitle(text = title)
             content()
         }

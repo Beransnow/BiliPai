@@ -338,6 +338,7 @@ internal fun toggleVideoDetailFullscreen(
     isCompactDevice: Boolean,
     fullscreenMode: com.android.purebilibili.core.store.FullscreenMode,
     isVerticalVideo: Boolean,
+    preferPortraitForFlatFoldable: Boolean = false,
     portraitExperienceEnabled: Boolean,
     onEnterPortraitFullscreen: () -> Unit,
     onUserRequestedFullscreenChange: (Boolean) -> Unit,
@@ -387,7 +388,8 @@ internal fun toggleVideoDetailFullscreen(
 
     val targetOrientation = resolvePhoneFullscreenEnterOrientation(
         fullscreenMode = fullscreenMode,
-        isVerticalVideo = isVerticalVideo
+        isVerticalVideo = isVerticalVideo,
+        preferPortraitForFlatFoldable = preferPortraitForFlatFoldable
     ) ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
 
     if (shouldEnterPortraitFullscreenOnFullscreenToggle(

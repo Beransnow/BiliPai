@@ -85,6 +85,7 @@ import androidx.compose.ui.zIndex
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -276,68 +277,78 @@ private fun CollapsedPlayerNavigationBar(
     modifier: Modifier = Modifier,
 ) {
     if (scrollRatio > 0f) {
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .graphicsLayer { alpha = scrollRatio.coerceIn(0f, 1f) }
-                .background(MaterialTheme.colorScheme.surface),
+        val mediaScrimAlpha = resolveCollapsedPlayerMediaScrimAlpha(scrollRatio)
+        val toolbarAlpha = resolveCollapsedPlayerToolbarAlpha(scrollRatio)
+        Box(
+            modifier = modifier.drawBehind {
+                drawRect(
+                    color = Color.Black,
+                    alpha = mediaScrimAlpha,
+                )
+            },
         ) {
-            // PiliPlus: status-bar app bar and kToolbarHeight video header are two siblings.
-            Spacer(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(topInset)
-                    .background(MaterialTheme.colorScheme.surface)
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .clickable(onClick = onPlayClick),
+                    .graphicsLayer { alpha = toolbarAlpha },
             ) {
-                Row(
-                    modifier = Modifier.align(Alignment.CenterStart),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    IconButton(onClick = onBack, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
-                        Icon(
-                            Icons.Filled.ArrowBack,
-                            contentDescription = "返回",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                    IconButton(onClick = onHomeClick, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
-                        Icon(
-                            Icons.Filled.Home,
-                            contentDescription = "首页",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                }
-                Row(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                    )
-                    Text("立即播放", color = MaterialTheme.colorScheme.primary)
-                }
-                IconButton(
-                    onClick = onMoreClick,
+                // PiliPlus: status-bar app bar and kToolbarHeight video header are two siblings.
+                Spacer(
                     modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .size(width = 42.dp, height = 34.dp),
+                        .fillMaxWidth()
+                        .height(topInset)
+                        .background(MaterialTheme.colorScheme.surface)
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .clickable(onClick = onPlayClick),
                 ) {
-                    Icon(
-                        Icons.Filled.MoreVert,
-                        contentDescription = "更多设置",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                    )
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterStart),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        IconButton(onClick = onBack, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
+                            Icon(
+                                Icons.Filled.ArrowBack,
+                                contentDescription = "返回",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                        IconButton(onClick = onHomeClick, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
+                            Icon(
+                                Icons.Filled.Home,
+                                contentDescription = "首页",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                        Text("立即播放", color = MaterialTheme.colorScheme.primary)
+                    }
+                    IconButton(
+                        onClick = onMoreClick,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(width = 42.dp, height = 34.dp),
+                    ) {
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            contentDescription = "更多设置",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
                 }
             }
         }
@@ -381,6 +392,7 @@ internal fun VideoDetailScreenStateHolder(
     onSearchKeywordClick: (String) -> Unit = {},
     onOpenBilibiliLink: ((String) -> Unit)? = null,
     onVideoClick: (String, android.os.Bundle?) -> Unit,
+    onReplaceVideoDetail: (String, Long, String, Long) -> Boolean = { _, _, _, _ -> false },
     onUpClick: (Long) -> Unit = {},
     onUpClickWithVideo: ((Long, String) -> Unit)? = null,
     miniPlayerManager: MiniPlayerManager? = null,
@@ -1091,7 +1103,6 @@ internal fun VideoDetailScreenStateHolder(
     val windowSizeClass = com.android.purebilibili.core.util.LocalWindowSizeClass.current
     val appWindowAdaptiveInfo =
         com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current
-    val isFlatFoldable = com.android.purebilibili.core.util.rememberIsFlatFoldable()
     val horizontalAdaptationEnabled by com.android.purebilibili.core.store.SettingsManager
         .getHorizontalAdaptationEnabled(context)
         .collectAsStateWithLifecycle(
@@ -2275,8 +2286,7 @@ internal fun VideoDetailScreenStateHolder(
         userRequestedFullscreen,
         manualPortraitHoldActive,
         isVerticalVideo,
-        isPortraitFullscreen,
-        isFlatFoldable
+        isPortraitFullscreen
     ) {
         val requestedOrientation = resolvePhoneVideoRequestedOrientation(
             autoRotateEnabled = autoRotateEnabled,
@@ -2291,9 +2301,8 @@ internal fun VideoDetailScreenStateHolder(
             currentRequestedOrientation = activity?.requestedOrientation,
             isInMultiWindowMode = isActivityInMultiWindowMode,
             isInPictureInPictureMode = isPipMode,
-            // 仅折叠屏完全展开的内屏沿用原版默认竖屏。不要以窗口宽度推断：它会随旋转
-            // 改变，也无法区分普通平板和大屏手机。
-            preferPortraitForFlatFoldable = isFlatFoldable
+            // 展开态折叠屏也应遵循用户选择的默认全屏方向。
+            preferPortraitForFlatFoldable = false
         ) ?: return@LaunchedEffect
 
         activity?.applyPlayerRequestedOrientation(requestedOrientation)
@@ -2456,6 +2465,7 @@ internal fun VideoDetailScreenStateHolder(
     }
     val shouldMirrorPortraitProgressToMainPlayer = com.android.purebilibili.feature.video.ui.pager
         .shouldMirrorPortraitProgressToMainPlayer(useSharedPlayer = useSharedPortraitPlayer)
+    val latestOnReplaceVideoDetail by rememberUpdatedState(onReplaceVideoDetail)
 
     val tryApplyPortraitProgressSync = remember(playerState, viewModel) {
         { snapshotBvid: String?, snapshotPositionMs: Long ->
@@ -2483,8 +2493,27 @@ internal fun VideoDetailScreenStateHolder(
             portraitPendingSelectionBvid = portraitPendingSelectionBvid,
             portraitSyncSnapshotBvid = portraitSyncSnapshotBvid,
             portraitSyncSnapshotCid = portraitSyncSnapshotCid,
-            currentBvidCid = currentBvidCid
         ) ?: return
+        if (com.android.purebilibili.feature.video.ui.pager
+                .shouldReplaceVideoDetailRouteAfterPortraitExit(
+                    routeBvid = bvid,
+                    portraitBvid = target.bvid,
+                )
+        ) {
+            // The inline detail state is scoped to the route key. Mutating it in place leaves
+            // Navigation 3 pointing at the entry video and the old route wins again on re-entry.
+            // Replace the destination so player, metadata and saved state share one identity.
+            presentationState.markNavigatingToVideo()
+            miniPlayerManager?.isNavigatingToVideo = true
+            val routeReplaced = latestOnReplaceVideoDetail(
+                target.bvid,
+                target.cid,
+                pendingInPageSwitchCoverUrl,
+                portraitSyncSnapshotPositionMs.coerceAtLeast(0L),
+            )
+            if (routeReplaced) return
+            miniPlayerManager?.isNavigatingToVideo = false
+        }
         val loaded = viewModel.uiState.value as? VideoPlaybackUiState.Success
         presentationState.switchVideo(target.bvid, target.cid)
         if (com.android.purebilibili.feature.video.ui.pager.shouldReloadMainPlayerAfterPortraitExit(
@@ -2551,7 +2580,6 @@ internal fun VideoDetailScreenStateHolder(
         portraitPendingSelectionBvid,
         portraitSyncSnapshotBvid,
         portraitSyncSnapshotCid,
-        currentBvidCid
     ) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             if (event != androidx.lifecycle.Lifecycle.Event.ON_RESUME) return@LifecycleEventObserver
@@ -2778,6 +2806,7 @@ internal fun VideoDetailScreenStateHolder(
             isCompactDevice = windowSizeClass.isCompactDevice,
             fullscreenMode = fullscreenMode,
             isVerticalVideo = isVerticalVideo,
+            preferPortraitForFlatFoldable = false,
             portraitExperienceEnabled = portraitExperienceEnabled,
             onEnterPortraitFullscreen = { enterPortraitFullscreen() },
             onUserRequestedFullscreenChange = { requested -> userRequestedFullscreen = requested },
@@ -3413,6 +3442,16 @@ internal fun VideoDetailScreenStateHolder(
                                     onNavigateToAudioMode()
                                 },
                                 onToggleFullscreen = { toggleFullscreen() },
+                                onPortraitFullscreen = {
+                                    if (allowStandalonePortraitExperience) {
+                                        if (!isPortraitFullscreen) {
+                                            if (isFullscreenMode) toggleFullscreen()
+                                            enterPortraitFullscreen()
+                                        } else {
+                                            presentationState.setPortraitFullscreen(false)
+                                        }
+                                    }
+                                },
                                 isInPipMode = isPipMode,
                                 onPipClick = handlePipClick,
                                 isPortraitFullscreen = isPortraitFullscreen,
@@ -3478,6 +3517,16 @@ internal fun VideoDetailScreenStateHolder(
                                 onNavigateToAudioMode()
                             },
                             onToggleFullscreen = { toggleFullscreen() },  // 📺 平板全屏切换
+                            onPortraitFullscreen = {
+                                if (allowStandalonePortraitExperience) {
+                                    if (!isPortraitFullscreen) {
+                                        if (isFullscreenMode) toggleFullscreen()
+                                        enterPortraitFullscreen()
+                                    } else {
+                                        presentationState.setPortraitFullscreen(false)
+                                    }
+                                }
+                            },
                             isInPipMode = isPipMode,
                             onPipClick = handlePipClick,
                             isPortraitFullscreen = isPortraitFullscreen,
@@ -4678,6 +4727,17 @@ internal fun VideoDetailScreenStateHolder(
                 handleTopBarAction(resolveVideoDetailTopBarAction(isHomeButton = true))
             },
             onVideoChange = { portraitPendingSelectionBvid = it },
+            onPlaybackIdentityChange = { updatedBvid, updatedCid, updatedCoverUrl ->
+                // This callback follows the shared player's media identity, including the
+                // early-switch path used while a swipe is still settling. Keep bvid/cid as one
+                // snapshot so system back cannot combine the new video with the old detail cid.
+                portraitPendingSelectionBvid = updatedBvid
+                portraitSyncSnapshotBvid = updatedBvid
+                portraitSyncSnapshotCid = updatedCid
+                if (updatedCoverUrl.isNotBlank()) {
+                    pendingInPageSwitchCoverUrl = updatedCoverUrl
+                }
+            },
             onProgressUpdate = { updatedBvid, positionMs, updatedCid, updatedCoverUrl ->
                 portraitPendingSelectionBvid = updatedBvid
                 portraitSyncSnapshotBvid = updatedBvid
