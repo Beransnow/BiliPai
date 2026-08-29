@@ -27,7 +27,7 @@ class ImmersiveStatusBarBackdropPolicyTest {
     }
 
     @Test
-    fun `ambient letterbox clips the offscreen blur to its rectangle`() {
+    fun `ambient letterbox clips its blur and does not depend on global header blur`() {
         val source = File(
             "src/main/java/com/android/purebilibili/feature/video/ui/overlay/ImmersiveStatusBarBackdrop.kt"
         ).readText()
@@ -35,6 +35,6 @@ class ImmersiveStatusBarBackdropPolicyTest {
             .substringBefore("internal fun resolvePortraitLetterboxBarHeightPx(")
 
         assertTrue(letterboxBody.contains(".clipToBounds()"))
-        assertTrue(letterboxBody.contains("shape = RectangleShape"))
+        assertTrue(letterboxBody.contains("surfaceType = BlurSurfaceType.GENERIC"))
     }
 }

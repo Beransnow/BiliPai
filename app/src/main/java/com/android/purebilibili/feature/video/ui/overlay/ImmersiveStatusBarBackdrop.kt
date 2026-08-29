@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -102,8 +101,10 @@ internal fun ImmersiveAmbientLetterboxBackdrop(
                     .fillMaxSize()
                     .unifiedBlur(
                         hazeState = hazeState,
-                        shape = RectangleShape,
-                        surfaceType = BlurSurfaceType.HEADER,
+                        // This ambient effect has its own user-facing switch. Treating it as
+                        // HEADER lets the global header-blur preference disable the effect
+                        // while the low-resolution haze source remains visible and pixelated.
+                        surfaceType = BlurSurfaceType.GENERIC,
                         blurStyleOverride = colorFaithfulHazeStyle,
                     )
                     .background(Color.Black.copy(alpha = 0.34f)),
