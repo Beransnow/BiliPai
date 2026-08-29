@@ -15,9 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -150,16 +147,18 @@ private fun DrawGridImage(
         }
     }
     val isGif = imageUrl.endsWith(".gif", ignoreCase = true)
-    var imageRect by remember { mutableStateOf<Rect?>(null) }
+    // boundsInWindow changes on every scroll frame. Keep it outside snapshot state so
+    // measuring a waterfall item never back-writes into composition and reflows the grid.
+    val imageRectRef = remember { object { var value: Rect? = null } }
 
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(cornerRadius))
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .onGloballyPositioned { coordinates ->
-                imageRect = coordinates.boundsInWindow()
+                imageRectRef.value = coordinates.boundsInWindow()
             }
-            .clickable { onImageClick(index, imageRect) },
+            .clickable { onImageClick(index, imageRectRef.value) },
         contentAlignment = Alignment.Center
     ) {
         if (imageUrl.isNotEmpty()) {

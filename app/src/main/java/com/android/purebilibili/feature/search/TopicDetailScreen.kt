@@ -91,6 +91,9 @@ fun TopicDetailScreen(
     onUserClick: (Long) -> Unit,
     onTopicClick: (Long) -> Unit,
     onLiveClick: (Long, String, String) -> Unit,
+    onMusicClick: (Long) -> Unit = {},
+    onCollectionClick: (Long, Long, String, String) -> Unit = { _, _, _, _ -> },
+    onCourseClick: (String, String) -> Unit = { _, _ -> },
     onArticleClick: (Long, String) -> Unit,
     onDynamicDetailClick: (String) -> Unit
 ) {
@@ -202,6 +205,9 @@ fun TopicDetailScreen(
                                 onUserClick = onUserClick,
                                 onTopicClick = onTopicClick,
                                 onLiveClick = onLiveClick,
+                                onMusicClick = onMusicClick,
+                                onCollectionClick = onCollectionClick,
+                                onCourseClick = onCourseClick,
                                 onArticleClick = onArticleClick,
                                 onDynamicDetailClick = onDynamicDetailClick,
                                 onCommentClick = onDynamicDetailClick,
@@ -237,10 +243,12 @@ fun TopicDetailScreen(
     if (showPublishComposer) {
         val topic = state.details?.topicItem
         DynamicPublishComposer(
-            initialText = "",
-            initialTopic = topic?.takeIf { it.id > 0L }?.let {
-                DynamicPublishTopic(id = it.id, name = it.name)
-            },
+            initialDraft = com.android.purebilibili.data.model.response.DynamicPublishDraft(
+                text = "",
+                topic = topic?.takeIf { it.id > 0L }?.let {
+                    DynamicPublishTopic(id = it.id, name = it.name)
+                },
+            ),
             isEditing = false,
             submitting = state.isPublishing,
             errorMessage = state.publishError,

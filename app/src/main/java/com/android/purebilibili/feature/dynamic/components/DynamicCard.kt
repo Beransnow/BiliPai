@@ -76,6 +76,7 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicActionButtonSlotWe
 import com.android.purebilibili.feature.dynamic.resolveDynamicActionButtonSpacing
 import com.android.purebilibili.feature.dynamic.resolveDynamicCardContentPadding
 import com.android.purebilibili.feature.dynamic.resolveDynamicCardOuterPadding
+import com.android.purebilibili.feature.dynamic.resolveDynamicLikeState
 import com.android.purebilibili.data.model.response.DynamicStatModule
 import com.android.purebilibili.data.model.response.DynamicType
 import com.android.purebilibili.data.model.response.OpusContentBlock
@@ -95,6 +96,9 @@ fun DynamicCardV2(
     onUserClick: (Long) -> Unit,
     onTopicClick: (Long) -> Unit = {},
     onLiveClick: (roomId: Long, title: String, uname: String) -> Unit = { _, _, _ -> },
+    onMusicClick: ((Long) -> Unit)? = null,
+    onCollectionClick: ((Long, Long, String, String) -> Unit)? = null,
+    onCourseClick: ((String, String) -> Unit)? = null,
     onArticleClick: ((articleId: Long, title: String) -> Unit)? = null,
     onDynamicDetailClick: ((dynamicId: String) -> Unit)? = null,
     isDetail: Boolean = false,
@@ -104,11 +108,18 @@ fun DynamicCardV2(
     onCommentClick: (dynamicId: String) -> Unit = {},
     onRepostClick: (dynamicId: String) -> Unit = {},
     onLikeClick: (dynamicId: String) -> Unit = {},
+    onLikeClickWithState: ((dynamicId: String, isLiked: Boolean) -> Unit)? = null,
     onWatchLaterClick: ((aid: Long) -> Unit)? = null,
+    onSaveDynamicClick: (() -> Unit)? = null,
+    onShareToMessageClick: (() -> Unit)? = null,
+    onCheckDynamicClick: (() -> Unit)? = null,
+    onReserveClick: ((DynamicReserveAction, (Result<DynamicReserveResult>) -> Unit) -> Unit)? = null,
     onDeleteClick: ((DynamicDeleteAction) -> Unit)? = null,
     onManageAction: (DynamicManageAction) -> Unit = {},
     onLoadReplyInteractionStatus: ((oid: Long, type: Int, onLoaded: (ReplyInteractionData?) -> Unit) -> Unit)? = null,
+    currentUserMid: Long? = TokenManager.midCache,
     isLiked: Boolean = false,
+    likeOverride: Boolean? = null,
     forwardCountDelta: Int = 0
 ) {
     val openDynamicDetail = remember(item, onDynamicDetailClick) {
@@ -122,6 +133,11 @@ fun DynamicCardV2(
     val author = item.modules.module_author
     val content = item.modules.module_dynamic
     val stat = item.modules.module_stat
+    val effectiveIsLiked = resolveDynamicLikeState(
+        localOverride = likeOverride,
+        localLiked = isLiked,
+        serverLiked = stat?.like?.status,
+    )
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val dynamicPreviewTextVisible by SettingsManager.getDynamicImagePreviewTextVisible(context)
@@ -157,12 +173,19 @@ fun DynamicCardV2(
     val cardClickAction = remember(item) { resolveDynamicCardPrimaryAction(item) }
     val watchLaterAid = remember(item) { resolveDynamicWatchLaterAid(item) }
     val deleteAction = remember(item) { resolveDynamicDeleteAction(item) }
-    val menuCapabilities = remember(item, TokenManager.midCache) {
-        resolveDynamicMenuCapabilities(item, TokenManager.midCache)
+    val menuCapabilities = remember(item, currentUserMid) {
+        resolveDynamicMenuCapabilities(item, currentUserMid)
     }
     var pendingDeleteAction by remember(item.id_str) { mutableStateOf<DynamicDeleteAction?>(null) }
     var pendingBlockAuthor by remember(item.id_str) { mutableStateOf<DynamicManageAction.BlockAuthor?>(null) }
     var pendingVoteId by remember(item.id_str) { mutableStateOf<Long?>(null) }
+    val resolvedAdditionalCard = remember(content?.additional) {
+        resolveDynamicAdditionalCard(content?.additional)
+    }
+    var additionalCardState by remember(item.id_str, resolvedAdditionalCard) {
+        mutableStateOf(resolvedAdditionalCard)
+    }
+    var reserveSubmitting by remember(item.id_str) { mutableStateOf(false) }
     //  [新增] 评论互动设置弹窗状态
     var showReplyInteractionDialog by remember(item.id_str) { mutableStateOf<ReplyInteractionData?>(null) }
     var replyInteractionOid by remember(item.id_str) { mutableStateOf(0L) }
@@ -484,6 +507,35 @@ fun DynamicCardV2(
                                     )
                                 )
                             }
+                            if (onSaveDynamicClick != null) {
+                                add(
+                                    AppWindowAction(
+                                        label = "保存动态",
+                                        icon = historyIcon,
+                                        onClick = onSaveDynamicClick,
+                                    )
+                                )
+                            }
+                            val canShareToMessage = item.basic?.comment_type in setOf(11, 17) &&
+                                item.modules.module_author?.mid != null
+                            if (onShareToMessageClick != null && canShareToMessage) {
+                                add(
+                                    AppWindowAction(
+                                        label = "分享至消息",
+                                        icon = shareIcon,
+                                        onClick = onShareToMessageClick,
+                                    )
+                                )
+                            }
+                            if (onCheckDynamicClick != null && menuCapabilities.isOwnDynamic) {
+                                add(
+                                    AppWindowAction(
+                                        label = "检查动态",
+                                        icon = warningIcon,
+                                        onClick = onCheckDynamicClick,
+                                    )
+                                )
+                            }
                         },
                         buildList {
                             if (!menuCapabilities.isOwnDynamic) {
@@ -492,11 +544,7 @@ fun DynamicCardV2(
                                         label = "不感兴趣",
                                         icon = visibilityOffIcon,
                                         onClick = {
-                                            android.widget.Toast.makeText(
-                                                context,
-                                                "已标记为不感兴趣",
-                                                android.widget.Toast.LENGTH_SHORT
-                                            ).show()
+                                            onManageAction(DynamicManageAction.NotInterested(item.id_str))
                                         },
                                     )
                                 )
@@ -593,7 +641,7 @@ fun DynamicCardV2(
                                             onManageAction(
                                                 DynamicManageAction.Edit(
                                                     dynamicId = item.id_str,
-                                                    initialText = resolveDynamicEditInitialText(item)
+                                                    initialDraft = resolveDynamicEditDraft(item)
                                                 )
                                             )
                                         },
@@ -1231,8 +1279,89 @@ fun DynamicCardV2(
             Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
         }
 
+        content?.major?.subscription_new?.live_rcmd?.let { liveRcmd ->
+            LiveCard(
+                liveRcmd = liveRcmd,
+                onLiveClick = { roomId, title, uname ->
+                    dispatchDynamicCardPrimaryAction(
+                        action = DynamicCardPrimaryAction.OpenLive(roomId, title, uname),
+                        onVideoClick = onVideoClick,
+                        onBangumiClick = onBangumiClick,
+                        onArticleClick = onArticleClick,
+                        onDynamicDetailClick = openDynamicDetail,
+                        onUserClick = onUserClick,
+                        onLiveClick = onLiveClick
+                    )
+                }
+            )
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
+        }
+
+        content?.major?.music?.takeIf { it.title.isNotBlank() }?.let { music ->
+            val musicId = music.id.removePrefix("au").removePrefix("AU").toLongOrNull()
+            DynamicNativeLinkCard(
+                title = music.title,
+                subtitle = music.label,
+                cover = music.cover,
+                kindLabel = "音乐",
+                actionLabel = "播放",
+                enabled = musicId != null || music.jump_url.isNotBlank(),
+                onClick = {
+                    if (musicId != null && onMusicClick != null) {
+                        onMusicClick(musicId)
+                    } else if (music.jump_url.isNotBlank()) {
+                        openDynamicUrl(uriHandler, music.jump_url)
+                    }
+                },
+            )
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
+        }
+
+        content?.major?.medialist?.takeIf { it.title.isNotBlank() }?.let { mediaList ->
+            DynamicNativeLinkCard(
+                title = mediaList.title,
+                subtitle = mediaList.sub_title.ifBlank { "收藏夹" },
+                cover = mediaList.cover,
+                kindLabel = mediaList.badge?.text.orEmpty().ifBlank { "收藏夹" },
+                actionLabel = "打开",
+                enabled = mediaList.id.toLongOrNull() != null || mediaList.jump_url.isNotBlank(),
+                onClick = {
+                    onCollectionClick?.invoke(
+                        mediaList.id.toLongOrNull() ?: 0L,
+                        item.modules.module_author?.mid ?: 0L,
+                        mediaList.title,
+                        mediaList.jump_url,
+                    )
+                        ?: openDynamicUrl(uriHandler, mediaList.jump_url)
+                },
+            )
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
+        }
+
+        content?.major?.courses?.takeIf { it.title.isNotBlank() }?.let { course ->
+            DynamicNativeLinkCard(
+                title = course.title,
+                subtitle = listOf(course.sub_title, course.desc)
+                    .filter(String::isNotBlank)
+                    .distinct()
+                    .joinToString(" · "),
+                cover = course.cover,
+                kindLabel = course.badge?.text.orEmpty().ifBlank { "课程" },
+                actionLabel = "打开",
+                enabled = course.jump_url.isNotBlank(),
+                onClick = {
+                    onCourseClick?.invoke(course.jump_url, course.title)
+                        ?: openDynamicUrl(uriHandler, course.jump_url)
+                },
+            )
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
+        }
+
         resolveDynamicMajorCard(
-            major = content?.major,
+            // Music and subscription cards have dedicated native renderers above.
+            major = content?.major?.takeUnless {
+                it.music != null || it.subscription_new != null || it.medialist != null || it.courses != null
+            },
             darkTheme = isSystemInDarkTheme(),
         )?.let { majorCard ->
             DynamicNativeLinkCard(
@@ -1262,14 +1391,58 @@ fun DynamicCardV2(
             Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
         }
         
-        resolveDynamicAdditionalCard(content?.additional)?.let { additionalCard ->
+        additionalCardState?.let { additionalCard ->
             DynamicAdditionalCard(
                 model = additionalCard,
+                actionLoading = reserveSubmitting,
+                onActionClick = if (additionalCard.reserveActionJumpUrl.isNotBlank()) {
+                    { openDynamicUrl(uriHandler, additionalCard.reserveActionJumpUrl) }
+                } else if (additionalCard.reserveId > 0L && onReserveClick != null) {
+                    {
+                        if (!reserveSubmitting) {
+                            reserveSubmitting = true
+                            onReserveClick(
+                                DynamicReserveAction(
+                                    dynamicId = item.id_str,
+                                    reserveId = additionalCard.reserveId,
+                                    currentButtonStatus = additionalCard.reserveButtonStatus,
+                                    reserveTotal = additionalCard.reserveTotal,
+                                )
+                            ) { result ->
+                                reserveSubmitting = false
+                                result.onSuccess { updated ->
+                                    additionalCardState = additionalCard.copy(
+                                        subtitle = listOf(
+                                            additionalCard.reserveDescriptionPrefix,
+                                            updated.description,
+                                        ).filter(String::isNotBlank).joinToString("  ")
+                                            .ifBlank { additionalCard.subtitle },
+                                        reserveTotal = updated.reserveTotal,
+                                        reserveButtonStatus = updated.buttonStatus,
+                                        actionLabel = if (updated.buttonStatus == additionalCard.reserveButtonType) {
+                                            additionalCard.reserveCheckedLabel
+                                        } else {
+                                            additionalCard.reserveUncheckedLabel
+                                        },
+                                    )
+                                }.onFailure { error ->
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        error.message ?: "预约操作失败",
+                                        android.widget.Toast.LENGTH_SHORT,
+                                    ).show()
+                                }
+                            }
+                        }
+                    }
+                } else null,
                 onClick = {
                     if (additionalCard.voteId > 0L) {
                         pendingVoteId = additionalCard.voteId
                     } else if (additionalCard.jumpUrl.isNotBlank()) {
                         openDynamicUrl(uriHandler, additionalCard.jumpUrl)
+                    } else if (additionalCard.reserveDescriptionJumpUrl.isNotBlank()) {
+                        openDynamicUrl(uriHandler, additionalCard.reserveDescriptionJumpUrl)
                     }
                 }
             )
@@ -1311,8 +1484,11 @@ fun DynamicCardV2(
             ActionButton(
                 count = statModule.like.count,
                 label = "点赞",
-                isActive = isLiked,
-                onClick = { onLikeClick(item.id_str) },
+                isActive = effectiveIsLiked,
+                onClick = {
+                    onLikeClickWithState?.invoke(item.id_str, effectiveIsLiked)
+                        ?: onLikeClick(item.id_str)
+                },
                 modifier = Modifier.weight(actionButtonWeight)
             )
         }
@@ -1387,6 +1563,8 @@ private fun resolveOpusTextAlign(alignment: Int): TextAlign = when (alignment) {
 @Composable
 private fun DynamicAdditionalCard(
     model: DynamicAdditionalCardModel,
+    actionLoading: Boolean,
+    onActionClick: (() -> Unit)?,
     onClick: () -> Unit
 ) {
     DynamicNativeLinkCard(
@@ -1396,18 +1574,22 @@ private fun DynamicAdditionalCard(
         kindLabel = model.kindLabel,
         actionLabel = model.actionLabel,
         enabled = model.enabled,
+        actionEnabled = !model.reserveButtonDisabled && !actionLoading,
+        onActionClick = onActionClick,
         onClick = onClick,
     )
 }
 
 @Composable
-private fun DynamicNativeLinkCard(
+internal fun DynamicNativeLinkCard(
     title: String,
     subtitle: String,
     cover: String,
     kindLabel: String,
     actionLabel: String,
     enabled: Boolean,
+    actionEnabled: Boolean = true,
+    onActionClick: (() -> Unit)? = null,
     onClick: () -> Unit,
 ) {
     AppContentCard(
@@ -1459,8 +1641,19 @@ private fun DynamicNativeLinkCard(
                 {
                     AppText(
                         text = label,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = if (actionEnabled) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium,
+                        modifier = Modifier
+                            .heightIn(min = AppChromeSizeTokens.MinimumTouchTarget)
+                            .semantics { contentDescription = "操作：$label" }
+                            .then(
+                                if (onActionClick != null) Modifier.clickable(
+                                    enabled = actionEnabled,
+                                    onClick = onActionClick,
+                                ) else Modifier
+                            )
+                            .wrapContentHeight(Alignment.CenterVertically),
                     )
                 }
             },

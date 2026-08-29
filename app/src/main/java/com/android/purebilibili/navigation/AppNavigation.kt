@@ -2327,6 +2327,26 @@ fun AppNavigation(
                             onLiveClick = { roomId, title, uname ->
                                 pushNavigation3Route(ScreenRoutes.Live.createRoute(roomId, title, uname))
                             },
+                            onMusicClick = { musicId ->
+                                if (musicId > 0L) pushNavigation3Key(BiliPaiNavKey.MusicDetail(musicId))
+                            },
+                            onCollectionClick = { mediaId, ownerMid, title, url ->
+                                if (mediaId > 0L && url.contains("medialist/detail/ml", ignoreCase = true)) {
+                                    pushNavigation3Key(
+                                        BiliPaiNavKey.SeasonSeriesDetail(
+                                            type = "favorite",
+                                            id = mediaId,
+                                            mid = ownerMid,
+                                            title = title,
+                                        )
+                                    )
+                                } else if (url.isNotBlank()) {
+                                    pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = title))
+                                }
+                            },
+                            onCourseClick = { url, title ->
+                                pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = title))
+                            },
                             onBack = { pushNavigation3Route(ScreenRoutes.Home.route) },
                             onLoginClick = { pushNavigation3Key(BiliPaiNavKey.Login) },
                             onHomeClick = { pushNavigation3Route(ScreenRoutes.Home.route) },
@@ -2431,6 +2451,28 @@ fun AppNavigation(
                                     },
                                     onLiveClick = { roomId, title, uname ->
                                         pushNavigation3Key(BiliPaiNavKey.Live(roomId = roomId.toString(), title = title, uname = uname))
+                                    },
+                                    onMusicClick = { musicId ->
+                                        if (musicId > 0L) pushNavigation3Key(BiliPaiNavKey.MusicDetail(musicId))
+                                    },
+                                    onCollectionClick = { mediaId, ownerMid, title, url ->
+                                        if (mediaId > 0L && url.contains("medialist/detail/ml", ignoreCase = true)) {
+                                            pushNavigation3Key(
+                                                BiliPaiNavKey.SeasonSeriesDetail(
+                                                    type = "favorite",
+                                                    id = mediaId,
+                                                    mid = ownerMid,
+                                                    title = title,
+                                                )
+                                            )
+                                        } else if (url.isNotBlank()) {
+                                            pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = title))
+                                        }
+                                    },
+                                    onCourseClick = { url, title ->
+                                        if (url.isNotBlank()) {
+                                            pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = title))
+                                        }
                                     },
                                     onArticleClick = { articleId, title ->
                                         pushNavigation3Key(
@@ -2624,6 +2666,34 @@ fun AppNavigation(
                                 onNavigateToSearch = { pushNavigation3Key(BiliPaiNavKey.Search) },
                                 onSearchKeywordClick = submitSearchKeywordInNavigation3,
                                 onOpenBilibiliLink = ::openBilibiliLinkInNavigation3,
+                                onReplaceVideoDetail = { targetBvid, targetCid, targetCover, resumePositionMs ->
+                                    val normalizedBvid = targetBvid.trim()
+                                    if (normalizedBvid.isBlank() || normalizedBvid == videoKey.bvid) {
+                                        false
+                                    } else {
+                                        val nextOpenId = maxOf(
+                                            SystemClock.uptimeMillis(),
+                                            lastVideoDetailOpenId + 1L,
+                                        )
+                                        lastVideoDetailOpenId = nextOpenId
+                                        miniPlayerManager?.isNavigatingToVideo = true
+                                        // The portrait recommendation has no matching source card
+                                        // in the retained page. Clear the old card session so back
+                                        // cannot morph the new video into the first video's card.
+                                        navigation3ReturnSession = navigation3ReturnSession
+                                            .recordVideoSourceRoute(null)
+                                        replaceNavigation3TopWithKey(
+                                            BiliPaiNavKey.VideoDetail(
+                                                bvid = normalizedBvid,
+                                                cid = targetCid.coerceAtLeast(0L),
+                                                coverUrl = targetCover,
+                                                resumePositionMs = resumePositionMs.coerceAtLeast(0L),
+                                                openId = nextOpenId,
+                                            )
+                                        )
+                                        true
+                                    }
+                                },
                                 onVideoClick = { vid, options ->
                                     val targetCid = options?.getLong(
                                         com.android.purebilibili.feature.video.screen.VIDEO_NAV_TARGET_CID_KEY
@@ -3537,7 +3607,27 @@ fun AppNavigation(
                                             pushNavigation3Key(
                                                 BiliPaiNavKey.Live(roomId = roomId.toString(), title = title, uname = uname)
                                             )
-                                        }
+                                        },
+                                        onMusicClick = { musicId ->
+                                            if (musicId > 0L) pushNavigation3Key(BiliPaiNavKey.MusicDetail(musicId))
+                                        },
+                                        onCollectionClick = { mediaId, ownerMid, title, url ->
+                                            if (mediaId > 0L && url.contains("medialist/detail/ml", ignoreCase = true)) {
+                                                pushNavigation3Key(
+                                                    BiliPaiNavKey.SeasonSeriesDetail(
+                                                        type = "favorite",
+                                                        id = mediaId,
+                                                        mid = ownerMid,
+                                                        title = title,
+                                                    )
+                                                )
+                                            } else if (url.isNotBlank()) {
+                                                pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = title))
+                                            }
+                                        },
+                                        onCourseClick = { url, title ->
+                                            pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = title))
+                                        },
                                     )
                                 }
                             }
@@ -3742,10 +3832,14 @@ fun AppNavigation(
                                     isPagerScrollInProgressProvider =
                                         mainBottomPagerState.scrollInProgressProvider,
                                     uiSkinDecoration = bottomBarUiSkinDecoration,
-                                    onToggleSidebar = {
-                                        coroutineScope.launch {
-                                            SettingsManager.setTabletUseSidebar(context, true)
+                                    onToggleSidebar = if (tabletUseSidebar) {
+                                        {
+                                            coroutineScope.launch {
+                                                SettingsManager.setTabletUseSidebar(context, true)
+                                            }
                                         }
+                                    } else {
+                                        null
                                     }
                                 )
                             }
@@ -3782,10 +3876,14 @@ fun AppNavigation(
                                 isPagerScrollInProgressProvider =
                                     mainBottomPagerState.scrollInProgressProvider,
                                 uiSkinDecoration = bottomBarUiSkinDecoration,
-                                onToggleSidebar = {
-                                    coroutineScope.launch {
-                                        SettingsManager.setTabletUseSidebar(context, true)
+                                onToggleSidebar = if (tabletUseSidebar) {
+                                    {
+                                        coroutineScope.launch {
+                                            SettingsManager.setTabletUseSidebar(context, true)
+                                        }
                                     }
+                                } else {
+                                    null
                                 }
                             )
                         }

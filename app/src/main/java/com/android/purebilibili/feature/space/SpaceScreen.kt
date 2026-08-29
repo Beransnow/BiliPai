@@ -214,6 +214,7 @@ fun SpaceScreen(
     val dynamicInteractionViewModel: DynamicViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val likedDynamics by dynamicInteractionViewModel.likedDynamics.collectAsStateWithLifecycle()
+    val dynamicLikeOverrides by dynamicInteractionViewModel.likeOverrides.collectAsStateWithLifecycle()
     val forwardCountDeltas = remember { mutableStateMapOf<String, Int>() }
     val followGroupDialogVisible by viewModel.followGroupDialogVisible.collectAsStateWithLifecycle()
     val followGroupTags by viewModel.followGroupTags.collectAsStateWithLifecycle()
@@ -578,11 +579,12 @@ fun SpaceScreen(
                             onAvatarClick = { showAvatarPreview = true },
                             dynamicCardItems = dynamicCardItems,
                             likedDynamics = likedDynamics,
+                            likeOverrides = dynamicLikeOverrides,
                             forwardCountDeltas = forwardCountDeltas,
                             onSpaceDynamicCommentClick = dynamicInteractionViewModel::openCommentSheet,
                             onSpaceDynamicRepostClick = { repostDynamicId = it },
-                            onSpaceDynamicLikeClick = { dynamicId ->
-                                dynamicInteractionViewModel.likeDynamic(dynamicId) { _, message ->
+                            onSpaceDynamicLikeClick = { dynamicId, isLiked ->
+                                dynamicInteractionViewModel.likeDynamic(dynamicId, isLiked) { _, message ->
                                     android.widget.Toast.makeText(
                                         context,
                                         message,
@@ -590,6 +592,7 @@ fun SpaceScreen(
                                     ).show()
                                 }
                             },
+                            onSpaceDynamicReserveClick = dynamicInteractionViewModel::toggleDynamicReserve,
                             onSpaceDynamicDeleteClick = { action ->
                                 dynamicInteractionViewModel.deleteDynamic(action) { success, message ->
                                     android.widget.Toast.makeText(
@@ -907,10 +910,15 @@ private fun SpaceContent(
     onAvatarClick: () -> Unit,
     dynamicCardItems: List<com.android.purebilibili.data.model.response.DynamicItem>,
     likedDynamics: Set<String>,
+    likeOverrides: Map<String, Boolean>,
     forwardCountDeltas: Map<String, Int>,
     onSpaceDynamicCommentClick: (com.android.purebilibili.data.model.response.DynamicItem) -> Unit,
     onSpaceDynamicRepostClick: (String) -> Unit,
-    onSpaceDynamicLikeClick: (String) -> Unit,
+    onSpaceDynamicLikeClick: (String, Boolean) -> Unit,
+    onSpaceDynamicReserveClick: (
+        com.android.purebilibili.feature.dynamic.components.DynamicReserveAction,
+        (Result<com.android.purebilibili.feature.dynamic.components.DynamicReserveResult>) -> Unit,
+    ) -> Unit,
     onSpaceDynamicDeleteClick: (DynamicDeleteAction) -> Unit,
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?,
@@ -1547,14 +1555,27 @@ private fun SpaceContent(
                             onLiveClick = { roomId, title, uname ->
                                 onLiveClick(roomId, title, uname)
                             },
+                            onMusicClick = onAudioClick,
+                            onCollectionClick = { mediaId, ownerMid, title, url ->
+                                if (mediaId > 0L && url.contains("medialist/detail/ml", ignoreCase = true)) {
+                                    onViewAllClick("favorite", mediaId, ownerMid, title, "")
+                                } else if (url.isNotBlank()) {
+                                    onWebClick(url, title)
+                                }
+                            },
+                            onCourseClick = onWebClick,
                             onArticleClick = onArticleClick,
                             onDynamicDetailClick = onDynamicDetailClick,
                             gifImageLoader = context.imageLoader,
                             onCommentClick = { onDynamicDetailClick(dynamic.id_str) },
                             onRepostClick = onSpaceDynamicRepostClick,
-                            onLikeClick = onSpaceDynamicLikeClick,
+                            onLikeClickWithState = { dynamicId, isLiked ->
+                                onSpaceDynamicLikeClick(dynamicId, isLiked)
+                            },
                             onDeleteClick = onSpaceDynamicDeleteClick,
+                            onReserveClick = onSpaceDynamicReserveClick,
                             isLiked = likedDynamics.contains(dynamic.id_str),
+                            likeOverride = likeOverrides[dynamic.id_str],
                             forwardCountDelta = forwardCountDeltas[dynamic.id_str] ?: 0
                         )
                     }
@@ -2530,7 +2551,9 @@ private fun SpaceSecondarySwitchRow(
     val context = LocalContext.current
     val homeSettings by SettingsManager
         .getHomeSettings(context)
-        .collectAsStateWithLifecycle(initialValue = HomeSettings())
+        .collectAsStateWithLifecycle(
+            initialValue = HomeSettings(androidNativeLiquidGlassEnabled = false)
+        )
     val spec = remember(items, selectedId) {
         resolveSpaceSecondarySwitchChromeSpec(items = items, selectedId = selectedId)
     }
