@@ -1161,7 +1161,14 @@ private fun SubReplyDetailItem(
                 placeholderColor = appearance.placeholderColor,
                 lightweightMode = false,
                 modifier = Modifier.size(avatarSize),
-                onClick = { onAvatarClick(item.member.mid) }
+                // Some dynamic/comment endpoints omit member.mid while still providing the
+                // canonical author id on ReplyItem.mid. Use the shared resolver so avatars in
+                //楼中楼 navigate consistently with inline user mentions and root comments.
+                onClick = {
+                    resolveReplyMemberMid(item)
+                        .takeIf { it > 0L }
+                        ?.let { onAvatarClick(it.toString()) }
+                }
             )
 
             Spacer(modifier = Modifier.width(12.dp))
