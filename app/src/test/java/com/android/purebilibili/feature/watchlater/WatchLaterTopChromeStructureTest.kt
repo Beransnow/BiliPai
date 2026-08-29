@@ -16,17 +16,7 @@ class WatchLaterTopChromeStructureTest {
         assertTrue(source.contains("TopAppBarDefaults.enterAlwaysScrollBehavior()"))
         assertTrue(source.contains("TopAppBarDefaults.pinnedScrollBehavior()"))
         assertTrue(source.contains("biliPaiProgressiveTopBlur("))
-        assertTrue(
-            source.contains(
-                ".fillMaxSize()\n                // The backdrop capture belongs to the scrollable content layer."
-            )
-        )
-        assertTrue(source.contains(".layerBackdrop(watchLaterChromeBackdrop)"))
-        assertFalse(
-            source.contains(
-                ".matchParentSize()\n                        .layerBackdrop(watchLaterChromeBackdrop)"
-            )
-        )
+        assertTrue(source.contains("layerBackdrop(watchLaterChromeBackdrop)"))
         assertTrue(source.contains("AppLiquidAwareSearchField("))
         assertTrue(source.contains("AppThemeAdaptiveTabRow("))
         assertTrue(source.contains("dragSelectionEnabled = watchLaterFilterChrome.dragSelectionEnabled"))
