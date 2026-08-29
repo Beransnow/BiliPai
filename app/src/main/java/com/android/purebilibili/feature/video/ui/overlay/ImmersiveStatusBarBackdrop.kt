@@ -11,8 +11,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -79,6 +81,10 @@ internal fun ImmersiveAmbientLetterboxBackdrop(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
+            // Haze renders through an offscreen effect. Keep that render target inside the
+            // letterbox rectangle; otherwise some GPUs expose its tiled edge as a diagonal,
+            // stair-stepped overlay on top of the adjacent SurfaceView video.
+            .clipToBounds()
             .background(Color.Black),
     ) {
         if (currentAmbientFrame != null) {
@@ -96,6 +102,7 @@ internal fun ImmersiveAmbientLetterboxBackdrop(
                     .fillMaxSize()
                     .unifiedBlur(
                         hazeState = hazeState,
+                        shape = RectangleShape,
                         surfaceType = BlurSurfaceType.HEADER,
                         blurStyleOverride = colorFaithfulHazeStyle,
                     )
