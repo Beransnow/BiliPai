@@ -252,11 +252,14 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
         )
     }
 
-    fun Modifier.infoSurface(shape: Shape): Modifier {
+    fun Modifier.infoSurface(
+        shape: Shape,
+        drawBorder: Boolean = true,
+    ): Modifier {
         return clip(shape)
             .background(surface.containerColor, shape)
             .then(
-                if (surface.useTintedSurface) {
+                if (surface.useTintedSurface && drawBorder) {
                     Modifier.border(surface.borderWidth, surface.borderColor, shape)
                 } else {
                     Modifier
@@ -291,6 +294,9 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                         AppShapes.endRounded(
                             AppShapes.containerCornerDp(ContainerLevel.Field),
                         ),
+                        // Horizontal source cards have one outer shell; an independent
+                        // tinted border here becomes a dark line at the landing bottom edge.
+                        drawBorder = false,
                     )
                     .padding(
                         start = AppSpacingTokens.Medium,
