@@ -213,6 +213,9 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
     val infoAnchorX = with(density) { layout.infoAnchorXInViewportPx.toDp() }
     val infoAnchorY = with(density) { layout.infoAnchorYInViewportPx.toDp() }
     val inverseScale = 1f / layout.sourceScale
+    // One physical source pixel, converted into the inverse-scaled flying entry. The outer
+    // shared-bounds shape clips this overdraw back to the card edge.
+    val sideBySideBottomOverscan = with(density) { inverseScale.toDp() }
 
     fun Modifier.landingLayer(): Modifier = graphicsLayer {
         val phase = phaseProvider()
@@ -279,7 +282,7 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     .align(Alignment.TopStart)
                     .offset(x = infoAnchorX, y = cardAnchorY)
                     .width(infoWidth)
-                    .height(cardHeight)
+                    .height(cardHeight + sideBySideBottomOverscan)
                     .landingLayer()
                     // This surface joins the cover on its start edge. Keeping start corners
                     // square prevents the two independently clipped rounded shapes from
