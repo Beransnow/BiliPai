@@ -441,7 +441,8 @@ private fun PortraitProgressControlStrip(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier.height(40.dp),
+        // Keep the time readout closer to the progress bar on portrait video.
+        modifier = modifier.height(46.dp).padding(top = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AppText(

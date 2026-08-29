@@ -485,6 +485,7 @@ fun VideoPlayerOverlay(
     insightMode: PlayerSettingsStore.PlayerInsightMode = PlayerSettingsStore.PlayerInsightMode.OFF,
     debugInfo: PlaybackDebugInfo = PlaybackDebugInfo(),
     playerViewportSize: IntSize = IntSize.Zero,
+    viewportWidthDpOverride: Int? = null,
     diagnosticEvents: List<String> = emptyList(),
     pendingUserAction: PendingPlaybackUserAction? = null,
     hasPendingSeekResume: Boolean = false,
@@ -1438,6 +1439,7 @@ fun VideoPlayerOverlay(
                     val context = LocalContext.current
                     PortraitTopBar(
                         onlineCount = displayedOnlineCount,
+                        viewportWidthDpOverride = viewportWidthDpOverride,
                         onBack = onBack,
                         onHome = onHomeClick,
                         onSettings = { showVideoSettings = true },
@@ -1478,6 +1480,7 @@ fun VideoPlayerOverlay(
                     }
 
                     BottomControlBar(
+                    viewportWidthDpOverride = viewportWidthDpOverride,
                     isPlaying = effectiveIsPlaying,
                     progress = displayedProgressState,
                     isFullscreen = isFullscreen,
@@ -2381,6 +2384,7 @@ private fun PortraitTopBar(
     onShare: () -> Unit,
     onAudioMode: () -> Unit,
     isAudioOnly: Boolean,
+    viewportWidthDpOverride: Int? = null,
     // 📺 [新增] 投屏
     onCastClick: () -> Unit = {},
     showCastButton: Boolean = true,
@@ -2388,12 +2392,16 @@ private fun PortraitTopBar(
     statusBarVisible: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    var showMoreMenu by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
+    val uiLayoutWidthDp = remember(configuration.screenWidthDp, viewportWidthDpOverride) {
+        (viewportWidthDpOverride ?: configuration.screenWidthDp).coerceAtLeast(1)
+    }
     val moreIcon = rememberAppMoreIcon()
     val shareIcon = rememberAppShareIcon()
-    val layoutPolicy = remember(configuration.screenWidthDp) {
+    val layoutPolicy = remember(uiLayoutWidthDp) {
         resolvePortraitTopBarLayoutPolicy(
-            widthDp = configuration.screenWidthDp
+            widthDp = uiLayoutWidthDp
         )
     }
 
@@ -2493,7 +2501,7 @@ private fun PortraitTopBar(
             
             //  设置按钮 - 无背景
             AppIconButton(
-                onClick = onSettings,
+                onClick = { showMoreMenu = true },
                 modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
             ) {
                 AppIcon(
@@ -2501,6 +2509,24 @@ private fun PortraitTopBar(
                     contentDescription = "设置",
                     tint = Color.White,
                     modifier = Modifier.size(layoutPolicy.iconSizeDp.dp)
+                )
+            }
+
+            DropdownMenu(
+                expanded = showMoreMenu,
+                onDismissRequest = { showMoreMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text("播放设置") },
+                    onClick = { showMoreMenu = false; onSettings() }
+                )
+                DropdownMenuItem(
+                    text = { Text(if (isAudioOnly) "退出听视频" else "听视频") },
+                    onClick = { showMoreMenu = false; onAudioMode() }
+                )
+                DropdownMenuItem(
+                    text = { Text("分享") },
+                    onClick = { showMoreMenu = false; onShare() }
                 )
             }
             
