@@ -8,7 +8,6 @@ import com.android.purebilibili.feature.home.components.cards.VideoCardCoverDura
 
 import android.app.Application
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -719,12 +718,6 @@ fun WatchLaterScreen(
                         }
                     )
             ) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .layerBackdrop(watchLaterChromeBackdrop)
-                        .background(AppSurfaceTokens.groupedListContainer()),
-                )
                 Column {
                 AppTopBar(
                     title = resolveWatchLaterTitle(
@@ -968,6 +961,10 @@ fun WatchLaterScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                // The backdrop capture belongs to the scrollable content layer. Keeping it
+                // out of the top chrome avoids placing a full-size capture layer in front of
+                // the screen's pointer-input targets when native liquid glass is enabled.
+                .layerBackdrop(watchLaterChromeBackdrop)
                 .hazeSourceCompat(state = hazeState) // 内容作为模糊源（全局源由根层提供）
         ) {
             when {
