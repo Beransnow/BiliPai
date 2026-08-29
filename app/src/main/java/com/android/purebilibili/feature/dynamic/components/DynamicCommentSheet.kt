@@ -390,7 +390,6 @@ fun DynamicCommentSheet(
                             onReplyClick = { onReply(reply) },
                             onLikeClick = { onLike(reply) },
                             isLiked = isDynamicCommentLiked(reply),
-                            dynamicAuthorMid = dynamicAuthorMid,
                             onDeleteClick = { onDelete(reply) },
                             onReportClick = { reason -> onReport(reply, reason) },
                             canToggleTop = dynamicAuthorMid > 0L,
