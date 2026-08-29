@@ -3094,8 +3094,7 @@ private fun VideoPageItem(
 
     PortraitFullscreenOverlay(
             title = title,
-            ugcSeason = portraitDetailInfo?.ugc_season
-                ?: lastLoadedCollectionInfo?.ugc_season,
+            ugcSeason = portraitDetailInfo?.ugc_season,
             currentBvid = bvid,
             currentCid = portraitDetailInfo?.cid ?: 0L,
             authorName = authorName,

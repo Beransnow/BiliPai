@@ -265,6 +265,7 @@ fun PortraitFullscreenOverlay(
                         ugcSeason = ugcSeason,
                         currentBvid = currentBvid,
                         currentCid = currentCid,
+                        isPlaying = isPlaying,
                         onCollectionClick = onDetailClick,
                         isFollowing = isFollowing,
                         onFollowClick = onFollowClick,
@@ -641,6 +642,7 @@ private fun PortraitVideoInfo(
     ugcSeason: UgcSeason? = null,
     currentBvid: String = "",
     currentCid: Long = 0L,
+    isPlaying: Boolean = false,
     onCollectionClick: () -> Unit = {},
     isFollowing: Boolean,
     onFollowClick: () -> Unit,
@@ -746,7 +748,7 @@ private fun PortraitVideoInfo(
                     ugcSeason = ugcSeason,
                     currentBvid = currentBvid,
                     currentCid = currentCid,
-                    isPlaying = true,
+                    isPlaying = isPlaying,
                     onClick = onCollectionClick,
                     modifier = Modifier.padding(bottom = 6.dp)
                 )
