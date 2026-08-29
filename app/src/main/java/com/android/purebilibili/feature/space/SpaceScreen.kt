@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -1303,7 +1304,12 @@ private fun SpaceContent(
                             actionLabel = null
                         )
                     }
-                    items(state.homeCoinVideos.take(2), key = { "coin_${it.aid}_${it.bvid}" }) { item ->
+                    itemsIndexed(
+                        items = state.homeCoinVideos.take(2),
+                        key = { index, item ->
+                            resolveSpaceAggregateLazyItemKey("coin", index, item)
+                        }
+                    ) { _, item ->
                         SpaceAggregateMediaCard(
                             item = item,
                             onClick = {
@@ -1330,7 +1336,12 @@ private fun SpaceContent(
                             actionLabel = null
                         )
                     }
-                    items(state.homeLikeVideos.take(2), key = { "like_${it.aid}_${it.bvid}" }) { item ->
+                    itemsIndexed(
+                        items = state.homeLikeVideos.take(2),
+                        key = { index, item ->
+                            resolveSpaceAggregateLazyItemKey("like", index, item)
+                        }
+                    ) { _, item ->
                         SpaceAggregateMediaCard(
                             item = item,
                             onClick = {
