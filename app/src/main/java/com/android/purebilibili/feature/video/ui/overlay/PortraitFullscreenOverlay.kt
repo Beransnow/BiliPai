@@ -733,14 +733,24 @@ private fun PortraitVideoInfo(
             modifier = Modifier.clickable { onTitleClick() }
         )
         if (ugcSeason != null && ugcSeason.id > 0L) {
-            CollectionRow(
-                ugcSeason = ugcSeason,
-                currentBvid = currentBvid,
-                currentCid = currentCid,
-                isPlaying = true,
-                onClick = onCollectionClick,
-                modifier = Modifier.padding(bottom = 6.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color.Black.copy(alpha = 0.62f), Color.Black.copy(alpha = 0.18f), Color.Transparent)
+                        )
+                    )
+            ) {
+                CollectionRow(
+                    ugcSeason = ugcSeason,
+                    currentBvid = currentBvid,
+                    currentCid = currentCid,
+                    isPlaying = true,
+                    onClick = onCollectionClick,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+            }
         }
     }
 }
