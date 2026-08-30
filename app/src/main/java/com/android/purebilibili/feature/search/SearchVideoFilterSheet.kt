@@ -52,6 +52,7 @@ import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.components.VideoListLayoutToggle
 import com.android.purebilibili.core.ui.resolveBottomSheetHost
 import com.android.purebilibili.data.repository.SearchDuration
 import com.android.purebilibili.data.repository.SearchOrder
@@ -63,7 +64,7 @@ import java.util.concurrent.TimeUnit
 
 /**
  * BiliPai-style video filter chrome:
- * horizontal order chips + filter icon that opens a bottom sheet
+ * horizontal order chips + fixed filter and layout actions. The filter opens a bottom sheet
  * with publish time / duration / zone selectors.
  */
 @Composable
@@ -79,6 +80,8 @@ fun SearchVideoFilterBar(
     onVideoTidChange: (Int) -> Unit,
     onPubTimeTypeChange: (SearchVideoPubTimeType) -> Unit,
     onCustomPubTimeRange: (Long, Long) -> Unit,
+    singleColumn: Boolean,
+    onLayoutToggle: () -> Unit,
     modifier: Modifier = Modifier,
     miuixBackdrop: MiuixBackdrop? = null,
 ) {
@@ -151,6 +154,11 @@ fun SearchVideoFilterBar(
                 modifier = Modifier.size(20.dp)
             )
         }
+        VideoListLayoutToggle(
+            singleColumn = singleColumn,
+            onClick = onLayoutToggle,
+            modifier = Modifier.size(48.dp),
+        )
     }
 
     if (showFilterSheet) {

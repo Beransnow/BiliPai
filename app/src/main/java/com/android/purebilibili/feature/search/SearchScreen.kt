@@ -1,7 +1,6 @@
 // 文件路径: feature/search/SearchScreen.kt
 package com.android.purebilibili.feature.search
 
-import com.android.purebilibili.core.ui.components.VideoListLayoutToggle
 import com.android.purebilibili.core.ui.components.resolveVideoListColumns
 import com.android.purebilibili.core.ui.components.rememberVideoListLayoutControl
 import com.android.purebilibili.core.ui.components.videoListItemModifier
@@ -1033,14 +1032,6 @@ fun SearchScreen(
                                     }
                                 }
                             }
-                            if (state.searchType == SearchType.VIDEO) {
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                    VideoListLayoutToggle(
-                                        singleColumn = listLayout.singleColumn,
-                                        onClick = listLayout.toggle,
-                                    )
-                                }
-                            }
                             SearchResultTypeTabRow(
                                 tabs = searchTabs,
                                 pagerState = searchPagerState,
@@ -1065,6 +1056,8 @@ fun SearchScreen(
                             ) {
                                 if (state.searchType == SearchType.VIDEO) {
                                     SearchVideoFilterBar(
+                                        singleColumn = listLayout.singleColumn,
+                                        onLayoutToggle = listLayout.toggle,
                                         currentOrder = state.searchOrder,
                                         currentDurations = state.searchDurations,
                                         currentVideoTid = state.videoTid,
