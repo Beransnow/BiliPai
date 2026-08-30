@@ -39,6 +39,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -1573,7 +1574,14 @@ private fun LightweightHomeTopTabs(
         )
         val animatedIosCapsuleTranslationXPx by animateFloatAsState(
             targetValue = iosCapsuleTargetTranslationXPx,
-            animationSpec = iosTopTabCapsuleMotionSpec(),
+            // Pager/indicator drags already provide a continuous position. Keep the backing
+            // animation snapped to that position while they own motion, otherwise switching
+            // back to the animated value can expose a second, delayed settle.
+            animationSpec = if (shouldAnimateIosCapsule) {
+                iosTopTabCapsuleMotionSpec()
+            } else {
+                snap()
+            },
             label = "iosTopTabCapsuleTranslation"
         )
         val iosCapsuleTranslationXPx = if (shouldAnimateIosCapsule) {
