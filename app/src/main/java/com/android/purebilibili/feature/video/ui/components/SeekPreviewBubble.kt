@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.video.ui.components
 
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 import coil3.request.crossfade
 
