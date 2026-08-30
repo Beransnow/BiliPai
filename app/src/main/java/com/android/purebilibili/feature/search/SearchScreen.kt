@@ -2755,7 +2755,7 @@ fun SearchFilterBar(
                 if (SearchFilterControl.VIDEO_ORDER in filterControls) {
                 Box {
                     FilterMenuChip(
-                        text = currentOrder.displayName,
+                        text = resolveSearchOrderChipLabel(currentOrder),
                         highlighted = currentOrder != SearchOrder.TOTALRANK,
                         onClick = { showOrderMenu = true }
                     )
@@ -2763,9 +2763,9 @@ fun SearchFilterBar(
                         expanded = showOrderMenu,
                         onDismissRequest = { showOrderMenu = false }
                     ) {
-                        SearchOrder.entries.forEach { order ->
+                        resolveSearchVideoOrderOptions().forEach { order ->
                             AppDropdownMenuItem(
-                                text = { AppText(order.displayName) },
+                                text = { AppText(resolveSearchOrderChipLabel(order)) },
                                 onClick = {
                                     onOrderChange(order)
                                     showOrderMenu = false

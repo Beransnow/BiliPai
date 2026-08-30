@@ -3,16 +3,6 @@ package com.android.purebilibili.data.repository
 import com.android.purebilibili.data.model.response.SearchType
 import com.android.purebilibili.data.model.response.VideoItem
 
-// all/v2 cannot preserve video sorting or filters. Never silently replace a filtered page.
-internal fun canFallbackVideoSearch(
-    order: SearchOrder,
-    duration: SearchDuration,
-    tids: Int,
-    pubBegin: Long?,
-    pubEnd: Long?
-): Boolean = order == SearchOrder.TOTALRANK && duration == SearchDuration.ALL &&
-    tids == 0 && pubBegin == null && pubEnd == null
-
 internal fun resolveVideoSearchPageInfo(
     requestedPage: Int,
     responsePage: Int,
@@ -33,15 +23,10 @@ internal fun resolveVideoSearchPageInfo(
         currentPage = currentPage,
         totalPages = resolvedTotalPages,
         totalResults = totalResults.takeIf { it > 0 } ?: resultCount,
-        hasMore = resultCount > 0 && currentPage < resolvedTotalPages
+        // Match PiliPlus CommonListController: totals are informational; only an
+        // empty server page ends pagination, even after a short nonempty page.
+        hasMore = resultCount > 0
     )
-}
-
-internal fun shouldFallbackEmptyFirstPageVideoSearch(
-    page: Int,
-    primaryResultCount: Int
-): Boolean {
-    return page == 1 && primaryResultCount == 0
 }
 
 internal fun resolveSearchLoadedPage(
