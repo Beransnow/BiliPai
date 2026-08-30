@@ -423,6 +423,9 @@ internal fun VideoDetailScreenStateHolder(
     val view = LocalView.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val configuration = LocalConfiguration.current
+    val directPortraitEntryEnabled by com.android.purebilibili.core.store.SettingsManager
+        .getAutoPortraitFullscreen(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val homeUpBadgesVisible by com.android.purebilibili.core.store.SettingsManager
         .getHomeUpBadgesVisible(context)
         .collectAsStateWithLifecycle(initialValue = true
@@ -2454,6 +2457,7 @@ internal fun VideoDetailScreenStateHolder(
         hasAutoEnteredPortraitFromRoute,
         initialVerticalFromRoute,
         directPortraitEntryFromRoute,
+        directPortraitEntryEnabled,
     ) {
         if (
             shouldAutoEnterPortraitFullscreenFromRoute(
@@ -2469,6 +2473,7 @@ internal fun VideoDetailScreenStateHolder(
                 hasAutoEnteredPortraitFromRoute = hasAutoEnteredPortraitFromRoute,
                 initialVerticalFromRoute = initialVerticalFromRoute,
                 directPortraitEntryFromRoute = directPortraitEntryFromRoute,
+                directPortraitEntryEnabled = directPortraitEntryEnabled,
             )
         ) {
             enterPortraitFullscreen()

@@ -953,7 +953,6 @@ fun AppNavigation(
             sourceRoute: String?,
             skipPortraitStoryResolution: Boolean = false
         ) {
-            if (!canNavigate(false)) return
             val parsedKey = legacyRouteToBiliPaiNavKey(route)
             val videoKey = parsedKey as? BiliPaiNavKey.VideoDetail
             if (!skipPortraitStoryResolution) {
@@ -983,15 +982,11 @@ fun AppNavigation(
                         if (com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(videoKey.bvid)) {
                             if (cardTransitionEnabled) {
                                 navigateToVideoRouteInNavigation3(
-                                    route = resolveStandardVideoRoute(
-                                        bvid = videoKey.bvid,
-                                        cid = videoKey.cid,
-                                        coverUrl = videoKey.coverUrl,
-                                        startAudio = videoKey.startAudio,
+                                    route = videoKey.copy(
                                         autoPortrait = true,
                                         initialVertical = true,
                                         directPortraitEntry = true,
-                                    ),
+                                    ).toLegacyRoute(),
                                     sourceRoute = sourceRoute,
                                     skipPortraitStoryResolution = true,
                                 )
@@ -1016,6 +1011,9 @@ fun AppNavigation(
                     return
                 }
             }
+            // Resolve redirects first. Reserving the debounce slot before delegating to
+            // Story (or a cached direction lookup) makes that same click reject itself.
+            if (!canNavigate(false)) return
             val videoBvid = videoKey?.bvid.orEmpty()
             val matchedVisibleCardRoute = resolveVideoCardSourceRouteForNavigation(
                 currentRoute = navigation3BackStack.lastOrNull()?.toLegacyRoute(),

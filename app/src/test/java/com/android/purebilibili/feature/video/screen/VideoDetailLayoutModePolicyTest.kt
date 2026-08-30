@@ -1138,6 +1138,40 @@ class VideoDetailLayoutModePolicyTest {
     }
 
     @Test
+    fun directPortraitSetting_recoversMissingRouteHintAfterDirectionLoads() {
+        assertTrue(shouldEnterFromSetting())
+        assertFalse(shouldEnterFromSetting(enabled = false))
+        assertFalse(shouldEnterFromSetting(vertical = false))
+        assertFalse(shouldEnterFromSetting(loaded = false))
+        assertFalse(shouldEnterFromSetting(audio = true))
+        assertFalse(shouldEnterFromSetting(alreadyEntered = true))
+        assertFalse(shouldEnterFromSetting(fullscreen = true))
+        assertFalse(shouldEnterFromSetting(allowAutoEnter = false))
+    }
+
+    private fun shouldEnterFromSetting(
+        enabled: Boolean = true,
+        vertical: Boolean = true,
+        loaded: Boolean = true,
+        audio: Boolean = false,
+        alreadyEntered: Boolean = false,
+        fullscreen: Boolean = false,
+        allowAutoEnter: Boolean = true,
+    ): Boolean = shouldAutoEnterPortraitFullscreenFromRoute(
+        autoEnterPortraitFromRoute = false,
+        startAudioFromRoute = audio,
+        portraitExperienceEnabled = true,
+        useOfficialInlinePortraitDetailExperience = true,
+        allowStandalonePortraitAutoEnter = allowAutoEnter,
+        isCurrentRouteVideoLoaded = loaded,
+        isVerticalVideo = vertical,
+        isPortraitFullscreen = fullscreen,
+        hasAutoEnteredPortraitFromRoute = alreadyEntered,
+        directPortraitEntryFromRoute = false,
+        directPortraitEntryEnabled = enabled,
+    )
+
+    @Test
     fun startPortraitHint_onlyDirectPortraitEntryStartsInFullscreen() {
         assertTrue(
             shouldStartInPortraitFullscreenFromRouteHint(

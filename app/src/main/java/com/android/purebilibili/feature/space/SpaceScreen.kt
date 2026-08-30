@@ -254,6 +254,7 @@ fun SpaceScreen(
     var contributionVideoLayoutMode by rememberSaveable(mid) {
         mutableStateOf(defaultSpaceContributionVideoLayoutMode())
     }
+    val nextContributionVideoLayoutMode = toggleSpaceContributionVideoLayoutMode(contributionVideoLayoutMode)
     val showContributionVideoMenuActions = currentSuccessState?.let { state ->
         state.tabShellState.selectedTab == SpaceMainTab.CONTRIBUTION &&
             state.selectedSubTab in setOf(SpaceSubTab.VIDEO, SpaceSubTab.CHARGING_VIDEO)
@@ -389,7 +390,7 @@ fun SpaceScreen(
                                                 },
                                                 onClick = {
                                                     contributionVideoLayoutMode =
-                                                        toggleSpaceContributionVideoLayoutMode(contributionVideoLayoutMode)
+                                                        nextContributionVideoLayoutMode
                                                 },
                                             ),
                                             AppWindowAction(
