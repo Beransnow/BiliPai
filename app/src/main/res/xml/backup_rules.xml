@@ -8,6 +8,9 @@
 <full-backup-content>
     <exclude domain="file" path="android17_profiles/" />
     <exclude domain="file" path="profiling/" />
+    <!-- Session cookies/tokens must never enter Auto Backup. -->
+    <exclude domain="sharedpref" path="token_backup_sp.xml" />
+    <exclude domain="sharedpref" path="multi_account_sessions.xml" />
     <!--
    <include domain="sharedpref" path="."/>
    <exclude domain="sharedpref" path="device.xml"/>
