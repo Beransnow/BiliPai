@@ -392,33 +392,18 @@ private fun BiliPaiTransferDialog(onDismiss: () -> Unit) {
     val session = remember { BiliPaiTransferSession(context) }
     var receiving by rememberSaveable { mutableStateOf(true) }
     var qrText by remember { mutableStateOf<String?>(null) }
-    var qrChunks by remember { mutableStateOf<List<String>>(emptyList()) }
-    var qrChunkIndex by remember { mutableStateOf(0) }
-    val receivedChunks = remember { linkedMapOf<Int, BiliPaiTransferChunk>() }
     var scanned by remember { mutableStateOf(false) }
     var pendingBundle by remember { mutableStateOf<BiliPaiSessionBundle?>(null) }
     var message by remember { mutableStateOf("选择接收或发送") }
 
-    LaunchedEffect(qrChunks) {
-        if (qrChunks.size > 1) {
-            while (true) {
-                kotlinx.coroutines.delay(1200)
-                qrChunkIndex = (qrChunkIndex + 1) % qrChunks.size
-                qrText = qrChunks[qrChunkIndex]
-            }
-        }
-    }
 
     androidx.compose.runtime.LaunchedEffect(receiving) {
-        receivedChunks.clear()
         if (receiving) {
             val request = session.beginReceive()
             qrText = BiliPaiTransferCodec.encodeRequest(request)
-            qrChunks = emptyList()
             message = "请让发送设备扫描此二维码"
         } else {
             qrText = null
-            qrChunks = emptyList()
             message = "请扫描接收设备的请求二维码"
         }
         scanned = false
@@ -440,7 +425,7 @@ private fun BiliPaiTransferDialog(onDismiss: () -> Unit) {
                         Image(bitmap = bitmap.asImageBitmap(), contentDescription = "BiliPai 传输二维码", modifier = Modifier.size(220.dp))
                     } else {
                         AppText(
-                            "加密会话过大，暂时无法放入单个二维码。请先退出其他账号或减少会话内容后重试。",
+                            "加密会话过大，无法通过单个二维码传输。请改用 Cookie 导入或其他登录方式。",
                             color = MaterialTheme.colorScheme.error,
                             textAlign = TextAlign.Center,
                         )
@@ -451,21 +436,10 @@ private fun BiliPaiTransferDialog(onDismiss: () -> Unit) {
                         onCode = { raw ->
                             runCatching {
                                 if (receiving) {
-                                    val chunk = BiliPaiTransferChunks.parse(raw)
-                                    if (chunk != null) {
-                                        if (receivedChunks.isEmpty()) message = "正在接收分片 1/${chunk.total}"
-                                        receivedChunks[chunk.index] = chunk
-                                        message = "正在接收分片 ${receivedChunks.size}/${chunk.total}"
-                                        BiliPaiTransferChunks.join(receivedChunks.values)?.let { envelopeRaw ->
-                                            pendingBundle = session.acceptEnvelope(envelopeRaw)
-                                            scanned = true
-                                            message = "已解密账号，请确认导入"
-                                        }
-                                    } else {
-                                        pendingBundle = session.acceptEnvelope(raw)
-                                        scanned = true
-                                        message = "已解密账号，请确认导入"
-                                    }
+                                    require(BiliPaiTransferChunks.parse(raw) == null) { "此版本不支持分片二维码，请使用单个加密二维码" }
+                                    pendingBundle = session.acceptEnvelope(raw)
+                                    scanned = true
+                                    message = "已解密账号，请确认导入"
                                 } else {
                                     session.acceptRequest(raw)
                                     val bundle = BiliPaiSessionBundle(
@@ -482,15 +456,9 @@ private fun BiliPaiTransferDialog(onDismiss: () -> Unit) {
                                         isVip = TokenManager.isVipCache,
                                     )
                                     require(bundle.mid > 0 && bundle.sessData.isNotBlank()) { "当前设备没有可传输的登录会话" }
-                                    val envelopeModel = session.createEnvelope(bundle)
-                                    val envelope = BiliPaiTransferCodec.encodeEnvelope(envelopeModel)
-                                    qrChunks = BiliPaiTransferChunks.split(
-                                        envelopeModel.transferId, envelope
-                                    )
-                                    qrChunkIndex = 0
-                                    qrText = qrChunks.first()
+                                    qrText = BiliPaiTransferCodec.encodeEnvelope(session.createEnvelope(bundle))
                                     scanned = true
-                                    message = "请让接收设备扫描分片 1/${qrChunks.size}（自动轮播）"
+                                    message = "请让接收设备扫描此加密二维码"
                                 }
                             }.onFailure { message = it.message ?: "二维码无效" }
                         }, modifier = Modifier.size(180.dp))
