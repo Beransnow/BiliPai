@@ -155,7 +155,7 @@ class LoggerPersistencePolicyTest {
     fun rollingFilesBoundUtf8BytesAndKeepMostRecentEvidence() {
         val file = File.createTempFile("bilipai-log", ".txt")
         try {
-            repeat(30) { appendRollingDiagnosticLog(file, "故障线索-$it\\n", 128) }
+            repeat(30) { appendRollingDiagnosticLog(file, "故障线索-$it\n", 128) }
             assertTrue(file.length() <= 128)
             assertTrue(file.readText().contains("故障线索-29"))
             assertFalse(file.readText().contains('\uFFFD'))

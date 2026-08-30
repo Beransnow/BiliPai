@@ -447,7 +447,7 @@ object LogCollector {
         val message: String
     ) {
         fun format(): String {
-            val time = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date(timestamp))
+            val time = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(Date(timestamp))
             return "[$time] $level/$tag: $message"
         }
     }
