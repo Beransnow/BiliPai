@@ -18,11 +18,11 @@ object SessionStorageCipher {
 
     fun encrypt(value: String): String {
         if (value.isEmpty()) return value
-        val iv = ByteArray(12).also { java.security.SecureRandom().nextBytes(it) }
         val cipher = Cipher.getInstance("AES/GCM/NoPadding").apply {
-            init(Cipher.ENCRYPT_MODE, key(), GCMParameterSpec(128, iv))
+            // Android Keystore requires a fresh system-generated IV for GCM encryption.
+            init(Cipher.ENCRYPT_MODE, key())
         }
-        return PREFIX + b64(iv) + ":" + b64(cipher.doFinal(value.toByteArray(StandardCharsets.UTF_8)))
+        return PREFIX + b64(cipher.iv) + ":" + b64(cipher.doFinal(value.toByteArray(StandardCharsets.UTF_8)))
     }
 
     fun decrypt(value: String): String {
