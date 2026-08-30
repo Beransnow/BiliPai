@@ -75,6 +75,7 @@ import android.graphics.Color
 import kotlinx.coroutines.launch
 
 enum class LoginMethod {
+    /** Official Bilibili TV QR login; the phone confirms on Bilibili's servers. */
     TV_QR,
     PASSWORD,
     SMS,
@@ -82,7 +83,8 @@ enum class LoginMethod {
     BILIPAI_TRANSFER
 }
 
-// 暂时隐藏设备间传输入口：当前测试环境为模拟机 + 真机，保留实现但不启用。
+// 暂时隐藏设备间传输入口：当前测试环境为模拟机 + 真机。
+// TV_QR remains the only QR login path and uses Bilibili's official TV API.
 private const val ENABLE_BILIPAI_TRANSFER = false
 
 internal fun resolveAvailableLoginMethods(): List<LoginMethod> =
