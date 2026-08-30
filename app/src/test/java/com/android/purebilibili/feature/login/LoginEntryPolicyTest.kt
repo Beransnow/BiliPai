@@ -16,8 +16,7 @@ class LoginEntryPolicyTest {
                 LoginMethod.TV_QR,
                 LoginMethod.PASSWORD,
                 LoginMethod.SMS,
-                LoginMethod.COOKIE_IMPORT,
-                LoginMethod.BILIPAI_TRANSFER
+                LoginMethod.COOKIE_IMPORT
             ),
             resolveAvailableLoginMethods()
         )

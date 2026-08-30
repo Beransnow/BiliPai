@@ -82,7 +82,11 @@ enum class LoginMethod {
     BILIPAI_TRANSFER
 }
 
-internal fun resolveAvailableLoginMethods(): List<LoginMethod> = LoginMethod.entries
+// 暂时隐藏设备间传输入口：当前测试环境为模拟机 + 真机，保留实现但不启用。
+private const val ENABLE_BILIPAI_TRANSFER = false
+
+internal fun resolveAvailableLoginMethods(): List<LoginMethod> =
+    LoginMethod.entries.filter { ENABLE_BILIPAI_TRANSFER || it != LoginMethod.BILIPAI_TRANSFER }
 
 internal fun resolveQrLoginReason(): String {
     return "推荐使用 TV 扫码登录，可获得更完整的播放登录态并解锁高画质播放能力。"
@@ -113,6 +117,10 @@ fun LoginScreen(
     }
 
     LaunchedEffect(selectedMethod) {
+        if (selectedMethod == LoginMethod.BILIPAI_TRANSFER && !ENABLE_BILIPAI_TRANSFER) {
+            selectedMethod = LoginMethod.TV_QR
+            return@LaunchedEffect
+        }
         captchaRequest = null
         viewModel.stopPolling()
         if (selectedMethod == LoginMethod.TV_QR) {
