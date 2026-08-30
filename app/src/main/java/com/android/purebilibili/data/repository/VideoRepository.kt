@@ -881,7 +881,13 @@ object VideoRepository {
 
     suspend fun getRankingVideos(rid: Int = 0, type: String = "all"): Result<List<VideoItem>> = withContext(Dispatchers.IO) {
         try {
-            val resp = api.getRankingVideos(rid = rid, type = type)
+            val keys = WbiKeyManager.getWbiKeys().getOrElse { throw it }
+            val signedParams = WbiUtils.sign(
+                params = mapOf("rid" to rid.toString(), "type" to type),
+                imgKey = keys.first,
+                subKey = keys.second,
+            )
+            val resp = api.getRankingVideos(signedParams)
             if (resp.code != 0) {
                 return@withContext Result.failure(Exception(resp.message.ifBlank { "排行榜加载失败(${resp.code})" }))
             }

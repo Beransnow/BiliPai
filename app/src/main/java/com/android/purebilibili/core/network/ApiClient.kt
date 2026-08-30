@@ -519,8 +519,7 @@ interface BilibiliApi {
 
     @GET("x/web-interface/ranking/v2")
     suspend fun getRankingVideos(
-        @Query("rid") rid: Int = 0,
-        @Query("type") type: String = "all"
+        @QueryMap params: Map<String, String>
     ): RankingResponse
 
     @GET("x/web-interface/popular/precious")

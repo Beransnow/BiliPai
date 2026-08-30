@@ -70,7 +70,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -759,18 +758,8 @@ private fun PartitionSideRail(
         val railContentBackdrop = rememberLayerBackdrop()
         val combinedBackdrop = rememberCombinedBackdrop(railPageBackdrop, railContentBackdrop)
         val isDarkTheme = isSystemInDarkTheme()
-        val exportTintColor = resolveAndroidNativeExportTintColor(
-            themeColor = MaterialTheme.colorScheme.primary,
-            darkTheme = isDarkTheme,
-        )
-        val exportMonochromeColor = resolveSharedLiquidExportMonochromeColor(darkTheme = isDarkTheme)
-        val railListScrollOffsetPxProvider = {
-            listState.firstVisibleItemIndex * itemSlotHeightPx +
-                listState.firstVisibleItemScrollOffset.toFloat()
-        }
-
-        // Sibling page sample plus a hidden export column, same topology as the home dock.
-        // The overflow keeps the 88/56 drag scale and lens inside capture.
+        // Reserve the same overflow as the home dock so the indicator lens can
+        // sample pixels just outside the rail bounds without clipping.
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -780,51 +769,11 @@ private fun PartitionSideRail(
                 .background(AppSurfaceTokens.background())
         )
 
-        if (liquidGlassIndicatorEnabled) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .clearAndSetSemantics {}
-                    .alpha(0f)
-                    .zIndex(0f)
-                    .layerBackdrop(railContentBackdrop)
-                    .graphicsLayer {
-                        translationY = contentTopPaddingPx - railListScrollOffsetPxProvider()
-                    }
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = indicatorHorizontalPadding.start,
-                            end = indicatorHorizontalPadding.end,
-                        ),
-                    verticalArrangement = Arrangement.spacedBy(PartitionSideRailItemSpacing),
-                ) {
-                    partitions.forEach { partition ->
-                        PartitionSideRailItem(
-                            partition = partition,
-                            selected = true,
-                            selectionProgress = 1f,
-                            showIcon = showIcon,
-                            showText = showText,
-                            iconFamily = iconFamily,
-                            onClick = {},
-                            interactive = false,
-                            contentColorOverride = exportMonochromeColor,
-                            modifier = Modifier.graphicsLayer(
-                                colorFilter = ColorFilter.tint(exportTintColor)
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
+                .then(if (liquidGlassIndicatorEnabled) Modifier.layerBackdrop(railContentBackdrop) else Modifier)
                 .zIndex(if (liquidGlassIndicatorEnabled) 0f else 2f),
             contentPadding = contentPadding,
             verticalArrangement = Arrangement.spacedBy(PartitionSideRailItemSpacing)
