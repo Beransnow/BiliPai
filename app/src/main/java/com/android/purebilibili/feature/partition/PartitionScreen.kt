@@ -680,6 +680,11 @@ private fun PartitionSideRail(
 
     LaunchedEffect(selectedIndex) {
         currentIndex = selectedIndex
+        // Keep the selected row in the LazyColumn viewport before moving the
+        // indicator.  The indicator is drawn in the rail's coordinate space,
+        // so leaving an off-screen row at its absolute index makes the capsule
+        // drift over an unrelated item (especially near the end of the list).
+        listState.animateScrollToItem(selectedIndex)
     }
     LaunchedEffect(dampedDragAnimation) {
         snapshotFlow { currentIndex }

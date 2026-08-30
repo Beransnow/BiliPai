@@ -64,6 +64,7 @@ class PartitionScreenStructureTest {
         assertTrue(source.contains("onRefresh = viewModel::refresh"))
         assertTrue(source.contains("fun refresh()"))
         assertTrue(source.contains("resolveReplaceRefreshPage("))
+        assertTrue(source.contains("listState.animateScrollToItem(selectedIndex)"))
     }
 
     @Test

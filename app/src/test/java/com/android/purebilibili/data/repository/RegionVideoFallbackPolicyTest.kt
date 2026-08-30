@@ -1,5 +1,6 @@
 package com.android.purebilibili.data.repository
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -60,5 +61,12 @@ class RegionVideoFallbackPolicyTest {
                 latestResponseCode = -404
             )
         )
+    }
+
+    @Test
+    fun `main region fallback translates legacy tid to ranking v2 rid`() {
+        assertEquals(1009, resolveRegionRankingRid(tid = 202))
+        assertEquals(1015, resolveRegionRankingRid(tid = 160))
+        assertEquals(1001, resolveRegionRankingRid(tid = 181))
     }
 }
