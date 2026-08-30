@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue //  新增
 import androidx.compose.runtime.LaunchedEffect // 新增
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.produceState
@@ -1263,7 +1262,6 @@ fun AppNavigation(
         )
         val shouldInterceptTabBack = backGestureDecision.interceptSystemBack
         val isVideoDetailDestination = isVideoDetailRoute(currentRoute)
-        val immersiveVideoDetails = remember { mutableStateMapOf<BiliPaiNavKey, Boolean>() }
         val bottomBarMountRoute = if (isVideoDetailDestination) {
             currentBottomNavItem.route
         } else {
@@ -1299,14 +1297,11 @@ fun AppNavigation(
             shouldHideBottomBarOnTablet = shouldHideBottomBarOnTablet,
             shouldDeferReveal = false
         )
-        // Keep the slot for ordinary detail/card return geometry. Fullscreen and PiP must remove
-        // it from the Row entirely: a transparent rail still constrains the player's width.
+        // Every video detail needs the full content width, including non-fullscreen playback.
+        // A transparent sidebar still reserves space in the Row.
         val sideBarMountGate = shouldMountSidebarForNavigation(
             routeAllowsSidebar = sideBarRouteGate,
-            isVideoDetailDestination = isVideoDetailDestination,
-            keepSharedTransitionSlot = sharedVideoCardTransitionEnabled &&
-                navigation3SourceMetadata.sharedTransitionReady,
-            isImmersivePlayback = immersiveVideoDetails[currentNavigation3Key] == true
+            isVideoDetailDestination = isVideoDetailDestination
         )
         val showBottomBar = shouldShowBottomBarForNavigation(
             activeRoute = activeBottomTabRoute,
@@ -1748,8 +1743,7 @@ fun AppNavigation(
             }
             Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
-                // Ordinary detail keeps an invisible slot for card return; immersive playback
-                // bypasses this whole branch so no exit animation can keep reserving its width.
+                // Remove the whole slot on video detail so an exit animation cannot reserve width.
                 if (windowSizeClass.shouldUseSideNavigation && sideBarMountGate) {
                     AnimatedVisibility(
                         visible = useSideNavigation,
@@ -1765,9 +1759,6 @@ fun AppNavigation(
                         FrostedSideBar(
                             currentItem = currentBottomNavItem,
                             onItemClick = handleNavItemClick,
-                            modifier = Modifier.graphicsLayer {
-                                alpha = if (isVideoDetailDestination) 0f else 1f
-                            },
                             firstItemModifier = Modifier,
                             onHomeDoubleTap = {
                                 homeScrollChannel.trySend(
@@ -2608,16 +2599,6 @@ fun AppNavigation(
                                         activateVideoBackPreviewPlayback,
                                 ),
                                 startInFullscreen = videoKey.fullscreen,
-                                onImmersivePlaybackChanged = remember(videoKey) {
-                                    { immersive: Boolean ->
-                                        if (immersive) {
-                                            immersiveVideoDetails[videoKey] = true
-                                        } else {
-                                            immersiveVideoDetails.remove(videoKey)
-                                        }
-                                        Unit
-                                    }
-                                },
                                 startAudioFromRoute = videoKey.startAudio,
                                 autoEnterPortraitFromRoute = videoKey.autoPortrait,
                                 initialVerticalFromRoute = videoKey.initialVertical,
