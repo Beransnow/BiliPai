@@ -380,9 +380,10 @@ class DampedDragAnimationState internal constructor(
         targetIndex = safeIndex
         desiredValue = safeIndex.toFloat()
         velocityPxPerSecond = 0f
-        animateToValue(safeIndex.toFloat()) {
-            settledSelectionCount += 1
-        }
+        animateToValue(
+            value = safeIndex.toFloat(),
+            onSettled = { settledSelectionCount += 1 },
+        )
     }
 }
 
