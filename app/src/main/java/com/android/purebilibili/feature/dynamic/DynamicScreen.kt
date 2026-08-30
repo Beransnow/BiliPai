@@ -56,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
@@ -942,6 +943,7 @@ fun DynamicScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .layerBackdrop(dynamicDockBackdrop)
+                                .hazeSourceCompat(state = dynamicTopBarHazeState)
                                 .globalWallpaperAwareBackground(AppSurfaceTokens.background())
                         ) {
                         HorizontalPager(
@@ -1109,8 +1111,7 @@ fun DynamicScreen(
                                     onToggleHidden = { viewModel.toggleHiddenUser(it) },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        // 与首页顶部一致：滚动逐帧压缩占位，并让固定内容向
-                                        // Dock 方向移动；Dock 保持在更高层覆盖收起中的内容。
+                                        // 收缩可见区域并裁掉移出的头像，避免穿透透明顶栏和状态栏。
                                         .dynamicScrollCollapseLayout(
                                             expandedHeightPx = expandedUserListHeightPx,
                                             listStateProvider = { activeListState },
@@ -1825,7 +1826,7 @@ private fun HorizontalUserList(
 private fun Modifier.dynamicScrollCollapseLayout(
     expandedHeightPx: Int,
     listStateProvider: () -> LazyStaggeredGridState?,
-): Modifier = layout { measurable, constraints ->
+): Modifier = clipToBounds().layout { measurable, constraints ->
     val fixedHeightPx = expandedHeightPx.coerceIn(constraints.minHeight, constraints.maxHeight)
     val placeable = measurable.measure(
         constraints.copy(minHeight = fixedHeightPx, maxHeight = fixedHeightPx)
@@ -1836,7 +1837,8 @@ private fun Modifier.dynamicScrollCollapseLayout(
         firstVisibleItemIndex = state?.firstVisibleItemIndex ?: 0,
         firstVisibleItemScrollOffset = state?.firstVisibleItemScrollOffset ?: 0,
     )
-    layout(placeable.width, fixedHeightPx) {
+    val visibleHeightPx = (fixedHeightPx + contentOffsetYPx).coerceAtLeast(0)
+    layout(placeable.width, visibleHeightPx) {
         placeable.placeRelative(0, contentOffsetYPx)
     }
 }
