@@ -126,6 +126,7 @@ import com.android.purebilibili.core.ui.resolveOfficialVerifyBadge
 import com.android.purebilibili.core.ui.components.AppLiquidAwareSearchField
 import com.android.purebilibili.core.ui.components.AppNativeTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.KeepScrollableTabSelectionVisible
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
@@ -2615,19 +2616,13 @@ private fun SpaceSecondarySwitchRow(
         val containerHorizontalPaddingPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() }
         val dragFollowEdgePaddingPx = with(density) { 12.dp.toPx() }
 
-        LaunchedEffect(spec.selectedIndex, useScrollableRail, itemWidthPx, viewportWidthPx) {
-            if (useScrollableRail) {
-                scrollState.animateScrollTo(
-                    resolveSpaceContributionTabCenteredScrollOffsetPx(
-                        selectedIndex = spec.selectedIndex,
-                        itemWidthPx = itemWidthPx,
-                        viewportWidthPx = viewportWidthPx
-                    )
-                )
-            } else {
-                scrollState.scrollTo(0)
-            }
-        }
+        KeepScrollableTabSelectionVisible(
+            scrollState = scrollState,
+            selectedIndex = if (useScrollableRail) spec.selectedIndex else 0,
+            itemWidthPx = itemWidthPx,
+            viewportWidthPx = viewportWidthPx,
+            contentPaddingPx = containerHorizontalPaddingPx,
+        )
 
         if (homeSettings.androidNativeLiquidGlassEnabled) {
             BottomBarLiquidSegmentedControl(

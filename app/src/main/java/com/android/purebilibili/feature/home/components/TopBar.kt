@@ -120,7 +120,7 @@ import androidx.compose.ui.semantics.semantics
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sign
-import kotlinx.coroutines.flow.first
+import com.android.purebilibili.core.ui.components.KeepLazyTabSelectionVisible
 import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.foundation.combinedClickable // [Added]
 import java.io.File
@@ -1104,25 +1104,8 @@ private fun LightweightHomeTopTabs(
 
     LaunchedEffect(selectedIndex, categories.size) {
         selectedItemLeftInWindowPx = Float.NaN
-        if (categories.isEmpty()) return@LaunchedEffect
-        val targetIndex = selectedIndex.coerceIn(0, categories.lastIndex)
-        val info = snapshotFlow { listState.layoutInfo }
-            .first { it.visibleItemsInfo.isNotEmpty() }
-        val first = info.visibleItemsInfo.first()
-        val last = info.visibleItemsInfo.last()
-        if (
-            shouldAnimateTopTabViewportToSelection(
-                selectedIndex = targetIndex,
-                firstVisibleIndex = first.index,
-                firstVisibleOffset = first.offset,
-                lastVisibleIndex = last.index,
-                lastVisibleEndOffset = last.offset + last.size,
-                viewportEndOffset = info.viewportEndOffset,
-            )
-        ) {
-            listState.animateScrollToItem(targetIndex)
-        }
     }
+    KeepLazyTabSelectionVisible(listState, selectedIndex)
 
     BoxWithConstraints(
         modifier = Modifier
@@ -2084,21 +2067,6 @@ internal fun resolveTopTabVisibleContentAlpha(
 internal fun resolveTopTabUsesGlassExportForSelectedGlyphs(
     liquidGlassEnabled: Boolean,
 ): Boolean = liquidGlassEnabled
-
-internal fun shouldAnimateTopTabViewportToSelection(
-    selectedIndex: Int,
-    firstVisibleIndex: Int,
-    firstVisibleOffset: Int,
-    lastVisibleIndex: Int,
-    lastVisibleEndOffset: Int,
-    viewportEndOffset: Int,
-): Boolean {
-    if (selectedIndex < firstVisibleIndex) return true
-    if (selectedIndex == firstVisibleIndex && firstVisibleOffset > 0) return true
-    if (selectedIndex > lastVisibleIndex) return true
-    if (selectedIndex == lastVisibleIndex && lastVisibleEndOffset > viewportEndOffset) return true
-    return false
-}
 
 @Composable
 private fun LightweightTopTabItem(

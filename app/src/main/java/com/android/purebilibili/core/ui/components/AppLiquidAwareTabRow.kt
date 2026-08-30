@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import top.yukonga.miuix.kmp.blur.Backdrop
 import kotlinx.coroutines.flow.map
@@ -133,13 +133,13 @@ fun <T> AppLiquidAwareTabRow(
         ) {
             val viewportWidthPx = with(density) { maxWidth.toPx() }
             val itemWidthPx = with(density) { minTabWidth.toPx() }
-            LaunchedEffect(selectedIndex, scrollState.maxValue, viewportWidthPx, itemWidthPx) {
-                val centeredItemOffset =
-                    (selectedIndex + 0.5f) * itemWidthPx - viewportWidthPx / 2f
-                scrollState.animateScrollTo(
-                    centeredItemOffset.toInt().coerceIn(0, scrollState.maxValue),
-                )
-            }
+            KeepScrollableTabSelectionVisible(
+                scrollState = scrollState,
+                selectedIndex = selectedIndex,
+                itemWidthPx = itemWidthPx,
+                viewportWidthPx = viewportWidthPx,
+                contentPaddingPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() },
+            )
             BottomBarLiquidSegmentedControl(
                 items = options.map { it.label },
                 selectedIndex = selectedIndex,
