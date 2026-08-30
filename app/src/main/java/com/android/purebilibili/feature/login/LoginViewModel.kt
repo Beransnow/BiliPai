@@ -1093,4 +1093,23 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     fun stopTvPolling() {
         isTvPolling = false
     }
+
+    /** Confirms a TV QR scanned on another device using this logged-in BiliPai session. */
+    fun confirmOfficialTvQr(rawPayload: String) {
+        val authCode = extractTvAuthCode(rawPayload)
+            ?: run { _state.value = LoginState.Error("不是有效的 B 站 TV 登录二维码"); return }
+        viewModelScope.launch {
+            runCatching {
+                NetworkModule.passportApi.confirmTvQrCode(
+                    authCode = authCode,
+                    csrf = TokenManager.csrfCache.orEmpty(),
+                )
+            }.onSuccess { response ->
+                if (response.code == 0) _state.value = LoginState.Success
+                else _state.value = LoginState.Error(response.message.ifBlank { "扫码确认失败" })
+            }.onFailure { error ->
+                _state.value = LoginState.Error(error.message ?: "扫码确认失败")
+            }
+        }
+    }
 }
