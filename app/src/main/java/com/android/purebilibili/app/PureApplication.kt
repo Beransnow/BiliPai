@@ -125,6 +125,13 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
     override fun onCreate() {
         instance = this
 
+        // Install the local crash path before theme, StrictMode, or any other startup work. This
+        // ensures even an early initialization exception has a private snapshot for feedback.
+        Logger.init(this)
+        CrashReporter.installGlobalExceptionHandler()
+        com.android.purebilibili.core.performance.Android17Diagnostics
+            .persistLatestAbnormalExitSnapshot(this)
+
         // StrictMode 必须装在任何业务代码之前，否则紧接着的 applyThemePreference()
         // 里那次同步偏好读取就漏检了——而那恰恰是最该被看见的一处。
         installStrictModeForDebugBuilds()
@@ -135,8 +142,6 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         
         super.onCreate()
         launcherIconUiModeSnapshot = resources.configuration.uiMode
-        Logger.init(this)
-        CrashReporter.installGlobalExceptionHandler()
         AppScope.ioScope.launch {
             CacheUtils.clearCacheAutomaticallyIfDue(this@PureApplication)
         }
