@@ -27,6 +27,7 @@ object BiliPaiTransferCrypto {
         now: Long = System.currentTimeMillis(),
     ): BiliPaiTransferEnvelope {
         require(request.expiresAt > now) { "传输请求已过期" }
+        require(bundle.sessData.length <= MAX_SESSION_FIELD_LENGTH) { "会话数据过大" }
         val aes = KeyGenerator.getInstance("AES").apply { init(256) }.generateKey()
         val iv = ByteArray(12).also { java.security.SecureRandom().nextBytes(it) }
         val cipher = Cipher.getInstance(AES).apply {
@@ -53,6 +54,7 @@ object BiliPaiTransferCrypto {
                 envelope: BiliPaiTransferEnvelope, now: Long = System.currentTimeMillis()): BiliPaiSessionBundle {
         require(envelope.version == 1 && envelope.transferId == request.transferId) { "传输会话不匹配" }
         require(envelope.expiresAt > now) { "传输数据已过期" }
+        require(envelope.ciphertext.length <= MAX_QR_FIELD_LENGTH) { "加密数据过大" }
         val sender = publicKey(envelope.senderPublicKey)
         val canonical = canonical(envelope.transferId, envelope.senderDeviceId, envelope.senderPublicKey,
             envelope.wrappedKey, envelope.iv, envelope.ciphertext, envelope.expiresAt)
@@ -74,4 +76,7 @@ object BiliPaiTransferCrypto {
     private fun canonical(vararg values: Any): String = values.joinToString(".")
     private fun b64(value: ByteArray): String = Base64.encodeToString(value, Base64.NO_WRAP or Base64.URL_SAFE)
     private fun unb64(value: String): ByteArray = Base64.decode(value, Base64.NO_WRAP or Base64.URL_SAFE)
+
+    private const val MAX_SESSION_FIELD_LENGTH = 16_384
+    private const val MAX_QR_FIELD_LENGTH = 80_000
 }

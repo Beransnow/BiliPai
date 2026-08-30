@@ -50,6 +50,7 @@ object BiliPaiTransferCodec {
         "bilipai://transfer/request?payload=${encode(json.encodeToString(BiliPaiTransferRequest.serializer(), request))}"
 
     fun decodeRequest(raw: String, now: Long = System.currentTimeMillis()): BiliPaiTransferRequest {
+        require(raw.length <= MAX_QR_CHARS) { "二维码内容过大" }
         require(raw.startsWith("bilipai://transfer/request?payload=")) { "不是 BiliPai 传输二维码" }
         val request = json.decodeFromString(
             BiliPaiTransferRequest.serializer(), decode(raw.substringAfter("payload=")))
@@ -65,6 +66,7 @@ object BiliPaiTransferCodec {
         "bilipai://transfer/envelope?payload=${encode(json.encodeToString(BiliPaiTransferEnvelope.serializer(), envelope))}"
 
     fun decodeEnvelope(raw: String): BiliPaiTransferEnvelope {
+        require(raw.length <= MAX_QR_CHARS) { "二维码内容过大" }
         require(raw.startsWith("bilipai://transfer/envelope?payload=")) { "不是 BiliPai 加密传输二维码" }
         return json.decodeFromString(
             BiliPaiTransferEnvelope.serializer(), decode(raw.substringAfter("payload=")))
@@ -81,4 +83,6 @@ object BiliPaiTransferCodec {
 
     private fun decode(value: String): String = String(
         Base64.decode(value, Base64.NO_WRAP or Base64.URL_SAFE), StandardCharsets.UTF_8)
+
+    private const val MAX_QR_CHARS = 100_000
 }
