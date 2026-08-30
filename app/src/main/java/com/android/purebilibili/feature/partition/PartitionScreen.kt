@@ -680,11 +680,6 @@ private fun PartitionSideRail(
 
     LaunchedEffect(selectedIndex) {
         currentIndex = selectedIndex
-        // Keep the selected row in the LazyColumn viewport before moving the
-        // indicator.  The indicator is drawn in the rail's coordinate space,
-        // so leaving an off-screen row at its absolute index makes the capsule
-        // drift over an unrelated item (especially near the end of the list).
-        listState.animateScrollToItem(selectedIndex)
     }
     LaunchedEffect(dampedDragAnimation) {
         snapshotFlow { currentIndex }
@@ -984,9 +979,7 @@ private fun PartitionSideRailMovingIndicator(
             ((itemHeightPx - indicatorHeightPx) / 2f).coerceAtLeast(0f)
         BottomBarMatchedLiquidIndicator(
             visible = true,
-            // Keep the side-rail capsule translucent so its selected row's
-            // icon and label remain readable while the glass backdrop settles.
-            dockContentAlpha = 0.38f,
+            dockContentAlpha = 1f,
             indicatorTranslationXPx = with(density) { horizontalPadding.start.toPx() },
             indicatorTranslationYPx = centeredIndicatorOffsetPx,
             indicatorPanelOffsetPx = 0f,
