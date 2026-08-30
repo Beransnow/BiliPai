@@ -2361,8 +2361,9 @@ interface PassportApi {
     @retrofit2.http.POST("https://passport.bilibili.com/x/passport-tv-login/h5/qrcode/confirm")
     suspend fun confirmTvQrCode(
         @retrofit2.http.Field("auth_code") authCode: String,
+        @Header(FORCE_COOKIE_HEADER) cookieHeader: String,
         @retrofit2.http.Field("build") build: Int = 7082000,
-        @retrofit2.http.Field("csrf") csrf: String = "",
+        @retrofit2.http.Field("csrf") csrf: String,
     ): com.android.purebilibili.data.model.response.SimpleApiResponse
 
     //  [新增] TV 端刷新 Token
