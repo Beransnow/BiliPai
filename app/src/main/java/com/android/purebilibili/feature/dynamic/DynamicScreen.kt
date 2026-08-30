@@ -1,5 +1,6 @@
 // 文件路径: feature/dynamic/DynamicScreen.kt
 package com.android.purebilibili.feature.dynamic
+import com.android.purebilibili.core.ui.components.FeedVerticalStaggeredGrid
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
@@ -29,7 +30,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
@@ -1378,7 +1378,7 @@ private fun DynamicList(
         0f
     }
 
-    LazyVerticalStaggeredGrid(
+    FeedVerticalStaggeredGrid(
         columns = if (feedLayoutMode == SettingsManager.DynamicFeedLayoutMode.LIST) {
             //  [新增] 列表模式：单列居中（对齐 BiliPai dynamicsWaterfallFlow 的列表布局）
             StaggeredGridCells.Fixed(1)

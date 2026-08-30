@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.home
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
+import com.android.purebilibili.core.ui.components.FeedVerticalStaggeredGrid
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -244,7 +245,7 @@ internal fun HomeCategoryPageContent(
         CompositionLocalProvider(
             LocalVideoCardSharedElementSourceRoute provides sourceRoute
         ) {
-            LazyVerticalStaggeredGrid(
+            FeedVerticalStaggeredGrid(
                 state = gridState,
                 columns = StaggeredGridCells.Fixed(gridColumns),
                 contentPadding = contentPadding,

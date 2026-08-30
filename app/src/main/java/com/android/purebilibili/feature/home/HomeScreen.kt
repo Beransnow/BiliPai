@@ -830,15 +830,19 @@ fun HomeScreen(
         val anchorBvid = recommendOldContentAnchorBvid ?: return@LaunchedEffect
         val recommendState = gridStates[HomeCategory.RECOMMEND] ?: return@LaunchedEffect
         viewModel.getCategoryState(HomeCategory.RECOMMEND)
-            .mapFlow { content -> content.videos.indexOfFirst { it.bvid == anchorBvid } }
+            .mapFlow { content ->
+                content.videos.indexOfFirst { it.bvid == anchorBvid } to
+                    resolveHomeCategoryVideoGridKeys(content.videos)
+            }
             .distinctUntilChanged()
-            .collectLatest { anchorIndex ->
+            .collectLatest { (anchorIndex, videoKeys) ->
                 if (anchorIndex <= 0) return@collectLatest
+                val videoIndicesByKey = videoKeys.withIndex().associate { it.value to it.index }
                 snapshotFlow {
-                    val layoutInfo = recommendState.layoutInfo
-                    val reachedByVisible = layoutInfo.visibleItemsInfo.any { it.index == anchorIndex }
-                    val reachedByIndex = recommendState.firstVisibleItemIndex >= anchorIndex
-                    reachedByVisible || reachedByIndex
+                    // Grid indices also include chrome, carousel and divider rows.
+                    recommendState.layoutInfo.visibleItemsInfo.any {
+                        (videoIndicesByKey[it.key] ?: -1) >= anchorIndex
+                    }
                 }.first { it }
                 viewModel.markRecommendOldContentDividerRevealed(targetKey)
             }
@@ -2588,19 +2592,21 @@ fun HomeScreen(
         } ?: return@LaunchedEffect
         
         snapshotFlow {
-            val lastVisibleIndex = currentGridState.layoutInfo.visibleItemsInfo
-                .maxOfOrNull { it.index } ?: -1
-            lastVisibleIndex to currentGridState.isScrollInProgress
+            val visibleKeys = currentGridState.layoutInfo.visibleItemsInfo.map { it.key }
+            visibleKeys to currentGridState.isScrollInProgress
         }
             .distinctUntilChanged()
             // Coalesce the burst of layout updates after a fling and wait until the feed has
             // been settled briefly. A new scroll event cancels this pending preload batch.
             .debounce(180)
-            .collect { (lastVisibleIndex, isScrollInProgress) ->
+            .collect { (visibleKeys, isScrollInProgress) ->
                 val videos = viewModel.getPreloadVideosSnapshot(
                     category = currentCategory,
                     popularSubCategory = popularSubCategory
                 )
+                val visibleKeySet = visibleKeys.toSet()
+                val lastVisibleIndex = resolveHomeCategoryVideoGridKeys(videos)
+                    .indexOfLast { it in visibleKeySet }
                 val preloadRange = resolveHomeCoverPreloadRange(
                     isDataSaverActive = isDataSaverActive,
                     isScrollInProgress = isScrollInProgress,
