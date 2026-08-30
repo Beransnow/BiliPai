@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ fun BiliPaiTransferScanner(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val currentOnCode by rememberUpdatedState(onCode)
     var granted by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
@@ -69,7 +71,7 @@ fun BiliPaiTransferScanner(
                     if (bytes != null) {
                         BiliPaiQrDecoder.decode(bytes, image.width, image.height, image.imageInfo.rotationDegrees)?.let {
                             delivered = true
-                            onCode(it)
+                            currentOnCode(it)
                         }
                     }
                 }
