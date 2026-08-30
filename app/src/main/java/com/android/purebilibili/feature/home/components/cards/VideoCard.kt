@@ -659,7 +659,9 @@ internal fun ElegantVideoCard(
     val coverCacheKey: String
     val coverUrl: String
     val premiumBadgeLabel: String?
-    remember(video, useLowQualityCover, coverRequestSpec) {
+    // Cover identity does not depend on playback progress or live statistics. Keep unrelated
+    // VideoItem updates from rebuilding the cover URL/cache key on the UI thread.
+    remember(video.pic, video.rights, useLowQualityCover, coverRequestSpec) {
         Triple(
             resolveVideoCardCoverCacheKey(
                 video = video,
