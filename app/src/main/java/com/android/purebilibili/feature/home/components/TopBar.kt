@@ -121,6 +121,7 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sign
 import com.android.purebilibili.core.ui.components.KeepLazyTabSelectionVisible
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.foundation.combinedClickable // [Added]
 import java.io.File
