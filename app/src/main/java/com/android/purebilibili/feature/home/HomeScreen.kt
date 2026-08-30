@@ -2628,6 +2628,9 @@ fun HomeScreen(
                         val request = coil.request.ImageRequest.Builder(context)
                             .data(fixedUrl)
                             .size(360, 225)  //  预加载也使用限制尺寸
+                            // Visible AsyncImage requests keep the default priority and can jump
+                            // ahead of this background warm-up when a fast swipe reveals a card.
+                            .priority(coil.request.Priority.LOW)
                             .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
                             .diskCachePolicy(coil.request.CachePolicy.ENABLED)
                             .build()
