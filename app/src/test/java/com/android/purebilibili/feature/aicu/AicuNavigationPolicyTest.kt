@@ -37,6 +37,15 @@ class AicuNavigationPolicyTest {
         assertEquals("av456", target.bvid)
     }
 
+    @Test fun `child comment without root opens content without an unsafe anchor`() {
+        val target = aicuNativeTarget(
+            AicuCategory.COMMENT,
+            AicuRecord("123", "reply", 1L, "456", 1, rank = 2),
+        ) as BiliPaiNavKey.VideoDetail
+        assertEquals(0L, target.commentRootRpid)
+        assertEquals(0L, target.commentTargetRpid)
+    }
+
     @Test fun `live and articles use native destinations while unsupported records never open a web page`() {
         assertEquals(BiliPaiNavKey.Live(roomId = "42", title = "room", uname = "up"),
             aicuNativeTarget(AicuCategory.LIVE_DANMAKU, AicuRecord("", "dm", 1, roomId = "42", roomName = "room", upName = "up")))
