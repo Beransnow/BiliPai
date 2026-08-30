@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.search
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -46,7 +44,8 @@ import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.BottomSheetHost
-import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -92,6 +91,9 @@ fun SearchVideoFilterBar(
         pubTimeType = currentPubTimeType
     )
     val orderOptions = remember { resolveSearchVideoOrderOptions() }
+    val orderTabs = remember(orderOptions) {
+        orderOptions.map { AppSegmentOption(it, resolveSearchOrderChipLabel(it)) }
+    }
 
     Row(
         modifier = modifier
@@ -99,22 +101,19 @@ fun SearchVideoFilterBar(
             .padding(start = 8.dp, end = 4.dp, top = 2.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BottomBarLiquidSegmentedControl(
-            items = orderOptions.map(::resolveSearchOrderChipLabel),
-            selectedIndex = orderOptions.indexOf(currentOrder).coerceAtLeast(0),
-            onSelected = { index ->
-                orderOptions.getOrNull(index)?.let(onOrderChange)
-            },
-            modifier = Modifier
-                .weight(1f)
-                .horizontalScroll(rememberScrollState())
-                .width(72.dp * orderOptions.size),
+        AppThemeAdaptiveTabRow(
+            options = orderTabs,
+            selectedValue = currentOrder,
+            onSelectionChange = onOrderChange,
+            modifier = Modifier.weight(1f),
+            // Let the tab row own its viewport and keep selection visible in every theme.
+            // An outer horizontalScroll hides clipping from the native selection scroller.
+            scrollable = true,
+            minTabWidth = 72.dp,
             height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
             indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
             labelFontSize = 13.sp,
-            allowNativeLabelOverflow = true,
             miuixBackdrop = miuixBackdrop,
-            liquidGlassEffectsEnabled = true,
             tapPressRefractionEnabled = true,
             // Horizontal swipes scroll the six sorting labels, as in PiliPlus.
             dragSelectionEnabled = false,
