@@ -77,6 +77,7 @@ import kotlinx.coroutines.launch
 enum class LoginMethod {
     /** Official Bilibili TV QR login; the phone confirms on Bilibili's servers. */
     TV_QR,
+    OFFICIAL_TV_SCAN,
     PASSWORD,
     SMS,
     COOKIE_IMPORT,
@@ -204,6 +205,7 @@ fun LoginScreen(
         onMethodSelected = { selectedMethod = it },
         onClose = onClose,
         onRefreshQr = viewModel::loadTvQrCode,
+        onConfirmOfficialTvQr = viewModel::confirmOfficialTvQr,
         onRequestSms = { phone, countryCid ->
             captchaRequest = CaptchaRequest.Sms(phone = phone, countryCid = countryCid)
             viewModel.beginSmsCodeRequest(phone = phone, countryCode = countryCid)
@@ -234,6 +236,7 @@ internal fun LoginPage(
     onMethodSelected: (LoginMethod) -> Unit,
     onClose: () -> Unit,
     onRefreshQr: () -> Unit,
+    onConfirmOfficialTvQr: (String) -> Unit = {},
     onRequestSms: (phone: String, countryCid: Int) -> Unit,
     onSubmitSms: (Int) -> Unit,
     onRequestPassword: (String, String) -> Unit,
@@ -300,6 +303,7 @@ internal fun LoginPage(
                     item {
                         when (selectedMethod) {
                             LoginMethod.TV_QR -> TvQrLoginContent(state, onRefreshQr)
+                            LoginMethod.OFFICIAL_TV_SCAN -> OfficialTvScanContent(state, onConfirmOfficialTvQr)
                             LoginMethod.PASSWORD -> PasswordLoginContent(
                                 state = state,
                                 onSubmit = onRequestPassword,
@@ -362,6 +366,7 @@ private fun LoginMethodTabs(
 
 private fun loginMethodLabel(method: LoginMethod): String = when (method) {
     LoginMethod.TV_QR -> "扫码登录"
+    LoginMethod.OFFICIAL_TV_SCAN -> "B站扫码确认"
     LoginMethod.PASSWORD -> "密码登录"
     LoginMethod.SMS -> "短信登录"
     LoginMethod.COOKIE_IMPORT -> "Cookie 导入"
@@ -391,6 +396,21 @@ private fun BiliPaiTransferEntry(onOpen: () -> Unit) {
             AppText("在两台 BiliPai 设备之间加密迁移登录会话", style = MaterialTheme.typography.titleMedium)
             AppText("Cookie 只在设备端加密和解密，不经过服务器。", color = MaterialTheme.colorScheme.onSurfaceVariant)
             AppButton(onClick = onOpen, modifier = Modifier.fillMaxWidth()) { AppText("开始传输") }
+        }
+    }
+}
+
+@Composable
+private fun OfficialTvScanContent(state: LoginState, onConfirm: (String) -> Unit) {
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            AppText("扫描另一台设备上的 B 站 TV 登录二维码", style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center)
+            AppText("本设备需要已经登录 B 站账号；确认后对方设备会完成登录。",
+                color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+            BiliPaiTransferScanner(onCode = onConfirm, modifier = Modifier.size(260.dp))
+            if (state is LoginState.Error) AppText(state.msg, color = MaterialTheme.colorScheme.error)
         }
     }
 }

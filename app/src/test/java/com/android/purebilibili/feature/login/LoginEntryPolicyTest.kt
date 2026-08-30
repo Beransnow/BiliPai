@@ -14,6 +14,7 @@ class LoginEntryPolicyTest {
         assertEquals(
             listOf(
                 LoginMethod.TV_QR,
+                LoginMethod.OFFICIAL_TV_SCAN,
                 LoginMethod.PASSWORD,
                 LoginMethod.SMS,
                 LoginMethod.COOKIE_IMPORT
