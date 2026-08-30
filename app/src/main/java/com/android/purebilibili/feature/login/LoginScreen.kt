@@ -419,7 +419,16 @@ private fun BiliPaiTransferDialog(onDismiss: () -> Unit) {
                 }
                 AppText(message, textAlign = TextAlign.Center)
                 qrText?.let { value ->
-                    Image(bitmap = transferQrBitmap(value).asImageBitmap(), contentDescription = "BiliPai 传输二维码", modifier = Modifier.size(220.dp))
+                    val bitmap = remember(value) { runCatching { transferQrBitmap(value) }.getOrNull() }
+                    if (bitmap != null) {
+                        Image(bitmap = bitmap.asImageBitmap(), contentDescription = "BiliPai 传输二维码", modifier = Modifier.size(220.dp))
+                    } else {
+                        AppText(
+                            "加密会话过大，暂时无法放入单个二维码。请先退出其他账号或减少会话内容后重试。",
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
                 if (!scanned) {
                     BiliPaiTransferScanner(
@@ -435,9 +444,12 @@ private fun BiliPaiTransferDialog(onDismiss: () -> Unit) {
                                         mid = TokenManager.midCache ?: 0L,
                                         sessData = TokenManager.sessDataCache.orEmpty(),
                                         csrf = TokenManager.csrfCache.orEmpty(),
-                                        accessToken = TokenManager.accessTokenCache.orEmpty(),
-                                        refreshToken = TokenManager.refreshTokenCache.orEmpty(),
-                                        accessTokenPlatform = TokenManager.accessTokenPlatformCache,
+                                        // Do not transfer long-lived app tokens in a QR. Cookie + CSRF
+                                        // is sufficient to establish the account session and keeps
+                                        // the encrypted payload within a single QR's capacity.
+                                        accessToken = "",
+                                        refreshToken = "",
+                                        accessTokenPlatform = TokenManager.ACCESS_TOKEN_PLATFORM_TV,
                                         buvid3 = TokenManager.buvid3Cache.orEmpty(),
                                         isVip = TokenManager.isVipCache,
                                     )
