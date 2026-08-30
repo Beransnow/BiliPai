@@ -241,6 +241,33 @@ internal fun HomeCategoryPageContent(
         if (shouldLoadMore) onLoadMore()
     }
 
+    val carouselVideos = remember(category, categoryState.videos) {
+        if (category == HomeCategory.RECOMMEND) {
+            selectHomeHeroCarouselItems(categoryState.videos)
+        } else {
+            emptyList()
+        }
+    }
+    val showHeroCarousel = shouldShowHomeHeroCarousel(
+        enabled = homeHeroCarouselEnabled,
+        category = category,
+        itemCount = carouselVideos.size
+    )
+    val visibleGridVideos = remember(categoryState.videos, carouselVideos, showHeroCarousel) {
+        if (showHeroCarousel) {
+            excludeHomeHeroCarouselItems(
+                items = categoryState.videos,
+                carouselItems = carouselVideos,
+                keySelector = ::resolveHomeHeroCarouselDedupKey
+            )
+        } else {
+            categoryState.videos
+        }
+    }
+    val videoGridKeys = remember(visibleGridVideos) {
+        resolveHomeCategoryVideoGridKeys(visibleGridVideos)
+    }
+
     Box(modifier = modifier) {
         CompositionLocalProvider(
             LocalVideoCardSharedElementSourceRoute provides sourceRoute
@@ -280,30 +307,6 @@ internal fun HomeCategoryPageContent(
             }
         } else {
             // Video Category Content
-            val carouselVideos = remember(category, categoryState.videos) {
-                if (category == HomeCategory.RECOMMEND) {
-                    selectHomeHeroCarouselItems(categoryState.videos)
-                } else {
-                    emptyList()
-                }
-            }
-            val showHeroCarousel = shouldShowHomeHeroCarousel(
-                enabled = homeHeroCarouselEnabled,
-                category = category,
-                itemCount = carouselVideos.size
-            )
-            val visibleGridVideos = remember(categoryState.videos, carouselVideos, showHeroCarousel) {
-                if (showHeroCarousel) {
-                    excludeHomeHeroCarouselItems(
-                        items = categoryState.videos,
-                        carouselItems = carouselVideos,
-                        keySelector = ::resolveHomeHeroCarouselDedupKey
-                    )
-                } else {
-                    categoryState.videos
-                }
-            }
-
             if (category == HomeCategory.RECOMMEND) {
                 if (showHeroCarousel) {
                     item(
@@ -365,9 +368,6 @@ internal fun HomeCategoryPageContent(
             }
 
             if (visibleGridVideos.isNotEmpty()) {
-                val videoGridKeys = remember(visibleGridVideos) {
-                    resolveHomeCategoryVideoGridKeys(visibleGridVideos)
-                }
                 val shouldShowOldContentDivider = category == HomeCategory.RECOMMEND &&
                     (
                         (oldContentAnchorBvid != null && visibleGridVideos.any { it.bvid == oldContentAnchorBvid }) ||
