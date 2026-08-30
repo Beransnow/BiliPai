@@ -2614,7 +2614,11 @@ fun HomeScreen(
                     totalItemCount = videos.size,
                     preloadAheadCount = preloadAheadCount
                 ) ?: return@collect
-                val imageUrls = preloadRange.mapNotNull { index -> videos.getOrNull(index)?.pic }
+                // Avoid enqueueing the same cover more than once when adjacent feed entries share
+                // a URL; Coil still handles caching, but deduping keeps the IO queue smaller.
+                val imageUrls = preloadRange
+                    .mapNotNull { index -> videos.getOrNull(index)?.pic }
+                    .distinct()
                 if (imageUrls.isEmpty()) return@collect
 
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
