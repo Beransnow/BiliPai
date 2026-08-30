@@ -78,9 +78,7 @@ import androidx.media3.ui.PlayerView
 import androidx.metrics.performance.JankStats
 import androidx.window.layout.WindowMetrics
 import androidx.window.layout.WindowMetricsCalculator
-import coil3.compose.AsyncImagePainter
 import coil3.compose.AsyncImage
-import coil3.compose.rememberAsyncImagePainter
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.coroutines.AppScope
 
@@ -1735,21 +1733,9 @@ open class MainActivity : AppCompatActivity() {
                     val splashTailScrimAlpha = customSplashOverlayScrimAlpha(splashFadeProgress)
 
                     if (customSplashShouldRender(showSplash, splashOverlayAlpha) && splashUri.isNotEmpty()) {
-                        val splashProbePainter = rememberAsyncImagePainter(model = splashUri)
-                        val splashProbeState by splashProbePainter.state.collectAsState()
-                        val splashAspectRatio = remember(splashProbeState) {
-                            when (val state = splashProbeState) {
-                                is AsyncImagePainter.State.Success -> resolveDrawableAspectRatio(
-                                    width = state.result.image.width,
-                                    height = state.result.image.height
-                                )
-                                else -> null
-                            }
-                        }
-                        val splashWallpaperLayout = remember(windowSizeClass.widthSizeClass, splashAspectRatio) {
+                        val splashWallpaperLayout = remember(windowSizeClass.widthSizeClass) {
                             resolveSplashWallpaperLayout(
-                                widthSizeClass = windowSizeClass.widthSizeClass,
-                                imageAspectRatio = splashAspectRatio
+                                widthSizeClass = windowSizeClass.widthSizeClass
                             )
                         }
                         Box(
