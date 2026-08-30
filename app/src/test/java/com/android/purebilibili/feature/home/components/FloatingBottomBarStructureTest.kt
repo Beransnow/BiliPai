@@ -126,7 +126,7 @@ class FloatingBottomBarStructureTest {
         assertFalse(baseRow.contains(".then(dampedDragAnimation.modifier)"))
         assertTrue(movingIndicator.contains("interactiveHighlight?.gestureModifier"))
         assertTrue(movingIndicator.contains(".then(dampedDragAnimation.modifier)"))
-        assertTrue(body.contains("offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))"))
+        assertTrue(body.contains("offsetAnimation.snapTo(0f)"))
         // Must not fall back to BiliPai self-developed drag stack.
         assertFalse(source.contains("rememberDampedDragAnimationState"))
         assertFalse(source.contains("horizontalDragGesture"))
@@ -281,7 +281,7 @@ class FloatingBottomBarStructureTest {
                 missingDelimiterValue = ""
             )
 
-        assertTrue(selectionSync.contains("dampedDragAnimation.animateToValue(index.toFloat())"))
+        assertTrue(selectionSync.contains("dampedDragAnimation.animateToValue(index.toFloat(), animatePress = false)"))
         assertFalse(selectionSync.contains("dampedDragAnimation.snapTo(index.toFloat())"))
         assertTrue(source.contains("dragSelectionEnabled && safeTabsCount > 1 ->"))
         assertTrue(source.contains("dampedDragAnimation.longPressModifier"))
