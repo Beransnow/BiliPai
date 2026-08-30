@@ -66,12 +66,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.purebilibili.core.store.TokenManager
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.qrcode.QRCodeWriter
+import android.graphics.Bitmap
+import android.graphics.Color
+import kotlinx.coroutines.launch
 
 enum class LoginMethod {
     TV_QR,
     PASSWORD,
     SMS,
-    COOKIE_IMPORT
+    COOKIE_IMPORT,
+    BILIPAI_TRANSFER
 }
 
 internal fun resolveAvailableLoginMethods(): List<LoginMethod> = LoginMethod.entries
@@ -95,6 +102,7 @@ fun LoginScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val phoneRegions by viewModel.phoneRegions.collectAsStateWithLifecycle()
     var selectedMethod by rememberSaveable { mutableStateOf(LoginMethod.TV_QR) }
+    var transferVisible by rememberSaveable { mutableStateOf(false) }
     var captchaRequest by remember { mutableStateOf<CaptchaRequest?>(null) }
     var captchaManager by remember { mutableStateOf<CaptchaManager?>(null) }
     val activity = LocalActivity.current
@@ -195,11 +203,15 @@ fun LoginScreen(
             viewModel.beginPasswordLogin(phone, password)
         },
         onImportCookie = viewModel::loginByCookie,
+        onOpenTransfer = { transferVisible = true },
         onContinueWithStandardSession = viewModel::continueWithStandardSession,
         onAuthorizeHighQuality = { selectedMethod = LoginMethod.TV_QR },
         onPrepareRiskSms = viewModel::prepareRiskSmsCaptcha,
         onVerifyRiskSms = viewModel::verifyRiskSmsCode,
     )
+    if (transferVisible) {
+        BiliPaiTransferDialog(onDismiss = { transferVisible = false })
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -215,6 +227,7 @@ internal fun LoginPage(
     onSubmitSms: (Int) -> Unit,
     onRequestPassword: (String, String) -> Unit,
     onImportCookie: (String) -> Unit,
+    onOpenTransfer: () -> Unit = {},
     onContinueWithStandardSession: () -> Unit,
     onAuthorizeHighQuality: () -> Unit,
     onPrepareRiskSms: () -> Unit = {},
@@ -289,6 +302,7 @@ internal fun LoginPage(
                                 onSubmitCode = onSubmitSms,
                             )
                             LoginMethod.COOKIE_IMPORT -> CookieImportContent(state, onImportCookie)
+                            LoginMethod.BILIPAI_TRANSFER -> BiliPaiTransferEntry(onOpenTransfer)
                         }
                     }
                     item {
@@ -340,6 +354,7 @@ private fun loginMethodLabel(method: LoginMethod): String = when (method) {
     LoginMethod.PASSWORD -> "密码登录"
     LoginMethod.SMS -> "短信登录"
     LoginMethod.COOKIE_IMPORT -> "Cookie 导入"
+    LoginMethod.BILIPAI_TRANSFER -> "BiliPai 传输"
 }
 
 @Composable
@@ -356,6 +371,99 @@ private fun LoginStateMessage(state: LoginState, modifier: Modifier = Modifier) 
             modifier = Modifier.padding(16.dp)
         )
     }
+}
+
+@Composable
+private fun BiliPaiTransferEntry(onOpen: () -> Unit) {
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            AppText("在两台 BiliPai 设备之间加密迁移登录会话", style = MaterialTheme.typography.titleMedium)
+            AppText("Cookie 只在设备端加密和解密，不经过服务器。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            AppButton(onClick = onOpen, modifier = Modifier.fillMaxWidth()) { AppText("开始传输") }
+        }
+    }
+}
+
+@Composable
+private fun BiliPaiTransferDialog(onDismiss: () -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val session = remember { BiliPaiTransferSession(context) }
+    var receiving by rememberSaveable { mutableStateOf(true) }
+    var qrText by remember { mutableStateOf<String?>(null) }
+    var scanned by remember { mutableStateOf(false) }
+    var pendingBundle by remember { mutableStateOf<BiliPaiSessionBundle?>(null) }
+    var message by remember { mutableStateOf("选择接收或发送") }
+
+    androidx.compose.runtime.LaunchedEffect(receiving) {
+        if (receiving) {
+            val request = session.beginReceive()
+            qrText = BiliPaiTransferCodec.encodeRequest(request)
+            message = "请让发送设备扫描此二维码"
+        } else {
+            qrText = null
+            message = "请扫描接收设备的请求二维码"
+        }
+        scanned = false
+        pendingBundle = null
+    }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { AppText("BiliPai 安全传输") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    AppOutlinedButton(onClick = { receiving = true }) { AppText("接收账号") }
+                    AppOutlinedButton(onClick = { receiving = false }) { AppText("发送账号") }
+                }
+                AppText(message, textAlign = TextAlign.Center)
+                qrText?.let { value ->
+                    Image(bitmap = transferQrBitmap(value).asImageBitmap(), contentDescription = "BiliPai 传输二维码", modifier = Modifier.size(220.dp))
+                }
+                if (!scanned) {
+                    BiliPaiTransferScanner(
+                        onCode = { raw ->
+                            runCatching {
+                                if (receiving) {
+                                    pendingBundle = session.acceptEnvelope(raw)
+                                    scanned = true
+                                    message = "已解密账号，请确认导入"
+                                } else {
+                                    session.acceptRequest(raw)
+                                    val bundle = BiliPaiSessionBundle(
+                                        mid = TokenManager.midCache ?: 0L,
+                                        sessData = TokenManager.sessDataCache.orEmpty(),
+                                        csrf = TokenManager.csrfCache.orEmpty(),
+                                        accessToken = TokenManager.accessTokenCache.orEmpty(),
+                                        refreshToken = TokenManager.refreshTokenCache.orEmpty(),
+                                        accessTokenPlatform = TokenManager.accessTokenPlatformCache,
+                                        buvid3 = TokenManager.buvid3Cache.orEmpty(),
+                                        isVip = TokenManager.isVipCache,
+                                    )
+                                    require(bundle.mid > 0 && bundle.sessData.isNotBlank()) { "当前设备没有可传输的登录会话" }
+                                    qrText = BiliPaiTransferCodec.encodeEnvelope(session.createEnvelope(bundle))
+                                    scanned = true
+                                    message = "请让接收设备扫描此加密二维码"
+                                }
+                            }.onFailure { message = it.message ?: "二维码无效" }
+                        }, modifier = Modifier.size(180.dp))
+                }
+                pendingBundle?.let { bundle ->
+                    AppButton(onClick = { scope.launch { if (session.confirmImport(bundle)) onDismiss() else message = "导入失败" } }) {
+                        AppText("确认导入 MID ${bundle.mid}")
+                    }
+                }
+            }
+        },
+        confirmButton = { AppTextButton(onClick = onDismiss) { AppText("取消") } },
+    )
+}
+
+private fun transferQrBitmap(content: String): Bitmap {
+    val matrix = QRCodeWriter().encode(content, BarcodeFormat.QR_CODE, 512, 512)
+    val bitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.RGB_565)
+    for (x in 0 until 512) for (y in 0 until 512) bitmap.setPixel(x, y, if (matrix[x, y]) Color.BLACK else Color.WHITE)
+    return bitmap
 }
 
 @Composable

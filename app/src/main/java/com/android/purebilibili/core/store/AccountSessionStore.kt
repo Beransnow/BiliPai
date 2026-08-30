@@ -167,6 +167,27 @@ object AccountSessionStore {
         return true
     }
 
+    /** Imports a session received through an authenticated BiliPai transfer. */
+    suspend fun importTransferredSession(
+        context: Context,
+        bundle: com.android.purebilibili.feature.login.BiliPaiSessionBundle,
+    ): Boolean {
+        if (bundle.mid <= 0L || bundle.sessData.isBlank()) return false
+        NetworkModule.clearRuntimeCookies()
+        TokenManager.applyStoredSession(
+            context = context,
+            sessData = bundle.sessData,
+            csrf = bundle.csrf,
+            mid = bundle.mid,
+            accessToken = bundle.accessToken,
+            refreshToken = bundle.refreshToken,
+            accessTokenPlatform = bundle.accessTokenPlatform,
+            buvid3 = bundle.buvid3,
+            isVip = bundle.isVip,
+        )
+        return upsertCurrentAccount(context)?.mid == bundle.mid
+    }
+
     private fun persistAccounts(
         context: Context,
         accounts: List<StoredAccountSession>
