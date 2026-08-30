@@ -226,7 +226,7 @@ internal fun AicuScreen(
                             val records = state.page?.records.orEmpty()
                             val showRoom = state.category == AicuCategory.LIVE_DANMAKU && (index == 0 || records[index - 1].groupKey != record.groupKey)
                             if (showRoom) AppText("${record.roomName.ifBlank { "直播间 ${record.roomId}" }} · ${record.upName}", modifier = Modifier.padding(vertical = 8.dp))
-                            AicuRecordCard(record, state.category, renderEmoteMap, { onOpenRecord(record) }, { onCopyRecord(record) })
+                            AicuRecordCard(record, state.category, emoteMap, { onOpenRecord(record) }, { onCopyRecord(record) })
                         }
                         if (loadedPage != null) item("pagination") {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

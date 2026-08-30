@@ -143,7 +143,7 @@ class DampedDragAnimationPolicyTest {
             .substringAfter("fun updateIndex(index: Int)")
             .substringBefore("private const val BILIPAI_PRESSED_SCALE")
 
-        assertTrue(updateIndexSource.contains("animateToValue(safeIndex.toFloat(), animatePress = false)"))
+        assertTrue(updateIndexSource.contains("animateToValue(safeIndex.toFloat())"))
         assertTrue(source.contains("fun animateToValue(value: Float, onSettled: (() -> Unit)? = null)"))
         assertTrue(source.contains("press()"))
         assertTrue(source.contains("release(onSettled = onSettled)"))

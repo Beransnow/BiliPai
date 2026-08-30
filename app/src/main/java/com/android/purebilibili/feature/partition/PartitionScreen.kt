@@ -90,6 +90,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CoroutineStart
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
@@ -630,6 +631,7 @@ private fun PartitionSideRail(
     val onSelectedLatest by rememberUpdatedState(onPartitionSelected)
     val partitionsLatest by rememberUpdatedState(partitions)
     var currentIndex by remember { mutableIntStateOf(selectedIndex) }
+    var selectionCameFromDrag by remember { mutableStateOf(false) }
     val offsetAnimation = remember { Animatable(0f) }
     val holder = remember { PartitionSideRailDragHolder() }
 
@@ -657,10 +659,11 @@ private fun PartitionSideRail(
             onDragStarted = {},
             onDragStopped = {
                 val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, maxTabIndex)
+                selectionCameFromDrag = targetIndex != currentIndex
                 currentIndex = targetIndex
-                animateToValue(targetIndex.toFloat())
-                animationScope.launch {
-                    offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
+                animateToValue(targetIndex.toFloat(), animatePress = false)
+                animationScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                    offsetAnimation.snapTo(0f)
                 }
             },
             onDrag = { _, dragAmount ->
@@ -684,7 +687,11 @@ private fun PartitionSideRail(
         snapshotFlow { currentIndex }
             .drop(1)
             .collectLatest { index ->
-                dampedDragAnimation.animateToValue(index.toFloat())
+                if (selectionCameFromDrag) {
+                    selectionCameFromDrag = false
+                } else {
+                    dampedDragAnimation.animateToValue(index.toFloat())
+                }
                 partitionsLatest.getOrNull(index)?.let(onSelectedLatest)
             }
     }

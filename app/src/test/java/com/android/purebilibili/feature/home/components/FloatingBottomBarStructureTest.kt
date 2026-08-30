@@ -281,7 +281,7 @@ class FloatingBottomBarStructureTest {
                 missingDelimiterValue = ""
             )
 
-        assertTrue(selectionSync.contains("dampedDragAnimation.animateToValue(index.toFloat(), animatePress = false)"))
+        assertTrue(selectionSync.contains("dampedDragAnimation.animateToValue(index.toFloat())"))
         assertFalse(selectionSync.contains("dampedDragAnimation.snapTo(index.toFloat())"))
         assertTrue(source.contains("dragSelectionEnabled && safeTabsCount > 1 ->"))
         assertTrue(source.contains("dampedDragAnimation.longPressModifier"))

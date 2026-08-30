@@ -645,9 +645,9 @@ fun FloatingBottomBar(
                         ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
                     )
                 ) {
-                    // A tap is a selection change, not a drag. Keep the drag-only press bloom
-                    // out of this path so the indicator does not enlarge for the full settle.
-                    dampedDragAnimation.animateToValue(index.toFloat(), animatePress = false)
+                    // Tap selection keeps the same enlarge/move/shrink process as the home dock.
+                    // The tightened scale springs keep it brief without removing the feedback.
+                    dampedDragAnimation.animateToValue(index.toFloat())
                 }
             }
     }
