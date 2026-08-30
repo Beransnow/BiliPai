@@ -398,6 +398,7 @@ internal fun VideoDetailScreenStateHolder(
     miniPlayerManager: MiniPlayerManager? = null,
     isInPipMode: Boolean = false,
     isVisible: Boolean = true,
+    onImmersivePlaybackChanged: (Boolean) -> Unit = {},
     viewModel: VideoPlaybackViewModel = viewModel(),
     engagementViewModel: VideoEngagementViewModel = viewModel(),
     composerViewModel: VideoComposerViewModel = viewModel(),
@@ -1155,6 +1156,13 @@ internal fun VideoDetailScreenStateHolder(
         userRequestedFullscreen = userRequestedFullscreen,
         isInMultiWindowMode = isActivityInMultiWindowMode
     )
+    // The navigation rail may retain its slot for card return geometry, but immersive playback
+    // must receive the entire window. Pair the route-owned request with disposal cleanup.
+    val isImmersivePlayback = isFullscreenMode || isPortraitFullscreen || isPipMode
+    DisposableEffect(onImmersivePlaybackChanged, isImmersivePlayback) {
+        onImmersivePlaybackChanged(isImmersivePlayback)
+        onDispose { onImmersivePlaybackChanged(false) }
+    }
     ManualFullscreenRequestLifecycleEffect(
         manualFullscreenRequested = userRequestedFullscreen,
         isFullscreenMode = isFullscreenMode,

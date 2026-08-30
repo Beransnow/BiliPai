@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue //  新增
 import androidx.compose.runtime.LaunchedEffect // 新增
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.produceState
@@ -1265,6 +1266,7 @@ fun AppNavigation(
         )
         val shouldInterceptTabBack = backGestureDecision.interceptSystemBack
         val isVideoDetailDestination = isVideoDetailRoute(currentRoute)
+        val immersiveVideoDetails = remember { mutableStateMapOf<BiliPaiNavKey, Boolean>() }
         val bottomBarMountRoute = if (isVideoDetailDestination) {
             currentBottomNavItem.route
         } else {
@@ -1300,12 +1302,15 @@ fun AppNavigation(
             shouldHideBottomBarOnTablet = shouldHideBottomBarOnTablet,
             shouldDeferReveal = false
         )
-        // Keep the rail's layout slot for the whole detail round trip. Removing it at HELD moves
-        // the NavHost after click and invalidates the frozen card coordinates on return.
-        val sideBarMountGate = sideBarRouteGate &&
-            (!isVideoDetailDestination ||
-                (sharedVideoCardTransitionEnabled &&
-                    navigation3SourceMetadata.sharedTransitionReady))
+        // Keep the slot for ordinary detail/card return geometry. Fullscreen and PiP must remove
+        // it from the Row entirely: a transparent rail still constrains the player's width.
+        val sideBarMountGate = shouldMountSidebarForNavigation(
+            routeAllowsSidebar = sideBarRouteGate,
+            isVideoDetailDestination = isVideoDetailDestination,
+            keepSharedTransitionSlot = sharedVideoCardTransitionEnabled &&
+                navigation3SourceMetadata.sharedTransitionReady,
+            isImmersivePlayback = immersiveVideoDetails[currentNavigation3Key] == true
+        )
         val showBottomBar = shouldShowBottomBarForNavigation(
             activeRoute = activeBottomTabRoute,
             visibleBottomBarRoutes = visibleBottomBarRoutes,
@@ -1745,8 +1750,8 @@ fun AppNavigation(
             }
             Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
-                // Keep only the rail's layout slot while a card morph is active. Its pixels are
-                // hidden on detail; after OPENING reaches HELD the slot is released as well.
+                // Ordinary detail keeps an invisible slot for card return; immersive playback
+                // bypasses this whole branch so no exit animation can keep reserving its width.
                 if (windowSizeClass.shouldUseSideNavigation && sideBarMountGate) {
                     AnimatedVisibility(
                         visible = useSideNavigation,
@@ -2605,6 +2610,16 @@ fun AppNavigation(
                                         activateVideoBackPreviewPlayback,
                                 ),
                                 startInFullscreen = videoKey.fullscreen,
+                                onImmersivePlaybackChanged = remember(videoKey) {
+                                    { immersive: Boolean ->
+                                        if (immersive) {
+                                            immersiveVideoDetails[videoKey] = true
+                                        } else {
+                                            immersiveVideoDetails.remove(videoKey)
+                                        }
+                                        Unit
+                                    }
+                                },
                                 startAudioFromRoute = videoKey.startAudio,
                                 autoEnterPortraitFromRoute = videoKey.autoPortrait,
                                 initialVerticalFromRoute = videoKey.initialVertical,
