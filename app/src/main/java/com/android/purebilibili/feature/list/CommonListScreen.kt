@@ -1251,16 +1251,22 @@ fun CommonListScreen(
                             }
                         },
                         actions = {
-                            if (!isSubscribedBrowse && (favoriteViewModel == null || favoriteSection == FavoriteSection.VIDEO)) {
+                            val isBatchActionMode = isFavoriteBatchMode || isHistoryBatchMode
+                            if (
+                                !isBatchActionMode &&
+                                !isSubscribedBrowse &&
+                                (favoriteViewModel == null || favoriteSection == FavoriteSection.VIDEO)
+                            ) {
                                 VideoListLayoutToggle(
                                     singleColumn = listLayout.singleColumn,
                                     onClick = listLayout.toggle,
-                                    enabled = !isFavoriteBatchMode && !isHistoryBatchMode,
                                 )
                             }
-                            onOpenSearchDestination?.let { openSearch ->
-                                AppIconButton(onClick = { openSearch(searchQuery) }) {
-                                    AppIcon(Icons.Rounded.Search, contentDescription = "搜索")
+                            if (!isBatchActionMode) {
+                                onOpenSearchDestination?.let { openSearch ->
+                                    AppIconButton(onClick = { openSearch(searchQuery) }) {
+                                        AppIcon(Icons.Rounded.Search, contentDescription = "搜索")
+                                    }
                                 }
                             }
                             if (favoriteViewModel != null && favoriteSection == FavoriteSection.VIDEO) {
