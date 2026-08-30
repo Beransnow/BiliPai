@@ -346,15 +346,19 @@ class DampedDragAnimationState internal constructor(
         if (notifyIndexChanged && notifyIndexChangedOnReleaseStart) {
             onIndexChanged(releaseTargetIndex)
         }
-        animateToValue(releaseTargetIndex.toFloat(), animatePress = false) {
-            if (generation == motionGeneration) {
-                velocityPxPerSecond = 0f
-                settledReleaseCount += 1
-                if (notifyIndexChanged && !notifyIndexChangedOnReleaseStart) {
-                    onIndexChanged(releaseTargetIndex)
+        animateToValue(
+            value = releaseTargetIndex.toFloat(),
+            onSettled = {
+                if (generation == motionGeneration) {
+                    velocityPxPerSecond = 0f
+                    settledReleaseCount += 1
+                    if (notifyIndexChanged && !notifyIndexChangedOnReleaseStart) {
+                        onIndexChanged(releaseTargetIndex)
+                    }
                 }
-            }
-        }
+            },
+            animatePress = false,
+        )
         offsetJob?.cancel()
         offsetJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
             offsetAnimation.snapTo(0f)
