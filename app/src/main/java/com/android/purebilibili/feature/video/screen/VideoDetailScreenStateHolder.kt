@@ -2351,6 +2351,7 @@ internal fun VideoDetailScreenStateHolder(
         autoRotateEnabled,
         fullscreenMode,
         useTabletLayout,
+        windowSizeClass.isCompactDevice,
         isOrientationDrivenFullscreen,
         manualPortraitHoldActive,
         isActivityInMultiWindowMode,

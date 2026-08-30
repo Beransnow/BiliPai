@@ -642,8 +642,9 @@ internal fun resolvePhoneVideoRequestedOrientation(
                     preferPortraitForFlatFoldable = preferPortraitForFoldableInnerScreen
                 ) ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             }
-            isFullscreenMode -> resolveCurrentExactLandscapeOrientation(currentRequestedOrientation)
-                ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            // Match the large-screen path: retaining LANDSCAPE/REVERSE_LANDSCAPE here locks
+            // the cover screen to one side even though app auto-rotation is enabled.
+            isFullscreenMode -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
     }
@@ -713,7 +714,9 @@ internal fun resolvePhoneAutoRotateRequestedOrientation(
     )
 
     return when {
-        isCurrentlyLandscape && exactLandscapeKeep != null -> exactLandscapeKeep
+        // Choose an exact side only when entering from portrait. Once landscape is active,
+        // let the system handle 180-degree turns instead of repeatedly locking a sensor side.
+        isCurrentlyLandscape && exactLandscapeKeep != null -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         portraitStable -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         !isCurrentlyLandscape && exactLandscapeEntry != null -> exactLandscapeEntry
         else -> null
@@ -771,7 +774,8 @@ private fun resolveExactLandscapeOrientation(
 }
 
 internal fun isLandscapeRequestedOrientation(requestedOrientation: Int): Boolean {
-    return requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ||
+    return requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE ||
+        requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE ||
         requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
 }
 
