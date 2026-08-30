@@ -5,13 +5,11 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -22,8 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -49,8 +45,6 @@ import com.android.purebilibili.data.model.response.*
 import com.android.purebilibili.data.repository.AicuRepository
 import com.android.purebilibili.navigation3.BiliPaiNavKey
 import kotlinx.coroutines.flow.map
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -189,7 +183,7 @@ internal fun AicuScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         item("filters") {
-                            AicuFilters(state, onUidChange, onFilterChange, submit, onReset)
+                            AicuFilters(state, liquidEnabled, onUidChange, onFilterChange, submit, onReset)
                         }
                         item("status") {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -251,17 +245,18 @@ private fun AicuCategoryTabs(category: AicuCategory, liquidEnabled: Boolean, onS
     BoxWithConstraints(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
         val useGlass = shouldUseAicuLiquidTabs(liquidEnabled, Build.VERSION.SDK_INT, maxWidth.value, fontScale, hasBackdrop = true)
         if (useGlass) {
-            // Capture only this small chrome background, never the full list or the indicator itself.
-            val backdrop = rememberLayerBackdrop()
-            Box(Modifier.fillMaxWidth().height(56.dp)) {
-                Box(Modifier.matchParentSize().clip(CircleShape).layerBackdrop(backdrop).background(Brush.horizontalGradient(listOf(
-                    MaterialTheme.colorScheme.surfaceContainer,
-                    MaterialTheme.colorScheme.primaryContainer,
-                    MaterialTheme.colorScheme.surfaceContainer,
-                ))))
-                AppThemeAdaptiveTabRow(options, category, onSelect, modifier = Modifier.fillMaxWidth(),
-                    height = 56.dp, miuixBackdrop = backdrop, dragSelectionEnabled = false)
-            }
+            // Let the shared dock own its bounded fallback backdrop. Supplying a synthetic
+            // gradient here separates the shell and moving indicator capture pipelines.
+            AppThemeAdaptiveTabRow(
+                options = options,
+                selectedValue = category,
+                onSelectionChange = onSelect,
+                modifier = Modifier.fillMaxWidth(),
+                height = 48.dp,
+                indicatorHeight = 36.dp,
+                dragSelectionEnabled = true,
+                tapPressRefractionEnabled = true,
+            )
         } else {
             AppNativeTabRow(options, category, onSelectionChange = onSelect, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                 scrollable = maxWidth < 360.dp || fontScale > 1.3f, allowLabelOverflow = true, minTabWidth = 96.dp)
@@ -271,7 +266,14 @@ private fun AicuCategoryTabs(category: AicuCategory, liquidEnabled: Boolean, onS
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun AicuFilters(state: AicuUiState, onUid: (String) -> Unit, onFilter: (AicuFilter) -> Unit, onSubmit: () -> Unit, onReset: () -> Unit) {
+private fun AicuFilters(
+    state: AicuUiState,
+    liquidEnabled: Boolean,
+    onUid: (String) -> Unit,
+    onFilter: (AicuFilter) -> Unit,
+    onSubmit: () -> Unit,
+    onReset: () -> Unit,
+) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         AppOutlinedTextField(state.uid, onUid, labelText = "B 站用户 UID", singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Search),
@@ -284,16 +286,55 @@ private fun AicuFilters(state: AicuUiState, onUid: (String) -> Unit, onFilter: (
         }
         if (state.category == AicuCategory.COMMENT) {
             AppText("评论类型", style = MaterialTheme.typography.labelLarge)
-            AppNativeSegmentedControl(
-                options = listOf(AppSegmentOption(0, "全部"), AppSegmentOption(1, "一级"), AppSegmentOption(2, "二级")),
-                selectedValue = state.filter.commentMode,
-                onSelectionChange = { onFilter(state.filter.copy(commentMode = it)) },
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+            AicuCommentModeDock(
+                selectedMode = state.filter.commentMode,
+                liquidEnabled = liquidEnabled,
+                onSelect = { onFilter(state.filter.copy(commentMode = it)) },
             )
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AppButton(onClick = onSubmit, enabled = !state.busy && state.retrySeconds == 0, modifier = Modifier.heightIn(min = 48.dp)) { AppText("查询") }
             AppTextButton(onClick = onReset, enabled = !state.busy && state.retrySeconds == 0, modifier = Modifier.heightIn(min = 48.dp)) { AppText("重置筛选") }
+        }
+    }
+}
+
+@Composable
+private fun AicuCommentModeDock(
+    selectedMode: Int,
+    liquidEnabled: Boolean,
+    onSelect: (Int) -> Unit,
+) {
+    val options = remember {
+        listOf(AppSegmentOption(0, "全部"), AppSegmentOption(1, "一级"), AppSegmentOption(2, "二级"))
+    }
+    val fontScale = LocalDensity.current.fontScale
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val useGlass = shouldUseAicuLiquidTabs(
+            enabled = liquidEnabled,
+            sdkInt = Build.VERSION.SDK_INT,
+            availableWidthDp = maxWidth.value,
+            fontScale = fontScale,
+            hasBackdrop = true,
+        )
+        if (useGlass) {
+            AppThemeAdaptiveTabRow(
+                options = options,
+                selectedValue = selectedMode,
+                onSelectionChange = onSelect,
+                modifier = Modifier.fillMaxWidth(),
+                height = 48.dp,
+                indicatorHeight = 36.dp,
+                dragSelectionEnabled = true,
+                tapPressRefractionEnabled = true,
+            )
+        } else {
+            AppNativeSegmentedControl(
+                options = options,
+                selectedValue = selectedMode,
+                onSelectionChange = onSelect,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+            )
         }
     }
 }
