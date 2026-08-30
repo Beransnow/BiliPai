@@ -11,6 +11,43 @@ import kotlin.test.assertTrue
 class SearchLoadPolicyTest {
 
     @Test
+    fun `fallback is only allowed for unfiltered default video search`() {
+        assertTrue(canFallbackVideoSearch(SearchOrder.TOTALRANK, SearchDuration.ALL, 0, null, null))
+        SearchOrder.entries.filter { it != SearchOrder.TOTALRANK }.forEach { order ->
+            assertFalse(canFallbackVideoSearch(order, SearchDuration.ALL, 0, null, null))
+        }
+        assertFalse(canFallbackVideoSearch(SearchOrder.TOTALRANK, SearchDuration.UNDER_10MIN, 0, null, null))
+        assertFalse(canFallbackVideoSearch(SearchOrder.TOTALRANK, SearchDuration.ALL, 1, null, null))
+        assertFalse(canFallbackVideoSearch(SearchOrder.TOTALRANK, SearchDuration.ALL, 0, 100L, null))
+        assertFalse(canFallbackVideoSearch(SearchOrder.TOTALRANK, SearchDuration.ALL, 0, null, 200L))
+    }
+
+    @Test
+    fun `video pagination uses result total when page total is absent`() {
+        val first = resolveVideoSearchPageInfo(1, 1, 0, 41, 20, 20)
+        assertEquals(3, first.totalPages)
+        assertTrue(first.hasMore)
+        assertFalse(resolveVideoSearchPageInfo(3, 3, 0, 41, 20, 1).hasMore)
+    }
+
+    @Test
+    fun `full video page without totals can continue but short page ends`() {
+        assertTrue(resolveVideoSearchPageInfo(2, 1, 0, 0, 20, 20).hasMore)
+        assertEquals(2, resolveVideoSearchPageInfo(2, 1, 0, 0, 20, 20).currentPage)
+        assertFalse(resolveVideoSearchPageInfo(2, 2, 0, 0, 20, 2).hasMore)
+    }
+
+    @Test
+    fun `short nonempty video page respects explicit remaining pages`() {
+        assertTrue(resolveVideoSearchPageInfo(1, 1, 4, 80, 20, 2).hasMore)
+    }
+
+    @Test
+    fun `empty server page stops even when pagination metadata claims more`() {
+        assertFalse(resolveVideoSearchPageInfo(2, 2, 9, 180, 20, 0).hasMore)
+    }
+
+    @Test
     fun `first page video search retries fallback when primary result is empty`() {
         assertTrue(
             shouldFallbackEmptyFirstPageVideoSearch(

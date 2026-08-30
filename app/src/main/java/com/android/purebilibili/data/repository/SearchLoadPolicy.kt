@@ -3,6 +3,40 @@ package com.android.purebilibili.data.repository
 import com.android.purebilibili.data.model.response.SearchType
 import com.android.purebilibili.data.model.response.VideoItem
 
+// all/v2 cannot preserve video sorting or filters. Never silently replace a filtered page.
+internal fun canFallbackVideoSearch(
+    order: SearchOrder,
+    duration: SearchDuration,
+    tids: Int,
+    pubBegin: Long?,
+    pubEnd: Long?
+): Boolean = order == SearchOrder.TOTALRANK && duration == SearchDuration.ALL &&
+    tids == 0 && pubBegin == null && pubEnd == null
+
+internal fun resolveVideoSearchPageInfo(
+    requestedPage: Int,
+    responsePage: Int,
+    totalPages: Int,
+    totalResults: Int,
+    pageSize: Int,
+    resultCount: Int
+): SearchRepository.SearchPageInfo {
+    val currentPage = resolveSearchLoadedPage(requestedPage, responsePage)
+    val size = pageSize.takeIf { it > 0 } ?: 20
+    val resolvedTotalPages = when {
+        totalPages > 0 -> totalPages
+        totalResults > 0 -> ((totalResults.toLong() + size - 1) / size).toInt()
+        resultCount >= size -> currentPage + 1
+        else -> currentPage
+    }
+    return SearchRepository.SearchPageInfo(
+        currentPage = currentPage,
+        totalPages = resolvedTotalPages,
+        totalResults = totalResults.takeIf { it > 0 } ?: resultCount,
+        hasMore = resultCount > 0 && currentPage < resolvedTotalPages
+    )
+}
+
 internal fun shouldFallbackEmptyFirstPageVideoSearch(
     page: Int,
     primaryResultCount: Int
