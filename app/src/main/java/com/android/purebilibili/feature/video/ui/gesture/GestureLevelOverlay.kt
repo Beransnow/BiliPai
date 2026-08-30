@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.video.ui.gesture
 
 import android.content.res.Configuration
+import android.os.SystemClock
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -36,6 +37,7 @@ import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,6 +63,7 @@ import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import com.android.purebilibili.feature.video.ui.components.AnimatedGesturePercentText
+import com.android.purebilibili.feature.video.ui.components.CircularGesturePercentText
 import com.android.purebilibili.feature.video.ui.components.shouldTriggerGesturePercentHaptic
 import com.android.purebilibili.feature.video.ui.section.VideoGestureMode
 import com.android.purebilibili.feature.video.ui.section.resolveVideoGestureMotionSpec
@@ -103,6 +106,7 @@ fun BoxScope.GestureLevelOverlayHost(
     val percentInt = (percent.coerceIn(0f, 1f) * 100f).roundToInt().coerceIn(0, 100)
     GestureLevelStepHaptics(
         style = style,
+        kind = kind,
         percent = percentInt,
         active = visible
     )
@@ -212,15 +216,16 @@ private fun Md3GestureLevelIndicator(
                         sizeDp = if (compact) 18 else spec.iconSizeDp,
                         glowColor = spec.accentColor.copy(alpha = 0.12f)
                     )
-                    AppText(
-                        text = "$percent%",
-                        color = spec.textColor,
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = if (compact) 14.sp else 18.sp
-                        ),
-                        maxLines = 1
-                    )
+                    key(spec.kind) {
+                        CircularGesturePercentText(
+                            percent = percent,
+                            color = spec.textColor,
+                            textStyle = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = if (compact) 14.sp else 18.sp
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -414,15 +419,28 @@ private fun GestureLevelIconSlot(
 
 /**
  * Stepped haptics for all three skins while dragging volume / brightness.
- * MD3 & iOS: every 5%. MIUIX: every ~7% (closer to system stream steps).
+ * MD3: throttled 5% ticks with boundary confirmation. iOS: every 5%.
+ * MIUIX: every ~7% (closer to system stream steps).
  */
 @Composable
 private fun GestureLevelStepHaptics(
     style: GestureLevelOverlayStyle,
+    kind: GestureLevelKind,
     percent: Int,
     active: Boolean
 ) {
     val haptic = rememberHapticFeedback()
+    if (style == GestureLevelOverlayStyle.Md3) {
+        val policy = remember(kind) { Md3GestureLevelHapticPolicy() }
+        LaunchedEffect(active, percent, policy) {
+            when (policy.update(percent, active, SystemClock.uptimeMillis())) {
+                GestureLevelHapticFeedback.Tick -> haptic(HapticType.SELECTION)
+                GestureLevelHapticFeedback.Boundary -> haptic(HapticType.LIGHT)
+                null -> Unit
+            }
+        }
+        return
+    }
     var previousPercent by remember { mutableIntStateOf(percent) }
     val stepPercent = when (style) {
         GestureLevelOverlayStyle.Miuix -> 7
@@ -481,6 +499,7 @@ fun GestureLevelOverlayContent(
     val percentInt = (percent.coerceIn(0f, 1f) * 100f).roundToInt().coerceIn(0, 100)
     GestureLevelStepHaptics(
         style = style,
+        kind = kind,
         percent = percentInt,
         active = true
     )
