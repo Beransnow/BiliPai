@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.video.ui.gesture
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,6 +46,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -165,13 +168,22 @@ private fun Md3GestureLevelIndicator(
     percent: Int,
     modifier: Modifier = Modifier
 ) {
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     // Use player bounds, not device orientation: embedded and split-screen players
     // can have much less height than the window in either orientation.
     BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
         val diameter = resolveMd3GestureLevelDiameterDp(maxWidth.value, maxHeight.value)
         val compact = diameter < 112f
+        // Keep a little top clearance in short landscape / split-screen players.
+        val upwardOffset = if (isLandscape) {
+            minOf(24f, ((maxHeight.value - diameter) / 2f - 8f).coerceAtLeast(0f))
+        } else {
+            0f
+        }
         AppSurface(
-            modifier = Modifier.size(diameter.dp),
+            modifier = Modifier
+                .offset(y = (-upwardOffset).dp)
+                .size(diameter.dp),
             shape = CircleShape,
             color = spec.containerColor,
             shadowElevation = 8.dp,
