@@ -4,9 +4,9 @@
 
 更新日志(ChangeLog)
 
-[更改] 版本号 0.2.3-beta.20，versionCode 333
+[更改] 版本号 0.2.3-beta.20，versionCode 334
 [更改] beta.19 已完成本地版本更新但未推送到 GitHub；本次以 beta.20 作为公开推送版本
-[更改] 正式包 BiliPai-0.2.3-beta.20.apk，Dev 包 BiliPai-0.2.3-beta.20-dev.apk
+[更改] 正式包 BiliPai-0.2.3-beta.20.apk，Dev 包 BiliPai-0.2.3-beta.20-dev.apk（versionCode 334）
 [更改] 基准为远端已公开的 v0.2.3-beta.17；beta.19 未形成 GitHub 公开版本记录
 
 ### 液态玻璃与全局导航
