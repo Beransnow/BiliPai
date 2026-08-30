@@ -1617,6 +1617,9 @@ fun AppNavigation(
         val bottomBarBackdropSource = rememberChromeBackdropSource()
         val bottomBarBackdrop = bottomBarBackdropSource.backdrop
         CompositionLocalProvider(
+            com.android.purebilibili.feature.aicu.LocalAicuNavigation provides { uid: Long? ->
+                pushNavigation3Key(BiliPaiNavKey.AicuQuery(uid = uid ?: 0L))
+            },
             LocalSetBottomBarVisible provides setBottomBarVisible,
             LocalBottomBarVisible provides finalBottomBarVisible,
             LocalBottomBarContentPadding provides bottomBarContentPadding,
@@ -2927,6 +2930,15 @@ fun AppNavigation(
                                     onBack = { performSystemBackAction() }
                                 )
                             }
+                        BiliPaiNavEntryContentRole.AICU_QUERY -> {
+                            val aicuKey = key as BiliPaiNavKey.AicuQuery
+                            com.android.purebilibili.feature.aicu.AicuRoute(
+                                uid = aicuKey.uid.takeIf { it > 0 },
+                                initialCategory = com.android.purebilibili.data.model.response.AicuCategory.fromRoute(aicuKey.category),
+                                onBack = { performSystemBackAction() },
+                                onOpenTarget = { target -> pushNavigation3Key(target) },
+                            )
+                        }
                         BiliPaiNavEntryContentRole.WATCH_LATER -> {
                                 val watchLaterViewModel: com.android.purebilibili.feature.watchlater.WatchLaterViewModel = viewModel()
                                 val watchLaterSearchKey = key as? BiliPaiNavKey.WatchLaterSearch

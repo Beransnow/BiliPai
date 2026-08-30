@@ -1099,6 +1099,7 @@ private fun SubReplyDetailItem(
 
     if (showActionSheet) {
         ReplyActionSheet(
+            queryAuthorUid = replyMemberMid,
             canDelete = onDeleteClick != null,
             canReport = onReportClick != null,
             canShare = shouldSupportReplyShare(item),

@@ -211,6 +211,7 @@ fun SpaceScreen(
     animatedVisibilityScope: AnimatedVisibilityScope? = null
 ) {
     val context = LocalContext.current
+    val queryAicu = com.android.purebilibili.feature.aicu.LocalAicuNavigation.current
     val copyToClipboard = rememberClipboardCopyHandler()
     val playbackProgressManager = remember(context) {
         PlaybackProgressManager.getInstance(context)
@@ -410,6 +411,13 @@ fun SpaceScreen(
                                             ),
                                         )
                                     )
+                                }
+                                if (queryAicu != null && mid > 0) {
+                                    add(listOf(AppWindowAction(
+                                        label = "评论与弹幕查询",
+                                        icon = Icons.Outlined.Search,
+                                        onClick = { queryAicu(mid) },
+                                    )))
                                 }
                                 add(
                                     listOf(

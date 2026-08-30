@@ -57,19 +57,22 @@ internal class AicuViewModel(
     private var lastQuery: AicuQuery? = null
     private var submittedUid: Long? = null
     private var autoQueryUid: Long? = null
+    private var autoQueryPending = false
+    private var foreground = true
     private var disclaimerVisible = false
     private var exited = false
 
     fun initialize(uid: Long?, category: AicuCategory) {
         if (initialized || initJob?.isActive == true || exited) return
         autoQueryUid = uid?.takeIf { it > 0 }
+        autoQueryPending = autoQueryUid != null
         mutableState.update { it.copy(uid = autoQueryUid?.toString().orEmpty(), category = category, consent = AicuConsentState.CHECKING) }
         initJob = viewModelScope.launch {
             try {
                 val accepted = consentStore.acceptedVersion() >= AICU_DISCLAIMER_VERSION
                 initialized = true
                 mutableState.update { it.copy(consent = if (accepted) AicuConsentState.ACCEPTED else AicuConsentState.REQUIRED, consentError = null) }
-                if (accepted && autoQueryUid != null && !exited) submit()
+                if (accepted && autoQueryPending && !exited) submit()
             } catch (cancel: CancellationException) {
                 throw cancel
             } catch (_: Exception) {
@@ -78,8 +81,18 @@ internal class AicuViewModel(
         }
     }
 
+    fun setForeground(visible: Boolean) {
+        foreground = visible
+        if (!visible) {
+            setDisclaimerVisible(false)
+            cancelQuery()
+        } else if (autoQueryPending && state.value.consent == AicuConsentState.ACCEPTED) {
+            submit()
+        }
+    }
+
     fun setDisclaimerVisible(visible: Boolean) {
-        disclaimerVisible = visible && state.value.consent == AicuConsentState.REQUIRED && !exited
+        disclaimerVisible = visible && foreground && state.value.consent == AicuConsentState.REQUIRED && !exited
         consentTimer.setVisible(disclaimerVisible)
         timerJob?.cancel()
         mutableState.update { it.copy(consentSeconds = consentTimer.remainingSeconds()) }
@@ -101,7 +114,7 @@ internal class AicuViewModel(
                 if (!exited) {
                     mutableState.update { it.copy(consent = AicuConsentState.ACCEPTED, savingConsent = false) }
                     setDisclaimerVisible(false)
-                    if (autoQueryUid != null) submit()
+                    if (autoQueryPending) submit()
                 }
             } catch (cancel: CancellationException) {
                 throw cancel
@@ -115,6 +128,7 @@ internal class AicuViewModel(
         if (state.value.uid == value) return
         cancelQuery()
         submittedUid = null
+        autoQueryPending = false
         lastQuery = null
         mutableState.update { it.copy(uid = value, pages = emptyMap(), error = null, loadState = AicuLoadState.IDLE) }
     }
@@ -153,6 +167,7 @@ internal class AicuViewModel(
             return
         }
         submittedUid = uid
+        autoQueryPending = false
         startQuery(AicuQuery(uid, current.category, filter = current.filter))
     }
 
@@ -169,7 +184,7 @@ internal class AicuViewModel(
         lastQuery?.let(::startQuery) ?: submit()
     }
 
-    private fun canRequest() = !exited && state.value.consent == AicuConsentState.ACCEPTED && nowMs() >= retryAtMs
+    private fun canRequest() = !exited && foreground && state.value.consent == AicuConsentState.ACCEPTED && nowMs() >= retryAtMs
 
     private fun startQuery(query: AicuQuery) {
         if (!canRequest()) return

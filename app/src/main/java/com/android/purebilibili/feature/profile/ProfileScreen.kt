@@ -3960,6 +3960,7 @@ fun ServicesSection(
     isTablet: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
+    val queryAicu = com.android.purebilibili.feature.aicu.LocalAicuNavigation.current
     val downloadIcon = rememberAppDownloadIcon()
     val historyIcon = rememberAppHistoryIcon()
     val bookmarkIcon = rememberAppBookmarkIcon()
@@ -3987,6 +3988,7 @@ fun ServicesSection(
             if (showFavoriteService) add(Triple("我的收藏", bookmarkIcon, onFavoriteClick))
             add(Triple("稍后再看", watchLaterIcon, onWatchLaterClick))
             add(Triple("消息中心", inboxIcon, onInboxClick))
+            if (queryAicu != null) add(Triple("评论与弹幕查询", historyIcon) { queryAicu(null) })
             add(Triple("账号切换", accountIcon, onAccountManageClick))
         }
 
@@ -4038,6 +4040,16 @@ fun ServicesSection(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 val serviceRows: @Composable ColumnScope.() -> Unit = {
+                    if (queryAicu != null) {
+                        ProfileServiceRow(
+                            icon = historyIcon,
+                            title = "评论与弹幕查询",
+                            onClick = { queryAicu(null) },
+                            iconTint = secondaryAccent,
+                            textColor = contentColor,
+                        )
+                        ProfileServiceDivider(contentColor)
+                    }
                     ProfileServiceRow(
                         icon = downloadIcon,
                         title = "离线缓存",
@@ -4123,6 +4135,10 @@ fun ServicesSection(
                 tonalElevation = 0.dp // Ensure no extra overlay
             ) {
                 Column {
+                    if (queryAicu != null) {
+                        AppPreference(icon = historyIcon, title = "评论与弹幕查询",
+                            onClick = { queryAicu(null) }, iconTint = secondaryAccent, textColor = contentColor)
+                    }
                     AppPreference(
                         icon = downloadIcon,
                         title = "离线缓存",

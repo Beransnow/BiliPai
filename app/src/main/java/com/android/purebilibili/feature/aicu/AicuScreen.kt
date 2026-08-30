@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -21,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -46,6 +48,7 @@ import com.android.purebilibili.core.ui.components.*
 import com.android.purebilibili.data.model.response.*
 import com.android.purebilibili.data.repository.AicuRepository
 import com.android.purebilibili.navigation3.BiliPaiNavKey
+import kotlinx.coroutines.flow.map
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import java.time.Instant
@@ -69,13 +72,19 @@ internal fun AicuRoute(
     }
     val model: AicuViewModel = viewModel(factory = factory)
     val state by model.state.collectAsStateWithLifecycle()
-    val settings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = null)
+    val settings by SettingsManager.getHomeSettings(context)
+        .map { it as com.android.purebilibili.core.store.HomeSettings? }
+        .collectAsStateWithLifecycle(initialValue = null)
     val owner = LocalLifecycleOwner.current
     LaunchedEffect(model, uid, initialCategory) { model.initialize(uid, initialCategory) }
-    DisposableEffect(owner, model, state.consent) {
+    LaunchedEffect(owner, model, state.consent) {
+        model.setDisclaimerVisible(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+    DisposableEffect(owner, model) {
         fun updateVisibility() {
-            model.setDisclaimerVisible(state.consent == AicuConsentState.REQUIRED &&
-                owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+            val visible = owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+            model.setForeground(visible)
+            model.setDisclaimerVisible(visible)
         }
         val observer = LifecycleEventObserver { _, event ->
             updateVisibility()
@@ -84,7 +93,7 @@ internal fun AicuRoute(
         owner.lifecycle.addObserver(observer)
         updateVisibility()
         onDispose {
-            model.setDisclaimerVisible(false)
+            model.setForeground(false)
             owner.lifecycle.removeObserver(observer)
         }
     }
@@ -245,7 +254,7 @@ private fun AicuCategoryTabs(category: AicuCategory, liquidEnabled: Boolean, onS
             // Capture only this small chrome background, never the full list or the indicator itself.
             val backdrop = rememberLayerBackdrop()
             Box(Modifier.fillMaxWidth().height(56.dp)) {
-                Box(Modifier.matchParentSize().layerBackdrop(backdrop).background(Brush.horizontalGradient(listOf(
+                Box(Modifier.matchParentSize().clip(CircleShape).layerBackdrop(backdrop).background(Brush.horizontalGradient(listOf(
                     MaterialTheme.colorScheme.surfaceContainer,
                     MaterialTheme.colorScheme.primaryContainer,
                     MaterialTheme.colorScheme.surfaceContainer,

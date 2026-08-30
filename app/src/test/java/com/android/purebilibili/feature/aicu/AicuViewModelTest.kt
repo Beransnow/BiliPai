@@ -184,6 +184,23 @@ class AicuViewModelTest {
         vm.leave()
     }
 
+    @Test fun `consent loading in background defers the first contextual request until resume`() = runTest(dispatcher) {
+        val source = Source()
+        val vm = AicuViewModel(source, Consent(AICU_DISCLAIMER_VERSION)) { now }
+        vm.setForeground(false)
+        vm.initialize(2, AicuCategory.COMMENT)
+        runCurrent()
+        assertTrue(source.queries.isEmpty())
+        vm.setForeground(true)
+        runCurrent()
+        assertEquals(1, source.queries.size)
+        vm.setForeground(false)
+        vm.setForeground(true)
+        runCurrent()
+        assertEquals(1, source.queries.size)
+        vm.leave()
+    }
+
     @Test fun `glass is limited to readable supported small chrome`() {
         assertTrue(shouldUseAicuLiquidTabs(true, 33, 360f, 1f, true))
         assertFalse(shouldUseAicuLiquidTabs(false, 33, 360f, 1f, true))
