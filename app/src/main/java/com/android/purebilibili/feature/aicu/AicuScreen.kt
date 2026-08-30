@@ -44,6 +44,7 @@ import com.android.purebilibili.core.ui.components.*
 import com.android.purebilibili.data.model.response.*
 import com.android.purebilibili.data.repository.CommentRepository
 import com.android.purebilibili.data.repository.AicuRepository
+import com.android.purebilibili.feature.video.ui.components.RichCommentText
 import com.android.purebilibili.navigation3.BiliPaiNavKey
 import kotlinx.coroutines.flow.map
 import java.time.Instant
@@ -107,6 +108,7 @@ internal fun AicuRoute(
     AicuScreen(
         state = state,
         liquidEnabled = settings?.androidNativeLiquidGlassEnabled == true,
+        emoteMap = renderEmoteMap,
         onBack = back,
         onUidChange = model::editUid,
         onCategoryChange = model::selectCategory,
@@ -144,6 +146,7 @@ internal fun AicuRoute(
 internal fun AicuScreen(
     state: AicuUiState,
     liquidEnabled: Boolean,
+    emoteMap: Map<String, String> = emptyMap(),
     onBack: () -> Unit,
     onUidChange: (String) -> Unit,
     onCategoryChange: (AicuCategory) -> Unit,
