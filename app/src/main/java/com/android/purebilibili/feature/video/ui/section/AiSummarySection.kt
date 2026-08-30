@@ -30,7 +30,6 @@ import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppContentCard
-import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.data.model.response.AiSummaryData
@@ -185,7 +184,7 @@ fun AiSummaryCard(
 
                 if (onCreateNoteDraftClick != null) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    AppOutlinedButton(
+                    VideoDetailSecondaryButton(
                         onClick = onCreateNoteDraftClick,
                         modifier = Modifier.align(Alignment.End),
                     ) {
