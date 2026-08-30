@@ -38,6 +38,7 @@ object AccountSessionStore {
         val raw = context.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
             .getString(KEY_ACCOUNTS, null)
             .orEmpty()
+            .let(SessionStorageCipher::decrypt)
         if (raw.isBlank()) return emptyList()
         return runCatching {
             json.decodeFromString<List<StoredAccountSession>>(raw)
@@ -195,7 +196,7 @@ object AccountSessionStore {
         val payload = json.encodeToString(accounts)
         context.getSharedPreferences(SP_NAME, Context.MODE_PRIVATE)
             .edit()
-            .putString(KEY_ACCOUNTS, payload)
+            .putString(KEY_ACCOUNTS, SessionStorageCipher.encrypt(payload))
             .apply()
     }
 
