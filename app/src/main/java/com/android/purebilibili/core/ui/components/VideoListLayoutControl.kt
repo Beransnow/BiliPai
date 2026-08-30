@@ -101,11 +101,13 @@ internal fun VideoListLayoutToggle(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    iconModifier: Modifier = Modifier,
 ) {
     AppIconButton(onClick = onClick, modifier = modifier, enabled = enabled) {
         AppIcon(
             imageVector = if (singleColumn) Icons.Outlined.GridView else Icons.Outlined.ViewAgenda,
             contentDescription = if (singleColumn) "切换为双列" else "切换为单列",
+            modifier = iconModifier,
         )
     }
 }

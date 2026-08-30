@@ -158,6 +158,7 @@ fun SearchVideoFilterBar(
             singleColumn = singleColumn,
             onClick = onLayoutToggle,
             modifier = Modifier.size(48.dp),
+            iconModifier = Modifier.size(20.dp),
         )
     }
 
