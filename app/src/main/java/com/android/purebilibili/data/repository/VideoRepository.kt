@@ -961,6 +961,17 @@ object VideoRepository {
                     latestResponseCode = resp.code
                 )
             ) {
+                if (tid == 202) {
+                    val legacy = api.getLegacyRegionVideos(rid = tid, pn = page, ps = 30)
+                    if (legacy.code == 0) {
+                        return@withContext Result.success(
+                            legacy.data?.archives
+                                ?.map { it.toVideoItem() }
+                                ?.filter { it.bvid.isNotEmpty() }
+                                ?: emptyList()
+                        )
+                    }
+                }
                 // dynamic/region 只稳定支持子分区；一级分区用排行榜兜底，避免标签页空白。
                 val rankingRid = resolveRegionRankingRid(tid)
                 if (rankingRid != null) {

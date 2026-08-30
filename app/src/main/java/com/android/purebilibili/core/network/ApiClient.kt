@@ -542,6 +542,15 @@ interface BilibiliApi {
         @Query("pn") pn: Int = 1,
         @Query("ps") ps: Int = 30
     ): DynamicRegionResponse
+
+    /** Legacy region feed used by the 资讯 main region, which is not exposed
+     * consistently by dynamic/region on current Bilibili responses. */
+    @GET("x/web-interface/newlist")
+    suspend fun getLegacyRegionVideos(
+        @Query("rid") rid: Int,
+        @Query("pn") pn: Int = 1,
+        @Query("ps") ps: Int = 30
+    ): RegionVideosResponse
     
     // ==================== 直播模块 ====================
     // 直播列表 - 使用 v3 API (经测试确认可用)

@@ -984,7 +984,9 @@ private fun PartitionSideRailMovingIndicator(
             ((itemHeightPx - indicatorHeightPx) / 2f).coerceAtLeast(0f)
         BottomBarMatchedLiquidIndicator(
             visible = true,
-            dockContentAlpha = 1f,
+            // Keep the side-rail capsule translucent so its selected row's
+            // icon and label remain readable while the glass backdrop settles.
+            dockContentAlpha = 0.38f,
             indicatorTranslationXPx = with(density) { horizontalPadding.start.toPx() },
             indicatorTranslationYPx = centeredIndicatorOffsetPx,
             indicatorPanelOffsetPx = 0f,

@@ -69,4 +69,12 @@ class RegionVideoFallbackPolicyTest {
         assertEquals(1015, resolveRegionRankingRid(tid = 160))
         assertEquals(1001, resolveRegionRankingRid(tid = 181))
     }
+
+    @Test
+    fun `info region has a legacy feed fallback`() {
+        val source = java.io.File(
+            "app/src/main/java/com/android/purebilibili/data/repository/VideoRepository.kt"
+        ).readText()
+        assertTrue(source.contains("getLegacyRegionVideos(rid = tid"))
+    }
 }
