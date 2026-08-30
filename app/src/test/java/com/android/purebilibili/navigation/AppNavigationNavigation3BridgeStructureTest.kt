@@ -487,7 +487,7 @@ class AppNavigationNavigation3BridgeStructureTest {
             .substringAfter("BiliPaiNavEntryContentRole.MAIN_HOST -> {")
             .substringBefore("BiliPaiNavEntryContentRole.HOME ->")
         val sourceContent = source
-            .substringAfter(".miuixLayerBackdrop(bottomBarBackdrop)")
+            .substringAfter(".then(bottomBarBackdropSource.modifier)")
             .substringBefore("} // End of Content Box")
         val bottomBarOverlay = source
             .substringAfter("if (bottomBarCanMount)")

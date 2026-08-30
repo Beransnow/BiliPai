@@ -18,8 +18,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.staggeredgrid.*  // 🌊 瀑布流布局
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
-import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
+import com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -304,7 +303,8 @@ fun HomeScreen(
     // [Feature] Video Preview State (Global Scope)
     val targetVideoItemState = remember { mutableStateOf<VideoItem?>(null) }
     var pendingNotInterestedVideo by remember { mutableStateOf<VideoItem?>(null) }
-    val homeMiuixBackdrop = rememberMiuixLayerBackdrop()
+    val homeMiuixBackdropSource = rememberChromeBackdropSource()
+    val homeMiuixBackdrop = homeMiuixBackdropSource.backdrop
     var homeMiuixBackdropReady by remember(homeMiuixBackdrop) { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope() // 用于双击回顶动画
@@ -1672,7 +1672,7 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .miuixLayerBackdrop(homeMiuixBackdrop)
+                            .then(homeMiuixBackdropSource.modifier)
                             // 首页使用 Pager + Lazy 子层，source 挂在外层容器更稳定。
                             .hazeSourceCompat(state = hazeState)
                     ) {

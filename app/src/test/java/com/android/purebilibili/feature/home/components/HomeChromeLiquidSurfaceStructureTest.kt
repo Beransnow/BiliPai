@@ -52,7 +52,7 @@ class HomeChromeLiquidSurfaceStructureTest {
             homeScreenSource.contains("var homeMiuixBackdropReady") &&
                 homeScreenSource.contains("withFrameNanos { }") &&
                 homeScreenSource.contains("val readyHomeMiuixBackdrop") &&
-                homeScreenSource.contains(".miuixLayerBackdrop(homeMiuixBackdrop)") &&
+                homeScreenSource.contains(".then(homeMiuixBackdropSource.modifier)") &&
                 homeScreenSource.contains("miuixBackdrop = readyHomeMiuixBackdrop")
         )
         assertTrue(
