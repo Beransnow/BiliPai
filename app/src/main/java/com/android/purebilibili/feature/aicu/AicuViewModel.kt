@@ -32,6 +32,9 @@ internal data class AicuUiState(
     val queueAhead: Int? = null,
     val error: String? = null,
     val retrySeconds: Int = 0,
+    val trending: List<AicuTrendingEntry> = emptyList(),
+    val trendingLoading: Boolean = false,
+    val trendingError: String? = null,
 ) {
     val filter: AicuFilter get() = filters[category] ?: AicuFilter()
     val page: AicuPage? get() = pages[category]
@@ -42,6 +45,7 @@ internal class AicuViewModel(
     private val source: AicuDataSource,
     private val consentStore: AicuConsentStore,
     private val nowMs: () -> Long = SystemClock::elapsedRealtime,
+    private val trendingLoader: (suspend () -> List<AicuTrendingEntry>)? = null,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(AicuUiState())
     val state = mutableState.asStateFlow()
@@ -61,6 +65,23 @@ internal class AicuViewModel(
     private var foreground = true
     private var disclaimerVisible = false
     private var exited = false
+
+    fun loadTrending() {
+        if (exited || state.value.consent != AicuConsentState.ACCEPTED ||
+            state.value.trendingLoading || trendingLoader == null
+        ) return
+        mutableState.update { it.copy(trendingLoading = true, trendingError = null) }
+        viewModelScope.launch {
+            try {
+                val values = trendingLoader.invoke()
+                mutableState.update { it.copy(trending = values, trendingLoading = false) }
+            } catch (cancel: CancellationException) {
+                throw cancel
+            } catch (error: Exception) {
+                mutableState.update { it.copy(trendingLoading = false, trendingError = error.message ?: "热搜加载失败") }
+            }
+        }
+    }
 
     fun initialize(uid: Long?, category: AicuCategory) {
         if (initialized || initJob?.isActive == true || exited) return

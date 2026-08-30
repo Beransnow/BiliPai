@@ -59,6 +59,25 @@ internal fun buildAicuQueryUrl(query: AicuQuery, ticket: String): HttpUrl {
 }
 
 class AicuRepository internal constructor(private val client: OkHttpClient = buildAicuClient()) : AicuDataSource {
+    suspend fun getTrending(limit: Int = 10): List<AicuTrendingEntry> {
+        val safeLimit = limit.coerceIn(1, 20)
+        val url = "https://online.aicu.cc/api/community/trending".toHttpUrl()
+            .newBuilder().addQueryParameter("limit", safeLimit.toString()).build()
+        return request(Request.Builder().url(url).build()) { response ->
+            val payload = Json { ignoreUnknownKeys = true }
+                .decodeFromString<AicuTrendingResponse>(readJson(response))
+            if (payload.code != 0) throw AicuRequestException(
+                payload.message.ifBlank { "Aicu 热搜加载失败（${payload.code}）" }
+            )
+            payload.data?.hot_searches.orEmpty().filter {
+                it.uid.matches(Regex("[1-9]\\d{0,19}")) &&
+                    it.display_name.isNotBlank() && it.avatar.isNotBlank() &&
+                    it.search_count >= 0 && it.hot_value >= 0 &&
+                    it.trend in setOf("up", "down", "stable")
+            }.take(safeLimit)
+        }
+    }
+
     override suspend fun query(query: AicuQuery, onQueuePosition: (Int?) -> Unit): AicuPage {
         query.filter.timestamps() // Validate before any request.
         var ticket: String? = null

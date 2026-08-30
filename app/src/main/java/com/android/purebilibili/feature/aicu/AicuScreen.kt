@@ -63,7 +63,11 @@ internal fun AicuRoute(
         object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                AicuViewModel(AicuRepository(), DataStoreAicuConsentStore(context)) as T
+                AicuViewModel(
+                    AicuRepository(),
+                    DataStoreAicuConsentStore(context),
+                    trendingLoader = { AicuRepository().getTrending() },
+                ) as T
         }
     }
     val model: AicuViewModel = viewModel(factory = factory)
@@ -120,6 +124,7 @@ internal fun AicuRoute(
         onRetry = model::retry,
         onAccept = model::acceptDisclaimer,
         onRetryConsent = { model.initialize(uid, initialCategory) },
+        onLoadTrending = model::loadTrending,
         onOpenRecord = { record ->
             aicuNativeTarget(state.category, record)?.let { target ->
                 model.cancelQuery()
@@ -158,11 +163,13 @@ internal fun AicuScreen(
     onRetry: () -> Unit,
     onAccept: () -> Unit,
     onRetryConsent: () -> Unit,
+    onLoadTrending: () -> Unit,
     onOpenRecord: (AicuRecord) -> Unit,
     onCopyRecord: (AicuRecord) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showInformation by remember { mutableStateOf(false) }
+    var showTrending by remember { mutableStateOf(false) }
     val loadedPage = state.page
     val keyboard = LocalSoftwareKeyboardController.current
     val submit = { keyboard?.hide(); onSubmit() }
@@ -174,7 +181,10 @@ internal fun AicuScreen(
                 navigationIcon = { AppIconButton(onClick = onBack, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
                     AppIcon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
                 } },
-                actions = { AppTextButton(onClick = { showInformation = true }, modifier = Modifier.heightIn(min = 48.dp)) { AppText("使用说明") } },
+                actions = {
+                    AppTextButton(onClick = { showTrending = true; onLoadTrending() }, modifier = Modifier.heightIn(min = 48.dp)) { AppText("Aicu 热搜") }
+                    AppTextButton(onClick = { showInformation = true }, modifier = Modifier.heightIn(min = 48.dp)) { AppText("使用说明") }
+                },
             )
         },
     ) { padding ->
@@ -247,6 +257,40 @@ internal fun AicuScreen(
             title = { AppText("使用说明") },
             text = { AppText(AICU_DISCLAIMER_TEXT, modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) },
             confirmButton = { AppTextButton(onClick = { showInformation = false }, modifier = Modifier.heightIn(min = 48.dp)) { AppText("关闭") } },
+        )
+    }
+    if (showTrending) {
+        AppAlertDialog(
+            onDismissRequest = { showTrending = false },
+            title = { AppText("Aicu 24 小时热搜") },
+            text = {
+                if (state.trendingLoading) AdaptiveLoadingIndicator()
+                else if (state.trendingError != null) AppText(state.trendingError, color = MaterialTheme.colorScheme.error)
+                else Column(Modifier.verticalScroll(rememberScrollState())) {
+                    state.trending.forEachIndexed { index, item ->
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showTrending = false
+                                    onUidChange(item.uid)
+                                    onSubmit()
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            AppText("${index + 1}", modifier = Modifier.width(28.dp))
+                            coil3.compose.AsyncImage(model = item.avatar, contentDescription = null, modifier = Modifier.size(32.dp))
+                            Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
+                                AppText(item.display_name, maxLines = 1)
+                                AppText("UID ${item.uid} · 搜索 ${item.search_count} 次 · 热度 ${item.hot_value}", style = MaterialTheme.typography.bodySmall)
+                            }
+                            AppText(when (item.trend) { "up" -> "上升"; "down" -> "下降"; else -> "持平" }, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            },
+            confirmButton = { AppTextButton(onClick = { showTrending = false }, modifier = Modifier.heightIn(min = 48.dp)) { AppText("关闭") } },
         )
     }
 }

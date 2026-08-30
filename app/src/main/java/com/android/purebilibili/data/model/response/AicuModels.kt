@@ -2,6 +2,7 @@ package com.android.purebilibili.data.model.response
 
 import java.time.LocalDate
 import java.time.ZoneId
+import kotlinx.serialization.Serializable
 
 enum class AicuCategory(val label: String, val endpoint: String) {
     COMMENT("评论", "getreply"),
@@ -71,4 +72,24 @@ data class AicuPage(
     val records: List<AicuRecord>,
     val total: Long?,
     val isEnd: Boolean,
+)
+
+@Serializable
+data class AicuTrendingResponse(val code: Int = 0, val data: AicuTrendingData? = null, val message: String = "")
+
+@Serializable
+data class AicuTrendingData(
+    val window_hours: Int = 24,
+    val generated_at: Long = 0L,
+    val hot_searches: List<AicuTrendingEntry> = emptyList(),
+)
+
+@Serializable
+data class AicuTrendingEntry(
+    val uid: String = "",
+    val display_name: String = "",
+    val avatar: String = "",
+    val search_count: Long = 0L,
+    val hot_value: Long = 0L,
+    val trend: String = "stable",
 )
