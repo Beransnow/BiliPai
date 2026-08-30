@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -42,6 +41,7 @@ import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.*
 import com.android.purebilibili.data.model.response.*
+import com.android.purebilibili.data.repository.CommentRepository
 import com.android.purebilibili.data.repository.AicuRepository
 import com.android.purebilibili.navigation3.BiliPaiNavKey
 import kotlinx.coroutines.flow.map
@@ -66,11 +66,17 @@ internal fun AicuRoute(
     }
     val model: AicuViewModel = viewModel(factory = factory)
     val state by model.state.collectAsStateWithLifecycle()
+    var emoteMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     val settings by SettingsManager.getHomeSettings(context)
         .map { it as com.android.purebilibili.core.store.HomeSettings? }
         .collectAsStateWithLifecycle(initialValue = null)
     val owner = LocalLifecycleOwner.current
     LaunchedEffect(model, uid, initialCategory) { model.initialize(uid, initialCategory) }
+    LaunchedEffect(state.consent) {
+        if (state.consent == AicuConsentState.ACCEPTED && emoteMap.isEmpty()) {
+            emoteMap = CommentRepository.getEmoteMap()
+        }
+    }
     LaunchedEffect(owner, model, state.consent) {
         model.setDisclaimerVisible(owner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
     }
@@ -213,7 +219,7 @@ internal fun AicuScreen(
                             val records = state.page?.records.orEmpty()
                             val showRoom = state.category == AicuCategory.LIVE_DANMAKU && (index == 0 || records[index - 1].groupKey != record.groupKey)
                             if (showRoom) AppText("${record.roomName.ifBlank { "直播间 ${record.roomId}" }} · ${record.upName}", modifier = Modifier.padding(vertical = 8.dp))
-                            AicuRecordCard(record, state.category, { onOpenRecord(record) }, { onCopyRecord(record) })
+                            AicuRecordCard(record, state.category, emoteMap, { onOpenRecord(record) }, { onCopyRecord(record) })
                         }
                         if (loadedPage != null) item("pagination") {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
@@ -359,7 +365,13 @@ private fun AicuDisclaimerDialog(seconds: Int, saving: Boolean, error: String?, 
 }
 
 @Composable
-private fun AicuRecordCard(record: AicuRecord, category: AicuCategory, onOpen: () -> Unit, onCopy: () -> Unit) {
+private fun AicuRecordCard(
+    record: AicuRecord,
+    category: AicuCategory,
+    emoteMap: Map<String, String>,
+    onOpen: () -> Unit,
+    onCopy: () -> Unit,
+) {
     val target = remember(category, record) { aicuNativeTarget(category, record) }
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -369,7 +381,12 @@ private fun AicuRecordCard(record: AicuRecord, category: AicuCategory, onOpen: (
                 else -> ""
             }, style = MaterialTheme.typography.bodySmall)
             if (record.authorName.isNotBlank()) AppText(record.authorName, style = MaterialTheme.typography.labelLarge)
-            SelectionContainer { AppText(record.text.ifBlank { "（正文缺失）" }) }
+            RichCommentText(
+                text = record.text.ifBlank { "（正文缺失）" },
+                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
+                color = MaterialTheme.colorScheme.onSurface,
+                emoteMap = emoteMap,
+            )
             if (target != null && category == AicuCategory.COMMENT && (record.objectType == 12 || (record.rank == 2 && record.rootId.toLongOrNull() == null))) {
                 AppText("缺少完整评论定位信息，将打开原内容。", style = MaterialTheme.typography.bodySmall)
             }
