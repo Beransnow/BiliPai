@@ -64,14 +64,19 @@ fun BiliPaiTransferScanner(
             val analysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
-            var delivered = false
+            var lastCode: String? = null
+            var lastDeliveredAt = 0L
             analysis.setAnalyzer(executor) { image ->
-                if (!delivered) {
+                val now = android.os.SystemClock.elapsedRealtime()
+                if (now - lastDeliveredAt >= 700L) {
                     val bytes = image.toNv21()
                     if (bytes != null) {
                         BiliPaiQrDecoder.decode(bytes, image.width, image.height, image.imageInfo.rotationDegrees)?.let {
-                            delivered = true
-                            currentOnCode(it)
+                            if (it != lastCode || now - lastDeliveredAt >= 700L) {
+                                lastCode = it
+                                lastDeliveredAt = now
+                                currentOnCode(it)
+                            }
                         }
                     }
                 }
