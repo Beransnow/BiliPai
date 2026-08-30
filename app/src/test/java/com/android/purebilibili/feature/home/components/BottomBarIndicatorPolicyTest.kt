@@ -758,8 +758,8 @@ class BottomBarIndicatorPolicyTest {
         ).first { it.exists() }.readText()
 
         assertTrue(source.contains("BottomBarReferencePressedScale"))
-        assertTrue(source.contains("private val scaleXAnimationSpec = spring(0.6f, 250f, 0.001f)"))
-        assertTrue(source.contains("private val scaleYAnimationSpec = spring(0.7f, 250f, 0.001f)"))
+        assertTrue(source.contains("private val scaleXAnimationSpec = spring(0.82f, 520f, 0.001f)"))
+        assertTrue(source.contains("private val scaleYAnimationSpec = spring(0.86f, 560f, 0.001f)"))
         assertTrue(source.contains("scaleXAnimation.animateTo(pressedScale, scaleXAnimationSpec)"))
         assertTrue(source.contains("scaleYAnimation.animateTo(pressedScale, scaleYAnimationSpec)"))
     }
