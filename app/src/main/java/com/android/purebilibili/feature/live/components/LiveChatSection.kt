@@ -51,7 +51,7 @@ import com.android.purebilibili.feature.live.shouldRenderLiveDanmaku
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Send
 import kotlinx.coroutines.flow.SharedFlow
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

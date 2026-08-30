@@ -1,6 +1,8 @@
 // 文件路径: feature/video/VideoPlayerSection.kt
 package com.android.purebilibili.feature.video.ui.section
 
+import coil3.request.crossfade
+
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.ui.input.key.Key
@@ -151,7 +153,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.currentStateAsState
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.media3.common.Player
@@ -3913,7 +3915,7 @@ fun VideoPlayerSection(
                     val decodeW = stationaryListCoverDecodeWidthPx
                     val decodeH = stationaryListCoverDecodeHeightPx
                     AsyncImage(
-                        model = coil.request.ImageRequest.Builder(LocalContext.current)
+                        model = coil3.request.ImageRequest.Builder(LocalContext.current)
                             .data(currentCoverUrl)
                             .apply {
                                 if (useStationaryListCover && decodeW > 0 && decodeH > 0) {

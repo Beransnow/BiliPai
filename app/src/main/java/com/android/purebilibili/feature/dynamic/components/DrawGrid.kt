@@ -1,5 +1,10 @@
 // 文件路径: feature/dynamic/components/DrawGrid.kt
 package com.android.purebilibili.feature.dynamic.components
+
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+
+import coil3.request.crossfade
 import com.android.purebilibili.core.ui.components.AppIcon
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -25,9 +30,9 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import coil.ImageLoader
-import coil.compose.AsyncImage
-import coil.imageLoader
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.imageLoader
 import com.android.purebilibili.data.model.response.DrawItem
 import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.ui.unit.sp
@@ -163,9 +168,9 @@ private fun DrawGridImage(
     ) {
         if (imageUrl.isNotEmpty()) {
             AsyncImage(
-                model = coil.request.ImageRequest.Builder(context)
+                model = coil3.request.ImageRequest.Builder(context)
                     .data(imageUrl)
-                    .addHeader("Referer", "https://www.bilibili.com/")
+                    .httpHeaders(NetworkHeaders.Builder().set("Referer", "https://www.bilibili.com/").build())
                     .crossfade(!isGif)
                     .build(),
                 imageLoader = if (isGif) gifImageLoader else defaultImageLoader,

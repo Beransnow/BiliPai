@@ -1,5 +1,7 @@
 // 文件路径: feature/video/screen/VideoDetailScreen.kt
 package com.android.purebilibili.feature.video.screen
+
+import coil3.request.crossfade
 import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
@@ -235,7 +237,7 @@ import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.applyPlayerRequestedOrientation
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import dev.chrisbanes.haze.HazeState
 import com.android.purebilibili.feature.video.ui.components.DanmakuContextMenu
 import com.android.purebilibili.feature.video.ui.components.DanmakuBlockActionTarget
@@ -4060,7 +4062,7 @@ internal fun VideoDetailScreenStateHolder(
                             residentCoverSource?.decodeHeightPx,
                         ) {
                             val source = residentCoverSource ?: return@remember null
-                            coil.request.ImageRequest.Builder(context)
+                            coil3.request.ImageRequest.Builder(context)
                                 .data(source.url)
                                 .apply {
                                     if (source.decodeWidthPx > 0 && source.decodeHeightPx > 0) {

@@ -54,7 +54,7 @@ import com.android.purebilibili.feature.home.components.cards.LiveRoomCard
 import com.android.purebilibili.feature.home.components.cards.StoryVideoCard
 
 import androidx.compose.ui.Alignment
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import kotlinx.coroutines.yield
 
 internal fun resolveHomeCategoryVideoGridKey(

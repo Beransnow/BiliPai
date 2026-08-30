@@ -146,7 +146,7 @@ import com.android.purebilibili.core.ui.motion.rememberSystemReduceMotion
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackJankStateValue
 import com.android.purebilibili.core.util.resolveScrollToTopPlan
-import coil.imageLoader
+import coil3.imageLoader
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
@@ -2625,14 +2625,11 @@ fun HomeScreen(
                     for (imageUrl in imageUrls) {
                         val fixedUrl = com.android.purebilibili.core.util.FormatUtils.fixImageUrl(imageUrl)
 
-                        val request = coil.request.ImageRequest.Builder(context)
+                        val request = coil3.request.ImageRequest.Builder(context)
                             .data(fixedUrl)
                             .size(360, 225)  //  预加载也使用限制尺寸
-                            // Visible AsyncImage requests keep the default priority and can jump
-                            // ahead of this background warm-up when a fast swipe reveals a card.
-                            .priority(coil.request.Priority.LOW)
-                            .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
-                            .diskCachePolicy(coil.request.CachePolicy.ENABLED)
+                            .memoryCachePolicy(coil3.request.CachePolicy.ENABLED)
+                            .diskCachePolicy(coil3.request.CachePolicy.ENABLED)
                             .build()
                         context.imageLoader.enqueue(request)
                     }

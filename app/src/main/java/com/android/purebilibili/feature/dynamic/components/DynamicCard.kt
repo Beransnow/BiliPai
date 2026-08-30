@@ -1,5 +1,10 @@
 // 文件路径: feature/dynamic/components/DynamicCard.kt
 package com.android.purebilibili.feature.dynamic.components
+
+import coil3.network.NetworkHeaders
+import coil3.network.httpHeaders
+
+import coil3.request.crossfade
 import com.android.purebilibili.core.ui.components.AppContentCard
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppListItem
@@ -48,8 +53,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
-import coil.ImageLoader
-import coil.compose.AsyncImage
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
@@ -390,7 +395,7 @@ fun DynamicCardV2(
                     contentAlignment = Alignment.Center
                 ) {
                     AsyncImage(
-                        model = coil.request.ImageRequest.Builder(LocalContext.current)
+                        model = coil3.request.ImageRequest.Builder(LocalContext.current)
                             .data(author.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
                             .crossfade(true)
                             .build(),
@@ -1017,9 +1022,9 @@ fun DynamicCardV2(
                                     16f / 9f
                                 }
                                 val dividerRequest = remember(resolvedDividerPic.url) {
-                                    coil.request.ImageRequest.Builder(context)
+                                    coil3.request.ImageRequest.Builder(context)
                                         .data(resolvedDividerPic.url)
-                                        .addHeader("Referer", "https://www.bilibili.com/")
+                                        .httpHeaders(NetworkHeaders.Builder().set("Referer", "https://www.bilibili.com/").build())
                                         .build()
                                 }
                                 AsyncImage(
@@ -1060,9 +1065,9 @@ fun DynamicCardV2(
                                 }
                             }
                             val imageRequest = remember(resolvedPic.url) {
-                                coil.request.ImageRequest.Builder(context)
+                                coil3.request.ImageRequest.Builder(context)
                                     .data(resolvedPic.url)
-                                    .addHeader("Referer", "https://www.bilibili.com/")
+                                    .httpHeaders(NetworkHeaders.Builder().set("Referer", "https://www.bilibili.com/").build())
                                     .build()
                             }
                             AsyncImage(
@@ -1511,7 +1516,7 @@ fun DynamicCardV2(
                         Box(modifier = Modifier.height(22.dp)) {
                             foldUsers.forEachIndexed { index, user ->
                                 AsyncImage(
-                                    model = coil.request.ImageRequest.Builder(LocalContext.current)
+                                    model = coil3.request.ImageRequest.Builder(LocalContext.current)
                                         .data(user.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
                                         .crossfade(true)
                                         .build(),
@@ -1764,7 +1769,7 @@ fun RichTextContent(
                 )
             ) {
                 AsyncImage(
-                    model = coil.request.ImageRequest.Builder(LocalContext.current)
+                    model = coil3.request.ImageRequest.Builder(LocalContext.current)
                         .data(iconUrl)
                         .crossfade(true)
                         .build(),
@@ -1975,7 +1980,7 @@ fun DynamicCardCompact(
                 contentAlignment = Alignment.Center
             ) {
                 AsyncImage(
-                    model = coil.request.ImageRequest.Builder(LocalContext.current)
+                    model = coil3.request.ImageRequest.Builder(LocalContext.current)
                         .data(author.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
                         .crossfade(true)
                         .build(),
@@ -2030,7 +2035,7 @@ fun DynamicCardCompact(
         content?.major?.archive?.let { archive ->
             Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
             AsyncImage(
-                model = coil.request.ImageRequest.Builder(LocalContext.current)
+                model = coil3.request.ImageRequest.Builder(LocalContext.current)
                     .data(archive.cover.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
                     .crossfade(true)
                     .build(),

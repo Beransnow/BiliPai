@@ -1,5 +1,7 @@
 // 文件路径: feature/dynamic/DynamicScreen.kt
 package com.android.purebilibili.feature.dynamic
+
+import coil3.request.crossfade
 import com.android.purebilibili.core.ui.components.FeedVerticalStaggeredGrid
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 import com.android.purebilibili.core.ui.components.AppTextField
@@ -65,9 +67,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.ImageLoader
-import coil.compose.AsyncImage
-import coil.imageLoader
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.imageLoader
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.components.AppPrimaryButton
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
@@ -1745,7 +1747,7 @@ private fun HorizontalUserList(
                                 contentAlignment = Alignment.Center
                             ) {
                                 AsyncImage(
-                                    model = coil.request.ImageRequest.Builder(LocalContext.current)
+                                    model = coil3.request.ImageRequest.Builder(LocalContext.current)
                                         .data(user.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
                                         .crossfade(true)
                                         .build(),

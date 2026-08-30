@@ -2795,7 +2795,7 @@ fun LandscapeEndDrawer(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             // 头像
-                            coil.compose.AsyncImage(
+                            coil3.compose.AsyncImage(
                                 model = ownerFace,
                                 contentDescription = null,
                                 modifier = Modifier
@@ -3214,7 +3214,7 @@ private fun LandscapeVideoItem(
                 .fillMaxHeight()
                 .clip(AppShapes.container(ContainerLevel.Tag))
         ) {
-             coil.compose.AsyncImage(
+             coil3.compose.AsyncImage(
                 model = video.pic,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
@@ -3279,7 +3279,7 @@ private fun LandscapeEpisodeItem(
                     .clip(AppShapes.container(ContainerLevel.Tag))
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             ) {
-                coil.compose.AsyncImage(
+                coil3.compose.AsyncImage(
                     model = episode.arc.pic,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,

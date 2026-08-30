@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.layout.ContentScale
 import androidx.media3.exoplayer.ExoPlayer
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
 import com.android.purebilibili.data.repository.StoryRepository
 import com.android.purebilibili.feature.story.storyItemToRelatedVideo

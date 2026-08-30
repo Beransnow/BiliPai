@@ -1147,7 +1147,7 @@ private fun TabletCollectionPane(
                     .padding(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                coil.compose.AsyncImage(
+                coil3.compose.AsyncImage(
                     model = com.android.purebilibili.core.util.FormatUtils.fixImageUrl(episode.arc?.pic.orEmpty()),
                     contentDescription = episode.title,
                     contentScale = ContentScale.Crop,
@@ -1210,7 +1210,7 @@ private fun TabletOwnerUploadsPane(
                         .padding(10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    coil.compose.AsyncImage(
+                    coil3.compose.AsyncImage(
                         model = com.android.purebilibili.core.util.FormatUtils.fixImageUrl(video.pic),
                         contentDescription = video.title,
                         contentScale = ContentScale.Crop,
@@ -1485,7 +1485,7 @@ private fun ScrollableVideoInfoSection(
                                     .clip(AppShapes.container(ContainerLevel.Chip))
                                     .background(MaterialTheme.colorScheme.surfaceVariant)
                             ) {
-                                coil.compose.AsyncImage(
+                                coil3.compose.AsyncImage(
                                     model = com.android.purebilibili.core.util.FormatUtils.fixImageUrl(video.pic),
                                     contentDescription = null,
                                     contentScale = ContentScale.Crop,

@@ -19,7 +19,7 @@
 -dontwarn io.github.alexzhirkevich.cupertino.**
 -dontwarn androidx.room.paging.**
 -dontwarn androidx.media3.**
--dontwarn coil.**
+-dontwarn coil3.**
 -dontwarn com.google.zxing.**
 -dontwarn org.fourthline.cling.**
 -dontwarn javax.enterprise.context.**

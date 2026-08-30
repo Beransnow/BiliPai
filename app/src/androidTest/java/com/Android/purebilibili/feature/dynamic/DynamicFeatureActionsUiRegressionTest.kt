@@ -12,7 +12,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import coil.ImageLoader
+import coil3.ImageLoader
 import com.android.purebilibili.core.ui.AppThemeConfig
 import com.android.purebilibili.core.ui.ProvideAppThemeConfig
 import com.android.purebilibili.data.model.response.CoursesMajor

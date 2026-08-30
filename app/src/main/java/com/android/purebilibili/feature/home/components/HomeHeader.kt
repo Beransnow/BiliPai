@@ -49,7 +49,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.iOSTapEffect
 import com.android.purebilibili.core.util.rememberHapticFeedback

@@ -47,7 +47,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import dev.chrisbanes.haze.HazeState
-import coil.compose.AsyncImage
+import coil3.compose.AsyncImage
 import java.io.File
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 
