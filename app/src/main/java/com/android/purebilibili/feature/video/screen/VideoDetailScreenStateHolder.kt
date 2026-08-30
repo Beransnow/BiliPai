@@ -508,6 +508,12 @@ internal fun VideoDetailScreenStateHolder(
     val subjectSnapshot by viewModel.subjectSnapshot.collectAsStateWithLifecycle()
     val engagementState by engagementViewModel.uiState.collectAsStateWithLifecycle()
     val favoriteFolderSaveEvent by viewModel.favoriteFolderSaveEvent.collectAsStateWithLifecycle()
+    DisposableEffect(viewModel, presentationState) {
+        viewModel.setPageIdentityCommitListener(presentationState::syncPlaybackIdentity)
+        onDispose {
+            viewModel.setPageIdentityCommitListener(null)
+        }
+    }
     val playbackActions = remember(viewModel, context, presentationState) {
         VideoDetailPlaybackActions(
             changeQuality = viewModel::changeQuality,
@@ -517,12 +523,7 @@ internal fun VideoDetailScreenStateHolder(
             probeCdnCandidates = viewModel::probeCurrentCdnCandidates,
             setAudioMode = viewModel::setAudioMode,
             setSleepTimer = viewModel::setSleepTimer,
-            switchPage = { pageIndex ->
-                viewModel.switchPage(
-                    pageIndex = pageIndex,
-                    onIdentityCommitted = presentationState::syncPlaybackIdentity,
-                )
-            },
+            switchPage = { pageIndex -> viewModel.switchPage(pageIndex) },
             openDownloadDialog = viewModel::openDownloadDialog,
             showDanmakuSendDialog = viewModel::showDanmakuSendDialog,
             skipSponsorSegment = viewModel::skipCurrentSponsorSegment,
