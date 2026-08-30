@@ -6,6 +6,7 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -105,6 +106,9 @@ fun DynamicTopBarWithTabs(
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
     val liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
+    // 顶部背景模糊与液态玻璃是两个独立的视觉开关：关闭液态玻璃时，
+    // 仍应根据全局“顶部模糊”设置保留背景的渐进模糊。
+    val headerBlurEnabled = LocalAppThemeConfig.current.headerBlurEnabled
     val liquidGlassTuning = remember(
         homeSettings.liquidGlassProgress,
         homeSettings.liquidGlassAdvancedSettings,
@@ -122,7 +126,7 @@ fun DynamicTopBarWithTabs(
     Column(
         modifier = modifier.biliPaiProgressiveTopBlur(
             backdrop = dockBackdrop,
-            enabled = liquidGlassEnabled,
+            enabled = headerBlurEnabled,
         ),
     ) {
         Spacer(modifier = Modifier.height(statusBarHeight))
