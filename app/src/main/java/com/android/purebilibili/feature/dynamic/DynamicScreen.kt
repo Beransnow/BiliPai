@@ -118,6 +118,8 @@ import com.android.purebilibili.core.util.resolveScrollToTopPlan
 import kotlinx.coroutines.channels.Channel
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import com.android.purebilibili.core.ui.blur.hazeSourceCompat
+import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -352,6 +354,9 @@ fun DynamicScreen(
 
     // Dock 只采集内容用于折射，顶部 tuning 将 blur 半径固定为 0。
     val dynamicDockBackdrop = rememberLayerBackdrop()
+    // 顶部高斯模糊使用独立 Haze 源；液态玻璃的 Backdrop 渐进模糊仍单独由
+    // DynamicTopBarWithTabs 根据安卓原生液态玻璃开关控制。
+    val dynamicTopBarHazeState = rememberRecoverableHazeState(initialBlurEnabled = true)
     val scope = rememberCoroutineScope()
     val onDynamicTabSelected: (Int) -> Unit = { visibleIndex ->
         scope.launch {
@@ -754,6 +759,7 @@ fun DynamicScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .layerBackdrop(dynamicDockBackdrop)
+                                    .hazeSourceCompat(state = dynamicTopBarHazeState)
                                     .globalWallpaperAwareBackground(AppSurfaceTokens.background())
                             ) {
                             HorizontalPager(
@@ -888,6 +894,7 @@ fun DynamicScreen(
                                     onPublishClick = { showPublishDialog = true },
                                     publishSkinDecoration = publishSkinDecoration,
                                     dockBackdrop = dynamicDockBackdrop,
+                                    hazeState = dynamicTopBarHazeState,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
                                     isScrollInProgressProvider = dynamicTabScrollInProgressProvider,
                                 )
@@ -1078,6 +1085,7 @@ fun DynamicScreen(
                                     onPublishClick = { showPublishDialog = true },
                                     publishSkinDecoration = publishSkinDecoration,
                                     dockBackdrop = dynamicDockBackdrop,
+                                    hazeState = dynamicTopBarHazeState,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
                                     isScrollInProgressProvider = dynamicTabScrollInProgressProvider,
                                 )
