@@ -2155,8 +2155,7 @@ internal fun VideoDetailScreenStateHolder(
         Animatable(if (isLandscape) 1f else 0f)
     }
     val isContinuousPlayerMorphing = continuousFullscreenTransitionEnabled &&
-        (continuousPlayerPhase == ContinuousPlayerTransitionPhase.Expanding ||
-            continuousPlayerPhase == ContinuousPlayerTransitionPhase.Collapsing)
+        continuousPlayerPhase == ContinuousPlayerTransitionPhase.Collapsing
 
     fun applyContinuousPlayerDecision(decision: ContinuousPlayerTransitionDecision) {
         continuousPlayerPhase = decision.phase
@@ -2202,15 +2201,14 @@ internal fun VideoDetailScreenStateHolder(
                 continuousPlayerPhase = ContinuousPlayerTransitionPhase.Fullscreen
             }
             // 仅清理「已处于 Fullscreen 但窗口已回竖屏」的陈旧进度。
-            // Expanding/AwaitingLandscape 仍是点击进入全屏的有效链路；在方向切换前
-            // 提前把它们改回 Inline 会跳过 ExpansionFinished，导致横屏请求永远不发出。
+            // AwaitingLandscape 已请求旋转，但系统窗口方向可能尚未更新，不能提前清理。
             !isLandscape &&
                 continuousPlayerPhase == ContinuousPlayerTransitionPhase.Fullscreen -> {
                 continuousPlayerProgress.snapTo(0f)
                 continuousPlayerPhase = ContinuousPlayerTransitionPhase.Inline
             }
-            // 进入全屏时方向仍暂时是竖屏；这两个阶段是等待横屏请求完成，
-            // 不能把初始竖屏状态误派发成「回竖屏」事件，否则会被策略收起为 Collapsing。
+            // 等待横屏期间保留当前播放器尺寸，不再先播放竖屏铺满动画。
+            // 初始竖屏观测不代表用户退出，不能误派发成「回竖屏」事件。
             shouldKeepContinuousPlayerEnterPhaseWhilePortrait(
                 phase = continuousPlayerPhase,
                 isLandscape = isLandscape,
@@ -2227,24 +2225,6 @@ internal fun VideoDetailScreenStateHolder(
     LaunchedEffect(continuousFullscreenTransitionEnabled, continuousPlayerPhase) {
         if (!continuousFullscreenTransitionEnabled) return@LaunchedEffect
         when (continuousPlayerPhase) {
-            ContinuousPlayerTransitionPhase.Expanding -> {
-                val remaining = (1f - continuousPlayerProgress.value).coerceIn(0f, 1f)
-                continuousPlayerProgress.animateTo(
-                    targetValue = 1f,
-                    animationSpec = tween(
-                        durationMillis = (CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS * remaining)
-                            .roundToInt()
-                            .coerceAtLeast(1),
-                        easing = FastOutSlowInEasing,
-                    ),
-                )
-                applyContinuousPlayerDecision(
-                    reduceContinuousPlayerTransition(
-                        continuousPlayerPhase,
-                        ContinuousPlayerTransitionEvent.ExpansionFinished,
-                    )
-                )
-            }
             ContinuousPlayerTransitionPhase.Collapsing -> {
                 val remaining = continuousPlayerProgress.value.coerceIn(0f, 1f)
                 continuousPlayerProgress.animateTo(
