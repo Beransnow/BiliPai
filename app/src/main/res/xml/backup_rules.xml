@@ -6,6 +6,8 @@
    See https://developer.android.com/about/versions/12/backup-restore
 -->
 <full-backup-content>
+    <exclude domain="file" path="logs/" />
+    <exclude domain="sharedpref" path="startup_recovery.xml" />
     <exclude domain="file" path="android17_profiles/" />
     <exclude domain="file" path="profiling/" />
     <!-- Session cookies/tokens must never enter Auto Backup. -->
