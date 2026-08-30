@@ -35,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.store.DataStoreAicuConsentStore
 import com.android.purebilibili.core.store.SettingsManager
+import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
@@ -67,6 +68,9 @@ internal fun AicuRoute(
     val model: AicuViewModel = viewModel(factory = factory)
     val state by model.state.collectAsStateWithLifecycle()
     var emoteMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    val renderEmoteMap = remember(emoteMap) {
+        emoteMap.mapValues { (_, url) -> FormatUtils.fixImageUrl(url) }
+    }
     val settings by SettingsManager.getHomeSettings(context)
         .map { it as com.android.purebilibili.core.store.HomeSettings? }
         .collectAsStateWithLifecycle(initialValue = null)
@@ -219,7 +223,7 @@ internal fun AicuScreen(
                             val records = state.page?.records.orEmpty()
                             val showRoom = state.category == AicuCategory.LIVE_DANMAKU && (index == 0 || records[index - 1].groupKey != record.groupKey)
                             if (showRoom) AppText("${record.roomName.ifBlank { "直播间 ${record.roomId}" }} · ${record.upName}", modifier = Modifier.padding(vertical = 8.dp))
-                            AicuRecordCard(record, state.category, emoteMap, { onOpenRecord(record) }, { onCopyRecord(record) })
+                            AicuRecordCard(record, state.category, renderEmoteMap, { onOpenRecord(record) }, { onCopyRecord(record) })
                         }
                         if (loadedPage != null) item("pagination") {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
