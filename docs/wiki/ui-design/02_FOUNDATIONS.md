@@ -1,9 +1,9 @@
 # 02 基础令牌
 
 > 文档编号：UI-02  
-> 规范版本：1.0.0-draft  
+> 规范版本：1.1.0-draft  
 > 状态：草案  
-> 最后核对日期：2026-08-02  
+> 最后核对日期：2026-08-31  
 > 适用提交：4443e72ff  
 > 维护角色：设计系统维护者  
 > 相关文档：[主题规范](03_THEMES.md) · [组件目录](components/README.md)
@@ -34,7 +34,7 @@ Token（设计令牌）就是“有名字的设计数值”。写 `AppSpacingTok
 
 ## 形状
 
-| `ContainerLevel` | 语义 | iOS 基准值；其他风格由映射解析 |
+| `ContainerLevel` | 语义 | 历史基础值；无玻璃 MIUIX 使用下述角色规格 |
 |---|---|---:|
 | `Tag` | 小标签、角标 | 4dp |
 | `Chip` | 筛选项、小操作 | 6dp |
@@ -47,9 +47,24 @@ Token（设计令牌）就是“有名字的设计数值”。写 `AppSpacingTok
 
 **必须**使用 `AppShapes.container(level)`；带描边的容器使用 `AppShapes.borderedContainer(level)`。**禁止**在新业务组件中直接写 `RoundedCornerShape(N.dp)`，除非形状由媒体裁切、进度轨道或外部格式严格定义。
 
+## 无玻璃 Miuix 角色规格
+
+以下仅在 MIUIX 且液态玻璃关闭时生效，玻璃开启与 MD3 保持现有值。官方控件的默认圆角优先；业务适配集中在 `AppShapes`、`AppChromeSizeTokens`，不得在页面复制。
+
+| 角色 | 默认视觉规格 | 依据 |
+|---|---|---|
+| 普通分组/内容卡 | 圆角 16dp | [官方 Card](https://compose-miuix-ui.github.io/miuix/components/card) |
+| 紧凑媒体封面 | 圆角 12dp | BiliPai 信息流密度 |
+| 突出内容卡 | 圆角 20dp | BiliPai 内容层级 |
+| 分类 TabRow | 高 42dp、圆角 12dp | [官方 TabRow](https://compose-miuix-ui.github.io/miuix/components/tabrow) |
+| 紧凑筛选 | 高 36dp、圆角 10dp | BiliPai 紧凑交互 |
+| 普通页面 | 横向 16dp、组间 24dp、组内 8/12/16dp | BiliPai 页面节奏 |
+
+48dp 是触摸区域下限，不是所有组件的视觉尺寸。字体放大时允许增高；长标签滚动，不缩字硬塞。紧凑交互必须预留不重叠的触摸区域。官方组件内部留白优先保持默认，不给 Preference 和外层 Card 重复加内边距。
+
 ## 颜色与表面
 
-颜色应按角色选择，而不是按十六进制选择：背景、内容表面、次级表面、主操作、错误、边框、文字各自表达含义。`AppSurfaceTokens` 负责把 Material `ColorScheme` 与三风格语义连接起来。
+颜色应按角色选择，而不是按十六进制选择：背景、内容表面、次级表面、主操作、错误、边框、文字各自表达含义。`AppSurfaceTokens` 负责把 Material `ColorScheme` 与双预设语义连接起来。
 
 - **必须**使用主题角色或 `AppSurfaceTokens`，同时检查浅色、深色与 AMOLED。
 - **必须**让错误色只表达错误/破坏性语义，品牌粉色不能自动代表危险。
@@ -96,5 +111,5 @@ AppCard(
 
 1. 新组件不出现无理由的布局、圆角、动画或颜色硬编码。
 2. 360dp 宽度下文本不被 48dp 点击目标挤出容器。
-3. 切换三风格与明暗主题，语义层级仍可辨认。
+3. 切换双预设与明暗主题，语义层级仍可辨认。
 4. 缺少 Token 时先在[差距台账](10_GAP_LEDGER.md)登记，再由设计系统维护者决定是否新增。
