@@ -21,6 +21,7 @@ import androidx.compose.material3.TopAppBarColors
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -244,6 +245,15 @@ fun AdaptiveTopAppBar(
     val topAppBarColors = effectiveColors
 
     if (rememberIsNativeMiuixEnabled()) {
+        SideEffect {
+            // Native Miuix bars do not consume the caller's Material scroll state. Leaving its
+            // default unbounded limit lets enterAlways swallow every vertical drag indefinitely.
+            // Match the native bar's fixed height, including state restored from another theme.
+            scrollBehavior?.state?.let { state ->
+                state.heightOffsetLimit = 0f
+                state.heightOffset = 0f
+            }
+        }
         val navigationContent =
             @Composable {
                 CompositionLocalProvider(
