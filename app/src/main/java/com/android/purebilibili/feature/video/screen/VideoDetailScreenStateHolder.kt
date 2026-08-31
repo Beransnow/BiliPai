@@ -2,6 +2,7 @@
 package com.android.purebilibili.feature.video.screen
 
 import coil3.request.crossfade
+import kotlinx.coroutines.flow.first
 import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
@@ -476,6 +477,13 @@ internal fun VideoDetailScreenStateHolder(
         )
     }
     val videoCardDepthBackgroundState = LocalVideoCardTransitionBackgroundState.current
+    val scopedHeroDriver = com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState.current
+    val entryHeroDriver = scopedHeroDriver
+        .takeIf {
+            it.enabled && isVideoDetailEntryActiveMiuixTransitionSource(
+                sourceRouteForSharedElement, videoCardDepthBackgroundState.sourceRouteProvider(),
+            )
+        }
     val frozenTransitionSourceCornerDp =
         videoCardDepthBackgroundState.sourceCornerDpProvider()
     val sharedTransitionSourceCornerDp = remember(
@@ -714,10 +722,12 @@ internal fun VideoDetailScreenStateHolder(
         sharedTransitionScope = entryRootSharedTransitionScope,
         animatedVisibilityScope = entryRootAnimatedVisibilityScope,
         fallbackDurationMillis = homeSharedTransitionMotionSpec.durationMillis,
+        heroDriver = entryHeroDriver,
     )
     val entryPlaybackReady = rememberVideoDetailEntryPlaybackReady(
         deferLoad = deferVideoDetailEntryLoad,
         morphDurationMillis = homeSharedTransitionMotionSpec.durationMillis,
+        heroDriver = entryHeroDriver,
     )
 
     fun markSecondaryNavigationLeave(expectedBvid: String = currentBvid) {
@@ -950,8 +960,8 @@ internal fun VideoDetailScreenStateHolder(
         Animatable(if (transitionEnabled) 0f else 1f)
     }
 
-    LaunchedEffect(transitionEnabled, motionSpec.entryPhaseDurationMillis) {
-        if (!transitionEnabled) {
+    LaunchedEffect(transitionEnabled, motionSpec.entryPhaseDurationMillis, entryHeroDriver) {
+        if (!transitionEnabled || entryHeroDriver != null) {
             detailInfoRevealProgress.snapTo(1f)
         } else {
             detailInfoRevealProgress.animateTo(
@@ -970,9 +980,16 @@ internal fun VideoDetailScreenStateHolder(
         entryTransitionFinished,
         entryVisualEnabled,
         motionSpec.entryPhaseDurationMillis,
+        entryHeroDriver,
         transitionEnabled
     ) {
         when {
+            entryHeroDriver != null -> {
+                if (entryTransitionFinished) {
+                    entryVisualProgress.snapTo(1f)
+                    isTransitionFinished = true
+                }
+            }
             deferVideoDetailEntryLoad -> {
                 // 只允许 true 锁存：相关推荐返回的二次 morph 不得把内容区重新藏起来。
                 if (entryTransitionFinished) {
@@ -1373,10 +1390,19 @@ internal fun VideoDetailScreenStateHolder(
     val detailShellShape = remember(sharedTransitionSourceCornerDp) {
         RoundedCornerShape(sharedTransitionSourceCornerDp.dp)
     }
-    LaunchedEffect(isNavigatingToVideo, homeSharedTransitionMotionSpec.durationMillis) {
+    LaunchedEffect(isNavigatingToVideo, homeSharedTransitionMotionSpec.durationMillis, scopedHeroDriver) {
         if (!isNavigatingToVideo) return@LaunchedEffect
         // 进场 morph 结束后恢复父壳，避免长期禁用导致再回列表时丢 shell。
-        kotlinx.coroutines.delay(homeSharedTransitionMotionSpec.durationMillis.toLong() + 48L)
+        if (scopedHeroDriver.enabled) {
+            snapshotFlow {
+                videoCardDepthBackgroundState.phaseProvider() == VideoCardTransitionBackgroundPhase.IDLE ||
+                    (videoCardDepthBackgroundState.phaseProvider() == VideoCardTransitionBackgroundPhase.HELD &&
+                        !videoCardDepthBackgroundState.isGestureRestoreInProgressProvider() &&
+                        !scopedHeroDriver.isGestureInProgressProvider() && scopedHeroDriver.progressProvider() >= .999f)
+            }.first { it }
+        } else {
+            kotlinx.coroutines.delay(homeSharedTransitionMotionSpec.durationMillis.toLong() + 48L)
+        }
         if (isNavigatingToVideo) {
             presentationState.clearNavigatingToVideo()
         }
@@ -1877,6 +1903,10 @@ internal fun VideoDetailScreenStateHolder(
     SideEffect {
         if (lockedReturnCoverOwnership != nextLockedReturnCoverOwnership) {
             lockedReturnCoverOwnership = nextLockedReturnCoverOwnership
+        }
+        if (entryOwnsMiuixCardTransition) {
+            com.android.purebilibili.core.ui.transition.VideoCardTransitionDiagnostics
+                .onOwnershipChanged(returnCoverOwnership, liveSurfaceCardTransitionEnabled)
         }
     }
     val liveReturnMorph = isLiveReturnMorphFromOwnership(returnCoverOwnership)
@@ -4360,7 +4390,12 @@ internal fun VideoDetailScreenStateHolder(
                                     }
                                 )
                                 .drawWithContent {
-                                    val reveal = detailInfoRevealProgress.value.coerceIn(0f, 1f)
+                                    val reveal = if (entryHeroDriver != null &&
+                                        videoCardDepthBackgroundState.phaseProvider() == VideoCardTransitionBackgroundPhase.OPENING
+                                    ) resolveVideoCardDetailChromeAlpha(
+                                        entryHeroDriver.progressProvider(),
+                                        VideoCardTransitionBackgroundPhase.OPENING, false,
+                                    ) else detailInfoRevealProgress.value.coerceIn(0f, 1f)
                                     clipRect(
                                         left = 0f,
                                         top = 0f,
@@ -4387,7 +4422,12 @@ internal fun VideoDetailScreenStateHolder(
                                     }
                                 }
                                 .graphicsLayer {
-                                    val reveal = detailInfoRevealProgress.value.coerceIn(0f, 1f)
+                                    val reveal = if (entryHeroDriver != null &&
+                                        videoCardDepthBackgroundState.phaseProvider() == VideoCardTransitionBackgroundPhase.OPENING
+                                    ) resolveVideoCardDetailChromeAlpha(
+                                        entryHeroDriver.progressProvider(),
+                                        VideoCardTransitionBackgroundPhase.OPENING, false,
+                                    ) else detailInfoRevealProgress.value.coerceIn(0f, 1f)
                                     val holdFullyOpaque =
                                         suppressEnterFadeAfterBackPreview && !isLeaving
                                     // Miuix flying entry: always complement source-card chrome with
