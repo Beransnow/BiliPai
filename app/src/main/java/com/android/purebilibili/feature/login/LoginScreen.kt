@@ -87,9 +87,15 @@ enum class LoginMethod {
 // 暂时隐藏设备间传输入口：当前测试环境为模拟机 + 真机。
 // TV_QR remains the only QR login path and uses Bilibili's official TV API.
 private const val ENABLE_BILIPAI_TRANSFER = false
+// Temporarily hide the Bilibili-side QR confirmation entry while that flow is
+// being reworked. The implementation remains available for a later re-enable.
+private const val ENABLE_OFFICIAL_TV_SCAN = false
 
 internal fun resolveAvailableLoginMethods(): List<LoginMethod> =
-    LoginMethod.entries.filter { ENABLE_BILIPAI_TRANSFER || it != LoginMethod.BILIPAI_TRANSFER }
+    LoginMethod.entries.filter {
+        (ENABLE_BILIPAI_TRANSFER || it != LoginMethod.BILIPAI_TRANSFER) &&
+            (ENABLE_OFFICIAL_TV_SCAN || it != LoginMethod.OFFICIAL_TV_SCAN)
+    }
 
 internal fun resolveQrLoginReason(): String {
     return "推荐使用 TV 扫码登录，可获得更完整的播放登录态并解锁高画质播放能力。"

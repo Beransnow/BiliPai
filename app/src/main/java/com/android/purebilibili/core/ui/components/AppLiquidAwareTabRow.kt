@@ -120,7 +120,16 @@ fun <T> AppLiquidAwareTabRow(
     }
     val selectedIndex = options.indexOfFirst { it.value == selectedValue }.coerceAtLeast(0)
     val resolvedDragSelectionEnabled = dragSelectionEnabled ?: (options.size > 1)
-    if (scrollable) {
+    // Give every tab enough room for its longest label. The row itself remains
+    // horizontally scrollable, so labels are never ellipsized or clipped on
+    // narrow phones; this also applies to shared rows such as UP space tabs.
+    val readableTabWidth = resolveReadableNativeTabMinWidth(
+        requestedMinWidth = minTabWidth,
+        labels = options.map { it.label },
+        allowLabelOverflow = true,
+    )
+    val needsHorizontalScroll = scrollable || readableTabWidth > minTabWidth
+    if (needsHorizontalScroll) {
         val scrollState = rememberScrollState()
         val density = LocalDensity.current
         val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp
@@ -132,7 +141,7 @@ fun <T> AppLiquidAwareTabRow(
                 .clip(CircleShape),
         ) {
             val viewportWidthPx = with(density) { maxWidth.toPx() }
-            val itemWidthPx = with(density) { minTabWidth.toPx() }
+            val itemWidthPx = with(density) { readableTabWidth.toPx() }
             KeepScrollableTabSelectionVisible(
                 scrollState = scrollState,
                 selectedIndex = selectedIndex,
@@ -148,7 +157,7 @@ fun <T> AppLiquidAwareTabRow(
                 },
                 modifier = Modifier.horizontalScroll(scrollState),
                 enabled = enabled,
-                itemWidth = minTabWidth,
+                itemWidth = readableTabWidth,
                 height = height,
                 indicatorHeight = indicatorHeight,
                 labelFontSize = labelFontSize,

@@ -10,11 +10,10 @@ import kotlin.test.assertTrue
 class LoginEntryPolicyTest {
 
     @Test
-    fun `login methods expose all supported account entries`() {
+    fun `login methods hide the temporary Bilibili scan entry`() {
         assertEquals(
             listOf(
                 LoginMethod.TV_QR,
-                LoginMethod.OFFICIAL_TV_SCAN,
                 LoginMethod.PASSWORD,
                 LoginMethod.SMS,
                 LoginMethod.COOKIE_IMPORT
