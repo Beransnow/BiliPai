@@ -14,6 +14,17 @@ import kotlin.test.assertTrue
 class AppSegmentedControlPolicyTest {
 
     @Test
+    fun `non glass tabs keep native geometry and grow for accessible text`() {
+        assertEquals(RoundedControlVisualGeometry(42.dp, 12.dp),
+            resolveMiuixNonGlassControlGeometry(false, 22.dp))
+        assertEquals(RoundedControlVisualGeometry(36.dp, 10.dp),
+            resolveMiuixNonGlassControlGeometry(true, 20.dp))
+        assertEquals(RoundedControlVisualGeometry(64.dp, 12.dp),
+            resolveMiuixNonGlassControlGeometry(false, 48.dp))
+    }
+
+
+    @Test
     fun `compact two option rows do not consume viewport`() {
         assertEquals(144.dp, resolveCompactMiuixTabRowWidth(400.dp, 72.dp, 2, false))
         assertEquals(400.dp, resolveCompactMiuixTabRowWidth(400.dp, 72.dp, 2, true))

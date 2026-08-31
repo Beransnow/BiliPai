@@ -2890,7 +2890,7 @@ private fun FavoriteSubscribedFolderPreview(
     coverUrl: String?,
     title: String
 ) {
-    val shape = AppShapes.container(ContainerLevel.Card)
+    val shape = AppShapes.mediaCover()
     Box(
         modifier = Modifier
             .width(resolveFavoriteSubscribedFolderPreviewWidth())

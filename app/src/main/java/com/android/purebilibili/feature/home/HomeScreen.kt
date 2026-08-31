@@ -304,10 +304,6 @@ fun HomeScreen(
     // [Feature] Video Preview State (Global Scope)
     val targetVideoItemState = remember { mutableStateOf<VideoItem?>(null) }
     var pendingNotInterestedVideo by remember { mutableStateOf<VideoItem?>(null) }
-    val homeMiuixBackdropSource = rememberChromeBackdropSource()
-    val homeMiuixBackdrop = homeMiuixBackdropSource.backdrop
-    var homeMiuixBackdropReady by remember(homeMiuixBackdrop) { mutableStateOf(false) }
-
     val coroutineScope = rememberCoroutineScope() // 用于双击回顶动画
     val headerSettleMotionSpec = AppMotionTokens.standardSpec<Float>()
     val pageSwitchMotionSpec = AppMotionTokens.emphasizedSpec<Float>()
@@ -960,11 +956,20 @@ fun HomeScreen(
         )
     }
     val isLiquidGlassEnabled = homePerformanceConfig.isAnyLiquidGlassEnabled
+    val shouldCaptureHomeChromeBackdrop = isLiquidGlassEnabled ||
+        isHeaderBlurEnabled || isBottomBarBlurEnabled
+    val homeMiuixBackdropSource = if (shouldCaptureHomeChromeBackdrop) {
+        rememberChromeBackdropSource()
+    } else {
+        null
+    }
+    val homeMiuixBackdrop = homeMiuixBackdropSource?.backdrop
+    var homeMiuixBackdropReady by remember(homeMiuixBackdrop) { mutableStateOf(false) }
     // The layer source records during draw. On a cold launch the header can otherwise consume
     // the backdrop before that first recording exists and stay blank until a lifecycle redraw.
-    LaunchedEffect(homeMiuixBackdrop, isLiquidGlassEnabled) {
+    LaunchedEffect(homeMiuixBackdrop, shouldCaptureHomeChromeBackdrop) {
         homeMiuixBackdropReady = false
-        if (isLiquidGlassEnabled) {
+        if (homeMiuixBackdrop != null && shouldCaptureHomeChromeBackdrop) {
             withFrameNanos { }
             withFrameNanos { }
             homeMiuixBackdropReady = true
@@ -1682,7 +1687,7 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .then(homeMiuixBackdropSource.modifier)
+                            .then(homeMiuixBackdropSource?.modifier ?: Modifier)
                             // 首页使用 Pager + Lazy 子层，source 挂在外层容器更稳定。
                             .hazeSourceCompat(state = hazeState)
                     ) {

@@ -14,6 +14,7 @@ package com.android.purebilibili.feature.home.components
 
 import android.os.Build
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,6 +29,9 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.systemGestures
@@ -105,6 +109,9 @@ import top.yukonga.miuix.kmp.theme.LocalContentColor as MiuixLocalContentColor
 
 val LocalFloatingBottomBarContentColor = staticCompositionLocalOf { Color.Unspecified }
 
+internal val LocalFloatingBottomBarSelectedContentColor =
+    staticCompositionLocalOf { Color.Unspecified }
+
 val LocalFloatingBottomBarTabScale = staticCompositionLocalOf { { 1f } }
 
 internal val LocalFloatingBottomBarIndicatorPosition = staticCompositionLocalOf { { 0f } }
@@ -147,6 +154,52 @@ enum class FloatingBottomBarMode {
     LiquidGlass,
     Blur,
     None
+}
+
+/** Solid Miuix fallback: keeps BiliPai slots without creating any backdrop or glass state. */
+@Composable
+fun PlainMiuixFloatingBottomBar(
+    selectedIndex: Int,
+    tabsCount: Int,
+    modifier: Modifier = Modifier,
+    colors: FloatingBottomBarColors = FloatingBottomBarDefaults.colors(),
+    content: @Composable RowScope.() -> Unit,
+) {
+    val safeCount = tabsCount.coerceAtLeast(1)
+    val shape = remember { resolveSharedBottomBarCapsuleShape() }
+    BoxWithConstraints(
+        modifier = modifier
+            .dropShadow(
+                shape = shape,
+                shadow = Shadow(radius = 10.dp, color = Color.Black, alpha = 0.12f),
+            )
+            .background(colors.containerColor, shape)
+            .padding(4.dp),
+    ) {
+        val itemWidth = maxWidth / safeCount
+        val indicatorOffset by animateDpAsState(
+            targetValue = itemWidth * selectedIndex.coerceIn(0, safeCount - 1),
+            label = "plainMiuixBottomBarIndicator",
+        )
+        Box(
+            modifier = Modifier
+                .offset(x = indicatorOffset)
+                .width(itemWidth)
+                .fillMaxHeight()
+                .background(MiuixTheme.colorScheme.secondaryContainer, shape),
+        )
+        CompositionLocalProvider(
+            LocalFloatingBottomBarContentColor provides colors.contentColor,
+            LocalFloatingBottomBarSelectedContentColor provides colors.activeContentColor,
+            LocalFloatingBottomBarIndicatorPosition provides { selectedIndex.toFloat() },
+        ) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                verticalAlignment = Alignment.CenterVertically,
+                content = content,
+            )
+        }
+    }
 }
 
 /** Flatter resting indicator; the shell and indicator retain the same capsule shape. */
@@ -411,8 +464,8 @@ fun FloatingBottomBar(
             colors.containerColor
         }
 
-    val tabsBackdropSource = rememberChromeBackdropSource()
-    val tabsBackdrop = tabsBackdropSource.backdrop
+    val tabsBackdropSource = if (isLiquidGlassMode) rememberChromeBackdropSource() else null
+    val tabsBackdrop = tabsBackdropSource?.backdrop
     val density = LocalDensity.current
     val shellLensDp = resolveCompactDockLensDp(shellHeight.value)
     val pressBloomDp = resolveCompactDockPressBloomDp(shellHeight.value)
@@ -718,16 +771,16 @@ fun FloatingBottomBar(
             null
         }
 
-    val baseHighlight = rememberGravityRotatedHighlight(extraDegrees = -45f)
-    val pillHighlight = rememberGravityRotatedHighlight(
+    val baseHighlight = if (isLiquidGlassMode) rememberGravityRotatedHighlight(extraDegrees = -45f) else null
+    val pillHighlight = if (isLiquidGlassMode) rememberGravityRotatedHighlight(
         extraDegrees = 90f,
         width = resolveDockPillHighlightWidthDp(
             indicatorWidthDp = fittedIndicatorWidth.value,
             indicatorHeightDp = fittedIndicatorHeight.value,
         ).dp,
-    )
+    ) else null
 
-    val combinedBackdrop = if (backdrop != null) {
+    val combinedBackdrop = if (backdrop != null && tabsBackdrop != null) {
         rememberCombinedBackdrop(backdrop, tabsBackdrop)
     } else {
         null
@@ -800,7 +853,7 @@ fun FloatingBottomBar(
                                                 liquidGlassTuning.shellChromaticAberrationAmount,
                                         )
                                     },
-                                    highlight = { baseHighlight.copy(alpha = 0.75f) },
+                                    highlight = { baseHighlight?.copy(alpha = 0.75f) },
                                     layerBlock = {
                                         val width = size.width.coerceAtLeast(1f)
                                         val s = lerp(
@@ -868,7 +921,7 @@ fun FloatingBottomBar(
                     Modifier
                         .clearAndSetSemantics {}
                         .alpha(0f)
-                        .then(tabsBackdropSource.modifier)
+                        .then(tabsBackdropSource?.modifier ?: Modifier)
                         .graphicsLayer {
                             translationX = panelOffset
                             clip = false
@@ -953,7 +1006,7 @@ fun FloatingBottomBar(
                                 )
                             },
                             highlight = {
-                                pillHighlight.copy(alpha = dampedDragAnimation.pressProgress)
+                                pillHighlight?.copy(alpha = dampedDragAnimation.pressProgress)
                             },
                             layerBlock = {
                                 scaleX = dampedDragAnimation.scaleX
