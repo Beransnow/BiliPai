@@ -190,6 +190,25 @@ internal fun resolveTopTabDockIndicatorWidthDp(
     return maxWidth.coerceAtLeast(minWidth)
 }
 
+/** Interpolates liquid capsule width between adjacent tab labels during pager motion. */
+internal fun resolveTopTabInterpolatedIndicatorWidthDp(
+    position: Float,
+    itemWidthDp: Float,
+    horizontalGapDp: Float,
+    contentWidthsDp: List<Float>,
+): Float {
+    if (itemWidthDp <= 0f) return 0f
+    val slotMax = resolveTopTabDockIndicatorWidthDp(itemWidthDp, horizontalGapDp)
+    if (contentWidthsDp.isEmpty()) return slotMax
+    val clamped = position.coerceIn(0f, contentWidthsDp.lastIndex.toFloat())
+    val start = clamped.toInt()
+    val end = (start + 1).coerceAtMost(contentWidthsDp.lastIndex)
+    val contentWidth = androidx.compose.ui.util.lerp(
+        contentWidthsDp[start], contentWidthsDp[end], clamped - start
+    ) + horizontalGapDp * 2f
+    return contentWidth.coerceIn(horizontalGapDp * 2f + 1f, slotMax)
+}
+
 internal fun resolveTopTabDockIndicatorHeightDp(
     rowHeightDp: Float,
     verticalGapDp: Float,
@@ -1416,10 +1435,11 @@ private fun LightweightHomeTopTabs(
         // Pager swipes have no direct press event. Reuse the bottom-bar drag-scale animation
         // as their effective press so the indicator surface fades and lens ramps identically.
         val topTabLensProgress = topTabIndicatorLayerScaleProgress
-        val md3LiquidCapsuleWidth = resolveTopTabDockIndicatorWidthDp(
+        val md3LiquidCapsuleWidth = resolveTopTabInterpolatedIndicatorWidthDp(
+            position = topTabIndicatorPosition,
             itemWidthDp = itemWidth.value,
             horizontalGapDp = dockIndicatorHorizontalGap.value,
-            minWidthDp = md3IndicatorWidth.value
+            contentWidthsDp = md3ContentWidths.map { it.value },
         ).dp
         val dockIndicatorHeight = resolveTopTabDockIndicatorHeightDp(
             rowHeightDp = rowHeight.value,
