@@ -138,7 +138,7 @@ internal fun SettingsPageScaffold(
     } else {
         null
     }
-    val hazeState = rememberRecoverableHazeState()
+    val hazeState = if (effectiveTopBarBlurEnabled) rememberRecoverableHazeState() else null
     val blurIntensity = currentUnifiedBlurIntensity()
     val topBarSurfaceAlpha = if (effectiveTopBarBlurEnabled) {
         BlurStyles.getBackgroundAlpha(blurIntensity)
@@ -201,7 +201,7 @@ internal fun SettingsPageScaffold(
                 .padding(padding)
                 .fillMaxSize()
                 .then(
-                    if (effectiveTopBarBlurEnabled) {
+                    if (effectiveTopBarBlurEnabled && hazeState != null) {
                         Modifier.hazeSourceCompat(state = hazeState)
                     } else {
                         Modifier

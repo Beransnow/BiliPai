@@ -49,7 +49,8 @@ class HomeChromeLiquidSurfaceStructureTest {
         )
         assertTrue(
             "cold start must wait until the shared layer backdrop has recorded before consumers sample it",
-            homeScreenSource.contains("val shouldCaptureHomeChromeBackdrop = isLiquidGlassEnabled ||") &&
+            homeScreenSource.contains("val shouldCaptureHomeHaze = isLiquidGlassEnabled ||") &&
+                homeScreenSource.contains("val shouldCaptureHomeChromeBackdrop = isLiquidGlassEnabled ||") &&
                 homeScreenSource.contains("if (shouldCaptureHomeChromeBackdrop)") &&
                 homeScreenSource.contains("var homeMiuixBackdropReady") &&
                 homeScreenSource.contains("withFrameNanos { }") &&

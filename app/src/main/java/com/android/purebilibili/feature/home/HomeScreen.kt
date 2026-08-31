@@ -296,11 +296,6 @@ fun HomeScreen(
     var liveScrollToTopRequestId by remember { mutableIntStateOf(0) }
     var bangumiScrollToTopRequestId by remember { mutableIntStateOf(0) }
     var partitionScrollToTopRequestId by remember { mutableIntStateOf(0) }
-    val localHazeState = rememberRecoverableHazeState(initialBlurEnabled = true)
-    // 首页使用独立 HazeState，避免命中外层全局 source 的祖先过滤规则导致无模糊。
-    val hazeState = localHazeState
-
-
     // [Feature] Video Preview State (Global Scope)
     val targetVideoItemState = remember { mutableStateOf<VideoItem?>(null) }
     var pendingNotInterestedVideo by remember { mutableStateOf<VideoItem?>(null) }
@@ -956,6 +951,15 @@ fun HomeScreen(
         )
     }
     val isLiquidGlassEnabled = homePerformanceConfig.isAnyLiquidGlassEnabled
+    val shouldCaptureHomeHaze = isLiquidGlassEnabled ||
+        isHeaderBlurEnabled || isBottomBarBlurEnabled
+    // 首页使用独立 HazeState，避免命中外层全局 source 的祖先过滤规则导致无模糊。
+    // 实色路径不创建 source；普通模糊或玻璃路径才承担背景采样成本。
+    val hazeState = if (shouldCaptureHomeHaze) {
+        rememberRecoverableHazeState(initialBlurEnabled = true)
+    } else {
+        null
+    }
     val shouldCaptureHomeChromeBackdrop = isLiquidGlassEnabled ||
         isHeaderBlurEnabled || isBottomBarBlurEnabled
     val homeMiuixBackdropSource = if (shouldCaptureHomeChromeBackdrop) {
@@ -1689,7 +1693,13 @@ fun HomeScreen(
                             .fillMaxSize()
                             .then(homeMiuixBackdropSource?.modifier ?: Modifier)
                             // 首页使用 Pager + Lazy 子层，source 挂在外层容器更稳定。
-                            .hazeSourceCompat(state = hazeState)
+                            .then(
+                                if (hazeState != null) {
+                                    Modifier.hazeSourceCompat(state = hazeState)
+                                } else {
+                                    Modifier
+                                }
+                            )
                     ) {
                     HomeWallpaperBackdrop(
                         wallpaperUri = homeWallpaperUri,
