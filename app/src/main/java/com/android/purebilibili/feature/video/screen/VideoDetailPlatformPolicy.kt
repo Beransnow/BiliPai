@@ -438,8 +438,9 @@ internal fun resolveIsPlaybackPausedForCollapse(
     playWhenReady: Boolean,
     playbackState: Int
 ): Boolean {
-    // 这里按用户暂停意图判断，而不是按 isPlaying，避免缓冲态误判为“暂停时可缩小”。
-    return !playWhenReady && playbackState != Player.STATE_ENDED
+    // 播放结束后 Media3 可能仍保留 playWhenReady=true，但对折叠交互来说它已是静止态。
+    // 其余情况仍按用户暂停意图判断，避免把缓冲态误判为“暂停时可缩小”。
+    return playbackState == Player.STATE_ENDED || !playWhenReady
 }
 
 internal fun shouldUseTabletVideoLayout(
