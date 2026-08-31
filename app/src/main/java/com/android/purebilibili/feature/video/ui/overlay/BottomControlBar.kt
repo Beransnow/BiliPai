@@ -985,7 +985,13 @@ fun BottomControlBar(
                                 color = if (showMoreActionsPanel) MaterialTheme.colorScheme.primary else Color.White,
                                 fontSize = layoutPolicy.actionTextFontSp.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(horizontal = layoutPolicy.actionChipHorizontalPaddingDp.dp, vertical = layoutPolicy.actionChipVerticalPaddingDp.dp)
+                                // AppIconButton supplies a compact 48dp target. Keep the label
+                                // on one line so the final overflow action is never split as
+                                // “更”/“多” in landscape.
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Clip,
+                                modifier = Modifier.padding(vertical = layoutPolicy.actionChipVerticalPaddingDp.dp)
                             )
                         }
                     )
