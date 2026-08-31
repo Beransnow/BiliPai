@@ -1153,9 +1153,13 @@ internal fun VideoDetailScreenStateHolder(
         fullscreenMode == com.android.purebilibili.core.store.FullscreenMode.NONE ||
             fullscreenMode == com.android.purebilibili.core.store.FullscreenMode.VERTICAL
     }
+    // Maximum window metrics classify foldables as tablets even while the cover display is active.
+    // Treat that narrow current window like a phone for gravity-driven fullscreen rotation.
+    val orientationPolicyDevice = windowSizeClass.isCompactDevice ||
+        windowSizeClass.isFoldableCoverScreen
     val isOrientationDrivenFullscreen = !prefersManualFullscreenMode &&
         shouldUseOrientationDrivenFullscreen(
-        isCompactDevice = windowSizeClass.isCompactDevice
+        isCompactDevice = orientationPolicyDevice
     )
     val isFullscreenMode = resolveVideoDetailFullscreenMode(
         isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
@@ -2139,7 +2143,7 @@ internal fun VideoDetailScreenStateHolder(
     val isVerticalVideo by playerState.isVerticalVideo.collectAsStateWithLifecycle()
     val continuousFullscreenTransitionEnabled = transitionEnabled &&
         isOrientationDrivenFullscreen &&
-        windowSizeClass.isCompactDevice &&
+        orientationPolicyDevice &&
         !isActivityInMultiWindowMode &&
         !isVerticalVideo
     var continuousPlayerPhase by rememberSaveable(currentBvid) {
@@ -2275,7 +2279,7 @@ internal fun VideoDetailScreenStateHolder(
         useTabletLayout,
         isOrientationDrivenFullscreen,
         isFullscreenMode,
-        windowSizeClass.isCompactDevice,
+        orientationPolicyDevice,
         isActivityInMultiWindowMode,
         isPipMode,
         userRequestedFullscreen,
@@ -2286,7 +2290,7 @@ internal fun VideoDetailScreenStateHolder(
         val requestedOrientation = resolvePhoneVideoRequestedOrientation(
             autoRotateEnabled = autoRotateEnabled,
             fullscreenMode = fullscreenMode,
-            isCompactDevice = windowSizeClass.isCompactDevice,
+            isCompactDevice = orientationPolicyDevice,
             isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
             isFullscreenMode = isFullscreenMode,
             manualFullscreenRequested = userRequestedFullscreen,
@@ -2310,7 +2314,7 @@ internal fun VideoDetailScreenStateHolder(
 
     LaunchedEffect(
         autoRotateEnabled,
-        windowSizeClass.isCompactDevice,
+        orientationPolicyDevice,
         isOrientationDrivenFullscreen,
         fullscreenMode,
         manualPortraitHoldActive,
@@ -2320,13 +2324,14 @@ internal fun VideoDetailScreenStateHolder(
     ) {
         if (!shouldObservePhoneAutoRotate(
                 autoRotateEnabled = autoRotateEnabled,
-                isCompactDevice = windowSizeClass.isCompactDevice,
+                isCompactDevice = orientationPolicyDevice,
                 isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
                 fullscreenMode = fullscreenMode,
                 manualPortraitHoldActive = manualPortraitHoldActive,
                 isInMultiWindowMode = isActivityInMultiWindowMode,
                 isInPictureInPictureMode = isPipMode,
-                isPortraitFullscreen = isPortraitFullscreen
+                isPortraitFullscreen = isPortraitFullscreen,
+                observeWhenAutoRotateDisabled = windowSizeClass.isFoldableCoverScreen,
             )
         ) {
             lastPhoneAutoRotateLandscapeAppliedAtMs = null
@@ -2338,7 +2343,7 @@ internal fun VideoDetailScreenStateHolder(
         autoRotateEnabled,
         fullscreenMode,
         useTabletLayout,
-        windowSizeClass.isCompactDevice,
+        orientationPolicyDevice,
         isOrientationDrivenFullscreen,
         manualPortraitHoldActive,
         isActivityInMultiWindowMode,
@@ -2350,13 +2355,14 @@ internal fun VideoDetailScreenStateHolder(
             hostActivity == null ||
             !shouldObservePhoneAutoRotate(
                 autoRotateEnabled = autoRotateEnabled,
-                isCompactDevice = windowSizeClass.isCompactDevice,
+                isCompactDevice = orientationPolicyDevice,
                 isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
                 fullscreenMode = fullscreenMode,
                 manualPortraitHoldActive = manualPortraitHoldActive,
                 isInMultiWindowMode = isActivityInMultiWindowMode,
                 isInPictureInPictureMode = isPipMode,
-                isPortraitFullscreen = isPortraitFullscreen
+                isPortraitFullscreen = isPortraitFullscreen,
+                observeWhenAutoRotateDisabled = windowSizeClass.isFoldableCoverScreen,
             ) ||
             !isOrientationDrivenFullscreen
         ) {
@@ -2801,7 +2807,7 @@ internal fun VideoDetailScreenStateHolder(
             isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
             isLandscape = isLandscape,
             isFullscreenMode = isFullscreenMode,
-            isCompactDevice = windowSizeClass.isCompactDevice,
+            isCompactDevice = orientationPolicyDevice,
             fullscreenMode = fullscreenMode,
             isVerticalVideo = isVerticalVideo,
             preferPortraitForFlatFoldable = false,
