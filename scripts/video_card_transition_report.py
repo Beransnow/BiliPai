@@ -30,9 +30,14 @@ def percentile(values, fraction):
 
 def parse_frames(text, refresh_rate=None):
     frames, header, active, rejected = {}, None, False, 0
+    capture_spans, capture_rows = [], []
     for raw in text.splitlines():
         line = raw.strip()
         if line == "---PROFILEDATA---":
+            if active and capture_rows:
+                capture_spans.append([min(r["IntendedVsync"] for r in capture_rows),
+                                      max(r["FrameCompleted"] for r in capture_rows)])
+            capture_rows = []
             active, header = not active, None
             continue
         if not active or not line:
@@ -50,6 +55,7 @@ def parse_frames(text, refresh_rate=None):
             start, end = row["IntendedVsync"], row["FrameCompleted"]
             if row.get("Flags", 0) not in ACCEPTED_FRAME_FLAGS or start <= 0 or end < start or end >= 2**63 - 1:
                 raise ValueError()
+            capture_rows.append(row)
             if start not in frames or end > frames[start]["FrameCompleted"]:
                 frames[start] = row
         except (ValueError, KeyError):
@@ -78,7 +84,8 @@ def parse_frames(text, refresh_rate=None):
         row["budget_ms"] = budget / 1e6 if budget else None
     return rows, {"hz": 1e9 / interval if interval else None, "evidence": evidence,
                   "observed_hz": sorted({round(1e9 / i, 2) for i in intervals}), "rejected_rows": rejected,
-                  "accepted_flags": sorted({r.get("Flags", 0) for r in rows})}
+                  "accepted_flags": sorted({r.get("Flags", 0) for r in rows}),
+                  "capture_spans_ns": capture_spans}
 
 
 def metrics(rows):
@@ -105,12 +112,18 @@ def parse_events(text):
     return sorted(events, key=lambda e: e["timestamp_ns"])
 
 
-def phase_metrics(rows, events, declared_phase=None):
+def phase_metrics(rows, events, declared_phase=None, capture_spans=()):
     result = {phase: None for phase in PHASES}
     if declared_phase:
         result[declared_phase] = dict(metrics(rows), attribution="user_declared_single_phase")
         return result
     starts = [e["timestamp_ns"] for e in events]
+    spans = []
+    for start, end in sorted(capture_spans):
+        if spans and start <= spans[-1][1]:
+            spans[-1][1] = max(end, spans[-1][1])
+        else:
+            spans.append([start, end])
     groups = {p: [] for p in PHASES}
     for row in rows:
         index = bisect.bisect_right(starts, row["IntendedVsync"]) - 1
@@ -125,14 +138,11 @@ def phase_metrics(rows, events, declared_phase=None):
         incomplete = 0
         for a, b in intervals:
             retained = [r for r in groups[phase] if a["timestamp_ns"] <= r["IntendedVsync"] < b["timestamp_ns"]]
-            # Allow two frame periods for boundary alignment; this is not an FPS estimate.
-            first_interval = retained[0].get("FrameInterval", 0) if retained else 0
-            last_interval = retained[-1].get("FrameInterval", 0) if retained else 0
-            if (not retained or
-                    (0 < first_interval < 100_000_000 and
-                     retained[0]["IntendedVsync"] - a["timestamp_ns"] > first_interval * 2) or
-                    (0 < last_interval < 100_000_000 and
-                     b["timestamp_ns"] - retained[-1]["FrameCompleted"] > last_interval * 2)):
+            # Check buffer retention, not cadence: a slow first frame is jank, not lost data.
+            periods = [r["FrameInterval"] for r in retained if 0 < r.get("FrameInterval", 0) < 100_000_000]
+            tolerance = statistics.median(periods) * 2 if periods else 0
+            if not retained or not any(start - tolerance <= a["timestamp_ns"] and
+                                       end + tolerance >= b["timestamp_ns"] for start, end in spans):
                 incomplete += 1
         for key in COUNTERS:
             valid = []
@@ -207,7 +217,7 @@ def build_report(gfx, before="", after="", diagnostics="", label="", config=None
             "refresh_rate": refresh, "aggregate": metrics(rows), "platform_window_counters": platform,
             "memory": {"pss_before_mib": pss_before, "pss_after_mib": pss_after,
                        "pss_delta_mib": pss_after - pss_before if None not in (pss_before, pss_after) else None},
-            "phases": phase_metrics(rows, events, phase),
+            "phases": phase_metrics(rows, events, phase, refresh["capture_spans_ns"]),
             "notes": ["gfxinfo framestats is a bounded ring buffer; aggregate counters may cover a longer window.",
                       "Accepted frame flags: " + str(refresh["accepted_flags"]) + "; 32 is an observed vendor compatibility flag, not proof of zero jank.",
                       "Checkpoint frame rows are merged and deduplicated by IntendedVsync; final window counters are not summed.",

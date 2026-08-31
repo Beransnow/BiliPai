@@ -114,6 +114,19 @@ class TransitionReportTest(unittest.TestCase):
         self.assertEqual(3, result["phases"]["OPENING"]["frame_count"])
         self.assertEqual(1, result["phases"]["OPENING"]["incomplete_intervals"])
 
+    def test_slow_first_frame_is_not_mistaken_for_overwritten_buffer(self):
+        frames = gfx((5, 80, 5), interval=100_000_000)
+        diagnostics = "monotonic_ns=1010000000 phase=OPENING\nmonotonic_ns=1190000000 phase=HELD"
+        result = report.build_report(frames, diagnostics=diagnostics)
+        self.assertEqual(1, result["phases"]["OPENING"]["frame_count"])
+        self.assertEqual(0, result["phases"]["OPENING"]["incomplete_intervals"])
+
+    def test_disjoint_checkpoints_do_not_claim_coverage_across_a_gap(self):
+        diagnostics = "monotonic_ns=999000000 phase=OPENING\nmonotonic_ns=2040000000 phase=HELD"
+        result = report.build_report(gfx(start=2_000_000_000), diagnostics=diagnostics,
+                                     additional_gfx=[gfx()])
+        self.assertEqual(1, result["phases"]["OPENING"]["incomplete_intervals"])
+
     def test_modern_and_legacy_platform_counters_are_kept_separate(self):
         result = report.build_report("Total frames rendered: 100\nJanky frames: 0 (0%)\n"
                                      "Janky frames (legacy): 23 (23%)\n" + gfx())
