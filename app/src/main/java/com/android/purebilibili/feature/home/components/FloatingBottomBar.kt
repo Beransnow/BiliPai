@@ -61,7 +61,6 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.selected
@@ -755,10 +754,6 @@ fun FloatingBottomBar(
         ) {
             Row(
                 Modifier
-                    // Keep labels above the selected capsule. Android 12's fallback
-                    // renderer can otherwise paint the indicator over the glyphs,
-                    // making the active destination unreadable.
-                    .zIndex(2f)
                     .onGloballyPositioned { coords ->
                         totalWidthPx = coords.size.width.toFloat()
                         dragHitTest.dockWindowLeftPx = coords.positionInWindow().x
