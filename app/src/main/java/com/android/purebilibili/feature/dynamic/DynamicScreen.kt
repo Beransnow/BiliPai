@@ -1383,6 +1383,9 @@ private fun DynamicList(
         )
     }
     val showSkeleton = filteredItems.isEmpty() && activeLoading
+    val dynamicGridKeys = remember(filteredItems) {
+        filteredItems.map { "dynamic_${dynamicFeedItemKey(it)}" }
+    }
     val skeletonPulse = if (showSkeleton) {
         com.android.purebilibili.feature.dynamic.components.rememberDynamicFeedSkeletonPulse()
     } else {
@@ -1397,6 +1400,8 @@ private fun DynamicList(
             StaggeredGridCells.Adaptive(resolveDynamicTimelineMinColumnWidth())
         },
         state = listState,
+        prependItemKeys = dynamicGridKeys,
+        prependDividerIndex = if (isSelectedUserTabActive) -1 else oldContentDividerIndex,
         contentPadding = PaddingValues(
             top = statusBarHeight + topPaddingExtra,
             bottom = bottomPadding
@@ -1473,7 +1478,7 @@ private fun DynamicList(
         if (oldContentDividerIndex in 0..filteredItems.size) {
             items(
                 count = oldContentDividerIndex,
-                key = { index -> "dynamic_${dynamicFeedItemKey(filteredItems[index])}" },
+                key = { index -> dynamicGridKeys[index] },
                 contentType = { "dynamic_card" }
             ) { index ->
                 dynamicCard(filteredItems[index])
@@ -1489,7 +1494,7 @@ private fun DynamicList(
                 count = filteredItems.size - oldContentDividerIndex,
                 key = { offset ->
                     val index = oldContentDividerIndex + offset
-                    "dynamic_${dynamicFeedItemKey(filteredItems[index])}"
+                    dynamicGridKeys[index]
                 },
                 contentType = { "dynamic_card" }
             ) { offset ->
@@ -1498,7 +1503,7 @@ private fun DynamicList(
         } else {
             items(
                 count = filteredItems.size,
-                key = { index -> "dynamic_${dynamicFeedItemKey(filteredItems[index])}" },
+                key = { index -> dynamicGridKeys[index] },
                 contentType = { "dynamic_card" }
             ) { index ->
                 dynamicCard(filteredItems[index])
