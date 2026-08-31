@@ -128,6 +128,7 @@ import com.android.purebilibili.core.ui.components.AppNativeTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.KeepScrollableTabSelectionVisible
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
+import com.android.purebilibili.core.ui.components.resolveReadableNativeTabMinWidth
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.common.copyOnLongPress
@@ -2603,21 +2604,32 @@ private fun SpaceSecondarySwitchRow(
     ) {
         val containerHorizontalPaddingDp = AppSpacingTokens.ExtraSmall.value.roundToInt()
         val preferredItemWidthDp = spec.itemWidthDp ?: 104
+        val readableItemWidthDp = resolveReadableNativeTabMinWidth(
+            requestedMinWidth = preferredItemWidthDp.dp,
+            labels = items.map { it.title },
+            allowLabelOverflow = true,
+        ).value
         val useScrollableRail = shouldScrollSpaceSecondarySwitch(
             itemCount = items.size,
-            itemWidthDp = preferredItemWidthDp,
+            itemWidthDp = readableItemWidthDp,
             viewportWidthDp = maxWidth.value.roundToInt(),
             containerHorizontalPaddingDp = containerHorizontalPaddingDp
         )
         // Keep three slots visible in the viewport even when later library entries
         // make the rail scrollable; long contribution titles then use the same
         // compact width as the legacy three-tab dock.
-        val itemWidthDp = resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
-            preferredItemWidthDp = preferredItemWidthDp,
-            itemCount = items.size,
-            viewportWidthDp = maxWidth.value.roundToInt(),
-            containerHorizontalPaddingDp = containerHorizontalPaddingDp
-        )
+        val itemWidthDp = if (readableItemWidthDp > preferredItemWidthDp) {
+            // Long titles take precedence over the "three visible slots" hint:
+            // make the rail scroll instead of ellipsizing the selected title.
+            readableItemWidthDp.roundToInt()
+        } else {
+            resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
+                preferredItemWidthDp = readableItemWidthDp.roundToInt(),
+                itemCount = items.size,
+                viewportWidthDp = maxWidth.value.roundToInt(),
+                containerHorizontalPaddingDp = containerHorizontalPaddingDp
+            )
+        }
         val itemWidth = itemWidthDp.dp
         val viewportWidthPx = with(density) { maxWidth.toPx() }
         val itemWidthPx = with(density) { itemWidth.toPx() }
@@ -2675,6 +2687,7 @@ private fun SpaceSecondarySwitchRow(
                 modifier = Modifier.fillMaxWidth(),
                 scrollable = useScrollableRail,
                 minTabWidth = itemWidth,
+                allowLabelOverflow = true,
             )
         }
     }
