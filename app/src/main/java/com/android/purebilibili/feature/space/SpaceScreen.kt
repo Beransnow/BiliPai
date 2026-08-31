@@ -2611,7 +2611,7 @@ private fun SpaceSecondarySwitchRow(
         ).value
         val useScrollableRail = shouldScrollSpaceSecondarySwitch(
             itemCount = items.size,
-            itemWidthDp = readableItemWidthDp,
+            itemWidthDp = readableItemWidthDp.roundToInt(),
             viewportWidthDp = maxWidth.value.roundToInt(),
             containerHorizontalPaddingDp = containerHorizontalPaddingDp
         )
