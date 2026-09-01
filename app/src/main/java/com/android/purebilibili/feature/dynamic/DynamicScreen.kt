@@ -235,6 +235,7 @@ fun DynamicScreen(
     val likeOverrides by viewModel.likeOverrides.collectAsStateWithLifecycle()
     var showRepostDialog by remember { mutableStateOf<String?>(null) }  // 存储要转发的动态ID
     var showPublishDialog by remember { mutableStateOf(false) }
+    var dynamicTopActionsCollapsed by rememberSaveable { mutableStateOf(false) }
     var editingDynamicId by remember { mutableStateOf<String?>(null) }
     var editingDraft by remember {
         mutableStateOf(com.android.purebilibili.data.model.response.DynamicPublishDraft(text = ""))
@@ -912,6 +913,8 @@ fun DynamicScreen(
                                     displayMode = displayMode,
                                     onDisplayModeChange = { viewModel.setDisplayMode(it) },
                                     onPublishClick = { showPublishDialog = true },
+                                    actionDockCollapsed = dynamicTopActionsCollapsed,
+                                    onActionDockCollapsedChange = { dynamicTopActionsCollapsed = it },
                                     publishSkinDecoration = publishSkinDecoration,
                                     dockBackdrop = dynamicDockBackdrop,
                                     hazeState = dynamicTopBarHazeState,
@@ -1116,6 +1119,8 @@ fun DynamicScreen(
                                     displayMode = displayMode,
                                     onDisplayModeChange = { viewModel.setDisplayMode(it) },
                                     onPublishClick = { showPublishDialog = true },
+                                    actionDockCollapsed = dynamicTopActionsCollapsed,
+                                    onActionDockCollapsedChange = { dynamicTopActionsCollapsed = it },
                                     publishSkinDecoration = publishSkinDecoration,
                                     dockBackdrop = dynamicDockBackdrop,
                                     hazeState = dynamicTopBarHazeState,
