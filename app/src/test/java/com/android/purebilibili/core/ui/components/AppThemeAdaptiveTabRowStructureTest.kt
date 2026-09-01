@@ -40,6 +40,8 @@ class AppThemeAdaptiveTabRowStructureTest {
         assertTrue(adaptiveRenderer.contains("isScrollInProgressProvider = isScrollInProgressProvider"))
         assertTrue(adaptiveRenderer.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(adaptiveRenderer.contains("resolvedDragSelectionEnabled"))
+        assertTrue(adaptiveRenderer.contains("requiredContentWidth > viewportMaxWidth"))
+        assertFalse(adaptiveRenderer.contains("scrollable || readableTabWidth > minTabWidth"))
         assertTrue(adaptiveRenderer.contains("tapPressRefractionEnabled = tapPressRefractionEnabled"))
         assertTrue(adaptiveRenderer.contains("height = height"))
         assertTrue(adaptiveRenderer.contains("indicatorHeight = indicatorHeight"))

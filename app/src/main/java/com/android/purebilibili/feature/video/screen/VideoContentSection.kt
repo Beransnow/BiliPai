@@ -1896,14 +1896,16 @@ private fun VideoContentTabBar(
                     selectedValue = selectedTabIndex,
                     onSelectionChange = onTabSelected,
                     modifier = Modifier.fillMaxWidth(),
-                height = liquidChromeSpec.segmentedControlHeightDp.dp,
-                indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
-                labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
-                // 该栏的指示器由 HorizontalPager 实时位置驱动，禁止自身再 settle 一次。
-                dragSelectionEnabled = true,
-                tapPressRefractionEnabled = true,
-                miuixBackdrop = miuixBackdrop,
-                indicatorPositionProvider = indicatorPositionProvider,
+                    minTabWidth = liquidChromeSpec.itemWidthDp?.dp
+                        ?: AppChromeSizeTokens.MinimumTouchTarget,
+                    height = liquidChromeSpec.segmentedControlHeightDp.dp,
+                    indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
+                    labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
+                    // 该栏的指示器由 HorizontalPager 实时位置驱动，禁止自身再 settle 一次。
+                    dragSelectionEnabled = true,
+                    tapPressRefractionEnabled = true,
+                    miuixBackdrop = miuixBackdrop,
+                    indicatorPositionProvider = indicatorPositionProvider,
                     isScrollInProgressProvider = isScrollInProgressProvider,
                 )
             }

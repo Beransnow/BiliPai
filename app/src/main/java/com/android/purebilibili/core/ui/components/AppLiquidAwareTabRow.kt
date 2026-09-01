@@ -114,11 +114,15 @@ fun <T> AppLiquidAwareTabRow(
         labels = options.map { it.label },
         allowLabelOverflow = true,
     )
-    val needsHorizontalScroll = scrollable || readableTabWidth > minTabWidth
+    val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp
+    val requiredContentWidth = readableTabWidth * options.size + AppSpacingTokens.ExtraSmall * 2
+    // A wider readable slot does not by itself make the row scrollable. The 48dp native
+    // accessibility default is intentionally smaller than many labels, including 简介/评论;
+    // treating that difference as overflow clips the liquid shell and disables direct drag.
+    val needsHorizontalScroll = scrollable || requiredContentWidth > viewportMaxWidth
     if (needsHorizontalScroll) {
         val scrollState = rememberScrollState()
         val density = LocalDensity.current
-        val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp
         BoxWithConstraints(
             modifier = modifier
                 .widthIn(max = viewportMaxWidth)

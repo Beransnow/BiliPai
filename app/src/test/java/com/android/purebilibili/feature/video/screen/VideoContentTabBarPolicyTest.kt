@@ -480,6 +480,14 @@ class VideoContentTabBarPolicyTest {
             spec.itemWidthDp,
             resolveVideoContentTabBarDockItemWidthDp(nativeSpec.labelFontSizeSp),
         )
+
+        val contentSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoContentSection.kt"
+        )
+        assertTrue(
+            contentSource.contains("minTabWidth = liquidChromeSpec.itemWidthDp?.dp"),
+            "The liquid tab row must receive its reserved item width so it stays in direct-drag mode",
+        )
     }
 
     private fun loadSource(path: String): String {
