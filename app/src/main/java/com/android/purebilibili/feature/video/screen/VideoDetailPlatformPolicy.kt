@@ -715,9 +715,10 @@ internal fun resolvePhoneAutoRotateRequestedOrientation(
     )
 
     return when {
-        // Choose an exact side only when entering from portrait. Once landscape is active,
-        // let the system handle 180-degree turns instead of repeatedly locking a sensor side.
-        isCurrentlyLandscape && exactLandscapeKeep != null -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        // Keep emitting the physical landscape side after entry. Some foldable cover displays
+        // accept SENSOR_LANDSCAPE but keep the first 90-degree rotation indefinitely; an exact
+        // request gives those devices a real orientation change when gravity crosses 180°.
+        isCurrentlyLandscape && exactLandscapeKeep != null -> exactLandscapeKeep
         portraitStable -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         !isCurrentlyLandscape && exactLandscapeEntry != null -> exactLandscapeEntry
         else -> null

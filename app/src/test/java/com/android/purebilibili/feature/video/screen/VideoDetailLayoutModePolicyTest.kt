@@ -622,7 +622,7 @@ class VideoDetailLayoutModePolicyTest {
             )
         )
         assertEquals(
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
+            ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
             resolvePhoneAutoRotateRequestedOrientation(
                 orientationDegrees = 48,
                 isCurrentlyLandscape = true
@@ -647,7 +647,7 @@ class VideoDetailLayoutModePolicyTest {
             )
         )
         assertEquals(
-            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
             resolvePhoneAutoRotateRequestedOrientation(
                 orientationDegrees = 312,
                 isCurrentlyLandscape = true
@@ -726,13 +726,20 @@ class VideoDetailLayoutModePolicyTest {
     }
 
     @Test
-    fun autoRotateSensorPolicy_doesNotRelockFullscreenDuringHalfTurn() {
-        for (orientationDegrees in listOf(90, 270, 90)) {
+    fun autoRotateSensorPolicy_tracksBothExactLandscapeSidesDuringHalfTurn() {
+        val expectedOrientations = listOf(
+            ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
+            ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
+        )
+        for ((orientationDegrees, expectedOrientation) in
+            listOf(90, 270, 90).zip(expectedOrientations)
+        ) {
             val requestedOrientation = resolvePhoneAutoRotateRequestedOrientation(
                 orientationDegrees = orientationDegrees,
                 isCurrentlyLandscape = true
             )
-            assertEquals(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, requestedOrientation)
+            assertEquals(expectedOrientation, requestedOrientation)
             assertTrue(isLandscapeRequestedOrientation(requireNotNull(requestedOrientation)))
         }
     }
