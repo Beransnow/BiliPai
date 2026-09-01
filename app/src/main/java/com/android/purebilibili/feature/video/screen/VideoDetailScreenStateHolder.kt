@@ -5,7 +5,11 @@ import coil3.request.crossfade
 import kotlinx.coroutines.flow.first
 import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.isMiuixNonGlassEnabled
 import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
 
@@ -281,6 +285,7 @@ private fun CollapsedPlayerNavigationBar(
     modifier: Modifier = Modifier,
 ) {
     if (scrollRatio > 0f) {
+        val useMiuixNonGlassChrome = isMiuixNonGlassEnabled()
         val mediaScrimAlpha = resolveCollapsedPlayerMediaScrimAlpha(scrollRatio)
         val toolbarAlpha = resolveCollapsedPlayerToolbarAlpha(scrollRatio)
         Box(
@@ -314,19 +319,45 @@ private fun CollapsedPlayerNavigationBar(
                         modifier = Modifier.align(Alignment.CenterStart),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        IconButton(onClick = onBack, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
-                            Icon(
-                                Icons.Filled.ArrowBack,
-                                contentDescription = "返回",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                            )
+                        if (useMiuixNonGlassChrome) {
+                            AppIconButton(
+                                onClick = onBack,
+                                modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget),
+                            ) {
+                                AppIcon(
+                                    Icons.Filled.ArrowBack,
+                                    contentDescription = "返回",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = onBack, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
+                                Icon(
+                                    Icons.Filled.ArrowBack,
+                                    contentDescription = "返回",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
                         }
-                        IconButton(onClick = onHomeClick, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
-                            Icon(
-                                Icons.Filled.Home,
-                                contentDescription = "首页",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                            )
+                        if (useMiuixNonGlassChrome) {
+                            AppIconButton(
+                                onClick = onHomeClick,
+                                modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget),
+                            ) {
+                                AppIcon(
+                                    Icons.Filled.Home,
+                                    contentDescription = "首页",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                        } else {
+                            IconButton(onClick = onHomeClick, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
+                                Icon(
+                                    Icons.Filled.Home,
+                                    contentDescription = "首页",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
                         }
                     }
                     Row(
@@ -334,24 +365,48 @@ private fun CollapsedPlayerNavigationBar(
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.PlayArrow,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                        Text("立即播放", color = MaterialTheme.colorScheme.primary)
+                        if (useMiuixNonGlassChrome) {
+                            AppIcon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            AppText("立即播放", color = MaterialTheme.colorScheme.primary)
+                        } else {
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Text("立即播放", color = MaterialTheme.colorScheme.primary)
+                        }
                     }
-                    IconButton(
-                        onClick = onMoreClick,
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .size(width = 42.dp, height = 34.dp),
-                    ) {
-                        Icon(
-                            Icons.Filled.MoreVert,
-                            contentDescription = "更多设置",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
+                    if (useMiuixNonGlassChrome) {
+                        AppIconButton(
+                            onClick = onMoreClick,
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .size(AppChromeSizeTokens.MinimumTouchTarget),
+                        ) {
+                            AppIcon(
+                                Icons.Filled.MoreVert,
+                                contentDescription = "更多设置",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            onClick = onMoreClick,
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .size(width = 42.dp, height = 34.dp),
+                        ) {
+                            Icon(
+                                Icons.Filled.MoreVert,
+                                contentDescription = "更多设置",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
                 }
             }
