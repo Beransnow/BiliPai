@@ -2675,6 +2675,18 @@ internal fun VideoDetailScreenStateHolder(
             presentationState.switchVideo(managerBvid, managerCid)
             return@LaunchedEffect
         }
+        if (
+            shouldSkipInternalBvidSyncForPlayerInitiatedAdvance(
+                loadedBvid = success.info.bvid,
+                inPageInitiatedBvid = viewModel.peekInPageInitiatedPlaybackIdentityBvid()
+            )
+        ) {
+            // 播放器内部已自动推进（合集/队列下一集等）：身份错位是预期状态。
+            // 既不能像“presentation 领先”那样重载旧视频，也不能把 presentation 同步到新集数——
+            // 后者会中途改写 bvid 键控的 UI 状态（封面揭示/控制层），而此时没有新的首帧事件可恢复。
+            // 保持 presentation 原样与直开场景的行为一致。
+            return@LaunchedEffect
+        }
         if (!shouldSyncMainPlayerToInternalBvid(
                 isPortraitFullscreen = isPortraitFullscreen,
                 routeBvid = bvid,
