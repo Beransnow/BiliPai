@@ -130,17 +130,22 @@ private fun Material3UpdateContent(
         )
     }
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(max = contentMaxHeightDp.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Material3VersionCard(state = state)
-        if (!state.showReleaseNotesOnly && state.downloadState.status != AppUpdateDownloadStatus.IDLE) {
-            Material3DownloadStatus(state = state.downloadState)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = contentMaxHeightDp.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Material3VersionCard(state = state)
+            if (!state.showReleaseNotesOnly && state.downloadState.status != AppUpdateDownloadStatus.IDLE) {
+                Material3DownloadStatus(state = state.downloadState)
+            }
+            Material3ReleaseNotes(releaseNotes = state.update.releaseNotes)
         }
-        Material3ReleaseNotes(releaseNotes = state.update.releaseNotes)
         Material3DownloadChannels(actions = actions)
     }
 }

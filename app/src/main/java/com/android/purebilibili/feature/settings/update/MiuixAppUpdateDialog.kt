@@ -115,17 +115,22 @@ private fun MiuixUpdateContent(
         )
     }
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(max = contentMaxHeightDp.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        MiuixVersionCard(state = state)
-        if (!state.showReleaseNotesOnly && state.downloadState.status != AppUpdateDownloadStatus.IDLE) {
-            MiuixDownloadStatus(state = state.downloadState)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = contentMaxHeightDp.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            MiuixVersionCard(state = state)
+            if (!state.showReleaseNotesOnly && state.downloadState.status != AppUpdateDownloadStatus.IDLE) {
+                MiuixDownloadStatus(state = state.downloadState)
+            }
+            MiuixReleaseNotes(releaseNotes = state.update.releaseNotes)
         }
-        MiuixReleaseNotes(releaseNotes = state.update.releaseNotes)
         MiuixDownloadChannels(actions = actions)
     }
 }
