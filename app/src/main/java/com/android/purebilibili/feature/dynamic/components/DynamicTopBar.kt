@@ -142,7 +142,14 @@ fun DynamicTopBarWithTabs(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(liquidTabSpec.heightDp.dp)
+                .then(
+                    if (liquidGlassEnabled) {
+                        Modifier.height(liquidTabSpec.heightDp.dp)
+                    } else {
+                        // Native tabs may grow above 48dp with the user's font scale.
+                        Modifier.heightIn(min = liquidTabSpec.heightDp.dp)
+                    }
+                )
                 .padding(horizontal = resolveDynamicTopBarHorizontalPadding()),
             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             verticalAlignment = Alignment.CenterVertically,
@@ -167,10 +174,14 @@ fun DynamicTopBarWithTabs(
                 liquidGlassTuningOverride = liquidGlassTuning,
             )
 
-            val localActionDockBackdrop = rememberLayerBackdrop()
+            val localActionDockBackdrop = if (liquidGlassEnabled && dockBackdrop == null) {
+                rememberLayerBackdrop()
+            } else {
+                null
+            }
             val actionDockBackdrop = dockBackdrop ?: localActionDockBackdrop
             Box {
-                if (dockBackdrop == null) {
+                if (liquidGlassEnabled && dockBackdrop == null && localActionDockBackdrop != null) {
                     Box(
                         modifier = Modifier
                             .matchParentSize()
@@ -184,7 +195,7 @@ fun DynamicTopBarWithTabs(
                         .then(
                             if (liquidGlassEnabled) {
                                 Modifier.biliPaiFloatingDockShell(
-                                    backdrop = actionDockBackdrop,
+                                    backdrop = requireNotNull(actionDockBackdrop),
                                     containerColor = dockColor,
                                     pressProgress = 0f,
                                     shape = dockShape,

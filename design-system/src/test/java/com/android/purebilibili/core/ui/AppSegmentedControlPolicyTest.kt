@@ -34,6 +34,14 @@ class AppSegmentedControlPolicyTest {
     @Test
     fun `native tabs expand shared item width across themes for complete long labels`() {
         assertEquals(
+            56.dp,
+            resolveReadableNativeTabMinWidth(
+                requestedMinWidth = AppChromeSizeTokens.MinimumTouchTarget,
+                labels = listOf("简介", "评论"),
+                allowLabelOverflow = true,
+            ),
+        )
+        assertEquals(
             88.dp,
             resolveReadableNativeTabMinWidth(
                 requestedMinWidth = 72.dp,
@@ -119,7 +127,7 @@ class AppSegmentedControlPolicyTest {
     }
 
     @Test
-    fun `native renderers do not force 48dp as visual height`() {
+    fun `native Miuix tabs use a real 48dp selectable height`() {
         val materialSource = loadSource(
             "src/main/java/com/android/purebilibili/core/ui/renderer/material3/" +
                 "AppMaterial3SegmentedControl.kt"
@@ -130,8 +138,9 @@ class AppSegmentedControlPolicyTest {
         )
 
         assertFalse(materialSource.contains("heightIn(min = 48.dp)"))
-        assertTrue(miuixSource.contains("MiuixNativeCompactControlHeightDp"))
         assertTrue(miuixSource.contains("resolveRoundedControlVisualGeometry("))
+        assertTrue(miuixSource.contains("height = interactiveHeight"))
+        assertTrue(miuixSource.contains("maxOf(geometry.height, AppChromeSizeTokens.MinimumTouchTarget)"))
     }
 
     @Test

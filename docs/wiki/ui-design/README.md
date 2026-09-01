@@ -1,9 +1,9 @@
 # BiliPai UI 设计规范
 
 > 文档编号：UI-INDEX  
-> 规范版本：1.1.0-draft  
+> 规范版本：1.1.1-draft
 > 状态：草案  
-> 最后核对日期：2026-08-31  
+> 最后核对日期：2026-09-01
 > 适用提交：4443e72ff  
 > 维护角色：设计系统维护者  
 > 相关文档：[Miuix 对齐记录](../MIUIX_ALIGNMENT.md) · [架构说明](../ARCHITECTURE.md) · [QA 手册](../QA.md)

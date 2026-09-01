@@ -198,7 +198,12 @@ private fun <T> AppMiuixNonGlassTabs(
     val textHeight = with(density) { (labelSizes.maxOfOrNull { it.height } ?: 0).toDp() }
     val labelWidth = with(density) { (labelSizes.maxOfOrNull { it.width } ?: 0).toDp() }
     val geometry = resolveMiuixNonGlassControlGeometry(compact, textHeight)
-    val readableWidth = maxOf(48.dp, minTabWidth, labelWidth + 24.dp)
+    val interactiveHeight = maxOf(geometry.height, AppChromeSizeTokens.MinimumTouchTarget)
+    val readableWidth = maxOf(
+        AppChromeSizeTokens.MinimumTouchTarget,
+        minTabWidth,
+        labelWidth + 24.dp,
+    )
     val scrollState = rememberLazyListState()
     BoxWithConstraints(
         modifier = modifier
@@ -216,7 +221,10 @@ private fun <T> AppMiuixNonGlassTabs(
             modifier = Modifier.squircleClip(geometry.cornerRadius),
             minWidth = readableWidth,
             maxWidth = Dp.Infinity,
-            height = geometry.height,
+            // Miuix 0.9.4 attaches selectable to the full TabRow height and does not expose a
+            // separate hit slop API. Use the accessibility minimum as the actual native row
+            // height; an outer 48dp wrapper alone leaves the selectable area at 36/42dp.
+            height = interactiveHeight,
             cornerRadius = geometry.cornerRadius,
             itemSpacing = 8.dp,
             listState = scrollState,

@@ -56,11 +56,11 @@ Token（设计令牌）就是“有名字的设计数值”。写 `AppSpacingTok
 | 普通分组/内容卡 | 圆角 16dp | [官方 Card](https://compose-miuix-ui.github.io/miuix/components/card) |
 | 紧凑媒体封面 | 圆角 12dp | BiliPai 信息流密度 |
 | 突出内容卡 | 圆角 20dp | BiliPai 内容层级 |
-| 分类 TabRow | 高 42dp、圆角 12dp | [官方 TabRow](https://compose-miuix-ui.github.io/miuix/components/tabrow) |
-| 紧凑筛选 | 高 36dp、圆角 10dp | BiliPai 紧凑交互 |
+| 分类 TabRow | 可点击高至少 48dp、圆角 12dp；42dp 仅作上游视觉参考 | [官方 TabRow](https://compose-miuix-ui.github.io/miuix/components/tabrow) |
+| 紧凑筛选 | 可点击高至少 48dp、圆角 10dp；36dp 仅作密度参考 | BiliPai 紧凑交互 |
 | 普通页面 | 横向 16dp、组间 24dp、组内 8/12/16dp | BiliPai 页面节奏 |
 
-48dp 是触摸区域下限，不是所有组件的视觉尺寸。字体放大时允许增高；长标签滚动，不缩字硬塞。紧凑交互必须预留不重叠的触摸区域。官方组件内部留白优先保持默认，不给 Preference 和外层 Card 重复加内边距。
+48dp 是触摸区域下限，不是所有非交互图形的视觉尺寸。锁定版 Miuix `TabRow` 的点击区域与传入高度相同，不能用 42/36dp 的内部控件加 48dp 空外壳冒充触摸扩展，因此应用必须向它传入至少 48dp 的实际高度。字体放大时允许继续增高；短标签按文字宽度和 48dp 最小项宽均分，长标签空间不足时滚动，不缩字硬塞。官方组件内部留白优先保持默认，不给 Preference 和外层 Card 重复加内边距。
 
 ## 颜色与表面
 
@@ -78,7 +78,7 @@ Token（设计令牌）就是“有名字的设计数值”。写 `AppSpacingTok
 - 图标视觉尺寸可以小于 48dp，但承载点击的父容器不能小于 48dp。
 - 图标**必须**来自项目当前图标入口或已接入图标库；相同语义使用相同图标家族。
 - 纯装饰图标的 `contentDescription` **必须**为 `null`；独立可点击图标必须提供动作名称。
-- 紧凑控件 44dp 高度只代表可见外壳，仍需通过外部布局保证 48dp 触摸区域。
+- 紧凑控件可以保留小于 48dp 的图标或装饰外壳；若点击手势挂在内部控件本身，其实际测量尺寸必须达到 48dp，只有手势明确挂在更大的父容器时才可由父容器扩展触摸区。
 
 ## Compose 短示例
 
