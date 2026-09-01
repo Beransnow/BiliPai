@@ -3519,6 +3519,8 @@ private fun BiliPaiFloatingBottomBar(
                         if (usePlainMiuixFloatingBar) {
                             PlainMiuixFloatingBottomBar(
                                 selectedIndex = selectedIndexForBar,
+                                onSelected = floatingOnSelected,
+                                onReselected = floatingOnReselected,
                                 tabsCount = totalItems,
                                 modifier = dockModifier,
                                 colors = floatingColors,

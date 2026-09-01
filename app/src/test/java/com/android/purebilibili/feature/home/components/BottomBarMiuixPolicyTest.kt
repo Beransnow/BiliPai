@@ -22,6 +22,9 @@ class BottomBarMiuixPolicyTest {
         assertFalse(plain.contains("rememberChromeBackdropSource"))
         assertFalse(plain.contains("drawBackdrop"))
         assertFalse(plain.contains("lens("))
+        assertTrue(plain.contains("DampedDragAnimation("))
+        assertTrue(plain.contains("dragAnimation.modifier"))
+        assertTrue(plain.contains("onSelectedLatest.value(targetIndex)"))
     }
 
     @Test

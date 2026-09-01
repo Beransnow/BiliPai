@@ -14,7 +14,6 @@ package com.android.purebilibili.feature.home.components
 
 import android.os.Build
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,7 +30,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.systemGestures
@@ -160,13 +158,22 @@ enum class FloatingBottomBarMode {
 @Composable
 fun PlainMiuixFloatingBottomBar(
     selectedIndex: Int,
+    onSelected: (index: Int) -> Unit,
+    onReselected: () -> Unit = {},
     tabsCount: Int,
     modifier: Modifier = Modifier,
     colors: FloatingBottomBarColors = FloatingBottomBarDefaults.colors(),
     content: @Composable RowScope.() -> Unit,
 ) {
     val safeCount = tabsCount.coerceAtLeast(1)
+    val maxIndex = safeCount - 1
     val shape = remember { resolveSharedBottomBarCapsuleShape() }
+    val density = LocalDensity.current
+    val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
+    val animationScope = rememberCoroutineScope()
+    val selectedIndexLatest = rememberUpdatedState(selectedIndex)
+    val onSelectedLatest = rememberUpdatedState(onSelected)
+    val onReselectedLatest = rememberUpdatedState(onReselected)
     BoxWithConstraints(
         modifier = modifier
             .dropShadow(
@@ -177,13 +184,46 @@ fun PlainMiuixFloatingBottomBar(
             .padding(4.dp),
     ) {
         val itemWidth = maxWidth / safeCount
-        val indicatorOffset by animateDpAsState(
-            targetValue = itemWidth * selectedIndex.coerceIn(0, safeCount - 1),
-            label = "plainMiuixBottomBarIndicator",
-        )
+        val itemWidthPx = with(density) { itemWidth.toPx() }
+        val dragAnimation = remember(animationScope, safeCount, itemWidthPx, isLtr) {
+            DampedDragAnimation(
+                animationScope = animationScope,
+                initialValue = selectedIndexLatest.value.coerceIn(0, maxIndex).toFloat(),
+                valueRange = 0f..maxIndex.toFloat(),
+                visibilityThreshold = 0.001f,
+                initialScale = 1f,
+                pressedScale = 1f,
+                trackingMode = DampedDragTrackingMode.DIRECT,
+                onDragStarted = {},
+                onDragStopped = {
+                    val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, maxIndex)
+                    animateToValue(targetIndex.toFloat(), animatePress = false)
+                    if (targetIndex != selectedIndexLatest.value.coerceIn(0, maxIndex)) {
+                        onSelectedLatest.value(targetIndex)
+                    }
+                },
+                onDrag = { _, dragAmount ->
+                    if (itemWidthPx > 0f) {
+                        val direction = if (isLtr) 1f else -1f
+                        updateValue(targetValue + dragAmount.x / itemWidthPx * direction)
+                    }
+                },
+            )
+        }
+        LaunchedEffect(dragAnimation, selectedIndex, maxIndex) {
+            if (!dragAnimation.isDragging) {
+                dragAnimation.animateToValue(
+                    selectedIndex.coerceIn(0, maxIndex).toFloat(),
+                    animatePress = false,
+                )
+            }
+        }
+        val indicatorPositionModifier = Modifier.graphicsLayer {
+            val direction = if (isLtr) 1f else -1f
+            translationX = itemWidthPx * dragAnimation.value * direction
+        }
         Box(
-            modifier = Modifier
-                .offset(x = indicatorOffset)
+            modifier = indicatorPositionModifier
                 .width(itemWidth)
                 .fillMaxHeight()
                 .background(MiuixTheme.colorScheme.secondaryContainer, shape),
@@ -191,7 +231,7 @@ fun PlainMiuixFloatingBottomBar(
         CompositionLocalProvider(
             LocalFloatingBottomBarContentColor provides colors.contentColor,
             LocalFloatingBottomBarSelectedContentColor provides colors.activeContentColor,
-            LocalFloatingBottomBarIndicatorPosition provides { selectedIndex.toFloat() },
+            LocalFloatingBottomBarIndicatorPosition provides { dragAnimation.value },
         ) {
             Row(
                 modifier = Modifier.fillMaxSize(),
@@ -199,6 +239,19 @@ fun PlainMiuixFloatingBottomBar(
                 content = content,
             )
         }
+        Box(
+            modifier = indicatorPositionModifier
+                .then(if (safeCount > 1) dragAnimation.modifier else Modifier)
+                .clickable(
+                    interactionSource = null,
+                    indication = null,
+                    role = Role.Tab,
+                    onClick = { onReselectedLatest.value() },
+                )
+                .clearAndSetSemantics {}
+                .width(itemWidth)
+                .fillMaxHeight(),
+        )
     }
 }
 
