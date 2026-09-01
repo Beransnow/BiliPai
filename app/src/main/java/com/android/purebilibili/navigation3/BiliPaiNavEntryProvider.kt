@@ -7,6 +7,7 @@ import top.yukonga.miuix.kmp.nav.transition.NavTransition
 
 internal fun NavEntryBuilder.biliPaiNavEntries(
     swipeBackDirection: NavSwipeDirection,
+    cardBackExcludedTransition: NavTransition,
     videoCardTransition: NavTransition,
     fullscreenVideoCardTransition: NavTransition,
     content: @Composable (BiliPaiNavKey) -> Unit,
@@ -17,7 +18,11 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.Dynamic>(swipeDismiss = NavSwipeDirection.None, content = content)
     // Search owns a bottom-search-slot morph. A generic horizontal swipe would turn the whole
     // destination into a shrinking card and conflict with that spatial relationship.
-    entry<BiliPaiNavKey.Search>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.Search>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
     entry<BiliPaiNavKey.SearchTrending>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.TopicDetail>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.Settings>(swipeDismiss = swipeBackDirection, content = content)
@@ -31,8 +36,16 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.PlaybackSettings>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.PermissionSettings>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.PluginsSettings>(swipeDismiss = swipeBackDirection, content = content)
-    entry<BiliPaiNavKey.JsPluginContent>(swipeDismiss = NavSwipeDirection.None, content = content)
-    entry<BiliPaiNavKey.ExternalMedia>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.JsPluginContent>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
+    entry<BiliPaiNavKey.ExternalMedia>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
     entry<BiliPaiNavKey.BottomBarSettings>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.SettingsShare>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.WebDavBackup>(swipeDismiss = swipeBackDirection, content = content)
@@ -51,7 +64,11 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.Onboarding>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.Following>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.DownloadList>(swipeDismiss = swipeBackDirection, content = content)
-    entry<BiliPaiNavKey.OfflineVideoPlayer>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.OfflineVideoPlayer>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
     entry<BiliPaiNavKey.LiveList>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.LiveSearch>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.LiveArea>(swipeDismiss = NavSwipeDirection.None, content = content)
@@ -69,12 +86,28 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
-    entry<BiliPaiNavKey.AudioMode>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.AudioMode>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
     entry<BiliPaiNavKey.SeasonSeriesDetail>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.Bangumi>(swipeDismiss = NavSwipeDirection.None, content = content)
-    entry<BiliPaiNavKey.BangumiPlayer>(swipeDismiss = NavSwipeDirection.None, content = content)
-    entry<BiliPaiNavKey.MusicDetail>(swipeDismiss = NavSwipeDirection.None, content = content)
-    entry<BiliPaiNavKey.NativeMusic>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.BangumiPlayer>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
+    entry<BiliPaiNavKey.MusicDetail>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
+    entry<BiliPaiNavKey.NativeMusic>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
     entry<BiliPaiNavKey.VideoDetail>(
         transition = videoCardTransition,
         swipeDismiss = NavSwipeDirection.None,
@@ -84,9 +117,17 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.DynamicDetail>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.Space>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.Category>(swipeDismiss = NavSwipeDirection.None, content = content)
-    entry<BiliPaiNavKey.Live>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.Live>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
     entry<BiliPaiNavKey.BangumiDetail>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.BangumiReview>(swipeDismiss = NavSwipeDirection.None, content = content)
-    entry<BiliPaiNavKey.Web>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.Web>(
+        transition = cardBackExcludedTransition,
+        swipeDismiss = NavSwipeDirection.None,
+        content = content,
+    )
     entry<BiliPaiNavKey.Unknown>(swipeDismiss = NavSwipeDirection.None, content = content)
 }

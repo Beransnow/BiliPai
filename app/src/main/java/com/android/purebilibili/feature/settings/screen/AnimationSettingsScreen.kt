@@ -430,6 +430,49 @@ fun AnimationSettingsContent(
                             },
                             iconTint = iOSTeal
                         )
+                        if (predictiveBackStyle == BiliPaiPredictiveBackAnimationStyle.MIUIX) {
+                            AppPreferenceDivider()
+                            AppSwitchPreference(
+                                icon = rememberSettingsSemanticIcon(SettingsIconRole.PREDICTIVE_BACK),
+                                title = "卡片景深返回",
+                                subtitle = if (appNavigationSettings.miuixCardBackTransitionEnabled) {
+                                    "返回时缩放当前页面并显示动态圆角"
+                                } else {
+                                    "关闭时保留当前 Miuix 默认返回效果"
+                                },
+                                checked = appNavigationSettings.miuixCardBackTransitionEnabled,
+                                onCheckedChange = { enabled ->
+                                    scope.launch {
+                                        SettingsManager.setMiuixCardBackTransitionEnabled(
+                                            context,
+                                            enabled,
+                                        )
+                                    }
+                                },
+                                iconTint = iOSTeal,
+                            )
+                            if (appNavigationSettings.miuixCardBackTransitionEnabled) {
+                                AppPreferenceDivider()
+                                AppSliderDialogPreference(
+                                    title = "预见式返回最大进度",
+                                    subtitle = "限制手指按住时的预览幅度；提交后仍会完成退出",
+                                    value = appNavigationSettings
+                                        .miuixCardBackMaxProgressPercent
+                                        .toFloat(),
+                                    onValueChange = { value ->
+                                        scope.launch {
+                                            SettingsManager.setMiuixCardBackMaxProgressPercent(
+                                                context,
+                                                value.roundToInt(),
+                                            )
+                                        }
+                                    },
+                                    valueRange = 0f..100f,
+                                    steps = 99,
+                                    valueFormatter = { value -> "${value.roundToInt()}%" },
+                                )
+                            }
+                        }
                         if (predictiveBackStyle != BiliPaiPredictiveBackAnimationStyle.NONE) {
                             AppPreferenceDivider()
                             AppSwitchPreference(

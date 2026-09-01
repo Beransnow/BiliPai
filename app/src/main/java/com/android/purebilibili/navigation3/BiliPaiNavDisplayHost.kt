@@ -61,11 +61,13 @@ import com.android.purebilibili.core.ui.transition.shouldUseHostOwnedVideoCardTr
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackAnimationStyle
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
+import com.android.purebilibili.navigation3.predictiveback.MIUIX_CARD_BACK_DEFAULT_MAX_PROGRESS_PERCENT
 import com.android.purebilibili.navigation3.predictiveback.biliPaiMiuixNavTransition
 import com.android.purebilibili.navigation3.predictiveback.miuixVideoCardNavTransition
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardContentScale
 import com.android.purebilibili.navigation3.predictiveback.resolveMiuixVideoCardContentScaleForSourceLayout
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardTransitionProgress
+import com.android.purebilibili.navigation3.predictiveback.shouldUseMiuixCardBackTransition
 import kotlinx.coroutines.flow.collect
 import top.yukonga.miuix.kmp.nav.core.NavBackStack
 import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
@@ -106,6 +108,9 @@ internal fun BiliPaiNavDisplayHost(
     predictiveBackExitDirection: BiliPaiPredictiveBackExitDirection =
         BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT,
     miuixTransitionBlurEnabled: Boolean = true,
+    miuixCardBackTransitionEnabled: Boolean = false,
+    miuixCardBackMaxProgressPercent: Int =
+        MIUIX_CARD_BACK_DEFAULT_MAX_PROGRESS_PERCENT,
     videoSharedReturnGestureFollowEnabled: Boolean = true,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
@@ -193,13 +198,37 @@ internal fun BiliPaiNavDisplayHost(
         predictiveBackExitDirection,
         isLightBackground,
         miuixTransitionBlurEnabled,
+        miuixCardBackTransitionEnabled,
+        miuixCardBackMaxProgressPercent,
     ) {
         biliPaiMiuixNavTransition(
             animation = style,
             exitDirection = predictiveBackExitDirection,
             isLightBackground = isLightBackground,
             miuixTransitionBlurEnabled = miuixTransitionBlurEnabled,
+            miuixCardBackTransitionEnabled = miuixCardBackTransitionEnabled,
+            miuixCardBackMaxProgressPercent = miuixCardBackMaxProgressPercent,
         )
+    }
+    val cardBackExcludedTransition = remember(
+        globalTransition,
+        style,
+        predictiveBackExitDirection,
+        isLightBackground,
+        miuixTransitionBlurEnabled,
+        miuixCardBackTransitionEnabled,
+    ) {
+        if (shouldUseMiuixCardBackTransition(style, miuixCardBackTransitionEnabled)) {
+            biliPaiMiuixNavTransition(
+                animation = BiliPaiPredictiveBackAnimationStyle.MIUIX,
+                exitDirection = predictiveBackExitDirection,
+                isLightBackground = isLightBackground,
+                miuixTransitionBlurEnabled = miuixTransitionBlurEnabled,
+                miuixCardBackTransitionEnabled = false,
+            )
+        } else {
+            globalTransition
+        }
     }
     // A restored parent session must not keep the departed child's scope at depth -1.
     val videoCardTransitionProgress = remember(sourceMetadata.sourceKey) { MiuixVideoCardTransitionProgress() }
@@ -217,7 +246,7 @@ internal fun BiliPaiNavDisplayHost(
         videoSharedTransitionDurationMillis,
         heroMotion,
         videoCardTransitionProgress,
-        globalTransition,
+        cardBackExcludedTransition,
         videoCardContentScale,
         videoSharedReturnGestureFollowEnabled,
     ) {
@@ -226,7 +255,7 @@ internal fun BiliPaiNavDisplayHost(
                 sourceBounds = sourceMetadata.sourceBounds,
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
                 durationMillis = videoSharedTransitionDurationMillis,
-                fallback = globalTransition,
+                fallback = cardBackExcludedTransition,
                 progress = videoCardTransitionProgress,
                 contentScale = videoCardContentScale,
                 gestureFollowEnabled = videoSharedReturnGestureFollowEnabled,
@@ -234,7 +263,7 @@ internal fun BiliPaiNavDisplayHost(
                 returningProvider = returningProvider,
             )
         } else {
-            globalTransition
+            cardBackExcludedTransition
         }
     }
     val fullscreenVideoCardTransition = remember(
@@ -244,7 +273,7 @@ internal fun BiliPaiNavDisplayHost(
         videoSharedTransitionDurationMillis,
         heroMotion,
         videoCardTransitionProgress,
-        globalTransition,
+        cardBackExcludedTransition,
         videoSharedReturnGestureFollowEnabled,
     ) {
         if (cardMorphAvailable) {
@@ -252,7 +281,7 @@ internal fun BiliPaiNavDisplayHost(
                 sourceBounds = sourceMetadata.sourceBounds,
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
                 durationMillis = videoSharedTransitionDurationMillis,
-                fallback = globalTransition,
+                fallback = cardBackExcludedTransition,
                 progress = videoCardTransitionProgress,
                 contentScale = MiuixVideoCardContentScale.CropCenter,
                 gestureFollowEnabled = videoSharedReturnGestureFollowEnabled,
@@ -260,7 +289,7 @@ internal fun BiliPaiNavDisplayHost(
                 returningProvider = returningProvider,
             )
         } else {
-            globalTransition
+            cardBackExcludedTransition
         }
     }
 
@@ -538,6 +567,7 @@ internal fun BiliPaiNavDisplayHost(
         ) {
             biliPaiNavEntries(
                 swipeBackDirection = swipeBackDirection,
+                cardBackExcludedTransition = cardBackExcludedTransition,
                 videoCardTransition = videoCardTransition,
                 fullscreenVideoCardTransition = fullscreenVideoCardTransition,
             ) { key ->

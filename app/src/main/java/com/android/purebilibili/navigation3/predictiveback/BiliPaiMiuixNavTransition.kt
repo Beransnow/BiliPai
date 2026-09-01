@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.util.fastRoundToInt
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.transition.resolvePredictiveBackBlurFrame
+import top.yukonga.miuix.kmp.nav.transition.NavMotion
 import top.yukonga.miuix.kmp.nav.transition.NavTransition
 import top.yukonga.miuix.kmp.nav.transition.NavTransitionScope
 
@@ -21,10 +22,22 @@ internal fun biliPaiMiuixNavTransition(
     exitDirection: BiliPaiPredictiveBackExitDirection,
     isLightBackground: Boolean,
     miuixTransitionBlurEnabled: Boolean = true,
+    miuixCardBackTransitionEnabled: Boolean = false,
+    miuixCardBackMaxProgressPercent: Int = MIUIX_CARD_BACK_DEFAULT_MAX_PROGRESS_PERCENT,
 ): NavTransition {
+    val cardBackEnabled = shouldUseMiuixCardBackTransition(
+        animation = animation,
+        enabled = miuixCardBackTransitionEnabled,
+    )
+    val cardBackMaxPreviewFraction =
+        miuixCardBackMaxProgressPercent.coerceIn(0, 100) / 100f
     val baseTransition = when (animation) {
         BiliPaiPredictiveBackAnimationStyle.NONE -> return NoPredictiveBackTransition
-        BiliPaiPredictiveBackAnimationStyle.MIUIX -> miuixDepthNavTransition()
+        BiliPaiPredictiveBackAnimationStyle.MIUIX -> if (cardBackEnabled) {
+            miuixCardBackNavTransition(cardBackMaxPreviewFraction)
+        } else {
+            miuixDepthNavTransition()
+        }
         BiliPaiPredictiveBackAnimationStyle.AOSP -> AospNavTransition
         BiliPaiPredictiveBackAnimationStyle.SCALE -> scaleNavTransition(exitDirection)
         BiliPaiPredictiveBackAnimationStyle.CLASSIC -> ClassicNavTransition
@@ -33,8 +46,14 @@ internal fun biliPaiMiuixNavTransition(
         baseTransition = baseTransition,
         isLightBackground = isLightBackground,
         blurEnabled = miuixTransitionBlurEnabled,
+        cardBackMaxPreviewFraction = cardBackMaxPreviewFraction.takeIf { cardBackEnabled },
     )
 }
+
+internal fun shouldUseMiuixCardBackTransition(
+    animation: BiliPaiPredictiveBackAnimationStyle,
+    enabled: Boolean,
+): Boolean = enabled && animation == BiliPaiPredictiveBackAnimationStyle.MIUIX
 
 /**
  * Adds MIUI-style depth blur to the retained page below every animated top entry.
@@ -67,8 +86,24 @@ private fun realtimeCoveredBlurTransition(
     baseTransition: NavTransition,
     isLightBackground: Boolean,
     blurEnabled: Boolean,
+    cardBackMaxPreviewFraction: Float?,
 ): NavTransition {
     return object : NavTransition {
+        override val motion: NavMotion
+            get() = if (cardBackMaxPreviewFraction != null) {
+                baseTransition.motion
+            } else {
+                NavMotion.Default
+            }
+
+        override fun scrimFraction(scope: NavTransitionScope): Float = if (
+            cardBackMaxPreviewFraction != null
+        ) {
+            baseTransition.scrimFraction(scope)
+        } else {
+            scope.relativeDepth.coerceIn(0f, 1f)
+        }
+
         override fun Modifier.transformEntry(scope: NavTransitionScope): Modifier {
             val renderEffectCache = MiuixCoveredBlurRenderEffectCache()
             val transformed = with(baseTransition) {
@@ -78,7 +113,10 @@ private fun realtimeCoveredBlurTransition(
                 renderEffect = if (blurEnabled) {
                     val blurFrame = resolvePredictiveBackBlurFrame(
                         progress = if (scope.gesture != null || scope.settle != null) {
-                            resolveMiuixNavCoveredBlurProgress(scope.relativeDepth)
+                            resolveMiuixCoveredBlurProgress(
+                                scope = scope,
+                                cardBackMaxPreviewFraction = cardBackMaxPreviewFraction,
+                            )
                         } else {
                             0f
                         },
@@ -92,6 +130,23 @@ private fun realtimeCoveredBlurTransition(
             }
         }
     }
+}
+
+private fun resolveMiuixCoveredBlurProgress(
+    scope: NavTransitionScope,
+    cardBackMaxPreviewFraction: Float?,
+): Float {
+    val coveredDepth = scope.relativeDepth.coerceIn(0f, 1f)
+    if (coveredDepth <= 0f || cardBackMaxPreviewFraction == null) {
+        return resolveMiuixNavCoveredBlurProgress(coveredDepth)
+    }
+    val visualProgress = resolveMiuixCardBackVisualProgress(
+        rawProgress = 1f - coveredDepth,
+        gestureProgress = scope.gesture?.progress,
+        settlePhase = scope.settle?.phase,
+        maxPreviewFraction = cardBackMaxPreviewFraction,
+    )
+    return resolveMiuixNavCoveredBlurProgress(1f - visualProgress)
 }
 
 /** Depth 0 is fully revealed; depth 1 is fully covered by the current page. */
