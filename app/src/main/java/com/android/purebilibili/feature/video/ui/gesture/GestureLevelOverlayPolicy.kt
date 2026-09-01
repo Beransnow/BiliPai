@@ -34,7 +34,7 @@ enum class GestureLevelOverlayStyle {
     Md3,
     /** iOS: centered frosted capsule with SF-style glyphs. */
     Ios,
-    /** MIUIX: centered native animated vertical slider. */
+    /** MIUIX: centered native animated horizontal slider. */
     Miuix
 }
 
@@ -149,7 +149,7 @@ fun resolveGestureLevelOverlaySpec(
             alignment = Alignment.Center,
             showLabel = false,
             showPercentText = false,
-            verticalRail = true,
+            verticalRail = false,
             accentColor = if (isVolume) Color(0xFF0D84FF) else Color(0xFFFFC107),
             trackColor = Color.White.copy(alpha = 0.18f),
             fillColor = if (isVolume) Color(0xFF0D84FF) else Color(0xFFFFC107),
@@ -157,8 +157,8 @@ fun resolveGestureLevelOverlaySpec(
             borderColor = Color.White.copy(alpha = 0.06f),
             iconTint = Color.White,
             textColor = Color.White,
-            railWidthDp = 40,
-            railHeightDp = 186,
+            railWidthDp = 186,
+            railHeightDp = 40,
             capsuleMinWidthDp = 40,
             iconSizeDp = 22
         )

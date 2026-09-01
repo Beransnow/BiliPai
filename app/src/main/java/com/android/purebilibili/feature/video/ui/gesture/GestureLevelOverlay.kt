@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -64,14 +65,14 @@ import com.android.purebilibili.feature.video.ui.components.shouldTriggerGesture
 import com.android.purebilibili.feature.video.ui.section.VideoGestureMode
 import com.android.purebilibili.feature.video.ui.section.resolveVideoGestureMotionSpec
 import kotlin.math.roundToInt
+import top.yukonga.miuix.kmp.basic.Slider
 import top.yukonga.miuix.kmp.basic.SliderDefaults
-import top.yukonga.miuix.kmp.basic.VerticalSlider
 
 /**
  * Theme-native volume / brightness feedback:
  * - MD3: centered, theme-colored circular indicator
  * - iOS: centered frosted capsule
- * - MIUIX: centered native animated vertical slider
+ * - MIUIX: centered native animated horizontal slider
  */
 @Composable
 fun BoxScope.GestureLevelOverlayHost(
@@ -305,22 +306,10 @@ private fun MiuixGestureLevelSlider(
         thumbColor = spec.iconTint,
         disabledThumbColor = spec.iconTint
     )
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        VerticalSlider(
-            value = progress,
-            onValueChange = {},
-            modifier = Modifier
-                .width(spec.railWidthDp.dp)
-                .height(spec.railHeightDp.dp)
-                .semantics { contentDescription = resolveGestureLevelLabel(spec.kind) },
-            enabled = false,
-            width = spec.railWidthDp.dp,
-            colors = sliderColors,
-            effect = true
-        )
         Box(
             modifier = Modifier
                 .size((spec.iconSizeDp + 14).dp)
@@ -350,6 +339,17 @@ private fun MiuixGestureLevelSlider(
                 )
             }
         }
+        Slider(
+            value = progress,
+            onValueChange = {},
+            modifier = Modifier
+                .width(spec.railWidthDp.dp)
+                .height(spec.railHeightDp.dp)
+                .semantics { contentDescription = resolveGestureLevelLabel(spec.kind) },
+            enabled = false,
+            height = spec.railHeightDp.dp,
+            colors = sliderColors
+        )
     }
 }
 
