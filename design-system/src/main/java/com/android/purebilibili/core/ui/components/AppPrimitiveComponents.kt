@@ -837,6 +837,7 @@ fun AppPrimaryTabRow(
                 indicatorPositionProvider = indicatorPositionProvider,
             )
         },
+        divider = {},
         tabs = tabs,
     )
 }
@@ -869,6 +870,7 @@ fun AppPrimaryScrollableTabRow(
                 indicatorPositionProvider = indicatorPositionProvider,
             )
         },
+        divider = {},
         tabs = tabs,
     )
 }

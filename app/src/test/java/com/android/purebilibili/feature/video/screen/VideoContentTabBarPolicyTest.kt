@@ -260,6 +260,7 @@ class VideoContentTabBarPolicyTest {
         assertTrue(tabBarBlock.contains("tapToCopyEnabled = false"))
         assertTrue(tabBarBlock.contains(".clickable(onClick = onDanmakuSendClick)"))
         assertFalse(tabBarBlock.contains("RoundedCornerShape("))
+        assertFalse(tabBarBlock.contains("AppHorizontalDivider("))
         assertFalse(tabBarBlock.contains("\"开\""))
         assertFalse(tabBarBlock.contains("\"关\""))
         assertFalse(tabBarBlock.contains("rememberAppCommentIcon()"))

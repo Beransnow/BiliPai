@@ -1943,7 +1943,6 @@ private fun VideoContentTabBar(
                 )
             }
         }
-        AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
     }
 }
 
