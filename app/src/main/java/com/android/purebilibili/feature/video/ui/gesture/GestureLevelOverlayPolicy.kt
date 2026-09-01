@@ -34,7 +34,7 @@ enum class GestureLevelOverlayStyle {
     Md3,
     /** iOS: centered frosted capsule with SF-style glyphs. */
     Ios,
-    /** MIUIX: centered native animated horizontal slider. */
+    /** MIUIX: native animated horizontal slider shifted above player center. */
     Miuix
 }
 
@@ -60,7 +60,8 @@ data class GestureLevelOverlaySpec(
     val railWidthDp: Int,
     val railHeightDp: Int,
     val capsuleMinWidthDp: Int,
-    val iconSizeDp: Int
+    val iconSizeDp: Int,
+    val verticalOffsetDp: Int
 )
 
 fun resolveGestureLevelOverlayStyle(
@@ -122,7 +123,8 @@ fun resolveGestureLevelOverlaySpec(
             railWidthDp = 0,
             railHeightDp = 0,
             capsuleMinWidthDp = 0,
-            iconSizeDp = 26
+            iconSizeDp = 26,
+            verticalOffsetDp = 0
         )
         GestureLevelOverlayStyle.Ios -> GestureLevelOverlaySpec(
             style = style,
@@ -141,7 +143,8 @@ fun resolveGestureLevelOverlaySpec(
             railWidthDp = 0,
             railHeightDp = 0,
             capsuleMinWidthDp = 148,
-            iconSizeDp = 34
+            iconSizeDp = 34,
+            verticalOffsetDp = 0
         )
         GestureLevelOverlayStyle.Miuix -> GestureLevelOverlaySpec(
             style = style,
@@ -160,7 +163,8 @@ fun resolveGestureLevelOverlaySpec(
             railWidthDp = 186,
             railHeightDp = 40,
             capsuleMinWidthDp = 40,
-            iconSizeDp = 22
+            iconSizeDp = 22,
+            verticalOffsetDp = -56
         )
     }
 }

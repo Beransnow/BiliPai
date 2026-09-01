@@ -19,6 +19,7 @@ class GestureLevelOverlayStructureTest {
         assertTrue(source.contains("private fun MiuixGestureLevelSlider("))
         assertTrue(source.contains("\n        Slider("))
         assertFalse(source.contains("VerticalSlider("))
+        assertTrue(source.contains("Modifier.offset(y = spec.verticalOffsetDp.dp)"))
         assertFalse(source.contains("private fun MiuixGestureLevelRail("))
     }
 

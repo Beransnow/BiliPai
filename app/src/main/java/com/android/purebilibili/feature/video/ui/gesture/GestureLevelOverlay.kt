@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -72,7 +73,7 @@ import top.yukonga.miuix.kmp.basic.SliderDefaults
  * Theme-native volume / brightness feedback:
  * - MD3: centered, theme-colored circular indicator
  * - iOS: centered frosted capsule
- * - MIUIX: centered native animated horizontal slider
+ * - MIUIX: native animated horizontal slider shifted above player center
  */
 @Composable
 fun BoxScope.GestureLevelOverlayHost(
@@ -307,6 +308,7 @@ private fun MiuixGestureLevelSlider(
         disabledThumbColor = spec.iconTint
     )
     Row(
+        modifier = Modifier.offset(y = spec.verticalOffsetDp.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
