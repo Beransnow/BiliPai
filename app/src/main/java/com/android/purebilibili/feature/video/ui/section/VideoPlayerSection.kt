@@ -1283,12 +1283,18 @@ fun VideoPlayerSection(
         .collectAsStateWithLifecycle(initialValue = true)
     val currentPlaybackIdentity = remember(bvid, uiState) {
         val success = uiState as? VideoPlaybackUiState.Success
-        "${bvid}_${success?.info?.cid ?: 0L}"
+        resolvePlayerInteractionIdentity(
+            routeBvid = bvid,
+            playbackBvid = success?.info?.bvid,
+            playbackCid = success?.info?.cid
+        )
     }
 
     // 控制器显示状态
-    var showControls by remember(bvid) { mutableStateOf(INITIAL_PLAYER_CONTROLS_VISIBLE) }
-    var hasAutoHiddenControlsForCurrentVideo by remember(bvid) {
+    var showControls by remember(currentPlaybackIdentity) {
+        mutableStateOf(INITIAL_PLAYER_CONTROLS_VISIBLE)
+    }
+    var hasAutoHiddenControlsForCurrentVideo by remember(currentPlaybackIdentity) {
         mutableStateOf(INITIAL_PLAYER_CHROME_AUTO_HIDE_HANDLED)
     }
     var playerViewRef by remember { mutableStateOf<PlayerView?>(null) }
@@ -1818,6 +1824,8 @@ fun VideoPlayerSection(
         if (isLongPressing || longPressSpeedLocked) {
             finishLongPressSpeedGesture(gestureEnded = true)
         }
+        // 上一条媒体的长按结束时间不能抑制新媒体的首次单击。
+        longPressSpeedEndedAtMs = 0L
     }
 
     fun applyExplicitPlaybackSpeedChange(speed: Float) {
@@ -1912,7 +1920,14 @@ fun VideoPlayerSection(
     Box(
         modifier = rootModifier
             //  [新增] 处理双指缩放/平移，并在全屏时支持双指调倍速
-            .pointerInput(playerState.player, isFullscreen, isInPipMode, isScreenLocked, twoFingerSpeedMode) {
+            .pointerInput(
+                currentPlaybackIdentity,
+                playerState.player,
+                isFullscreen,
+                isInPipMode,
+                isScreenLocked,
+                twoFingerSpeedMode
+            ) {
                 try {
                     awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false)
@@ -2036,6 +2051,7 @@ fun VideoPlayerSection(
             }
             //  先处理拖拽手势 (音量/亮度/进度)
             .pointerInput(
+                currentPlaybackIdentity,
                 playerState.player,
                 isInPipMode,
                 isScreenLocked,
@@ -2481,6 +2497,7 @@ fun VideoPlayerSection(
             }
             //  长按倍速和拖动锁定必须在同一个手势探测器内处理。
             .pointerInput(
+                currentPlaybackIdentity,
                 playerState.player,
                 longPressSpeed,
                 isScreenLocked,
@@ -2570,6 +2587,7 @@ fun VideoPlayerSection(
             }
             //  点击/双击手势在拖拽之后处理
             .pointerInput(
+                currentPlaybackIdentity,
                 playerState.player,
                 seekForwardSeconds,
                 seekBackwardSeconds,
