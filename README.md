@@ -210,13 +210,13 @@ cd BiliPai
 
 ## 最近更新
 
-当前构建为 `0.2.3-beta.22 / versionCode 338`；最新完整发布记录为 `v0.2.3-beta.22`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
+当前构建为 `0.2.3-beta.22 / versionCode 339`；最新完整发布记录为 `v0.2.3-beta.22`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
 
-- 修复全屏左右方向保留、自动连播画面恢复及播放器折叠后的放大返回动画。
-- 新增非玻璃 Miuix 展示与可选卡片深度预测返回，完善原生顶栏滚动和可访问性。
+- 修复全屏方向、自动连播画面与手势恢复，以及播放结束后的折叠和放大返回。
+- 新增非玻璃 Miuix 展示与可选卡片深度预测返回，修复标签拖拽、顶栏滚动和控件样式。
+- MD3 与 Miuix 更新弹窗分别原生适配，下载操作固定显示，长日志可独立滚动。
 - 动态顶部操作区支持折叠，增量刷新保留阅读位置。
-- 优化页面 Chrome 捕获与转场性能报告，收紧非活动页面的渲染开销。
-- 修复插件延迟注册的 Context 初始化时序。
+- 调整页面 Chrome 捕获与转场性能报告，并修复插件延迟注册的初始化时序。
 - 完整 beta.21 → beta.22 说明见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 路线图

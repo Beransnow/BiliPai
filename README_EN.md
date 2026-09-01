@@ -452,14 +452,14 @@ See the [current roadmap](docs/wiki/ROADMAP.md) for priorities, completion crite
 
 See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
-### Current source build (v0.2.3-beta.22 · 2026-09-01)
+### Current source build (v0.2.3-beta.22 · 2026-09-02)
 
-- Current source build: `0.2.3-beta.22` / `versionCode 338`.
-- Fullscreen orientation now preserves both landscape sides; auto-advance restores the video surface, and collapsed playback returns with a scale-up animation.
-- Non-glass Miuix presentation and optional card-depth predictive back are added, with native top-bar scrolling and accessibility fixes.
+- Current source build: `0.2.3-beta.22` / `versionCode 339`.
+- Fullscreen orientation, auto-advance surface and gesture recovery, end-of-playback collapse, and scale-up restoration are fixed.
+- Non-glass Miuix presentation and optional card-depth predictive back are added, with tab dragging, top-bar scrolling, and control styling fixes.
+- MD3 and Miuix update dialogs now use theme-native layouts, keep download actions visible, and scroll long changelogs independently.
 - Dynamic top actions can be collapsed, while incremental refresh preserves the reading position.
-- Page chrome capture and transition performance reporting are refined to reduce inactive rendering work.
-- Deferred plugin registration now initializes its Context before use.
+- Page chrome capture and transition reporting are refined, and deferred plugin registration now initializes its Context before use.
 - See [CHANGELOG.md](CHANGELOG.md) for the complete beta.21 → beta.22 notes.
 - Official Telegram: channel [@bilipai666](https://t.me/bilipai666), group [@bilipai888](https://t.me/bilipai888/1).
 
