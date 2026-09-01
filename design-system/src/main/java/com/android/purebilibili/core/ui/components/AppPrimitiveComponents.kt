@@ -43,7 +43,6 @@ import androidx.compose.material3.FloatingActionButtonElevation
 import androidx.compose.material3.SelectableChipColors
 import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.material3.InputChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MenuItemColors
@@ -252,7 +251,7 @@ fun AppScrollableTabRow(
             indicatorPositionProvider = indicatorPositionProvider,
         )
     },
-    divider: @Composable () -> Unit = @Composable { HorizontalDivider() },
+    divider: @Composable () -> Unit = {},
     tabs: @Composable () -> Unit,
 ) = ScrollableTabRow(
     selectedTabIndex = selectedTabIndex,

@@ -46,6 +46,7 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("PiliPlusIndicatorAccelerate"))
         assertTrue(source.contains("indicatorPositionProvider: (() -> Float)? = null"))
         assertEquals(2, source.windowed("divider = {}".length).count { it == "divider = {}" })
+        assertFalse(source.contains("HorizontalDivider"))
         assertTrue(source.contains("resolveElasticTabIndicatorBounds("))
         assertTrue(source.contains(".wrapContentSize(Alignment.BottomStart)"))
         assertFalse(source.contains("matchContentSize = false"))
