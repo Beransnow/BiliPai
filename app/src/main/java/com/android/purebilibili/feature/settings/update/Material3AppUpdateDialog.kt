@@ -7,14 +7,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -23,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
@@ -39,37 +42,44 @@ internal fun Material3AppUpdateDialog(
 ) {
     AlertDialog(
         onDismissRequest = actions.onDismissRequest,
-        icon = {
-            Icon(
-                imageVector = Icons.Outlined.Download,
-                contentDescription = null,
-            )
-        },
         title = {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = if (state.showReleaseNotesOnly) "更新日志" else "发现新版本",
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = "版本 ${state.update.latestVersion}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Text(
+                        text = if (state.showReleaseNotesOnly) "更新日志" else "发现新版本",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = "版本 ${state.update.latestVersion}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                IconButton(
+                    onClick = actions.onDismissRequest,
+                    modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Close,
+                        contentDescription = "关闭",
+                    )
+                }
             }
         },
         text = {
             Material3UpdateContent(state = state, actions = actions)
         },
         confirmButton = {
-            if (state.showReleaseNotesOnly) {
-                TextButton(onClick = actions.onDismissRequest) {
-                    Text("关闭", maxLines = 1, softWrap = false)
-                }
-            } else {
+            if (!state.showReleaseNotesOnly) {
                 Button(
                     onClick = actions.onPrimaryAction,
                     enabled = !state.downloadState.isActiveDownload(),
@@ -307,7 +317,9 @@ private fun Material3DownloadChannels(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .widthIn(max = 320.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedButton(
@@ -316,7 +328,7 @@ private fun Material3DownloadChannels(
                     .weight(1f)
                     .sizeIn(minHeight = 48.dp),
             ) {
-                Text("正式版", maxLines = 1, softWrap = false)
+                Text("正式版下载", maxLines = 1, softWrap = false)
             }
             OutlinedButton(
                 onClick = actions.onOpenTestRelease,
@@ -324,7 +336,7 @@ private fun Material3DownloadChannels(
                     .weight(1f)
                     .sizeIn(minHeight = 48.dp),
             ) {
-                Text("测试版", maxLines = 1, softWrap = false)
+                Text("测试版下载", maxLines = 1, softWrap = false)
             }
         }
     }
