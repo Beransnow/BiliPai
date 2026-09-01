@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
@@ -23,15 +24,16 @@ import top.yukonga.miuix.kmp.blur.Backdrop
 private val beta21AdaptiveTabMinWidth = 72.dp
 
 internal fun resolveAppAdaptiveTabMinWidth(
-    requestedMinTabWidth: Dp?,
+    requestedMinTabWidth: Dp,
     uiStyle: AppUiStyle,
     liquidGlassEnabled: Boolean,
-): Dp = requestedMinTabWidth ?: if (
-    uiStyle == AppUiStyle.MIUIX && !liquidGlassEnabled
-) {
-    AppChromeSizeTokens.MinimumTouchTarget
-} else {
-    beta21AdaptiveTabMinWidth
+): Dp {
+    if (requestedMinTabWidth.isSpecified) return requestedMinTabWidth
+    return if (uiStyle == AppUiStyle.MIUIX && !liquidGlassEnabled) {
+        AppChromeSizeTokens.MinimumTouchTarget
+    } else {
+        beta21AdaptiveTabMinWidth
+    }
 }
 
 /**
@@ -47,7 +49,7 @@ fun <T> AppThemeAdaptiveTabRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     scrollable: Boolean = false,
-    minTabWidth: Dp? = null,
+    minTabWidth: Dp = Dp.Unspecified,
     compactMiuixWhenTwoOptions: Boolean = true,
     height: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
     indicatorHeight: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
@@ -91,7 +93,7 @@ fun <T> AppLiquidAwareTabRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     scrollable: Boolean = false,
-    minTabWidth: Dp? = null,
+    minTabWidth: Dp = Dp.Unspecified,
     compactMiuixWhenTwoOptions: Boolean = true,
     height: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
     indicatorHeight: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
