@@ -82,9 +82,7 @@ fun BoxScope.GestureLevelOverlayHost(
 ) {
     val kind = resolveGestureLevelKind(mode) ?: return
     val playerChromeProfile = rememberAppPlayerChromeProfile()
-    val style = remember(playerChromeProfile.tabPresentation) {
-        resolveGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
-    }
+    val style = rememberGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
     val motionSpec = remember { resolveVideoGestureMotionSpec() }
     val colorScheme = MaterialTheme.colorScheme
     val spec = remember(style, kind, percent, colorScheme) {

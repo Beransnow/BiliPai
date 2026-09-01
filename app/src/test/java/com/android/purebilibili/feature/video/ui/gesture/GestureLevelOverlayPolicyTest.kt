@@ -11,6 +11,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,7 +32,10 @@ class GestureLevelOverlayPolicyTest {
         )
         assertEquals(
             GestureLevelOverlayStyle.Miuix,
-            resolveGestureLevelOverlayStyle(AppTopTabPresentation.TONAL_CAPSULE)
+            resolveGestureLevelOverlayStyle(
+                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
+                uiStyle = AppUiStyle.MIUIX,
+            )
         )
     }
 

@@ -12,14 +12,18 @@ import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.BrightnessHigh
 import androidx.compose.material.icons.filled.BrightnessLow
 import androidx.compose.material.icons.filled.BrightnessMedium
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.feature.video.ui.section.VideoGestureMode
-import androidx.compose.material.icons.filled.LightMode
 
 /**
  * Three fully distinct volume/brightness feedback skins.
@@ -61,11 +65,26 @@ data class GestureLevelOverlaySpec(
 
 fun resolveGestureLevelOverlayStyle(
     presentation: AppTopTabPresentation,
+    uiStyle: AppUiStyle = AppUiStyle.MATERIAL3,
 ): GestureLevelOverlayStyle {
+    if (uiStyle == AppUiStyle.MIUIX) return GestureLevelOverlayStyle.Miuix
     return when (presentation) {
         AppTopTabPresentation.TONAL_CAPSULE -> GestureLevelOverlayStyle.Miuix
         AppTopTabPresentation.MOVING_CAPSULE -> GestureLevelOverlayStyle.Ios
         AppTopTabPresentation.MATERIAL_UNDERLINE -> GestureLevelOverlayStyle.Md3
+    }
+}
+
+@Composable
+fun rememberGestureLevelOverlayStyle(
+    presentation: AppTopTabPresentation,
+): GestureLevelOverlayStyle {
+    val uiStyle = LocalAppUiStyle.current
+    return remember(uiStyle, presentation) {
+        resolveGestureLevelOverlayStyle(
+            presentation = presentation,
+            uiStyle = uiStyle,
+        )
     }
 }
 

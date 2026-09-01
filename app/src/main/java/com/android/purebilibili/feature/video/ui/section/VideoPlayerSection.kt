@@ -63,7 +63,7 @@ import com.android.purebilibili.feature.video.ui.gesture.LockedTwoFingerSpeedAxi
 import com.android.purebilibili.feature.video.ui.gesture.TwoFingerSpeedGestureMode
 import com.android.purebilibili.feature.video.ui.gesture.resolveGestureLevelIcon
 import com.android.purebilibili.feature.video.ui.gesture.resolveGestureLevelKind
-import com.android.purebilibili.feature.video.ui.gesture.resolveGestureLevelOverlayStyle
+import com.android.purebilibili.feature.video.ui.gesture.rememberGestureLevelOverlayStyle
 import com.android.purebilibili.feature.video.ui.gesture.resolveLockedTwoFingerSpeedAxis
 import com.android.purebilibili.feature.video.ui.gesture.resolveTwoFingerGesturePlaybackSpeed
 import com.android.purebilibili.feature.video.ui.gesture.resolveTwoFingerSpeedGestureMode
@@ -1363,9 +1363,8 @@ fun VideoPlayerSection(
     val gestureMotionSpec = remember { resolveVideoGestureMotionSpec() }
     val playerChromeProfile = rememberAppPlayerChromeProfile()
     val manualStartPlayIcon = resolveAppTvIcon()
-    val gestureLevelOverlayStyle = remember(playerChromeProfile.tabPresentation) {
-        resolveGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
-    }
+    val gestureLevelOverlayStyle =
+        rememberGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
     val forceCoverDuringReturnAnimation = shouldForceCoverDuringReturnAnimation(
         forceCoverOnly = forceCoverOnly
     )
