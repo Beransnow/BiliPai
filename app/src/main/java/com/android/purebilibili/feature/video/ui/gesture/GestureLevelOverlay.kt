@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -68,12 +67,13 @@ import com.android.purebilibili.feature.video.ui.section.resolveVideoGestureMoti
 import kotlin.math.roundToInt
 import top.yukonga.miuix.kmp.basic.Slider
 import top.yukonga.miuix.kmp.basic.SliderDefaults
+import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 /**
  * Theme-native volume / brightness feedback:
  * - MD3: centered, theme-colored circular indicator
  * - iOS: centered frosted capsule
- * - MIUIX: native animated horizontal slider shifted above player center
+ * - MIUIX: native animated horizontal slider at the top of the player
  */
 @Composable
 fun BoxScope.GestureLevelOverlayHost(
@@ -87,12 +87,15 @@ fun BoxScope.GestureLevelOverlayHost(
     val style = rememberGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
     val motionSpec = remember { resolveVideoGestureMotionSpec() }
     val colorScheme = MaterialTheme.colorScheme
-    val spec = remember(style, kind, percent, colorScheme) {
+    val miuixColorScheme = MiuixTheme.colorScheme
+    val spec = remember(style, kind, percent, colorScheme, miuixColorScheme) {
         resolveGestureLevelOverlaySpec(
             style = style,
             kind = kind,
             percent = percent,
-            colorScheme = colorScheme
+            colorScheme = colorScheme,
+            miuixContainerColor = miuixColorScheme.surfaceContainerHigh,
+            miuixContentColor = miuixColorScheme.onSurface
         )
     }
     val progress by animateFloatAsState(
@@ -308,7 +311,7 @@ private fun MiuixGestureLevelSlider(
         disabledThumbColor = spec.iconTint
     )
     Row(
-        modifier = Modifier.offset(y = spec.verticalOffsetDp.dp),
+        modifier = Modifier.padding(top = spec.topInsetDp.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -465,12 +468,15 @@ fun GestureLevelOverlayContent(
     val kind = resolveGestureLevelKind(mode) ?: return
     val motionSpec = remember { resolveVideoGestureMotionSpec() }
     val colorScheme = MaterialTheme.colorScheme
-    val spec = remember(style, kind, percent, colorScheme) {
+    val miuixColorScheme = MiuixTheme.colorScheme
+    val spec = remember(style, kind, percent, colorScheme, miuixColorScheme) {
         resolveGestureLevelOverlaySpec(
             style = style,
             kind = kind,
             percent = percent,
-            colorScheme = colorScheme
+            colorScheme = colorScheme,
+            miuixContainerColor = miuixColorScheme.surfaceContainerHigh,
+            miuixContentColor = miuixColorScheme.onSurface
         )
     }
     val progress by animateFloatAsState(

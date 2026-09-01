@@ -79,14 +79,14 @@ class GestureLevelOverlayPolicyTest {
         assertEquals(Alignment.Center, md3Brightness.alignment)
         assertEquals(Alignment.CenterEnd, ios.alignment)
         assertEquals(Alignment.CenterStart, iosBrightness.alignment)
-        assertEquals(Alignment.Center, miuixVolume.alignment)
-        assertEquals(Alignment.Center, miuixBrightness.alignment)
+        assertEquals(Alignment.TopCenter, miuixVolume.alignment)
+        assertEquals(Alignment.TopCenter, miuixBrightness.alignment)
         assertEquals(186, miuixVolume.railWidthDp)
         assertEquals(40, miuixVolume.railHeightDp)
-        assertEquals(-56, miuixVolume.verticalOffsetDp)
-        assertEquals(-56, miuixBrightness.verticalOffsetDp)
-        assertEquals(0, md3.verticalOffsetDp)
-        assertEquals(0, ios.verticalOffsetDp)
+        assertEquals(32, miuixVolume.topInsetDp)
+        assertEquals(32, miuixBrightness.topInsetDp)
+        assertEquals(0, md3.topInsetDp)
+        assertEquals(0, ios.topInsetDp)
         assertTrue(ios.showLabel)
         assertFalse(md3.showLabel)
         assertFalse(miuixVolume.showPercentText)
@@ -112,6 +112,34 @@ class GestureLevelOverlayPolicyTest {
                 assertEquals(colors.onSurface, spec.textColor)
             }
         }
+    }
+
+    @Test
+    fun miuixColors_followNativeSemanticColors() {
+        val lightContainer = Color(0xFFF2F2F2)
+        val lightContent = Color(0xFF1A1A1A)
+        val darkContainer = Color(0xFF2A2A2A)
+        val darkContent = Color(0xFFF5F5F5)
+
+        val light = resolveGestureLevelOverlaySpec(
+            style = GestureLevelOverlayStyle.Miuix,
+            kind = GestureLevelKind.Brightness,
+            percent = 0.5f,
+            miuixContainerColor = lightContainer,
+            miuixContentColor = lightContent
+        )
+        val dark = resolveGestureLevelOverlaySpec(
+            style = GestureLevelOverlayStyle.Miuix,
+            kind = GestureLevelKind.Volume,
+            percent = 0.5f,
+            miuixContainerColor = darkContainer,
+            miuixContentColor = darkContent
+        )
+
+        assertEquals(lightContainer, light.containerColor)
+        assertEquals(lightContent, light.iconTint)
+        assertEquals(darkContainer, dark.containerColor)
+        assertEquals(darkContent, dark.iconTint)
     }
 
     @Test

@@ -34,7 +34,7 @@ enum class GestureLevelOverlayStyle {
     Md3,
     /** iOS: centered frosted capsule with SF-style glyphs. */
     Ios,
-    /** MIUIX: native animated horizontal slider shifted above player center. */
+    /** MIUIX: native animated horizontal slider at the top of the player. */
     Miuix
 }
 
@@ -61,7 +61,7 @@ data class GestureLevelOverlaySpec(
     val railHeightDp: Int,
     val capsuleMinWidthDp: Int,
     val iconSizeDp: Int,
-    val verticalOffsetDp: Int
+    val topInsetDp: Int
 )
 
 fun resolveGestureLevelOverlayStyle(
@@ -101,7 +101,9 @@ fun resolveGestureLevelOverlaySpec(
     style: GestureLevelOverlayStyle,
     kind: GestureLevelKind,
     percent: Float,
-    colorScheme: ColorScheme = darkColorScheme()
+    colorScheme: ColorScheme = darkColorScheme(),
+    miuixContainerColor: Color = Color(0xE61A1A1A),
+    miuixContentColor: Color = Color.White
 ): GestureLevelOverlaySpec {
     val progress = percent.coerceIn(0f, 1f)
     val isVolume = kind == GestureLevelKind.Volume
@@ -124,7 +126,7 @@ fun resolveGestureLevelOverlaySpec(
             railHeightDp = 0,
             capsuleMinWidthDp = 0,
             iconSizeDp = 26,
-            verticalOffsetDp = 0
+            topInsetDp = 0
         )
         GestureLevelOverlayStyle.Ios -> GestureLevelOverlaySpec(
             style = style,
@@ -144,27 +146,27 @@ fun resolveGestureLevelOverlaySpec(
             railHeightDp = 0,
             capsuleMinWidthDp = 148,
             iconSizeDp = 34,
-            verticalOffsetDp = 0
+            topInsetDp = 0
         )
         GestureLevelOverlayStyle.Miuix -> GestureLevelOverlaySpec(
             style = style,
             kind = kind,
-            alignment = Alignment.Center,
+            alignment = Alignment.TopCenter,
             showLabel = false,
             showPercentText = false,
             verticalRail = false,
             accentColor = if (isVolume) Color(0xFF0D84FF) else Color(0xFFFFC107),
             trackColor = Color.White.copy(alpha = 0.18f),
             fillColor = if (isVolume) Color(0xFF0D84FF) else Color(0xFFFFC107),
-            containerColor = Color(0xE61A1A1A),
+            containerColor = miuixContainerColor,
             borderColor = Color.White.copy(alpha = 0.06f),
-            iconTint = Color.White,
-            textColor = Color.White,
+            iconTint = miuixContentColor,
+            textColor = miuixContentColor,
             railWidthDp = 186,
             railHeightDp = 40,
             capsuleMinWidthDp = 40,
             iconSizeDp = 22,
-            verticalOffsetDp = -56
+            topInsetDp = 32
         )
     }
 }
