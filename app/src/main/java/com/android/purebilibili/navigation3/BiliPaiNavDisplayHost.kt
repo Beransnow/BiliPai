@@ -61,7 +61,6 @@ import com.android.purebilibili.core.ui.transition.shouldUseHostOwnedVideoCardTr
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackAnimationStyle
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
-import com.android.purebilibili.navigation3.predictiveback.MIUIX_CARD_BACK_DEFAULT_MAX_PROGRESS_PERCENT
 import com.android.purebilibili.navigation3.predictiveback.biliPaiMiuixNavTransition
 import com.android.purebilibili.navigation3.predictiveback.miuixVideoCardNavTransition
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardContentScale
@@ -109,8 +108,6 @@ internal fun BiliPaiNavDisplayHost(
         BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT,
     miuixTransitionBlurEnabled: Boolean = true,
     miuixCardBackTransitionEnabled: Boolean = false,
-    miuixCardBackMaxProgressPercent: Int =
-        MIUIX_CARD_BACK_DEFAULT_MAX_PROGRESS_PERCENT,
     videoSharedReturnGestureFollowEnabled: Boolean = true,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
@@ -199,7 +196,6 @@ internal fun BiliPaiNavDisplayHost(
         isLightBackground,
         miuixTransitionBlurEnabled,
         miuixCardBackTransitionEnabled,
-        miuixCardBackMaxProgressPercent,
     ) {
         biliPaiMiuixNavTransition(
             animation = style,
@@ -207,7 +203,6 @@ internal fun BiliPaiNavDisplayHost(
             isLightBackground = isLightBackground,
             miuixTransitionBlurEnabled = miuixTransitionBlurEnabled,
             miuixCardBackTransitionEnabled = miuixCardBackTransitionEnabled,
-            miuixCardBackMaxProgressPercent = miuixCardBackMaxProgressPercent,
         )
     }
     val cardBackExcludedTransition = remember(

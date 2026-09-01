@@ -6,7 +6,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import top.yukonga.miuix.kmp.nav.transition.NavSettlePhase
 import top.yukonga.miuix.kmp.nav.transition.NavSwipeEdge
 
 class MiuixCardBackNavTransitionTest {
@@ -41,74 +40,6 @@ class MiuixCardBackNavTransitionTest {
         assertEquals(0.9f, end.scale, 0.0001f)
         assertEquals(-125f, end.translationX, 0.0001f)
         assertEquals(60f, end.cornerRadiusPx, 0.0001f)
-    }
-
-    @Test
-    fun `preview cap applies while held and commit completes continuously`() {
-        assertEquals(
-            0.3f,
-            resolveMiuixCardBackVisualProgress(
-                rawProgress = 0.6f,
-                gestureProgress = 0.6f,
-                settlePhase = null,
-                maxPreviewFraction = 0.5f,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            0.3f,
-            resolveMiuixCardBackVisualProgress(
-                rawProgress = 0.6f,
-                gestureProgress = 0.6f,
-                settlePhase = NavSettlePhase.Commit,
-                maxPreviewFraction = 0.5f,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            0.65f,
-            resolveMiuixCardBackVisualProgress(
-                rawProgress = 0.8f,
-                gestureProgress = 0.6f,
-                settlePhase = NavSettlePhase.Commit,
-                maxPreviewFraction = 0.5f,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            1f,
-            resolveMiuixCardBackVisualProgress(
-                rawProgress = 1f,
-                gestureProgress = 0.6f,
-                settlePhase = NavSettlePhase.Commit,
-                maxPreviewFraction = 0.5f,
-            ),
-            0.0001f,
-        )
-    }
-
-    @Test
-    fun `cancel returns from capped preview and programmatic back is uncapped`() {
-        assertEquals(
-            0.1f,
-            resolveMiuixCardBackVisualProgress(
-                rawProgress = 0.2f,
-                gestureProgress = 0.6f,
-                settlePhase = NavSettlePhase.Cancel,
-                maxPreviewFraction = 0.5f,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            0.8f,
-            resolveMiuixCardBackVisualProgress(
-                rawProgress = 0.8f,
-                gestureProgress = null,
-                settlePhase = NavSettlePhase.Programmatic,
-                maxPreviewFraction = 0.5f,
-            ),
-            0.0001f,
-        )
     }
 
     @Test

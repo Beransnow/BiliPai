@@ -3756,8 +3756,6 @@ fun AppNavigation(
                         appNavigationSettings.miuixTransitionBlurEnabled,
                     miuixCardBackTransitionEnabled =
                         appNavigationSettings.miuixCardBackTransitionEnabled,
-                    miuixCardBackMaxProgressPercent =
-                        appNavigationSettings.miuixCardBackMaxProgressPercent,
                     videoSharedReturnGestureFollowEnabled =
                         appNavigationSettings.videoSharedReturnGestureFollowEnabled,
                     sourceMetadata = navigation3SourceMetadata,

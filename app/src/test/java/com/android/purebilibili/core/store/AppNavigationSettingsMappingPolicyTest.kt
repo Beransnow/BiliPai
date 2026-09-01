@@ -34,7 +34,6 @@ class AppNavigationSettingsMappingPolicyTest {
         assertEquals("always_right", result.predictiveBackExitDirection)
         assertTrue(result.miuixTransitionBlurEnabled)
         assertFalse(result.miuixCardBackTransitionEnabled)
-        assertEquals(50, result.miuixCardBackMaxProgressPercent)
         assertTrue(result.videoSharedReturnGestureFollowEnabled)
     }
 
@@ -65,7 +64,6 @@ class AppNavigationSettingsMappingPolicyTest {
             booleanPreferencesKey("sidebar_account_switcher_enabled") to false,
             booleanPreferencesKey("miuix_transition_blur_enabled") to false,
             booleanPreferencesKey("miuix_card_back_transition_enabled") to true,
-            intPreferencesKey("miuix_card_back_max_progress_percent") to 120,
             booleanPreferencesKey("video_shared_return_gesture_follow_enabled") to false,
         )
 
@@ -79,7 +77,6 @@ class AppNavigationSettingsMappingPolicyTest {
         assertFalse(result.sidebarAccountSwitcherEnabled)
         assertFalse(result.miuixTransitionBlurEnabled)
         assertTrue(result.miuixCardBackTransitionEnabled)
-        assertEquals(100, result.miuixCardBackMaxProgressPercent)
         assertFalse(result.videoSharedReturnGestureFollowEnabled)
     }
 

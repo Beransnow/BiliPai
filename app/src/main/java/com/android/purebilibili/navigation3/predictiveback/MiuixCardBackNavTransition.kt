@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import top.yukonga.miuix.kmp.nav.transition.NavMotion
-import top.yukonga.miuix.kmp.nav.transition.NavSettlePhase
 import top.yukonga.miuix.kmp.nav.transition.NavSettleSpec
 import top.yukonga.miuix.kmp.nav.transition.NavSwipeEdge
 import top.yukonga.miuix.kmp.nav.transition.NavTransition
@@ -21,7 +20,6 @@ import top.yukonga.miuix.kmp.nav.transition.NavTransitions
 import top.yukonga.miuix.kmp.nav.transition.navDirectionalTransition
 import top.yukonga.miuix.kmp.nav.transition.navGraphicsTransition
 
-internal const val MIUIX_CARD_BACK_DEFAULT_MAX_PROGRESS_PERCENT = 50
 internal const val MIUIX_CARD_BACK_SETTLE_DURATION_MILLIS = 300
 
 private const val CARD_BACK_MIN_SCALE = 0.9f
@@ -51,38 +49,6 @@ internal fun resolveMiuixCardBackFrame(
     )
 }
 
-/**
- * Limits only the finger-driven preview. Commit continues from that preview pose to the complete
- * exit, while cancellation returns from the same pose without a visual jump.
- */
-internal fun resolveMiuixCardBackVisualProgress(
-    rawProgress: Float,
-    gestureProgress: Float?,
-    settlePhase: NavSettlePhase?,
-    maxPreviewFraction: Float,
-): Float {
-    val raw = rawProgress.coerceIn(0f, 1f)
-    val previewLimit = maxPreviewFraction.coerceIn(0f, 1f)
-    val release = gestureProgress?.coerceIn(0f, 1f) ?: return raw
-    return when (settlePhase) {
-        null,
-        NavSettlePhase.Cancel,
-        -> raw * previewLimit
-
-        NavSettlePhase.Commit -> {
-            val releasePreview = release * previewLimit
-            val postRelease = if (release >= 0.999f) {
-                1f
-            } else {
-                ((raw - release) / (1f - release)).coerceIn(0f, 1f)
-            }
-            releasePreview + (1f - releasePreview) * postRelease
-        }
-
-        NavSettlePhase.Programmatic -> raw
-    }.coerceIn(0f, 1f)
-}
-
 internal fun resolveMiuixCardBackExitDirectionSign(
     swipeEdge: NavSwipeEdge?,
     layoutDirection: LayoutDirection,
@@ -94,7 +60,7 @@ internal fun resolveMiuixCardBackExitDirectionSign(
     -> if (layoutDirection == LayoutDirection.Rtl) -1f else 1f
 }
 
-internal fun miuixCardBackNavTransition(maxPreviewFraction: Float): NavTransition {
+internal fun miuixCardBackNavTransition(): NavTransition {
     val motion = NavMotion(
         commit = NavSettleSpec.Tween(
             durationMillis = MIUIX_CARD_BACK_SETTLE_DURATION_MILLIS,
@@ -110,10 +76,10 @@ internal fun miuixCardBackNavTransition(maxPreviewFraction: Float): NavTransitio
         opaqueDepth = 1f,
         motion = motion,
         scrim = { scope ->
-            1f - resolveCardBackProgress(scope, maxPreviewFraction)
+            1f - resolveCardBackProgress(scope)
         },
     ) { scope ->
-        val progress = resolveCardBackProgress(scope, maxPreviewFraction)
+        val progress = resolveCardBackProgress(scope)
         val widthPx = scope.layoutSize.width.toFloat()
         if (scope.relativeDepth <= 0f) {
             val frame = resolveMiuixCardBackFrame(
@@ -150,22 +116,12 @@ internal fun miuixCardBackNavTransition(maxPreviewFraction: Float): NavTransitio
     )
 }
 
-private fun resolveCardBackProgress(
-    scope: NavTransitionScope,
-    maxPreviewFraction: Float,
-): Float {
-    val rawProgress = if (scope.relativeDepth <= 0f) {
+private fun resolveCardBackProgress(scope: NavTransitionScope): Float =
+    (if (scope.relativeDepth <= 0f) {
         1f - topProgress(scope.relativeDepth)
     } else {
         1f - coverProgress(scope.relativeDepth)
-    }
-    return resolveMiuixCardBackVisualProgress(
-        rawProgress = rawProgress,
-        gestureProgress = scope.gesture?.progress,
-        settlePhase = scope.settle?.phase,
-        maxPreviewFraction = maxPreviewFraction,
-    )
-}
+    }).coerceIn(0f, 1f)
 
 private data class MiuixCardBackClipShape(
     val radiusPx: Float,
