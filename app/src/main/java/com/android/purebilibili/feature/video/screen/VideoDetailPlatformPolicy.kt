@@ -637,15 +637,25 @@ internal fun resolvePhoneVideoRequestedOrientation(
     ) {
         return when {
             manualFullscreenRequested -> {
-                resolvePhoneFullscreenEnterOrientation(
+                val fullscreenOrientation = resolvePhoneFullscreenEnterOrientation(
                     fullscreenMode = fullscreenMode,
                     isVerticalVideo = isVerticalVideo,
                     preferPortraitForFlatFoldable = preferPortraitForFoldableInnerScreen
                 ) ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                preserveCurrentExactLandscapeSideWhileFullscreen(
+                    requestedOrientation = fullscreenOrientation,
+                    currentRequestedOrientation = currentRequestedOrientation,
+                    isFullscreenMode = isFullscreenMode
+                )
             }
-            // Match the large-screen path: retaining LANDSCAPE/REVERSE_LANDSCAPE here locks
-            // the cover screen to one side even though app auto-rotation is enabled.
-            isFullscreenMode -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            // The orientation listener has already resolved the physical side on compact screens.
+            // Replacing that exact request with SENSOR_LANDSCAPE here can make some ROMs snap back
+            // to their default landscape side without emitting another sensor event to correct it.
+            isFullscreenMode -> preserveCurrentExactLandscapeSideWhileFullscreen(
+                requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
+                currentRequestedOrientation = currentRequestedOrientation,
+                isFullscreenMode = true
+            )
             else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
     }
@@ -751,6 +761,21 @@ private fun resolveCurrentExactLandscapeOrientation(currentRequestedOrientation:
         ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE -> currentRequestedOrientation
         else -> null
     }
+}
+
+private fun preserveCurrentExactLandscapeSideWhileFullscreen(
+    requestedOrientation: Int,
+    currentRequestedOrientation: Int?,
+    isFullscreenMode: Boolean
+): Int {
+    if (
+        !isFullscreenMode ||
+        requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+    ) {
+        return requestedOrientation
+    }
+    return resolveCurrentExactLandscapeOrientation(currentRequestedOrientation)
+        ?: requestedOrientation
 }
 
 private fun resolveExactLandscapeOrientation(

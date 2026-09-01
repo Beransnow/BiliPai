@@ -591,6 +591,38 @@ class VideoDetailLayoutModePolicyTest {
     }
 
     @Test
+    fun phoneOrientationPolicy_autoRotatePreservesDetectedLandscapeSideWhileFullscreen() {
+        for (exactLandscape in listOf(
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
+            ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+        )) {
+            assertEquals(
+                exactLandscape,
+                resolvePhoneVideoRequestedOrientation(
+                    autoRotateEnabled = true,
+                    fullscreenMode = FullscreenMode.AUTO,
+                    isCompactDevice = true,
+                    isOrientationDrivenFullscreen = true,
+                    isFullscreenMode = true,
+                    currentRequestedOrientation = exactLandscape
+                )
+            )
+            assertEquals(
+                exactLandscape,
+                resolvePhoneVideoRequestedOrientation(
+                    autoRotateEnabled = true,
+                    fullscreenMode = FullscreenMode.AUTO,
+                    isCompactDevice = true,
+                    isOrientationDrivenFullscreen = true,
+                    isFullscreenMode = true,
+                    manualFullscreenRequested = true,
+                    currentRequestedOrientation = exactLandscape
+                )
+            )
+        }
+    }
+
+    @Test
     fun phoneOrientationPolicy_manualPortraitHold_forcesPortraitUntilReleased() {
         assertEquals(
             ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
@@ -704,24 +736,44 @@ class VideoDetailLayoutModePolicyTest {
     }
 
     @Test
-    fun autoRotateFullscreen_releasesFixedSideAcrossInnerAndOuterScreenChanges() {
+    fun autoRotateFullscreen_preservesCompactSideButReleasesItOnLargeScreen() {
         for (initialOrientation in listOf(
             ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE,
             ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
         )) {
-            var requestedOrientation = initialOrientation
-            // Start on the cover screen, unfold, and fold again while still fullscreen.
-            for (isCompactDevice in listOf(true, false, true)) {
-                requestedOrientation = requireNotNull(resolvePhoneVideoRequestedOrientation(
+            val compactOrientation = requireNotNull(resolvePhoneVideoRequestedOrientation(
+                autoRotateEnabled = true,
+                fullscreenMode = FullscreenMode.AUTO,
+                isCompactDevice = true,
+                isOrientationDrivenFullscreen = true,
+                isFullscreenMode = true,
+                currentRequestedOrientation = initialOrientation
+            ))
+            assertEquals(initialOrientation, compactOrientation)
+
+            val expandedOrientation = requireNotNull(resolvePhoneVideoRequestedOrientation(
+                autoRotateEnabled = true,
+                fullscreenMode = FullscreenMode.AUTO,
+                isCompactDevice = false,
+                isOrientationDrivenFullscreen = false,
+                isFullscreenMode = true,
+                currentRequestedOrientation = compactOrientation
+            ))
+            assertEquals(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, expandedOrientation)
+
+            // Folding back starts from the released sensor request. The compact-screen listener
+            // will resolve the physical side on its next orientation event.
+            assertEquals(
+                ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
+                resolvePhoneVideoRequestedOrientation(
                     autoRotateEnabled = true,
                     fullscreenMode = FullscreenMode.AUTO,
-                    isCompactDevice = isCompactDevice,
-                    isOrientationDrivenFullscreen = isCompactDevice,
+                    isCompactDevice = true,
+                    isOrientationDrivenFullscreen = true,
                     isFullscreenMode = true,
-                    currentRequestedOrientation = requestedOrientation
-                ))
-                assertEquals(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE, requestedOrientation)
-            }
+                    currentRequestedOrientation = expandedOrientation
+                )
+            )
         }
     }
 
