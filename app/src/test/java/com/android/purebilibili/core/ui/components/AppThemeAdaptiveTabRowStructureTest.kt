@@ -1,6 +1,7 @@
 package com.android.purebilibili.core.ui.components
 
 import androidx.compose.ui.unit.dp
+import com.android.purebilibili.core.theme.AppUiStyle
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -53,6 +54,7 @@ class AppThemeAdaptiveTabRowStructureTest {
             72.dp,
             resolveAppAdaptiveTabMinWidth(
                 requestedMinTabWidth = null,
+                uiStyle = AppUiStyle.MIUIX,
                 liquidGlassEnabled = true,
             ),
         )
@@ -60,6 +62,15 @@ class AppThemeAdaptiveTabRowStructureTest {
             48.dp,
             resolveAppAdaptiveTabMinWidth(
                 requestedMinTabWidth = null,
+                uiStyle = AppUiStyle.MIUIX,
+                liquidGlassEnabled = false,
+            ),
+        )
+        assertEquals(
+            72.dp,
+            resolveAppAdaptiveTabMinWidth(
+                requestedMinTabWidth = null,
+                uiStyle = AppUiStyle.MATERIAL3,
                 liquidGlassEnabled = false,
             ),
         )
@@ -67,6 +78,7 @@ class AppThemeAdaptiveTabRowStructureTest {
             60.dp,
             resolveAppAdaptiveTabMinWidth(
                 requestedMinTabWidth = 60.dp,
+                uiStyle = AppUiStyle.MATERIAL3,
                 liquidGlassEnabled = true,
             ),
         )

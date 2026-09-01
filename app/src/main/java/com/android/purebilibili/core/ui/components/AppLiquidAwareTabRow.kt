@@ -13,20 +13,25 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import top.yukonga.miuix.kmp.blur.Backdrop
 
-private val beta21LiquidTabMinWidth = 72.dp
+private val beta21AdaptiveTabMinWidth = 72.dp
 
 internal fun resolveAppAdaptiveTabMinWidth(
     requestedMinTabWidth: Dp?,
+    uiStyle: AppUiStyle,
     liquidGlassEnabled: Boolean,
-): Dp = requestedMinTabWidth ?: if (liquidGlassEnabled) {
-    beta21LiquidTabMinWidth
-} else {
+): Dp = requestedMinTabWidth ?: if (
+    uiStyle == AppUiStyle.MIUIX && !liquidGlassEnabled
+) {
     AppChromeSizeTokens.MinimumTouchTarget
+} else {
+    beta21AdaptiveTabMinWidth
 }
 
 /**
@@ -98,9 +103,11 @@ fun <T> AppLiquidAwareTabRow(
     isScrollInProgressProvider: () -> Boolean = { false },
 ) {
     if (options.isEmpty()) return
+    val uiStyle = LocalAppUiStyle.current
     val liquidGlassEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
     val resolvedMinTabWidth = resolveAppAdaptiveTabMinWidth(
         requestedMinTabWidth = minTabWidth,
+        uiStyle = uiStyle,
         liquidGlassEnabled = liquidGlassEnabled,
     )
     if (!liquidGlassEnabled) {
@@ -130,8 +137,8 @@ fun <T> AppLiquidAwareTabRow(
         allowLabelOverflow = true,
     )
     val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp
-    // Liquid rows retain beta.21's 72dp default and overflow contract. Native/non-glass rows
-    // independently use the beta.22 48dp accessibility minimum.
+    // Liquid rows and MD3 retain beta.21's 72dp default and overflow contract. Only the
+    // non-glass Miuix renderer uses beta.22's 48dp accessibility minimum.
     val needsHorizontalScroll = scrollable || readableTabWidth > resolvedMinTabWidth
     if (needsHorizontalScroll) {
         val scrollState = rememberScrollState()
