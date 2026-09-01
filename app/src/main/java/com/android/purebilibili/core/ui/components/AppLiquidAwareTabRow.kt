@@ -18,6 +18,17 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import top.yukonga.miuix.kmp.blur.Backdrop
 
+private val beta21LiquidTabMinWidth = 72.dp
+
+internal fun resolveAppAdaptiveTabMinWidth(
+    requestedMinTabWidth: Dp?,
+    liquidGlassEnabled: Boolean,
+): Dp = requestedMinTabWidth ?: if (liquidGlassEnabled) {
+    beta21LiquidTabMinWidth
+} else {
+    AppChromeSizeTokens.MinimumTouchTarget
+}
+
 /**
  * App-wide category/page tab contract. The shared renderer keeps MD3's animated underline
  * while liquid glass is off, and switches every theme to the moving glass capsule when reuse
@@ -31,7 +42,7 @@ fun <T> AppThemeAdaptiveTabRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     scrollable: Boolean = false,
-    minTabWidth: Dp = AppChromeSizeTokens.MinimumTouchTarget,
+    minTabWidth: Dp? = null,
     compactMiuixWhenTwoOptions: Boolean = true,
     height: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
     indicatorHeight: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
@@ -75,7 +86,7 @@ fun <T> AppLiquidAwareTabRow(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     scrollable: Boolean = false,
-    minTabWidth: Dp = AppChromeSizeTokens.MinimumTouchTarget,
+    minTabWidth: Dp? = null,
     compactMiuixWhenTwoOptions: Boolean = true,
     height: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
     indicatorHeight: Dp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
@@ -88,6 +99,10 @@ fun <T> AppLiquidAwareTabRow(
 ) {
     if (options.isEmpty()) return
     val liquidGlassEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
+    val resolvedMinTabWidth = resolveAppAdaptiveTabMinWidth(
+        requestedMinTabWidth = minTabWidth,
+        liquidGlassEnabled = liquidGlassEnabled,
+    )
     if (!liquidGlassEnabled) {
         AppNativeTabRow(
             options = options,
@@ -96,7 +111,7 @@ fun <T> AppLiquidAwareTabRow(
             modifier = modifier,
             enabled = enabled,
             scrollable = scrollable,
-            minTabWidth = minTabWidth,
+            minTabWidth = resolvedMinTabWidth,
             compactMiuixWhenTwoOptions = compactMiuixWhenTwoOptions,
             height = height,
             allowLabelOverflow = true,
@@ -110,16 +125,14 @@ fun <T> AppLiquidAwareTabRow(
     // horizontally scrollable, so labels are never ellipsized or clipped on
     // narrow phones; this also applies to shared rows such as UP space tabs.
     val readableTabWidth = resolveReadableNativeTabMinWidth(
-        requestedMinWidth = minTabWidth,
+        requestedMinWidth = resolvedMinTabWidth,
         labels = options.map { it.label },
         allowLabelOverflow = true,
     )
     val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp
-    val requiredContentWidth = readableTabWidth * options.size + AppSpacingTokens.ExtraSmall * 2
-    // A wider readable slot does not by itself make the row scrollable. The 48dp native
-    // accessibility default is intentionally smaller than many labels, including 简介/评论;
-    // treating that difference as overflow clips the liquid shell and disables direct drag.
-    val needsHorizontalScroll = scrollable || requiredContentWidth > viewportMaxWidth
+    // Liquid rows retain beta.21's 72dp default and overflow contract. Native/non-glass rows
+    // independently use the beta.22 48dp accessibility minimum.
+    val needsHorizontalScroll = scrollable || readableTabWidth > resolvedMinTabWidth
     if (needsHorizontalScroll) {
         val scrollState = rememberScrollState()
         val density = LocalDensity.current

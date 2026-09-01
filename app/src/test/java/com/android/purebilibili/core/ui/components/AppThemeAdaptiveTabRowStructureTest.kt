@@ -1,5 +1,6 @@
 package com.android.purebilibili.core.ui.components
 
+import androidx.compose.ui.unit.dp
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,7 +26,7 @@ class AppThemeAdaptiveTabRowStructureTest {
         assertEquals(
             2,
             source.lineSequence().count {
-                it.contains("minTabWidth: Dp = AppChromeSizeTokens.MinimumTouchTarget")
+                it.contains("minTabWidth: Dp? = null")
             },
         )
         assertFalse(adaptiveEntry.contains("AppNativeTabRow("))
@@ -40,10 +41,34 @@ class AppThemeAdaptiveTabRowStructureTest {
         assertTrue(adaptiveRenderer.contains("isScrollInProgressProvider = isScrollInProgressProvider"))
         assertTrue(adaptiveRenderer.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(adaptiveRenderer.contains("resolvedDragSelectionEnabled"))
-        assertTrue(adaptiveRenderer.contains("requiredContentWidth > viewportMaxWidth"))
-        assertFalse(adaptiveRenderer.contains("scrollable || readableTabWidth > minTabWidth"))
+        assertTrue(adaptiveRenderer.contains("readableTabWidth > resolvedMinTabWidth"))
         assertTrue(adaptiveRenderer.contains("tapPressRefractionEnabled = tapPressRefractionEnabled"))
         assertTrue(adaptiveRenderer.contains("height = height"))
         assertTrue(adaptiveRenderer.contains("indicatorHeight = indicatorHeight"))
+    }
+
+    @Test
+    fun `adaptive tabs keep beta21 liquid width without reverting non glass accessibility`() {
+        assertEquals(
+            72.dp,
+            resolveAppAdaptiveTabMinWidth(
+                requestedMinTabWidth = null,
+                liquidGlassEnabled = true,
+            ),
+        )
+        assertEquals(
+            48.dp,
+            resolveAppAdaptiveTabMinWidth(
+                requestedMinTabWidth = null,
+                liquidGlassEnabled = false,
+            ),
+        )
+        assertEquals(
+            60.dp,
+            resolveAppAdaptiveTabMinWidth(
+                requestedMinTabWidth = 60.dp,
+                liquidGlassEnabled = true,
+            ),
+        )
     }
 }

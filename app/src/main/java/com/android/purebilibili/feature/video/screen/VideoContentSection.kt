@@ -1896,8 +1896,6 @@ private fun VideoContentTabBar(
                     selectedValue = selectedTabIndex,
                     onSelectionChange = onTabSelected,
                     modifier = Modifier.fillMaxWidth(),
-                    minTabWidth = liquidChromeSpec.itemWidthDp?.dp
-                        ?: AppChromeSizeTokens.MinimumTouchTarget,
                     height = liquidChromeSpec.segmentedControlHeightDp.dp,
                     indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                     labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,

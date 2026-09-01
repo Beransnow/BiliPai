@@ -484,9 +484,9 @@ class VideoContentTabBarPolicyTest {
         val contentSource = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoContentSection.kt"
         )
-        assertTrue(
+        assertFalse(
             contentSource.contains("minTabWidth = liquidChromeSpec.itemWidthDp?.dp"),
-            "The liquid tab row must receive its reserved item width so it stays in direct-drag mode",
+            "The video tab row must inherit beta.21 liquid geometry from the shared renderer",
         )
     }
 
