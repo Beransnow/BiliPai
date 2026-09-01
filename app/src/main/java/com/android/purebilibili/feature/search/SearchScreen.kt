@@ -978,11 +978,21 @@ fun SearchScreen(
                 .globalWallpaperAwareBackground()
                 .padding(padding)
         ) {
-            val searchChromeBackdrop = rememberLayerBackdrop()
+            val searchChromeBackdrop = if (effectiveLiquidGlassEnabled) {
+                rememberLayerBackdrop()
+            } else {
+                null
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .layerBackdrop(searchChromeBackdrop)
+                    .then(
+                        if (searchChromeBackdrop != null) {
+                            Modifier.layerBackdrop(searchChromeBackdrop)
+                        } else {
+                            Modifier
+                        }
+                    )
                     .globalWallpaperAwareBackground(),
             )
             // --- 列表内容层 ---

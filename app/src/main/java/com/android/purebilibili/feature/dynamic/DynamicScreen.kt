@@ -353,11 +353,18 @@ fun DynamicScreen(
         )
     }
 
+    val appThemeConfig = com.android.purebilibili.core.ui.LocalAppThemeConfig.current
     // Dock 只采集内容用于折射，顶部 tuning 将 blur 半径固定为 0。
-    val dynamicDockBackdrop = rememberLayerBackdrop()
+    val dynamicDockBackdrop = if (appThemeConfig.liquidGlassEnabled) rememberLayerBackdrop() else null
     // 顶部高斯模糊使用独立 Haze 源；液态玻璃的 Backdrop 渐进模糊仍单独由
     // DynamicTopBarWithTabs 根据安卓原生液态玻璃开关控制。
-    val dynamicTopBarHazeState = rememberRecoverableHazeState(initialBlurEnabled = true)
+    val dynamicTopBarHazeState = if (
+        appThemeConfig.liquidGlassEnabled || appThemeConfig.headerBlurEnabled
+    ) {
+        rememberRecoverableHazeState(initialBlurEnabled = true)
+    } else {
+        null
+    }
     val scope = rememberCoroutineScope()
     val onDynamicTabSelected: (Int) -> Unit = { visibleIndex ->
         scope.launch {
@@ -759,8 +766,20 @@ fun DynamicScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .layerBackdrop(dynamicDockBackdrop)
-                                    .hazeSourceCompat(state = dynamicTopBarHazeState)
+                                    .then(
+                                        if (dynamicDockBackdrop != null) {
+                                            Modifier.layerBackdrop(dynamicDockBackdrop)
+                                        } else {
+                                            Modifier
+                                        }
+                                    )
+                                    .then(
+                                        if (dynamicTopBarHazeState != null) {
+                                            Modifier.hazeSourceCompat(state = dynamicTopBarHazeState)
+                                        } else {
+                                            Modifier
+                                        }
+                                    )
                                     .globalWallpaperAwareBackground(AppSurfaceTokens.background())
                             ) {
                             HorizontalPager(
@@ -942,8 +961,20 @@ fun DynamicScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .layerBackdrop(dynamicDockBackdrop)
-                                .hazeSourceCompat(state = dynamicTopBarHazeState)
+                                .then(
+                                    if (dynamicDockBackdrop != null) {
+                                        Modifier.layerBackdrop(dynamicDockBackdrop)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
+                                .then(
+                                    if (dynamicTopBarHazeState != null) {
+                                        Modifier.hazeSourceCompat(state = dynamicTopBarHazeState)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
                                 .globalWallpaperAwareBackground(AppSurfaceTokens.background())
                         ) {
                         HorizontalPager(
