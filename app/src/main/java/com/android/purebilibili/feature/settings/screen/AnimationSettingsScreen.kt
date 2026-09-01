@@ -432,24 +432,23 @@ fun AnimationSettingsContent(
                         )
                         if (predictiveBackStyle == BiliPaiPredictiveBackAnimationStyle.MIUIX) {
                             AppPreferenceDivider()
-                            AppSwitchPreference(
-                                icon = rememberSettingsSemanticIcon(SettingsIconRole.PREDICTIVE_BACK),
-                                title = "卡片景深返回",
-                                subtitle = if (appNavigationSettings.miuixCardBackTransitionEnabled) {
-                                    "返回时缩放当前页面并显示动态圆角"
-                                } else {
-                                    "关闭时保留当前 Miuix 默认返回效果"
-                                },
-                                checked = appNavigationSettings.miuixCardBackTransitionEnabled,
-                                onCheckedChange = { enabled ->
+                            AppSliderDialogPreference(
+                                title = "预见式返回最大进度",
+                                subtitle = "限制手指按住时的预览进度；提交后仍会完成退出",
+                                value = appNavigationSettings
+                                    .miuixPredictiveBackMaxProgressPercent
+                                    .toFloat(),
+                                onValueChange = { value ->
                                     scope.launch {
-                                        SettingsManager.setMiuixCardBackTransitionEnabled(
+                                        SettingsManager.setMiuixPredictiveBackMaxProgressPercent(
                                             context,
-                                            enabled,
+                                            value.roundToInt(),
                                         )
                                     }
                                 },
-                                iconTint = iOSTeal,
+                                valueRange = 0f..100f,
+                                steps = 99,
+                                valueFormatter = { value -> "${value.roundToInt()}%" },
                             )
                         }
                         if (predictiveBackStyle != BiliPaiPredictiveBackAnimationStyle.NONE) {

@@ -22,16 +22,20 @@ internal fun biliPaiMiuixNavTransition(
     exitDirection: BiliPaiPredictiveBackExitDirection,
     isLightBackground: Boolean,
     miuixTransitionBlurEnabled: Boolean = true,
-    miuixCardBackTransitionEnabled: Boolean = false,
+    miuixPredictiveBackMaxProgressPercent: Int =
+        MIUIX_PREDICTIVE_BACK_DEFAULT_MAX_PROGRESS_PERCENT,
+    miuixPredictiveBackProgressEnabled: Boolean = true,
 ): NavTransition {
-    val cardBackEnabled = shouldUseMiuixCardBackTransition(
+    val progressControlEnabled = shouldUseMiuixPredictiveBackProgress(
         animation = animation,
-        enabled = miuixCardBackTransitionEnabled,
+        enabled = miuixPredictiveBackProgressEnabled,
     )
+    val maxPreviewFraction =
+        miuixPredictiveBackMaxProgressPercent.coerceIn(0, 100) / 100f
     val baseTransition = when (animation) {
         BiliPaiPredictiveBackAnimationStyle.NONE -> return NoPredictiveBackTransition
-        BiliPaiPredictiveBackAnimationStyle.MIUIX -> if (cardBackEnabled) {
-            miuixCardBackNavTransition()
+        BiliPaiPredictiveBackAnimationStyle.MIUIX -> if (progressControlEnabled) {
+            miuixPredictiveBackProgressTransition(maxPreviewFraction)
         } else {
             miuixDepthNavTransition()
         }
@@ -43,11 +47,12 @@ internal fun biliPaiMiuixNavTransition(
         baseTransition = baseTransition,
         isLightBackground = isLightBackground,
         blurEnabled = miuixTransitionBlurEnabled,
-        cardBackEnabled = cardBackEnabled,
+        progressControlEnabled = progressControlEnabled,
+        maxPreviewFraction = maxPreviewFraction,
     )
 }
 
-internal fun shouldUseMiuixCardBackTransition(
+internal fun shouldUseMiuixPredictiveBackProgress(
     animation: BiliPaiPredictiveBackAnimationStyle,
     enabled: Boolean,
 ): Boolean = enabled && animation == BiliPaiPredictiveBackAnimationStyle.MIUIX
@@ -83,18 +88,19 @@ private fun realtimeCoveredBlurTransition(
     baseTransition: NavTransition,
     isLightBackground: Boolean,
     blurEnabled: Boolean,
-    cardBackEnabled: Boolean,
+    progressControlEnabled: Boolean,
+    maxPreviewFraction: Float,
 ): NavTransition {
     return object : NavTransition {
         override val motion: NavMotion
-            get() = if (cardBackEnabled) {
+            get() = if (progressControlEnabled) {
                 baseTransition.motion
             } else {
                 NavMotion.Default
             }
 
         override fun scrimFraction(scope: NavTransitionScope): Float = if (
-            cardBackEnabled
+            progressControlEnabled
         ) {
             baseTransition.scrimFraction(scope)
         } else {
@@ -110,7 +116,17 @@ private fun realtimeCoveredBlurTransition(
                 renderEffect = if (blurEnabled) {
                     val blurFrame = resolvePredictiveBackBlurFrame(
                         progress = if (scope.gesture != null || scope.settle != null) {
-                            resolveMiuixNavCoveredBlurProgress(scope.relativeDepth)
+                            val coveredDepth = if (
+                                progressControlEnabled && scope.relativeDepth > 0f
+                            ) {
+                                resolveMiuixPredictiveBackCoveredDepth(
+                                    scope = scope,
+                                    maxPreviewFraction = maxPreviewFraction,
+                                )
+                            } else {
+                                scope.relativeDepth
+                            }
+                            resolveMiuixNavCoveredBlurProgress(coveredDepth)
                         } else {
                             0f
                         },

@@ -3754,8 +3754,8 @@ fun AppNavigation(
                     predictiveBackExitDirection = predictiveBackExitDirection,
                     miuixTransitionBlurEnabled =
                         appNavigationSettings.miuixTransitionBlurEnabled,
-                    miuixCardBackTransitionEnabled =
-                        appNavigationSettings.miuixCardBackTransitionEnabled,
+                    miuixPredictiveBackMaxProgressPercent =
+                        appNavigationSettings.miuixPredictiveBackMaxProgressPercent,
                     videoSharedReturnGestureFollowEnabled =
                         appNavigationSettings.videoSharedReturnGestureFollowEnabled,
                     sourceMetadata = navigation3SourceMetadata,

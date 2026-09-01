@@ -61,12 +61,13 @@ import com.android.purebilibili.core.ui.transition.shouldUseHostOwnedVideoCardTr
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackAnimationStyle
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
+import com.android.purebilibili.navigation3.predictiveback.MIUIX_PREDICTIVE_BACK_DEFAULT_MAX_PROGRESS_PERCENT
 import com.android.purebilibili.navigation3.predictiveback.biliPaiMiuixNavTransition
 import com.android.purebilibili.navigation3.predictiveback.miuixVideoCardNavTransition
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardContentScale
 import com.android.purebilibili.navigation3.predictiveback.resolveMiuixVideoCardContentScaleForSourceLayout
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardTransitionProgress
-import com.android.purebilibili.navigation3.predictiveback.shouldUseMiuixCardBackTransition
+import com.android.purebilibili.navigation3.predictiveback.shouldUseMiuixPredictiveBackProgress
 import kotlinx.coroutines.flow.collect
 import top.yukonga.miuix.kmp.nav.core.NavBackStack
 import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
@@ -107,7 +108,8 @@ internal fun BiliPaiNavDisplayHost(
     predictiveBackExitDirection: BiliPaiPredictiveBackExitDirection =
         BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT,
     miuixTransitionBlurEnabled: Boolean = true,
-    miuixCardBackTransitionEnabled: Boolean = false,
+    miuixPredictiveBackMaxProgressPercent: Int =
+        MIUIX_PREDICTIVE_BACK_DEFAULT_MAX_PROGRESS_PERCENT,
     videoSharedReturnGestureFollowEnabled: Boolean = true,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
@@ -195,31 +197,31 @@ internal fun BiliPaiNavDisplayHost(
         predictiveBackExitDirection,
         isLightBackground,
         miuixTransitionBlurEnabled,
-        miuixCardBackTransitionEnabled,
+        miuixPredictiveBackMaxProgressPercent,
     ) {
         biliPaiMiuixNavTransition(
             animation = style,
             exitDirection = predictiveBackExitDirection,
             isLightBackground = isLightBackground,
             miuixTransitionBlurEnabled = miuixTransitionBlurEnabled,
-            miuixCardBackTransitionEnabled = miuixCardBackTransitionEnabled,
+            miuixPredictiveBackMaxProgressPercent =
+                miuixPredictiveBackMaxProgressPercent,
         )
     }
-    val cardBackExcludedTransition = remember(
+    val predictiveBackExcludedTransition = remember(
         globalTransition,
         style,
         predictiveBackExitDirection,
         isLightBackground,
         miuixTransitionBlurEnabled,
-        miuixCardBackTransitionEnabled,
     ) {
-        if (shouldUseMiuixCardBackTransition(style, miuixCardBackTransitionEnabled)) {
+        if (shouldUseMiuixPredictiveBackProgress(style, enabled = true)) {
             biliPaiMiuixNavTransition(
                 animation = BiliPaiPredictiveBackAnimationStyle.MIUIX,
                 exitDirection = predictiveBackExitDirection,
                 isLightBackground = isLightBackground,
                 miuixTransitionBlurEnabled = miuixTransitionBlurEnabled,
-                miuixCardBackTransitionEnabled = false,
+                miuixPredictiveBackProgressEnabled = false,
             )
         } else {
             globalTransition
@@ -241,7 +243,7 @@ internal fun BiliPaiNavDisplayHost(
         videoSharedTransitionDurationMillis,
         heroMotion,
         videoCardTransitionProgress,
-        cardBackExcludedTransition,
+        predictiveBackExcludedTransition,
         videoCardContentScale,
         videoSharedReturnGestureFollowEnabled,
     ) {
@@ -250,7 +252,7 @@ internal fun BiliPaiNavDisplayHost(
                 sourceBounds = sourceMetadata.sourceBounds,
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
                 durationMillis = videoSharedTransitionDurationMillis,
-                fallback = cardBackExcludedTransition,
+                fallback = predictiveBackExcludedTransition,
                 progress = videoCardTransitionProgress,
                 contentScale = videoCardContentScale,
                 gestureFollowEnabled = videoSharedReturnGestureFollowEnabled,
@@ -258,7 +260,7 @@ internal fun BiliPaiNavDisplayHost(
                 returningProvider = returningProvider,
             )
         } else {
-            cardBackExcludedTransition
+            predictiveBackExcludedTransition
         }
     }
     val fullscreenVideoCardTransition = remember(
@@ -268,7 +270,7 @@ internal fun BiliPaiNavDisplayHost(
         videoSharedTransitionDurationMillis,
         heroMotion,
         videoCardTransitionProgress,
-        cardBackExcludedTransition,
+        predictiveBackExcludedTransition,
         videoSharedReturnGestureFollowEnabled,
     ) {
         if (cardMorphAvailable) {
@@ -276,7 +278,7 @@ internal fun BiliPaiNavDisplayHost(
                 sourceBounds = sourceMetadata.sourceBounds,
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
                 durationMillis = videoSharedTransitionDurationMillis,
-                fallback = cardBackExcludedTransition,
+                fallback = predictiveBackExcludedTransition,
                 progress = videoCardTransitionProgress,
                 contentScale = MiuixVideoCardContentScale.CropCenter,
                 gestureFollowEnabled = videoSharedReturnGestureFollowEnabled,
@@ -284,7 +286,7 @@ internal fun BiliPaiNavDisplayHost(
                 returningProvider = returningProvider,
             )
         } else {
-            cardBackExcludedTransition
+            predictiveBackExcludedTransition
         }
     }
 
@@ -562,7 +564,7 @@ internal fun BiliPaiNavDisplayHost(
         ) {
             biliPaiNavEntries(
                 swipeBackDirection = swipeBackDirection,
-                cardBackExcludedTransition = cardBackExcludedTransition,
+                predictiveBackExcludedTransition = predictiveBackExcludedTransition,
                 videoCardTransition = videoCardTransition,
                 fullscreenVideoCardTransition = fullscreenVideoCardTransition,
             ) { key ->

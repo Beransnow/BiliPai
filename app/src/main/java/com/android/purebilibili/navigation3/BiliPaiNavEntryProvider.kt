@@ -7,7 +7,7 @@ import top.yukonga.miuix.kmp.nav.transition.NavTransition
 
 internal fun NavEntryBuilder.biliPaiNavEntries(
     swipeBackDirection: NavSwipeDirection,
-    cardBackExcludedTransition: NavTransition,
+    predictiveBackExcludedTransition: NavTransition,
     videoCardTransition: NavTransition,
     fullscreenVideoCardTransition: NavTransition,
     content: @Composable (BiliPaiNavKey) -> Unit,
@@ -19,7 +19,7 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     // Search owns a bottom-search-slot morph. A generic horizontal swipe would turn the whole
     // destination into a shrinking card and conflict with that spatial relationship.
     entry<BiliPaiNavKey.Search>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
@@ -37,12 +37,12 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.PermissionSettings>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.PluginsSettings>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.JsPluginContent>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
     entry<BiliPaiNavKey.ExternalMedia>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
@@ -65,7 +65,7 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.Following>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.DownloadList>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.OfflineVideoPlayer>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
@@ -87,24 +87,24 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
         content = content,
     )
     entry<BiliPaiNavKey.AudioMode>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
     entry<BiliPaiNavKey.SeasonSeriesDetail>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.Bangumi>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.BangumiPlayer>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
     entry<BiliPaiNavKey.MusicDetail>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
     entry<BiliPaiNavKey.NativeMusic>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
@@ -118,14 +118,14 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.Space>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.Category>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.Live>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
     entry<BiliPaiNavKey.BangumiDetail>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.BangumiReview>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.Web>(
-        transition = cardBackExcludedTransition,
+        transition = predictiveBackExcludedTransition,
         swipeDismiss = NavSwipeDirection.None,
         content = content,
     )
