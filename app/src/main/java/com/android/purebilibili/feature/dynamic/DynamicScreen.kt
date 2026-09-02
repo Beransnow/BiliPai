@@ -549,12 +549,16 @@ fun DynamicScreen(
             val state = activeListState ?: return@derivedStateOf false
             val layoutInfo = state.layoutInfo
             val totalItems = layoutInfo.totalItemsCount
-            val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            allowAutomaticLoadMore &&
-                totalItems > 0 &&
-                lastVisibleItemIndex >= totalItems - 3 &&
-                !activeLoading &&
-                currentHasMore
+            // Staggered-grid visible items are lane-oriented; their list order is not a
+            // pagination contract. Use the furthest adapter index across every visible lane.
+            val furthestVisibleItemIndex = layoutInfo.visibleItemsInfo.maxOfOrNull { it.index }
+            shouldLoadMoreDynamicFeed(
+                furthestVisibleItemIndex = furthestVisibleItemIndex,
+                totalItemsCount = totalItems,
+                allowAutomaticLoadMore = allowAutomaticLoadMore,
+                isLoading = activeLoading,
+                hasMore = currentHasMore,
+            )
         }
     }
     //  [埋点] 页面浏览追踪
