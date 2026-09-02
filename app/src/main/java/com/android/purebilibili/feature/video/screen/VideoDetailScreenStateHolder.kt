@@ -4319,7 +4319,24 @@ internal fun VideoDetailScreenStateHolder(
                                         0.dp
                                     },
                                 )
-                                .background(Color.Black)  // 黑色背景
+                                .background(
+                                    if (
+                                        entryOwnsMiuixCardTransition &&
+                                        shouldPunchThroughFlyingMediaToNativeListCard(
+                                            phase = videoCardDepthBackgroundState.phaseProvider(),
+                                            isReturnGestureInProgress =
+                                                videoCardDepthBackgroundState
+                                                    .isReturnGestureInProgressProvider(),
+                                            isGestureRestoreInProgress =
+                                                videoCardDepthBackgroundState
+                                                    .isGestureRestoreInProgressProvider(),
+                                        )
+                                    ) {
+                                        Color.Transparent
+                                    } else {
+                                        Color.Black
+                                    }
+                                )
                                 //  [PiP修复] 捕获视频播放器在屏幕上的位置
                                 .onGloballyPositioned { layoutCoordinates ->
                                     // Morph height changes every frame. PiP and system-bar bounds only need
@@ -4482,7 +4499,18 @@ internal fun VideoDetailScreenStateHolder(
                             )
                             }
                             }
-                            if (miuixVisualAssetsActive) {
+                            if (
+                                miuixVisualAssetsActive &&
+                                shouldDrawFlyingReconstructedSourceChrome(
+                                    phase = videoCardDepthBackgroundState.phaseProvider(),
+                                    isReturnGestureInProgress =
+                                        videoCardDepthBackgroundState
+                                            .isReturnGestureInProgressProvider(),
+                                    isGestureRestoreInProgress =
+                                        videoCardDepthBackgroundState
+                                            .isGestureRestoreInProgressProvider(),
+                                )
+                            ) {
                                 VideoDetailReturnCoverChrome(
                                     sourceChromeSnapshot = miuixLandingState.sourceChromeSnapshot,
                                     sourceScale = landingLayoutForMedia?.sourceScale ?: 1f,
@@ -4853,8 +4881,8 @@ internal fun VideoDetailScreenStateHolder(
                     }  // Detail body
                     }  // 📱 手机竖屏布局结束（Column）
                     }  // phone portrait branch of useTabletLayout
-                    // The Miuix entry owns the complete flying card. Rebuild the click-time
-                    // information region here while the retained list card is transparent.
+                    // Opening still paints a card-shaped facade (list card is hidden).
+                    // Return punches through to the stationary list card instead.
                     val miuixCardTransitionState =
                         com.android.purebilibili.core.ui.transition
                             .LocalMiuixVideoCardTransitionState.current
@@ -4866,6 +4894,15 @@ internal fun VideoDetailScreenStateHolder(
                         miuixVisualAssetsActive &&
                         miuixCardTransitionState.enabled &&
                         !suppressPhoneDetailBodyForDirectPortrait &&
+                        shouldDrawFlyingReconstructedSourceChrome(
+                            phase = videoCardDepthBackgroundState.phaseProvider(),
+                            isReturnGestureInProgress =
+                                videoCardDepthBackgroundState
+                                    .isReturnGestureInProgressProvider(),
+                            isGestureRestoreInProgress =
+                                videoCardDepthBackgroundState
+                                    .isGestureRestoreInProgressProvider(),
+                        ) &&
                         (sourceCardInfo != null ||
                             miuixCardTransitionState.sourceChromeSnapshot != null)
                     ) {

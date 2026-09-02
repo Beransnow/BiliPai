@@ -37,7 +37,8 @@ internal object VideoCardTransitionVisualTimeline {
     // The frozen background page starts yielding before the flying card's internal content morph.
     // This only refreshes the backdrop; it never reveals the source card as a stationary substitute.
     const val WHOLE_SOURCE_CARD_RETURN_START = 0.55f
-    const val WHOLE_SOURCE_CARD_RETURN_END = 0.90f
+    // Must equal [MEDIA_RETURN_START] so the opening snapshot is gone before native chrome.
+    const val WHOLE_SOURCE_CARD_RETURN_END = 0.82f
     // Live player → cover. Keep the live frame dominant until the card is very close to landing.
     const val MEDIA_RETURN_START = 0.82f
     const val MEDIA_RETURN_END = 0.98f
@@ -69,8 +70,9 @@ internal fun resolveVisualProgress(
 /**
  * Frozen source-page snapshot release progress during a Miuix return.
  *
- * This releases the stale depth snapshot so the live page and haze sources can refresh behind the
- * flying card. It does not own card content; the Miuix flying detail entry owns cover/title/stat.
+ * This releases the stale depth snapshot so the live list card can punch through the flying
+ * entry. It must finish before the live → cover window, otherwise the opening-time snapshot
+ * (titles hidden) covers the native chrome.
  */
 internal fun resolveVideoCardWholeSourceReturnAlpha(
     morphDepthProgress: Float,

@@ -55,6 +55,32 @@ internal fun shouldConsumeMiuixTransitionVisualAssets(
         )
 }
 
+/**
+ * Handwritten flying chrome/cover badges exist only while the list card is hidden
+ * (opening). Returns use the stationary list card through the transparent flying body.
+ */
+internal fun shouldDrawFlyingReconstructedSourceChrome(
+    phase: VideoCardTransitionBackgroundPhase,
+    isReturnGestureInProgress: Boolean,
+    isGestureRestoreInProgress: Boolean = false,
+): Boolean {
+    if (isReturnGestureInProgress || isGestureRestoreInProgress) return false
+    return phase == VideoCardTransitionBackgroundPhase.OPENING
+}
+
+/** Player slot must not paint an opaque black plate over the stationary list info. */
+internal fun shouldPunchThroughFlyingMediaToNativeListCard(
+    phase: VideoCardTransitionBackgroundPhase,
+    isReturnGestureInProgress: Boolean,
+    isGestureRestoreInProgress: Boolean = false,
+): Boolean {
+    return !shouldDrawFlyingReconstructedSourceChrome(
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+        isGestureRestoreInProgress = isGestureRestoreInProgress,
+    ) && phase != VideoCardTransitionBackgroundPhase.IDLE
+}
+
 internal fun resolveForceCoverOnlyForReturn(
     forceCoverOnlyOnReturn: Boolean,
     transitionEnabled: Boolean = true,
@@ -259,11 +285,11 @@ internal fun resolveVideoDetailReturnMediaFrame(
     if (!liveReturnMorph) {
         return VideoDetailReturnMediaFrame(coverAlpha = 1f, playerAlpha = 0f)
     }
-    // Player and resident cover are two contents of the same flying media slot. Complementary
-    // alphas make the live frame transform into the cover without exposing the page underneath.
+    // Live frame fades out in the landing window. The stationary list cover — not a
+    // reconstructed flying cover — is what remains in the cover slot.
     val coverTakeover = resolveVideoCardLiveReturnVisualHandoffAlpha(transitionProgress)
     return VideoDetailReturnMediaFrame(
-        coverAlpha = coverTakeover,
+        coverAlpha = 0f,
         playerAlpha = 1f - coverTakeover,
     )
 }

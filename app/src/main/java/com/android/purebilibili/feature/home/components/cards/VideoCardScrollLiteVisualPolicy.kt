@@ -126,8 +126,8 @@ internal fun resolveHomeCardStationaryRevealAlpha(
 /**
  * 来源卡封面在返回期间的可见 alpha。
  *
- * 保留图片请求与布局；Miuix 飞行 entry 拥有像素时列表封面保持 0，卸层后再亮，
- * 避免与飞行层同窗双显导致落位跳动。
+ * 实时画面仍由飞行媒体槽持有，直到 live → cover 窗口；该窗口内列表真卡封面
+ * 渐显，落位后不再用手写封面层。
  */
 internal fun resolveHomeCardReturnSourceVisualAlpha(
     useCardContainerSharedBounds: Boolean,
@@ -147,8 +147,12 @@ internal fun resolveHomeCardReturnSourceVisualAlpha(
         isSharedTransitionActive = isSharedTransitionActive,
         transitionBackgroundProgress = transitionBackgroundProgress,
     )
+    if (isReturnContext) {
+        if (preferWholeCardReturn) return 1f
+        return resolveVideoCardLiveReturnVisualHandoffAlpha(transitionBackgroundProgress)
+    }
     return resolveHomeCardStationaryRevealAlpha(
-        isReturnContext = isReturnContext,
+        isReturnContext = false,
         preferWholeCardReturn = preferWholeCardReturn,
         transitionBackgroundPhase = transitionBackgroundPhase,
         isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
@@ -253,14 +257,9 @@ internal fun resolveHomeCardChromeAlphaDuringShellReturnMorph(
     )
 
     if (isReturnContext) {
-        return resolveHomeCardStationaryRevealAlpha(
-            isReturnContext = true,
-            preferWholeCardReturn = preferWholeCardReturn,
-            transitionBackgroundPhase = transitionBackgroundPhase,
-            isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
-            isSharedTransitionActive = isSharedTransitionActive,
-            transitionBackgroundProgress = transitionBackgroundProgress,
-        )
+        // Native list info stays visible. The flying entry punches through its
+        // transparent body so these pixels are the stationary card, not a reconstruction.
+        return 1f
     }
 
     // 进场：shared 飞行或 OPENING 时藏字

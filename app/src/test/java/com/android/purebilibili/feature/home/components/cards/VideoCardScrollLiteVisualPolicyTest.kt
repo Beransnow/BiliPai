@@ -292,7 +292,7 @@ class VideoCardScrollLiteVisualPolicyTest {
 
     @Test
     fun homeCardSourceVisual_staysHiddenWhileFlyingEntryOwnsReturn() {
-        // Entire RETURNING morph: list cover stays 0 (flying entry paints the card).
+        // Cover stays 0 until the live → cover window, then the stationary list cover fades in.
         assertEquals(
             0f,
             resolveHomeCardReturnSourceVisualAlpha(
@@ -306,7 +306,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0f,
+            0.5f,
             resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -318,7 +318,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -449,9 +449,9 @@ class VideoCardScrollLiteVisualPolicyTest {
                 transitionBackgroundProgress = 0.4f,
             )
         )
-        // The flying entry owns both chrome and cover during return.
+        // Native list info is visible during return; cover waits for the live handoff window.
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -464,7 +464,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0f,
+            0.5f,
             resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -481,7 +481,7 @@ class VideoCardScrollLiteVisualPolicyTest {
     @Test
     fun homeCardChromeStaysHiddenUntilReverseReturnCompletes() {
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -492,7 +492,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,

@@ -3760,7 +3760,7 @@ fun AppNavigation(
                         appNavigationSettings.videoSharedReturnGestureFollowEnabled,
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
-                    // Miuix 飞行 entry 独占过渡像素；列表真卡只保留布局，落位完成后再显示。
+                    // List cover waits for the live handoff window; list info is native throughout return.
                     preferWholeCardReturn = false,
                     onBack = { performSystemBackAction() },
                     onPrepareVideoCardSharedReturn = {

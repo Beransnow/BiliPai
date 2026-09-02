@@ -206,10 +206,46 @@ class VideoDetailReturnCoverPolicyTest {
             .substringBefore("VideoDetailReturnCoverChrome(")
             .takeLast(500)
         assertTrue(coverChromeGuard.contains("if (miuixVisualAssetsActive)"))
+        assertTrue(coverChromeGuard.contains("shouldDrawFlyingReconstructedSourceChrome("))
         val sourceChromeGuard = holder
             .substringBefore("VideoDetailReturnSourceCardChrome(")
             .takeLast(1_000)
         assertTrue(sourceChromeGuard.contains("miuixVisualAssetsActive"))
+        assertTrue(sourceChromeGuard.contains("shouldDrawFlyingReconstructedSourceChrome("))
+    }
+
+    @Test
+    fun reconstructedFlyingChromeOnlyPaintsDuringOpening() {
+        assertTrue(
+            shouldDrawFlyingReconstructedSourceChrome(
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isReturnGestureInProgress = false,
+            )
+        )
+        assertFalse(
+            shouldDrawFlyingReconstructedSourceChrome(
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = false,
+            )
+        )
+        assertFalse(
+            shouldDrawFlyingReconstructedSourceChrome(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                isReturnGestureInProgress = true,
+            )
+        )
+        assertTrue(
+            shouldPunchThroughFlyingMediaToNativeListCard(
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = false,
+            )
+        )
+        assertFalse(
+            shouldPunchThroughFlyingMediaToNativeListCard(
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isReturnGestureInProgress = false,
+            )
+        )
     }
 
     @Test
@@ -698,9 +734,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `committed live return transforms player into cover inside the flying card`() {
-        // 两层使用互补 alpha，属于同一不透明媒体槽，不会透出列表原位内容。
+        // Flying cover stays empty; the stationary list cover is the landing cover.
         assertEquals(
-            0.5f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0.1f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -710,7 +746,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0.02f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -720,7 +756,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0f, true, true, liveReturnMorph = true),
             0.0001f,
         )

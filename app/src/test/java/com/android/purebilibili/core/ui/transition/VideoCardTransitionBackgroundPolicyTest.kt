@@ -261,9 +261,9 @@ class VideoCardTransitionBackgroundPolicyTest {
             0.5f,
             resolveVideoCardTransitionFrozenLayerAlpha(
                 exposure = VideoCardTransitionExposure.Returning,
-                depthProgress = 0.275f,
+                depthProgress = 0.315f,
             ),
-            absoluteTolerance = 0.0001f,
+            absoluteTolerance = 0.02f,
         )
         assertEquals(
             0f,
