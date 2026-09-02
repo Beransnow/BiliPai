@@ -4484,7 +4484,6 @@ internal fun VideoDetailScreenStateHolder(
                             }
                             if (
                                 miuixVisualAssetsActive &&
-                                CardPositionManager.lastClickedNativeCardLayer == null &&
                                 shouldDrawFlyingReconstructedSourceChrome(
                                     phase = videoCardDepthBackgroundState.phaseProvider(),
                                     isReturnGestureInProgress =
@@ -4498,6 +4497,12 @@ internal fun VideoDetailScreenStateHolder(
                                 VideoDetailReturnCoverChrome(
                                     sourceChromeSnapshot = miuixLandingState.sourceChromeSnapshot,
                                     sourceScale = landingLayoutForMedia?.sourceScale ?: 1f,
+                                    inverseScaleXProvider = {
+                                        returnMediaInverseScaleProvider().scaleX
+                                    },
+                                    inverseScaleYProvider = {
+                                        returnMediaInverseScaleProvider().scaleY
+                                    },
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .videoDetailReturnMediaLayout(

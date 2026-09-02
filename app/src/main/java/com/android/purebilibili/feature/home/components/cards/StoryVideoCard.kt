@@ -385,6 +385,11 @@ internal fun StoryVideoCard(
                 contentScale = ContentScale.Crop
             )
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(nativeCardSnapshot.coverOverlayModifier),
+            ) {
             if (premiumBadgeLabel != null) {
                 HomeVideoBadgePill(
                     style = badgeStylePolicy.coverStyle,
@@ -419,6 +424,7 @@ internal fun StoryVideoCard(
                         .align(Alignment.BottomEnd)
                         .padding(AppSpacingTokens.Small + AppSpacingTokens.Micro)
                 )
+            }
             }
         }
         

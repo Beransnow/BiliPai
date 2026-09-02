@@ -68,6 +68,13 @@ object CardPositionManager {
     /** Frozen display list of the stationary card; drawn with drawLayer on the flying entry. */
     internal var lastClickedNativeCardLayer: GraphicsLayer? = null
         private set
+
+    /**
+     * Frozen cover overlays (gradient, play/danmaku, duration) without the thumbnail.
+     * Drawn over the live flying cover so stats-on-cover cards keep their rest chrome.
+     */
+    internal var lastClickedNativeCoverOverlayLayer: GraphicsLayer? = null
+        private set
     
     /**
      *  是否是单列卡片（故事卡片）
@@ -113,6 +120,7 @@ object CardPositionManager {
         lastClickedVideoSourceLayout = VideoCardSourceLayout.COVER_ONLY
         lastClickedVideoSourceChromeSnapshot = null
         lastClickedNativeCardLayer = null
+        lastClickedNativeCoverOverlayLayer = null
         lastClickedCardBounds = bounds
         lastScreenDensity = density
         isSingleColumnCard = isSingleColumn
@@ -182,6 +190,10 @@ object CardPositionManager {
     internal fun recordNativeCardLayer(layer: GraphicsLayer) {
         lastClickedNativeCardLayer = layer
     }
+
+    internal fun recordNativeCoverOverlayLayer(layer: GraphicsLayer) {
+        lastClickedNativeCoverOverlayLayer = layer
+    }
     
     /**
      * 清除记录的位置
@@ -196,6 +208,7 @@ object CardPositionManager {
         lastClickedVideoSourceLayout = VideoCardSourceLayout.COVER_ONLY
         lastClickedVideoSourceChromeSnapshot = null
         lastClickedNativeCardLayer = null
+        lastClickedNativeCoverOverlayLayer = null
     }
 
     /**

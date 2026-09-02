@@ -70,6 +70,12 @@ internal fun shouldDrawFlyingReconstructedSourceChrome(
         phase == VideoCardTransitionBackgroundPhase.HELD
 }
 
+/** Frozen cover overlay pixels are usable only after the list card actually recorded them. */
+internal fun shouldDrawNativeCoverOverlay(
+    overlayWidthPx: Float,
+    overlayHeightPx: Float,
+): Boolean = overlayWidthPx > 1f && overlayHeightPx > 1f
+
 /** @return false: list pixels cannot show through a Miuix flying clip. */
 internal fun shouldPunchThroughFlyingMediaToNativeListCard(
     phase: VideoCardTransitionBackgroundPhase,

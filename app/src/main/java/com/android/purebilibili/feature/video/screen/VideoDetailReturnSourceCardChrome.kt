@@ -466,7 +466,32 @@ internal fun VideoDetailReturnCoverChrome(
     sourceChromeSnapshot: VideoCardSourceChromeSnapshot?,
     sourceScale: Float,
     modifier: Modifier = Modifier,
+    inverseScaleXProvider: () -> Float = {
+        1f / sourceScale.coerceIn(0.01f, 1f)
+    },
+    inverseScaleYProvider: () -> Float = inverseScaleXProvider,
 ) {
+    val overlayLayer = CardPositionManager.lastClickedNativeCoverOverlayLayer
+    if (
+        overlayLayer != null &&
+        shouldDrawNativeCoverOverlay(
+            overlayWidthPx = overlayLayer.size.width.toFloat(),
+            overlayHeightPx = overlayLayer.size.height.toFloat(),
+        )
+    ) {
+        Box(
+            modifier = modifier.drawWithContent {
+                scale(
+                    scaleX = inverseScaleXProvider(),
+                    scaleY = inverseScaleYProvider(),
+                    pivot = Offset.Zero,
+                ) {
+                    drawLayer(overlayLayer)
+                }
+            },
+        )
+        return
+    }
     val snapshot = sourceChromeSnapshot ?: return
     if (!snapshot.coverPresentation.hasVisibleChrome()) return
     val model = resolveVideoDetailReturnSourceCardChromeModel(

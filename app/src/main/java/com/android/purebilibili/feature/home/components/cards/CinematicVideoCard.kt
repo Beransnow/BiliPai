@@ -328,6 +328,11 @@ fun CinematicVideoCard(
                 )
             }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(nativeCardSnapshot.coverOverlayModifier),
+            ) {
             // 2. 渐变遮罩
             Box(
                 modifier = Modifier
@@ -428,6 +433,7 @@ fun CinematicVideoCard(
                         )
                     )
                 }
+            }
             }
         }
         

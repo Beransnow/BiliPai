@@ -101,6 +101,7 @@ import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
+import com.android.purebilibili.core.ui.transition.captureNativeCoverOverlayLayer
 import com.android.purebilibili.core.ui.transition.captureNativeVideoCardImage
 import com.android.purebilibili.core.ui.transition.recordNativeVideoCardLayer
 import com.android.purebilibili.core.ui.transition.rememberNativeVideoCardLayer
@@ -796,6 +797,7 @@ internal fun ElegantVideoCard(
     val hasOverflowMenu = onDismiss != null || onWatchLater != null
     val hasTrailingCardAction = onUnfavorite != null || hasOverflowMenu
     val nativeCardLayer = rememberNativeVideoCardLayer()
+    val nativeCoverOverlayLayer = rememberNativeVideoCardLayer()
     var freezeNativeCardLayer by remember(video.bvid) { mutableStateOf(false) }
     
     val triggerCardClick = {
@@ -885,6 +887,7 @@ internal fun ElegantVideoCard(
             )
             freezeNativeCardLayer = true
             captureNativeVideoCardImage(nativeCardLayer)
+            captureNativeCoverOverlayLayer(nativeCoverOverlayLayer)
         }
         onClick(video.bvid, video.cid)
     }
@@ -1144,6 +1147,14 @@ internal fun ElegantVideoCard(
                 alignment = Alignment.Center,
             )
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .recordNativeVideoCardLayer(
+                        layer = nativeCoverOverlayLayer,
+                        freeze = freezeNativeCardLayer,
+                    ),
+            ) {
             if (premiumBadgeLabel != null) {
                 HomeVideoBadgePill(
                     style = badgeStylePolicy.coverStyle,
@@ -1399,7 +1410,8 @@ internal fun ElegantVideoCard(
                     )
                 }
             }
-            
+            }
+
         }
         
         val infoSurfaceShape = remember(cardCornerRadius) {

@@ -553,6 +553,8 @@ class VideoSharedTransitionPolicyTest {
         assertTrue(homeCardSource.contains("infoContainerModifier.videoCardShellReturnChromeAlpha"))
         assertTrue(homeCardSource.contains("recordNativeVideoCardLayer("))
         assertTrue(homeCardSource.contains("captureNativeVideoCardImage(nativeCardLayer)"))
+        assertTrue(homeCardSource.contains("captureNativeCoverOverlayLayer(nativeCoverOverlayLayer)"))
+        assertTrue(homeCardSource.contains("nativeCoverOverlayLayer"))
         assertFalse(
             Regex(
                 """videoCardShellSharedBoundsOrEmpty\([\s\S]{0,400}?\)\s*\.graphicsLayer"""

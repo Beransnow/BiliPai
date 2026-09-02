@@ -379,7 +379,12 @@ fun GlassVideoCard(
                                 .fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
-                        
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(nativeCardSnapshot.coverOverlayModifier),
+                        ) {
                         //  底部渐变遮罩
                         Box(
                             modifier = Modifier
@@ -435,6 +440,7 @@ fun GlassVideoCard(
                                     modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro, vertical = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2)
                                 )
                             }
+                        }
                         }
                     }
                 }

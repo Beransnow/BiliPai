@@ -2957,6 +2957,11 @@ private fun SpaceHomeVideoCard(
                     .aspectRatio(coverAspectRatio)
             )
 
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .then(nativeCardSnapshot.coverOverlayModifier),
+            ) {
             if (!badgeLabel.isNullOrBlank()) {
                 AppSurface(
                     modifier = Modifier
@@ -3015,6 +3020,7 @@ private fun SpaceHomeVideoCard(
                     color = MaterialTheme.colorScheme.primary,
                     trackColor = Color.White.copy(alpha = 0.28f)
                 )
+            }
             }
         }
 

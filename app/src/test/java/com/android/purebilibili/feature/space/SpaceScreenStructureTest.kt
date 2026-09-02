@@ -111,6 +111,7 @@ class SpaceScreenStructureTest {
             assertTrue(card.contains("nativeCardSnapshot.modifier"))
             assertTrue(card.contains("nativeCardSnapshot.capture()"))
         }
+        assertTrue(homeCard.contains("nativeCardSnapshot.coverOverlayModifier"))
     }
 
     @Test

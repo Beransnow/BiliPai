@@ -71,6 +71,9 @@ class VideoDetailReturnCoverPolicyTest {
 
         assertEquals(coverPresentation, model?.coverPresentation)
         assertEquals(2f, resolveVideoDetailReturnCoverChromeDensityScale(0.5f), 0.001f)
+        assertTrue(shouldDrawNativeCoverOverlay(overlayWidthPx = 320f, overlayHeightPx = 180f))
+        assertFalse(shouldDrawNativeCoverOverlay(overlayWidthPx = 0f, overlayHeightPx = 180f))
+        assertFalse(shouldDrawNativeCoverOverlay(overlayWidthPx = 320f, overlayHeightPx = 1f))
     }
 
     @Test
@@ -202,7 +205,6 @@ class VideoDetailReturnCoverPolicyTest {
         assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
         assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
         assertTrue(holder.contains("alpha = flyingSourceChromeAlphaProvider()"))
-        assertTrue(holder.contains("CardPositionManager.lastClickedNativeCardLayer == null"))
         val chrome = File(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailReturnSourceCardChrome.kt",
         ).takeIf { it.isFile }?.readText()
@@ -212,11 +214,14 @@ class VideoDetailReturnCoverPolicyTest {
         assertTrue(chrome.contains("nativeInfoSlot("))
         assertTrue(chrome.contains("widthPx * inverse.scaleX"))
         assertTrue(chrome.contains("heightPx * inverse.scaleY"))
+        assertTrue(chrome.contains("lastClickedNativeCoverOverlayLayer"))
+        assertTrue(chrome.contains("shouldDrawNativeCoverOverlay("))
         val coverChromeGuard = holder
             .substringBefore("VideoDetailReturnCoverChrome(")
             .takeLast(500)
         assertTrue(coverChromeGuard.contains("if (miuixVisualAssetsActive)"))
         assertTrue(coverChromeGuard.contains("shouldDrawFlyingReconstructedSourceChrome("))
+        assertFalse(coverChromeGuard.contains("lastClickedNativeCardLayer == null"))
         val sourceChromeGuard = holder
             .substringBefore("VideoDetailReturnSourceCardChrome(")
             .takeLast(1_000)

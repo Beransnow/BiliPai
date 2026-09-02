@@ -35,24 +35,36 @@ internal fun captureNativeVideoCardImage(
     CardPositionManager.recordNativeCardLayer(layer)
 }
 
+internal fun captureNativeCoverOverlayLayer(
+    layer: GraphicsLayer,
+) {
+    CardPositionManager.recordNativeCoverOverlayLayer(layer)
+}
+
 @Composable
 internal fun rememberNativeVideoCardLayer() = rememberGraphicsLayer()
 
 internal class NativeVideoCardSnapshotController(
     val modifier: Modifier,
+    val coverOverlayModifier: Modifier,
     val capture: () -> Unit,
 )
 
 @Composable
 internal fun rememberNativeVideoCardSnapshotController(key: Any): NativeVideoCardSnapshotController {
     val layer = rememberNativeVideoCardLayer()
+    val coverOverlayLayer = rememberNativeVideoCardLayer()
     val freezeState = remember(key) { mutableStateOf(false) }
-    val modifier = Modifier.recordNativeVideoCardLayer(layer, freezeState.value)
     return NativeVideoCardSnapshotController(
-        modifier = modifier,
+        modifier = Modifier.recordNativeVideoCardLayer(layer, freezeState.value),
+        coverOverlayModifier = Modifier.recordNativeVideoCardLayer(
+            coverOverlayLayer,
+            freezeState.value,
+        ),
         capture = {
             freezeState.value = true
             captureNativeVideoCardImage(layer)
+            captureNativeCoverOverlayLayer(coverOverlayLayer)
         },
     )
 }
