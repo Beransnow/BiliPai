@@ -292,7 +292,7 @@ class VideoCardScrollLiteVisualPolicyTest {
 
     @Test
     fun homeCardSourceVisual_staysHiddenWhileFlyingEntryOwnsReturn() {
-        // Cover stays 0 until the live → cover window, then the stationary list cover fades in.
+        // Cover stays 0 until the flying entry unloads; the flying media slot owns those pixels.
         assertEquals(
             0f,
             resolveHomeCardReturnSourceVisualAlpha(
@@ -306,7 +306,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0.5f,
+            0f,
             resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -318,7 +318,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -464,7 +464,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0.5f,
+            0f,
             resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,

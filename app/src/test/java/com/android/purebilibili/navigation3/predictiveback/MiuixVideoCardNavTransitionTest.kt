@@ -1,5 +1,6 @@
 package com.android.purebilibili.navigation3.predictiveback
 
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.TransformOrigin
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import java.io.File
@@ -33,6 +34,15 @@ class MiuixVideoCardNavTransitionTest {
         assertEquals(spec.commitStiffness, (returning.commit as NavSettleSpec.Spring).stiffness)
         assertEquals(spec.cancelStiffness, (returning.cancel as NavSettleSpec.Spring).stiffness)
         assertEquals(1f, (returning.commit as NavSettleSpec.Spring).dampingRatio)
+    }
+
+    @Test
+    fun returnLandsOnCoverBoundsSoListInfoIsOutsideTheFlyingClip() {
+        val card = Rect(100f, 200f, 500f, 700f)
+        val cover = Rect(100f, 200f, 500f, 440f)
+        assertEquals(card, resolveMiuixVideoCardLandingBounds(card, cover, returning = false))
+        assertEquals(cover, resolveMiuixVideoCardLandingBounds(card, cover, returning = true))
+        assertEquals(card, resolveMiuixVideoCardLandingBounds(card, null, returning = true))
     }
 
     @Test

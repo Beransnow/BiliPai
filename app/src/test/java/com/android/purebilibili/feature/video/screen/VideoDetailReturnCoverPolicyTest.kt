@@ -734,9 +734,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `committed live return transforms player into cover inside the flying card`() {
-        // Flying cover stays empty; the stationary list cover is the landing cover.
+        // Flying media slot stays opaque so the cover clip is never an empty plate.
         assertEquals(
-            0f,
+            0.5f,
             resolveVideoDetailReturnCoverAlpha(0.1f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -746,7 +746,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0.02f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -756,7 +756,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0f, true, true, liveReturnMorph = true),
             0.0001f,
         )

@@ -17,6 +17,7 @@ class BiliPaiNavDisplayHostStructureTest {
         assertTrue(source.contains("snapshotFlow { videoCardTransitionProgress.settleStateOrNull() }"))
         assertFalse(source.contains("animateFallbackTo("))
         assertTrue(source.contains("LocalMiuixVideoCardTransitionState provides miuixCardTransitionState"))
+        assertTrue(source.contains("sourceCoverBounds = sourceMetadata.sourceCoverBounds"))
         assertTrue(source.contains("ProvideMiuixNavViewModelApplicationExtras(application)"))
     }
 

@@ -4319,24 +4319,7 @@ internal fun VideoDetailScreenStateHolder(
                                         0.dp
                                     },
                                 )
-                                .background(
-                                    if (
-                                        entryOwnsMiuixCardTransition &&
-                                        shouldPunchThroughFlyingMediaToNativeListCard(
-                                            phase = videoCardDepthBackgroundState.phaseProvider(),
-                                            isReturnGestureInProgress =
-                                                videoCardDepthBackgroundState
-                                                    .isReturnGestureInProgressProvider(),
-                                            isGestureRestoreInProgress =
-                                                videoCardDepthBackgroundState
-                                                    .isGestureRestoreInProgressProvider(),
-                                        )
-                                    ) {
-                                        Color.Transparent
-                                    } else {
-                                        Color.Black
-                                    }
-                                )
+                                .background(Color.Black)
                                 //  [PiP修复] 捕获视频播放器在屏幕上的位置
                                 .onGloballyPositioned { layoutCoordinates ->
                                     // Morph height changes every frame. PiP and system-bar bounds only need

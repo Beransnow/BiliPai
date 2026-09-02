@@ -285,11 +285,11 @@ internal fun resolveVideoDetailReturnMediaFrame(
     if (!liveReturnMorph) {
         return VideoDetailReturnMediaFrame(coverAlpha = 1f, playerAlpha = 0f)
     }
-    // Live frame fades out in the landing window. The stationary list cover — not a
-    // reconstructed flying cover — is what remains in the cover slot.
+    // Keep the flying media slot opaque. Transparent cover + fading player is the empty
+    // card: Miuix will not composite the list card through the flying clip.
     val coverTakeover = resolveVideoCardLiveReturnVisualHandoffAlpha(transitionProgress)
     return VideoDetailReturnMediaFrame(
-        coverAlpha = 0f,
+        coverAlpha = coverTakeover,
         playerAlpha = 1f - coverTakeover,
     )
 }

@@ -122,6 +122,19 @@ internal fun resolveMiuixVideoCardOuterScale(sourceScale: Float, depth: Float, l
     return source + (1f - source) * depth.coerceIn(0f, 1f) - source * (1f - landingScale)
 }
 
+/**
+ * Return lands on the frozen cover, not the whole card. The flying clip then no longer
+ * covers list info, so the stationary title/stats can show instead of an empty plate.
+ */
+internal fun resolveMiuixVideoCardLandingBounds(
+    cardBounds: Rect,
+    coverBounds: Rect?,
+    returning: Boolean,
+): Rect {
+    if (!returning) return cardBounds
+    return coverBounds?.takeIf { it.width > 1f && it.height > 1f } ?: cardBounds
+}
+
 internal data class MiuixVideoCardInverseScale(
     val scaleX: Float,
     val scaleY: Float,
@@ -328,8 +341,9 @@ internal fun miuixVideoCardNavTransition(
     gestureFollowEnabled: Boolean = true,
     heroMotionSpec: VideoHeroMotionSpec = resolveVideoHeroMotionSpec(durationMillis),
     returningProvider: () -> Boolean = { false },
+    sourceCoverBounds: Rect? = null,
 ): NavTransition {
-    val bounds = sourceBounds?.takeIf { it.width > 1f && it.height > 1f }
+    val cardBounds = sourceBounds?.takeIf { it.width > 1f && it.height > 1f }
         ?: return fallback
     val enterMotion = resolveVideoHeroNavMotion(heroMotionSpec, returning = false)
     val returnMotion = resolveVideoHeroNavMotion(heroMotionSpec, returning = true)
@@ -375,6 +389,11 @@ internal fun miuixVideoCardNavTransition(
                 val depth = scope.relativeDepth
                 if (depth <= 0f) {
                     val morph = resolveMiuixVideoCardDepthProgress(depth)
+                    val bounds = resolveMiuixVideoCardLandingBounds(
+                        cardBounds = cardBounds,
+                        coverBounds = sourceCoverBounds,
+                        returning = returningProvider(),
+                    )
                     val sourceScaleX = (bounds.width / width).coerceIn(0.05f, 1f)
                     val sourceScaleY = (bounds.height / height).coerceIn(0.05f, 1f)
                     val landingScale = resolveVideoHeroLandingScale(
@@ -411,6 +430,11 @@ internal fun miuixVideoCardNavTransition(
                     val width = scope.layoutSize.width.toFloat().coerceAtLeast(1f)
                     val height = scope.layoutSize.height.toFloat().coerceAtLeast(1f)
                     val morph = resolveMiuixVideoCardDepthProgress(depth)
+                    val bounds = resolveMiuixVideoCardLandingBounds(
+                        cardBounds = cardBounds,
+                        coverBounds = sourceCoverBounds,
+                        returning = returningProvider(),
+                    )
                     val landingScale = resolveVideoHeroLandingScale(
                         depth = morph,
                         autoReturning = !heroMotionSpec.reducedMotion &&

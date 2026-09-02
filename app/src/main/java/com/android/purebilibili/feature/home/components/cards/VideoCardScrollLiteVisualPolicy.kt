@@ -3,7 +3,6 @@ package com.android.purebilibili.feature.home.components.cards
 import com.android.purebilibili.core.ui.transition.VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import com.android.purebilibili.core.ui.transition.normalizeSharedElementSourceRoute
-import com.android.purebilibili.core.ui.transition.resolveVideoCardLiveReturnVisualHandoffAlpha
 import com.android.purebilibili.core.ui.transition.resolveVideoCardReturnListCoverContract
 
 internal data class VideoCardScrollLiteVisualPolicy(
@@ -126,8 +125,9 @@ internal fun resolveHomeCardStationaryRevealAlpha(
 /**
  * 来源卡封面在返回期间的可见 alpha。
  *
- * 实时画面仍由飞行媒体槽持有，直到 live → cover 窗口；该窗口内列表真卡封面
- * 渐显，落位后不再用手写封面层。
+ * 封面像素由飞行媒体槽持有，直到 entry 卸层。列表真卡封面保持 0，避免和
+ * 飞行封面叠一张空壳；底部信息则由 [resolveHomeCardChromeAlphaDuringShellReturnMorph]
+ * 在封面落点外侧显示真卡。
  */
 internal fun resolveHomeCardReturnSourceVisualAlpha(
     useCardContainerSharedBounds: Boolean,
@@ -147,12 +147,8 @@ internal fun resolveHomeCardReturnSourceVisualAlpha(
         isSharedTransitionActive = isSharedTransitionActive,
         transitionBackgroundProgress = transitionBackgroundProgress,
     )
-    if (isReturnContext) {
-        if (preferWholeCardReturn) return 1f
-        return resolveVideoCardLiveReturnVisualHandoffAlpha(transitionBackgroundProgress)
-    }
     return resolveHomeCardStationaryRevealAlpha(
-        isReturnContext = false,
+        isReturnContext = isReturnContext,
         preferWholeCardReturn = preferWholeCardReturn,
         transitionBackgroundPhase = transitionBackgroundPhase,
         isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
