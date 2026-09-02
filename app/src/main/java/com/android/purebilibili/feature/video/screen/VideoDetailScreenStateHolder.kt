@@ -1211,7 +1211,12 @@ internal fun VideoDetailScreenStateHolder(
     var preserveCurrentFrameOnFullscreenChange by remember { mutableStateOf(false) }
     var pendingFullscreenPositionRestoreMs by remember { mutableLongStateOf(-1L) }
     val activity = remember { context.findActivity() }
-    val isActivityInMultiWindowMode = activity?.let(::isActivityInMultiWindowOrFloatingMode) ?: false
+    val isActivityInMultiWindowMode = activity?.let {
+        isActivityInMultiWindowOrFloatingMode(
+            activity = it,
+            isKnownFoldableCoverScreen = windowSizeClass.isFoldableCoverScreen,
+        )
+    } ?: false
 
     // 📐 全屏模式逻辑：
     // - 紧凑窗口：横放时自动进入全屏
@@ -1350,7 +1355,10 @@ internal fun VideoDetailScreenStateHolder(
                 userRequestedFullscreen = true
             } else {
                 context.findActivity()?.let { activity ->
-                    val isInMultiWindowMode = isActivityInMultiWindowOrFloatingMode(activity)
+                    val isInMultiWindowMode = isActivityInMultiWindowOrFloatingMode(
+                        activity = activity,
+                        isKnownFoldableCoverScreen = windowSizeClass.isFoldableCoverScreen,
+                    )
                     if (!shouldApplyStartFullscreenOrientationRequest(
                             startInFullscreen = startInFullscreen,
                             isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
@@ -2909,6 +2917,7 @@ internal fun VideoDetailScreenStateHolder(
             fullscreenMode = fullscreenMode,
             isVerticalVideo = isVerticalVideo,
             preferPortraitForFlatFoldable = false,
+            isFoldableCoverScreen = windowSizeClass.isFoldableCoverScreen,
             portraitExperienceEnabled = portraitExperienceEnabled,
             onEnterPortraitFullscreen = { enterPortraitFullscreen() },
             onUserRequestedFullscreenChange = { requested -> userRequestedFullscreen = requested },
@@ -4953,7 +4962,10 @@ internal fun VideoDetailScreenStateHolder(
                 if (
                     hostActivity != null &&
                     targetOrientation != null &&
-                    !isActivityInMultiWindowOrFloatingMode(hostActivity)
+                    !isActivityInMultiWindowOrFloatingMode(
+                        activity = hostActivity,
+                        isKnownFoldableCoverScreen = windowSizeClass.isFoldableCoverScreen,
+                    )
                 ) {
                     userRequestedFullscreen = true
                     manualPortraitHoldActive = false

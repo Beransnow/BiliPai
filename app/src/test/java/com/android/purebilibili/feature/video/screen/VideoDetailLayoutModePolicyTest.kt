@@ -10,6 +10,21 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class VideoDetailLayoutModePolicyTest {
+    @Test
+    fun foldableCoverWindow_isNotInferredAsFloatingFromInnerDisplayBounds() {
+        assertFalse(
+            shouldInferFloatingWindowFromBounds(
+                currentBoundsSmallerThanMaximum = true,
+                isFoldableCoverWindow = true,
+            )
+        )
+        assertTrue(
+            shouldInferFloatingWindowFromBounds(
+                currentBoundsSmallerThanMaximum = true,
+                isFoldableCoverWindow = false,
+            )
+        )
+    }
 
     @Test
     fun expanded_usesTabletLayout() {
