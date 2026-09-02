@@ -67,7 +67,6 @@ import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
-import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.shouldEnableVideoCoverSharedTransition
@@ -207,17 +206,6 @@ internal fun StoryVideoCard(
                 coverBounds = coverBounds,
                 sourceLayout = com.android.purebilibili.core.ui.transition.VideoCardSourceLayout.STACKED,
                 sourceChromeSnapshot = com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot(
-                    title = video.title,
-                    ownerName = video.owner.name,
-                    ownerFaceUrl = video.owner.face,
-                    viewText = FormatUtils.formatStat(video.stat.view.toLong()),
-                    danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                    durationText = FormatUtils.formatDuration(video.duration),
-                    infoPresentation = com.android.purebilibili.core.ui.transition
-                        .resolveVideoCardSourceInfoPresentation(
-                            publishTimeText = "",
-                            showStatsInInfo = false,
-                        ),
                     coverUrl = coverUrl,
                     coverCacheKey = coverCacheKey,
                     coverDecodeWidthPx = coverRequestSpec?.widthPx ?: 0,
@@ -257,8 +245,7 @@ internal fun StoryVideoCard(
     val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
         isScrollInProgress = scrollLiteModeEnabled,
         isReturningFromDetail = isReturningFromVideoDetail,
-        useCoverSharedBounds = useCardShellSharedBounds ||
-            (LocalMiuixVideoCardTransitionState.current.enabled && isSharedReturnTarget),
+        useCoverSharedBounds = useCardShellSharedBounds,
         isSharedReturnTarget = isSharedReturnTarget,
     )
     val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition

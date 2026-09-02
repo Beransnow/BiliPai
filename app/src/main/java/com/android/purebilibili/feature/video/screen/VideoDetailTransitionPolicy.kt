@@ -26,7 +26,7 @@ internal const val VIDEO_CONTENT_COMMENT_TAB_INDEX = 1
  * 例如 video/A -> video/B 时，活动 source 是 video/A，因此仅 B 的 entry sourceRoute
  * 能匹配；作为返回预览的 A 不得误用 B 的封面快照和卡片落位信息。
  */
-internal fun isVideoDetailEntryActiveMiuixTransitionSource(
+internal fun isVideoDetailEntryActiveCardTransitionSource(
     entrySourceRoute: String?,
     activeSourceRoute: String?,
 ): Boolean {
@@ -35,24 +35,6 @@ internal fun isVideoDetailEntryActiveMiuixTransitionSource(
     val normalizedActiveSource =
         normalizeSharedElementSourceRoute(activeSourceRoute) ?: return false
     return normalizedEntrySource == normalizedActiveSource
-}
-
-/**
- * A restored parent session is armed for its next return, but must not retake visual ownership
- * while the navigation clock is idle. Nested pop restores that session after the child lands;
- * consuming its cover/chrome at that point causes a deterministic delayed parent-cover flash.
- */
-internal fun shouldConsumeMiuixTransitionVisualAssets(
-    entryOwnsMiuixCardTransition: Boolean,
-    phase: VideoCardTransitionBackgroundPhase,
-    isReturnGestureInProgress: Boolean,
-    isGestureRestoreInProgress: Boolean = false,
-): Boolean {
-    return entryOwnsMiuixCardTransition && (
-        phase != VideoCardTransitionBackgroundPhase.IDLE ||
-            isReturnGestureInProgress ||
-            isGestureRestoreInProgress
-        )
 }
 
 internal fun resolveForceCoverOnlyForReturn(
@@ -82,17 +64,17 @@ internal fun shouldUseReturningVideoDetailVisualState(
 
 /**
  * A nested video return exposes both entries to the same app-level return-session flag. Only the
- * outgoing detail whose source route owns the active Miuix card transition may consume that flag;
+ * outgoing detail whose source route owns the active shared transition may consume that flag;
  * the parent entry is the return target and must keep its complete body composed.
  */
-internal fun shouldConsumeMiuixReturnSessionForVideoDetailEntry(
-    entryOwnsMiuixCardTransition: Boolean,
+internal fun shouldConsumeReturnSessionForVideoDetailEntry(
+    entryOwnsCardTransition: Boolean,
     isReturningFromDetail: Boolean,
     transitionEnabled: Boolean,
     sharedBoundsActive: Boolean,
     keepLoadedContentForBackPreview: Boolean,
 ): Boolean {
-    return entryOwnsMiuixCardTransition &&
+    return entryOwnsCardTransition &&
         isReturningFromDetail &&
         transitionEnabled &&
         sharedBoundsActive &&
@@ -116,7 +98,7 @@ internal fun shouldTreatVideoDetailCardReturnAsCommitted(
 }
 
 /**
- * 详情 → 来源卡片 Miuix entry morph：实时画面跟手缩小（一镜到底）。
+ * 详情 → 来源卡片标准 shared-bounds morph：实时画面随详情壳交接。
  * 实现收口到 [shouldUseVideoCardLiveReturnMorph]（[VideoCardReturnTimeline]）。
  */
 internal fun shouldUseLiveReturnMorph(
@@ -321,7 +303,7 @@ internal fun resolveVideoDetailReturnPlayerAlpha(
 /**
  * Resident / player-section cover — must match the **stationary list card** Coil request.
  *
- * Priority: Miuix session snapshot → click [CardPositionManager] snapshot → home prefetch
+ * Priority: scoped transition media snapshot → click [CardPositionManager] snapshot → home prefetch
  * registry → route cover (last resort, may not match list pixels).
  */
 internal data class VideoDetailResidentCoverSource(
@@ -388,8 +370,7 @@ internal fun resolveVideoDetailReturnContentAlpha(
     depthBlurProgress: Float? = null,
     isQuickReturn: Boolean = false,
     /**
-     * Miuix live 返回只消费 shared flying-card 的 morph depth；保留可空参数以兼容
-     * 非 Miuix 调用。
+     * 标准 live 返回消费 shared morph depth；保留可空参数兼容无 shared 的调用。
      */
     morphDepthProgress: Float? = null,
 ): Float {
@@ -448,9 +429,10 @@ internal fun shouldKeepPlaybackSessionActiveForSharedReturnMorph(
     isVisible: Boolean,
     sharedBoundsActive: Boolean,
     isExitTransitionInProgress: Boolean,
+    isSharedTransitionActive: Boolean = false,
 ): Boolean {
     if (isVisible) return true
-    return sharedBoundsActive && isExitTransitionInProgress
+    return sharedBoundsActive && (isExitTransitionInProgress || isSharedTransitionActive)
 }
 
 /**
@@ -475,14 +457,6 @@ internal fun shouldExpandPlayerViewportForSharedReturn(
         isGestureRestoreInProgress
 }
 
-/**
- * 是否在飞行详情壳内绘制信息区。
- *
- * **必须为 true**：sharedBounds 飞行层盖在列表之上，列表真卡即使 alpha=1 也看不见；
- * 信息区只能画在飞行壳上。列表真卡在 morph 结束后再露（cover/chrome stationary reveal）。
- *
- * 文案来自点击时冻结的 [VideoCardSourceChromeSnapshot] + 详情 ViewInfo，尽量与列表卡一致。
- */
 /**
  * 布局用折叠进度：返回 morph 中强制 0（展开），其余沿用手势/评论折叠进度。
  */

@@ -61,7 +61,6 @@ import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
-import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionPlaybackIntent
@@ -128,24 +127,6 @@ fun VideoCardLarge(
                 coverBounds = coverBoundsRef.value,
                 sourceLayout = VideoCardSourceLayout.STACKED,
                 sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
-                    title = archive.title,
-                    ownerName = collectionTitle.takeIf { isCollection }.orEmpty(),
-                    ownerFaceUrl = "",
-                    viewText = archive.stat.play,
-                    danmakuText = archive.stat.danmaku,
-                    durationText = archive.duration_text,
-                    infoPresentation = com.android.purebilibili.core.ui.transition
-                        .resolveVideoCardSourceInfoPresentation(
-                            publishTimeText = "",
-                            // Dynamic cards paint duration/stats on the cover, not below it.
-                            showStatsInInfo = false,
-                        ),
-                    coverPresentation = VideoCardSourceCoverPresentation(
-                        showGradientMask = true,
-                        showStatsOnCover = true,
-                        showSecondaryStatOnCover = true,
-                        showDurationOnCover = true,
-                    ),
                     coverUrl = coverUrl,
                     coverCacheKey = coverUrl,
                 ),

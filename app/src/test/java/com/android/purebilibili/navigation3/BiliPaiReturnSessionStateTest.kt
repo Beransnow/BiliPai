@@ -73,11 +73,8 @@ class BiliPaiReturnSessionStateTest {
             VideoCardSourceLayout.STACKED
         },
         sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
-            title = "title-$bvid",
-            ownerName = "owner-$bvid",
-            viewText = "1万",
-            danmakuText = "200",
-            durationText = "01:23",
+            coverUrl = "https://example.com/$bvid.webp",
+            coverCacheKey = "cover_$bvid",
         ),
     )
 
@@ -191,7 +188,10 @@ class BiliPaiReturnSessionStateTest {
         assertEquals("cover-BV_A", state.transitionSession?.coverIdentity)
         assertEquals(12, state.transitionSession?.sourceCornerDp)
         assertEquals(VideoCardSourceLayout.STACKED, state.transitionSession?.sourceLayout)
-        assertEquals("title-BV_A", state.transitionSession?.sourceChromeSnapshot?.title)
+        assertEquals(
+            "https://example.com/BV_A.webp",
+            state.transitionSession?.sourceChromeSnapshot?.coverUrl,
+        )
     }
 
     @Test

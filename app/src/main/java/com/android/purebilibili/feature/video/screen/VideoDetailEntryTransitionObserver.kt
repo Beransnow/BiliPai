@@ -11,8 +11,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
-import com.android.purebilibili.core.ui.transition.MiuixVideoCardTransitionState
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -22,7 +20,6 @@ internal fun rememberVideoDetailEntryTransitionFinished(
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?,
     fallbackDurationMillis: Int,
-    heroDriver: MiuixVideoCardTransitionState? = null,
 ): Boolean {
     if (!deferLoad) return true
 
@@ -31,7 +28,7 @@ internal fun rememberVideoDetailEntryTransitionFinished(
         resolveVideoDetailEntryTransitionFallbackTimeoutMillis(fallbackDurationMillis)
     }
 
-    LaunchedEffect(deferLoad, sharedTransitionScope, animatedVisibilityScope, fallbackTimeoutMillis, heroDriver) {
+    LaunchedEffect(deferLoad, sharedTransitionScope, animatedVisibilityScope, fallbackTimeoutMillis) {
         if (!deferLoad) {
             finished = true
             return@LaunchedEffect
@@ -42,13 +39,6 @@ internal fun rememberVideoDetailEntryTransitionFinished(
         if (finished) {
             return@LaunchedEffect
         }
-        if (heroDriver != null) {
-            snapshotFlow { heroDriver.progressProvider() >= 0.999f &&
-                !heroDriver.isGestureInProgressProvider() }.first { it }
-            finished = true
-            return@LaunchedEffect
-        }
-
         var hasObservedActiveTransition = false
 
         val timeoutJob = launch {
@@ -94,7 +84,6 @@ internal fun rememberVideoDetailEntryTransitionFinished(
 internal fun rememberVideoDetailEntryPlaybackReady(
     deferLoad: Boolean,
     morphDurationMillis: Int,
-    heroDriver: MiuixVideoCardTransitionState? = null,
 ): Boolean {
     if (!deferLoad) return true
 
@@ -102,21 +91,12 @@ internal fun rememberVideoDetailEntryPlaybackReady(
     val preloadDelayMillis = remember(morphDurationMillis) {
         resolveVideoDetailEntryPlaybackPreloadDelayMillis(morphDurationMillis)
     }
-    LaunchedEffect(deferLoad, preloadDelayMillis, heroDriver) {
+    LaunchedEffect(deferLoad, preloadDelayMillis) {
         if (!deferLoad) {
             ready = true
             return@LaunchedEffect
         }
-        if (heroDriver != null) {
-            val spec = heroDriver.motionSpec
-            val duration = spec?.enterDurationMillis ?: morphDurationMillis
-            val fraction = resolveVideoDetailEntryPlaybackPreloadDelayMillis(duration).toFloat() /
-                duration.coerceAtLeast(1)
-            val threshold = spec?.enterSpatialSpec?.transform(fraction.coerceIn(0f, 1f)) ?: fraction
-            snapshotFlow { heroDriver.progressProvider() >= threshold }.first { it }
-        } else {
-            kotlinx.coroutines.delay(preloadDelayMillis.toLong())
-        }
+        kotlinx.coroutines.delay(preloadDelayMillis.toLong())
         ready = true
     }
     return ready

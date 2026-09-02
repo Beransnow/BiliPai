@@ -90,7 +90,7 @@ internal fun resolveVideoCardShellCrossfadeSourceEnterDelayMillis(
 
 /**
  * 源卡 shell 是否延后 Enter。
- * 一律 false：封面待命 + chrome 独立淡入，见 [canCoexistLiveSurfaceStableCoverAndChromeOnReturn]。
+ * 一律 false：真实来源卡与封面全程待命，见 [canCoexistLiveSurfaceStableCoverAndChromeOnReturn]。
  */
 internal fun shouldDelaySourceCardEnterForLiveReturnMorph(
     sourceRoute: String?,

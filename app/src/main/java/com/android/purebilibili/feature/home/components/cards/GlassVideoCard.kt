@@ -63,7 +63,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
-import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
@@ -201,18 +200,6 @@ fun GlassVideoCard(
                 coverBounds = coverBoundsRef.value,
                 sourceLayout = com.android.purebilibili.core.ui.transition.VideoCardSourceLayout.STACKED,
                 sourceChromeSnapshot = com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot(
-                    title = video.title,
-                    ownerName = video.owner.name,
-                    ownerFaceUrl = video.owner.face,
-                    viewText = FormatUtils.formatStat(video.stat.view.toLong()),
-                    danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                    durationText = FormatUtils.formatDuration(video.duration),
-                    // Glass card paints play/danmaku on cover; info is title/UP style.
-                    infoPresentation = com.android.purebilibili.core.ui.transition
-                        .resolveVideoCardSourceInfoPresentation(
-                            publishTimeText = "",
-                            showStatsInInfo = false,
-                        ),
                     coverUrl = coverUrl,
                     coverCacheKey = coverCacheKey,
                 ),
@@ -245,8 +232,7 @@ fun GlassVideoCard(
     val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
         isScrollInProgress = false,
         isReturningFromDetail = isReturningFromVideoDetail,
-        useCoverSharedBounds = useCardShellSharedBounds ||
-            (LocalMiuixVideoCardTransitionState.current.enabled && isSharedReturnTarget),
+        useCoverSharedBounds = useCardShellSharedBounds,
         isSharedReturnTarget = isSharedReturnTarget,
     )
     // 🌈 彩虹渐变边框色

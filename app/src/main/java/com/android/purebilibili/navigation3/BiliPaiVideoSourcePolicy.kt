@@ -60,51 +60,38 @@ internal fun resolveVideoCardTransitionEnabledForSource(
  * Every video-card source, including a related card inside a retained detail page, uses the same
  * whole-card treatment so cover and metadata always travel as one visual unit.
  */
-internal enum class BiliPaiVideoCardMorphMode {
+internal enum class BiliPaiVideoCardTransitionMode {
     NONE,
-    PRIMARY_WHOLE_CARD,
+    STANDARD_SHARED_BOUNDS,
 }
 
-internal fun resolveBiliPaiVideoCardMorphMode(
+internal fun resolveBiliPaiVideoCardTransitionMode(
     cardTransitionEnabled: Boolean,
     reduceMotion: Boolean,
     sourceRoute: String?,
-    hasUsableSourceBounds: Boolean,
-): BiliPaiVideoCardMorphMode {
+): BiliPaiVideoCardTransitionMode {
     if (
         !cardTransitionEnabled ||
         reduceMotion ||
-        sourceRoute?.substringBefore('?').isNullOrBlank() ||
-        !hasUsableSourceBounds
+        sourceRoute?.substringBefore('?').isNullOrBlank()
     ) {
-        return BiliPaiVideoCardMorphMode.NONE
+        return BiliPaiVideoCardTransitionMode.NONE
     }
-    return BiliPaiVideoCardMorphMode.PRIMARY_WHOLE_CARD
+    // Standard sharedBounds measures the live source/target layouts. If the Lazy item disappeared,
+    // Compose simply runs the unmatched enter/exit fallback.
+    return BiliPaiVideoCardTransitionMode.STANDARD_SHARED_BOUNDS
 }
 
 /**
- * Whole-card Miuix morph gate — **partition SIDE_BY_SIDE cards are the reference path**.
- *
- * Shared contract for recorded list-card sources (home, partition, search, …):
- * 1. Click freezes cardBounds + coverBounds + layout + chrome snapshot
- * 2. Outer entry morphs host ↔ cardBounds (one opaque flying card)
- * 3. Flying entry draws shell + live media + chrome; list stays alpha 0 until IDLE
- * 4. Inverse scale uses Nav host layout width (same as outer morph)
- * 5. Layout-specific landing only:
- *    - STACKED (双列): live media top, info bottom
- *    - SIDE_BY_SIDE (分区横卡): live media left, info right
- *
- * Kept as the boolean compatibility gate for host call sites; use
- * [resolveBiliPaiVideoCardMorphMode] when first-level and nested visuals need to diverge.
+ * Compatibility gate retained for callers while the implementation is standard sharedBounds.
+ * Click-time bounds no longer control eligibility.
  */
-internal fun shouldUseMiuixVideoCardMorph(
+internal fun shouldUseVideoCardSharedBoundsTransition(
     cardTransitionEnabled: Boolean,
     reduceMotion: Boolean,
     sourceRoute: String?,
-    hasUsableSourceBounds: Boolean,
-): Boolean = resolveBiliPaiVideoCardMorphMode(
+): Boolean = resolveBiliPaiVideoCardTransitionMode(
     cardTransitionEnabled = cardTransitionEnabled,
     reduceMotion = reduceMotion,
     sourceRoute = sourceRoute,
-    hasUsableSourceBounds = hasUsableSourceBounds,
-) != BiliPaiVideoCardMorphMode.NONE
+) != BiliPaiVideoCardTransitionMode.NONE

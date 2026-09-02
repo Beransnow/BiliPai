@@ -49,57 +49,51 @@ class BiliPaiVideoSourcePolicyTest {
             "history",
         ).forEach { sourceRoute ->
             assertEquals(
-                BiliPaiVideoCardMorphMode.PRIMARY_WHOLE_CARD,
-                resolveBiliPaiVideoCardMorphMode(
+                BiliPaiVideoCardTransitionMode.STANDARD_SHARED_BOUNDS,
+                resolveBiliPaiVideoCardTransitionMode(
                     cardTransitionEnabled = true,
                     reduceMotion = false,
                     sourceRoute = sourceRoute,
-                    hasUsableSourceBounds = true,
                 ),
             )
             assertTrue(
-                shouldUseMiuixVideoCardMorph(
+                shouldUseVideoCardSharedBoundsTransition(
                     cardTransitionEnabled = true,
                     reduceMotion = false,
                     sourceRoute = sourceRoute,
-                    hasUsableSourceBounds = true,
                 ),
                 "Expected card morph for source=$sourceRoute",
             )
         }
         assertEquals(
-            BiliPaiVideoCardMorphMode.PRIMARY_WHOLE_CARD,
-            resolveBiliPaiVideoCardMorphMode(
+            BiliPaiVideoCardTransitionMode.STANDARD_SHARED_BOUNDS,
+            resolveBiliPaiVideoCardTransitionMode(
                 cardTransitionEnabled = true,
                 reduceMotion = false,
                 sourceRoute = "video/BV_PARENT",
-                hasUsableSourceBounds = true,
             ),
         )
         assertTrue(
-            shouldUseMiuixVideoCardMorph(
+            shouldUseVideoCardSharedBoundsTransition(
                 cardTransitionEnabled = true,
                 reduceMotion = false,
                 sourceRoute = "video/BV_PARENT",
-                hasUsableSourceBounds = true,
             ),
             "相关推荐应与首页一样使用整卡 Morph",
         )
-        assertFalse(
-            shouldUseMiuixVideoCardMorph(
+        assertTrue(
+            shouldUseVideoCardSharedBoundsTransition(
                 cardTransitionEnabled = true,
                 reduceMotion = false,
                 sourceRoute = "partition",
-                hasUsableSourceBounds = false,
             )
         )
         assertEquals(
-            BiliPaiVideoCardMorphMode.NONE,
-            resolveBiliPaiVideoCardMorphMode(
+            BiliPaiVideoCardTransitionMode.NONE,
+            resolveBiliPaiVideoCardTransitionMode(
                 cardTransitionEnabled = true,
                 reduceMotion = true,
                 sourceRoute = "video/BV_PARENT",
-                hasUsableSourceBounds = true,
             ),
         )
     }

@@ -23,8 +23,8 @@ import kotlin.math.roundToInt
  * 元素 scale、背景 blur / scrim、chrome settle、壁纸 depth **只读** [depthProgress]，
  * 不再各自 Animatable 并行。
  *
- * Miuix 主链路：只跟随 NavDisplay，包含预测 seek/commit/cancel 和真实结束帧。
- * ## 无 Nav 主驱动的兼容路径优先级（高 → 低）
+ * 标准 shared bounds 主链路：详情 AVS 与 shared bounds 共用同一 Transition。
+ * ## 视觉进度优先级（高 → 低）
  * 1. **预测手势** [gestureBackProgress]
  * 2. **Shared morph**（详情 AVS 与 sharedBounds 同一 Transition 的 progress）
  * 3. **Host fallback Animatable**（无 shared / 首帧详情未挂上时）
@@ -35,7 +35,6 @@ import kotlin.math.roundToInt
  */
 @Stable
 internal class VideoCardTransitionClock {
-    private var navigationDepthProvider: (() -> Float?)? = null
     private var navigationSettleState: VideoCardTransitionSettleState? by mutableStateOf(null)
     var initialVelocity: Float = 0f
         private set
@@ -50,13 +49,24 @@ internal class VideoCardTransitionClock {
             else -> VideoCardTransitionSettleState.Idle
         }
 
-    /** Miuix owns position AND lifetime. Do not start a hidden fallback alongside it. */
-    fun bindNavigationDriver(provider: (() -> Float?)?) {
-        navigationDepthProvider = provider
-        if (provider == null) navigationSettleState = null
-    }
-
-    fun followNavigationDriver(state: VideoCardTransitionSettleState, velocity: Float = 0f) {
+    /** Miuix reports lifecycle phases only; shared bounds remains the visual progress owner. */
+    fun followMiuixNavigationLifecycle(state: VideoCardTransitionSettleState, velocity: Float = 0f) {
+        if (state == VideoCardTransitionSettleState.Idle) {
+            // Miuix can reach its identity endpoint before or after SharedTransitionLayout. It is
+            // therefore not a valid signal for clearing standard shared progress.
+            return
+        }
+        if (state == VideoCardTransitionSettleState.Held) {
+            // A stable Miuix top entry exists both on detail and on the returned source page.
+            // It cannot decide depth ownership. Only use it to finish a cancelled gesture; the
+            // standard shared transition (or host fallback) owns every other HELD/IDLE change.
+            if (navigationSettleState == VideoCardTransitionSettleState.CancelRestore) {
+                navigationSettleState = state
+                gestureRestoreInProgress = false
+                phase = VideoCardTransitionBackgroundPhase.HELD
+            }
+            return
+        }
         navigationSettleState = state
         initialVelocity = velocity.takeIf { it.isFinite() } ?: 0f
         gestureRestoreInProgress = state == VideoCardTransitionSettleState.CancelRestore
@@ -65,10 +75,6 @@ internal class VideoCardTransitionClock {
             VideoCardTransitionSettleState.AutoReturn -> VideoCardTransitionBackgroundPhase.RETURNING
             VideoCardTransitionSettleState.Idle -> VideoCardTransitionBackgroundPhase.IDLE
             else -> VideoCardTransitionBackgroundPhase.HELD
-        }
-        if (state == VideoCardTransitionSettleState.Idle) {
-            sourceRoute = null
-            returnDepthFloor = null
         }
     }
     var phase: VideoCardTransitionBackgroundPhase by mutableStateOf(
@@ -115,7 +121,6 @@ internal class VideoCardTransitionClock {
      * 所有视觉层必须走这里，禁止再读独立 Animatable。
      */
     fun depthProgress(): Float {
-        navigationDepthProvider?.invoke()?.let { return it.coerceIn(0f, 1f) }
         return resolveVideoCardClockDepthProgress(
             gestureBackProgress = gestureBackProgress,
             gestureStartDepth = gestureStartDepth,
@@ -135,7 +140,6 @@ internal class VideoCardTransitionClock {
      * 相位仍由 Host 的 beginOpening/beginReturning/mark* 拥有；此处只灌 fraction。
      */
     fun reportSharedMorphProgress(morphFraction: Float, active: Boolean) {
-        if (navigationDepthProvider != null) return
         sharedMorphActive = active
         sharedMorphFraction = if (active) {
             morphFraction.coerceIn(0f, 1f)
@@ -147,12 +151,15 @@ internal class VideoCardTransitionClock {
             phase == VideoCardTransitionBackgroundPhase.OPENING &&
             morphFraction >= 0.999f
         ) {
+            navigationSettleState = VideoCardTransitionSettleState.Held
             phase = VideoCardTransitionBackgroundPhase.HELD
         }
-        // 返回：shared 结束（含详情 dispose / Exit.None 瞬间 PostExit）**不得**立刻 IDLE。
-        // Nav3 NO_OP_SHARED_ELEMENT 常让 shared 先于景深消糊结束；若此处 IDLE，
-        // 源页 effect 与 sourceRoute 被摘掉，背景看不到模糊→清晰。由 Host fallback
-        // animateFallbackTo(0) 结束后 markIdle。
+        if (!active &&
+            phase == VideoCardTransitionBackgroundPhase.RETURNING &&
+            morphFraction <= 0.001f
+        ) {
+            markIdle()
+        }
     }
 
     fun clearSharedMorphProgress() {
@@ -166,6 +173,7 @@ internal class VideoCardTransitionClock {
 
     fun beginOpening(sourceRoute: String?) {
         this.sourceRoute = sourceRoute
+        navigationSettleState = VideoCardTransitionSettleState.AutoEnter
         phase = VideoCardTransitionBackgroundPhase.OPENING
         gestureBackProgress = null
         gestureRestoreInProgress = false
@@ -195,6 +203,7 @@ internal class VideoCardTransitionClock {
      */
     fun beginReturning(sourceRoute: String?, startDepth: Float = 1f) {
         this.sourceRoute = sourceRoute
+        navigationSettleState = VideoCardTransitionSettleState.AutoReturn
         // 同步钉死起点，再改 phase，保证本帧 depth 已是满糊。
         returnDepthFloor = startDepth.coerceIn(0f, 1f)
         phase = VideoCardTransitionBackgroundPhase.RETURNING
@@ -204,17 +213,17 @@ internal class VideoCardTransitionClock {
     }
 
     fun markHeld() {
-        if (navigationDepthProvider != null) return
         if (phase == VideoCardTransitionBackgroundPhase.OPENING ||
             phase == VideoCardTransitionBackgroundPhase.RETURNING
         ) {
+            navigationSettleState = VideoCardTransitionSettleState.Held
             phase = VideoCardTransitionBackgroundPhase.HELD
             returnDepthFloor = null
         }
     }
 
     fun markIdle() {
-        if (navigationDepthProvider != null) return
+        navigationSettleState = VideoCardTransitionSettleState.Idle
         phase = VideoCardTransitionBackgroundPhase.IDLE
         sourceRoute = null
         gestureBackProgress = null
@@ -247,7 +256,6 @@ internal class VideoCardTransitionClock {
     }
 
     suspend fun snapFallback(value: Float) {
-        if (navigationDepthProvider != null) return
         fallback.snapTo(value.coerceIn(0f, 1f))
         // fallback 已接管；清 floor 才能继续 animate 到 0。
         returnDepthFloor = null
@@ -262,7 +270,6 @@ internal class VideoCardTransitionClock {
         durationMillis: Int,
         easing: Easing,
     ) {
-        if (navigationDepthProvider != null) return
         val safeDuration = durationMillis.coerceAtLeast(0)
         if (safeDuration <= 0) {
             fallback.snapTo(target.coerceIn(0f, 1f))
@@ -281,7 +288,6 @@ internal class VideoCardTransitionClock {
         motion: VideoHeroMotionSpec,
         releaseVelocity: Float = fallback.velocity,
     ) {
-        if (navigationDepthProvider != null) return
         val current = depthProgress()
         initialVelocity = releaseVelocity.takeIf { it.isFinite() } ?: 0f
         val cancel = target > current
@@ -316,7 +322,7 @@ internal class VideoCardTransitionClock {
         gestureRestoreInProgress = false
         returnDepthFloor = null
         fallback.snapTo(0f)
-        phase = VideoCardTransitionBackgroundPhase.IDLE
+        markIdle()
     }
 }
 
@@ -411,6 +417,9 @@ internal fun resolveVideoCardClockDepthProgress(
     gestureRestoreInProgress: Boolean = false,
     returnDepthFloor: Float? = null,
 ): Float {
+    // IDLE is a hard visual endpoint. Stale fallback state from a cancelled or interrupted session
+    // must never keep the returned source page blurred.
+    if (phase == VideoCardTransitionBackgroundPhase.IDLE) return 0f
     if (gestureBackProgress != null) {
         return resolveVideoCardTransitionBackgroundGestureBlurProgress(
             phase = if (phase == VideoCardTransitionBackgroundPhase.OPENING) {
@@ -434,9 +443,6 @@ internal fun resolveVideoCardClockDepthProgress(
         )
     ) {
         val shared = sharedMorphFraction!!.coerceIn(0f, 1f)
-        if (phase == VideoCardTransitionBackgroundPhase.RETURNING) {
-            return maxOf(shared, fallback)
-        }
         return shared
     }
     if (phase == VideoCardTransitionBackgroundPhase.HELD) {

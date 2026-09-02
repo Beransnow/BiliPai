@@ -89,12 +89,12 @@ internal fun isVideoCardFlyingReturnContext(
 }
 
 /**
- * Stationary list-card **cover** while a Miuix flying entry owns the morph.
+ * Stationary list-card cover visibility while a shared overlay owns the morph.
  *
- * Cover pixels stay on the flying media path until park; list cover stays 0 to avoid dual image.
- * Title / UP / stats are drawn on the flying entry during morph (list chrome also stays 0).
+ * The standard whole-card path keeps the real source composable available. The legacy cover-only
+ * fallback can still hide its stationary duplicate while a separate media element is in overlay.
  *
- * @return 0 while flying owns cover, 1 when the list cover may show again (or whole-card fallback).
+ * @return 0 while a cover-only overlay owns pixels, otherwise 1.
  */
 internal fun resolveHomeCardStationaryRevealAlpha(
     @Suppress("UNUSED_PARAMETER") isReturnContext: Boolean,

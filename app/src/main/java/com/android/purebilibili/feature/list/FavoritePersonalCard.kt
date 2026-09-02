@@ -129,19 +129,6 @@ internal fun FavoritePersonalCard(
                     coverBounds = coverBounds.value,
                     sourceLayout = if (stacked) VideoCardSourceLayout.STACKED else VideoCardSourceLayout.SIDE_BY_SIDE,
                     sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
-                        title = item.title,
-                        ownerName = item.owner.name.ifBlank { "未知UP主" },
-                        ownerFaceUrl = item.owner.face,
-                        viewText = FormatUtils.formatStat(item.stat.view.toLong()),
-                        danmakuText = FormatUtils.formatStat(item.stat.danmaku.toLong()),
-                        durationText = FormatUtils.formatDuration(item.duration),
-                        infoPresentation = com.android.purebilibili.core.ui.transition
-                            .resolveVideoCardSourceInfoPresentation(
-                                publishTimeText = resolveFavoriteDateLabel(item.view_at),
-                                showStatsInInfo = true,
-                                ownerBeforePublish = true,
-                                showOverflowMenu = !batchMode && canRemove && onRemove != null,
-                            ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
                     ),
