@@ -215,26 +215,26 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun reconstructedFlyingChromeOnlyPaintsDuringOpening() {
+    fun reconstructedFlyingChromePaintsForTheWholeCardMorph() {
         assertTrue(
             shouldDrawFlyingReconstructedSourceChrome(
                 phase = VideoCardTransitionBackgroundPhase.OPENING,
                 isReturnGestureInProgress = false,
             )
         )
-        assertFalse(
+        assertTrue(
             shouldDrawFlyingReconstructedSourceChrome(
                 phase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isReturnGestureInProgress = false,
             )
         )
-        assertFalse(
+        assertTrue(
             shouldDrawFlyingReconstructedSourceChrome(
                 phase = VideoCardTransitionBackgroundPhase.HELD,
                 isReturnGestureInProgress = true,
             )
         )
-        assertTrue(
+        assertFalse(
             shouldPunchThroughFlyingMediaToNativeListCard(
                 phase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isReturnGestureInProgress = false,

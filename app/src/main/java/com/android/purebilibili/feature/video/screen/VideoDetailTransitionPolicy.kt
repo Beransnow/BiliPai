@@ -56,29 +56,29 @@ internal fun shouldConsumeMiuixTransitionVisualAssets(
 }
 
 /**
- * Handwritten flying chrome/cover badges exist only while the list card is hidden
- * (opening). Returns use the stationary list card through the transparent flying body.
+ * The flying detail entry is opaque. Cover and info have to be painted on it or the
+ * morph is cover-only and list chrome stays behind. Opening and return both need this.
  */
 internal fun shouldDrawFlyingReconstructedSourceChrome(
     phase: VideoCardTransitionBackgroundPhase,
     isReturnGestureInProgress: Boolean,
     isGestureRestoreInProgress: Boolean = false,
 ): Boolean {
-    if (isReturnGestureInProgress || isGestureRestoreInProgress) return false
-    return phase == VideoCardTransitionBackgroundPhase.OPENING
+    if (isReturnGestureInProgress || isGestureRestoreInProgress) return true
+    return phase == VideoCardTransitionBackgroundPhase.OPENING ||
+        phase == VideoCardTransitionBackgroundPhase.RETURNING ||
+        phase == VideoCardTransitionBackgroundPhase.HELD
 }
 
-/** Player slot must not paint an opaque black plate over the stationary list info. */
+/** @return false: list pixels cannot show through a Miuix flying clip. */
 internal fun shouldPunchThroughFlyingMediaToNativeListCard(
     phase: VideoCardTransitionBackgroundPhase,
     isReturnGestureInProgress: Boolean,
     isGestureRestoreInProgress: Boolean = false,
 ): Boolean {
-    return !shouldDrawFlyingReconstructedSourceChrome(
-        phase = phase,
-        isReturnGestureInProgress = isReturnGestureInProgress,
-        isGestureRestoreInProgress = isGestureRestoreInProgress,
-    ) && phase != VideoCardTransitionBackgroundPhase.IDLE
+    @Suppress("UNUSED_PARAMETER")
+    val ignored = phase to isReturnGestureInProgress to isGestureRestoreInProgress
+    return false
 }
 
 internal fun resolveForceCoverOnlyForReturn(

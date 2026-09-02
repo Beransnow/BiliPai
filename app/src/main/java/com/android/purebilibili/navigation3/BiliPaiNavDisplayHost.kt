@@ -239,7 +239,6 @@ internal fun BiliPaiNavDisplayHost(
     val videoCardTransition = remember(
         cardMorphAvailable,
         sourceMetadata.sourceBounds,
-        sourceMetadata.sourceCoverBounds,
         sourceMetadata.sourceCornerDp,
         videoSharedTransitionDurationMillis,
         heroMotion,
@@ -251,7 +250,6 @@ internal fun BiliPaiNavDisplayHost(
         if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
                 sourceBounds = sourceMetadata.sourceBounds,
-                sourceCoverBounds = sourceMetadata.sourceCoverBounds,
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
                 durationMillis = videoSharedTransitionDurationMillis,
                 fallback = predictiveBackExcludedTransition,
@@ -268,7 +266,6 @@ internal fun BiliPaiNavDisplayHost(
     val fullscreenVideoCardTransition = remember(
         cardMorphAvailable,
         sourceMetadata.sourceBounds,
-        sourceMetadata.sourceCoverBounds,
         sourceMetadata.sourceCornerDp,
         videoSharedTransitionDurationMillis,
         heroMotion,
@@ -279,7 +276,6 @@ internal fun BiliPaiNavDisplayHost(
         if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
                 sourceBounds = sourceMetadata.sourceBounds,
-                sourceCoverBounds = sourceMetadata.sourceCoverBounds,
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
                 durationMillis = videoSharedTransitionDurationMillis,
                 fallback = predictiveBackExcludedTransition,

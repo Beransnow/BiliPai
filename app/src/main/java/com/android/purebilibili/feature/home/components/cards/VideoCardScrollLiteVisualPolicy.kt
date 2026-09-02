@@ -253,9 +253,16 @@ internal fun resolveHomeCardChromeAlphaDuringShellReturnMorph(
     )
 
     if (isReturnContext) {
-        // Native list info stays visible. The flying entry punches through its
-        // transparent body so these pixels are the stationary card, not a reconstruction.
-        return 1f
+        // Keep the stationary list info hidden until the flying whole-card lands.
+        // Showing it here leaves title/stats in place while only the cover flies.
+        return resolveHomeCardStationaryRevealAlpha(
+            isReturnContext = true,
+            preferWholeCardReturn = preferWholeCardReturn,
+            transitionBackgroundPhase = transitionBackgroundPhase,
+            isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
+            isSharedTransitionActive = isSharedTransitionActive,
+            transitionBackgroundProgress = transitionBackgroundProgress,
+        )
     }
 
     // 进场：shared 飞行或 OPENING 时藏字

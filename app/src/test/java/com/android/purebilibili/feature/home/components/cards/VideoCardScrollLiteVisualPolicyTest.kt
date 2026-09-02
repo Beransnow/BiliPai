@@ -449,9 +449,9 @@ class VideoCardScrollLiteVisualPolicyTest {
                 transitionBackgroundProgress = 0.4f,
             )
         )
-        // Native list info is visible during return; cover waits for the live handoff window.
+        // Stationary list info stays hidden so it does not remain in place while the card flies.
         assertEquals(
-            1f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -481,7 +481,7 @@ class VideoCardScrollLiteVisualPolicyTest {
     @Test
     fun homeCardChromeStaysHiddenUntilReverseReturnCompletes() {
         assertEquals(
-            1f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -492,7 +492,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
