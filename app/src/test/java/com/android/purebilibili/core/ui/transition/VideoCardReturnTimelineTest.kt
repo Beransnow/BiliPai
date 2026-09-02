@@ -410,6 +410,45 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
+    fun mediaLayoutReachesTheFrozenCoverBeforeSourceChromeFadesIn() {
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnMediaLayoutHandoffProgress(
+                morphDepthProgress = 0.5f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoDetailReturnMediaLayoutHandoffProgress(
+                morphDepthProgress = 0.18f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            0f,
+            resolveVideoCardSourceChromeReturnAlpha(0.18f),
+            0.001f,
+        )
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnMediaLayoutHandoffProgress(
+                morphDepthProgress = 0.18f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.COVER_ONLY,
+            ),
+            0.001f,
+        )
+    }
+
+    @Test
     fun sourceChromeUsesTheExactLiveToCoverHandoff() {
         assertEquals(0f, resolveVideoCardSourceChromeReturnAlpha(0.18f), 0.001f)
         assertEquals(0.5f, resolveVideoCardSourceChromeReturnAlpha(0.1f), 0.001f)

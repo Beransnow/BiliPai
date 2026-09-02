@@ -122,6 +122,51 @@ internal fun resolveMiuixVideoCardOuterScale(sourceScale: Float, depth: Float, l
     return source + (1f - source) * depth.coerceIn(0f, 1f) - source * (1f - landingScale)
 }
 
+internal data class MiuixVideoCardInverseScale(
+    val scaleX: Float,
+    val scaleY: Float,
+)
+
+/**
+ * Inverse of the current outer morph after FillWidthTop compensation.
+ *
+ * Frozen `1/sourceScaleX` on both axes is only correct at depth = 0. While the clip is still
+ * non-uniform, that frozen inverse makes cover/info occupy the wrong fraction of the card
+ * and then jump to the stationary list layout.
+ */
+internal fun resolveMiuixVideoCardInverseScale(
+    sourceScaleX: Float,
+    sourceScaleY: Float,
+    outerScaleX: Float,
+    outerScaleY: Float,
+): MiuixVideoCardInverseScale {
+    val compensation = resolveMiuixVideoCardContentCompensation(
+        outerScaleX = outerScaleX,
+        outerScaleY = outerScaleY,
+        contentScale = MiuixVideoCardContentScale.FillWidthTop,
+    )
+    return MiuixVideoCardInverseScale(
+        scaleX = (1f / sourceScaleX.coerceAtLeast(0.01f)) / compensation.scaleX.coerceAtLeast(0.01f),
+        scaleY = (1f / sourceScaleY.coerceAtLeast(0.01f)) / compensation.scaleY.coerceAtLeast(0.01f),
+    )
+}
+
+internal fun resolveMiuixVideoCardInverseScaleForDepth(
+    sourceScaleX: Float,
+    sourceScaleY: Float,
+    depth: Float,
+    autoReturning: Boolean = false,
+): MiuixVideoCardInverseScale {
+    val morph = depth.coerceIn(0f, 1f)
+    val landingScale = resolveVideoHeroLandingScale(morph, autoReturning)
+    return resolveMiuixVideoCardInverseScale(
+        sourceScaleX = sourceScaleX,
+        sourceScaleY = sourceScaleY,
+        outerScaleX = resolveMiuixVideoCardOuterScale(sourceScaleX, morph, landingScale),
+        outerScaleY = resolveMiuixVideoCardOuterScale(sourceScaleY, morph, landingScale),
+    )
+}
+
 /**
  * Keeps the corner circular in screen space while the outer card layer scales non-uniformly.
  * A regular RoundedCornerShape is scaled together with the layer and becomes too small on the
@@ -231,6 +276,15 @@ internal class MiuixVideoCardTransitionProgress {
     fun layoutWidthOr(fallback: Float): Float {
         val w = topScope?.layoutSize?.width?.toFloat() ?: return fallback.coerceAtLeast(1f)
         return w.coerceAtLeast(1f)
+    }
+
+    /**
+     * Host layout height used by outer morph (`bounds.height / layoutSize.height`).
+     * Inverse Y must use this or stacked cover/info drift off the frozen card.
+     */
+    fun layoutHeightOr(fallback: Float): Float {
+        val h = topScope?.layoutSize?.height?.toFloat() ?: return fallback.coerceAtLeast(1f)
+        return h.coerceAtLeast(1f)
     }
 
     /**

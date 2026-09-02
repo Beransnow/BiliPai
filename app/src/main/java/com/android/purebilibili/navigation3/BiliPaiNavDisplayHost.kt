@@ -422,12 +422,20 @@ internal fun BiliPaiNavDisplayHost(
             )
         }
     }
+    val videoCardLayoutHeightProvider = remember(videoCardTransitionProgress) {
+        {
+            videoCardTransitionProgress.layoutHeightOr(
+                fallback = 1f,
+            )
+        }
+    }
     val miuixCardTransitionState = remember(
         cardMorphAvailable,
         heroMotion,
         videoCardProgressProvider,
         videoCardGestureProvider,
         videoCardLayoutWidthProvider,
+        videoCardLayoutHeightProvider,
         sourceMetadata.sourceBounds,
         sourceMetadata.sourceCoverBounds,
         sourceMetadata.sourceLayout,
@@ -439,6 +447,7 @@ internal fun BiliPaiNavDisplayHost(
             progressProvider = videoCardProgressProvider,
             isGestureInProgressProvider = videoCardGestureProvider,
             layoutWidthProvider = videoCardLayoutWidthProvider,
+            layoutHeightProvider = videoCardLayoutHeightProvider,
             sourceBoundsProvider = { sourceMetadata.sourceBounds },
             sourceCoverBoundsProvider = { sourceMetadata.sourceCoverBounds },
             sourceLayout = sourceMetadata.sourceLayout,

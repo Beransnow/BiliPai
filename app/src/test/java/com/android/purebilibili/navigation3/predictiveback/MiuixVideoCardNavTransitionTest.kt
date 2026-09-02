@@ -36,6 +36,32 @@ class MiuixVideoCardNavTransitionTest {
     }
 
     @Test
+    fun inverseScaleIsUniformAtLandAndTracksClipDuringMorph() {
+        val sourceX = 0.46f
+        val sourceY = 0.25f
+        val landed = resolveMiuixVideoCardInverseScaleForDepth(sourceX, sourceY, 0f)
+        assertEquals(1f / sourceX, landed.scaleX, 0.0001f)
+        assertEquals(1f / sourceX, landed.scaleY, 0.0001f)
+
+        val mid = resolveMiuixVideoCardInverseScaleForDepth(sourceX, sourceY, 0.18f)
+        assertEquals(1f / sourceX, mid.scaleX, 0.0001f)
+        assertTrue(abs(mid.scaleY - mid.scaleX) > 0.01f)
+
+        val outerY = resolveMiuixVideoCardOuterScale(sourceY, 0.18f, 1f)
+        val compensation = resolveMiuixVideoCardContentCompensation(
+            outerScaleX = resolveMiuixVideoCardOuterScale(sourceX, 0.18f, 1f),
+            outerScaleY = outerY,
+            contentScale = MiuixVideoCardContentScale.FillWidthTop,
+        )
+        // After FillWidthTop + inverse + outer Y, chrome height tracks the current clip.
+        assertEquals(
+            outerY / sourceY,
+            mid.scaleY * compensation.scaleY * outerY,
+            0.0001f,
+        )
+    }
+
+    @Test
     fun landingCompressionIsBoundedRelativeToFinalSizeOnBothAxes() {
         for (sourceScale in listOf(.05f, .2f, .8f, 1f)) {
             for (i in 0..1000) {

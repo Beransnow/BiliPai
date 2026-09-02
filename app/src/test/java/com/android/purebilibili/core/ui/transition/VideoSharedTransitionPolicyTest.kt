@@ -51,11 +51,12 @@ class VideoSharedTransitionPolicyTest {
             val p = i / 1000f
             assertEquals(p, spec.predictiveSeekSpec.transform(p))
             assertTrue(spec.effectsEasing.transform(p) in 0f..1f)
-            assertTrue(resolveVideoHeroLandingScale(p, true) in .985f..1f)
+            assertEquals(1f, resolveVideoHeroLandingScale(p, true))
             assertEquals(1f, resolveVideoHeroLandingScale(p, false))
         }
         assertEquals(1f, resolveVideoHeroLandingScale(0f, true))
         assertEquals(1f, resolveVideoHeroLandingScale(1f, true))
+        assertEquals(0f, VideoHeroMotionTokens.LANDING_COMPRESSION)
     }
 
     @Test

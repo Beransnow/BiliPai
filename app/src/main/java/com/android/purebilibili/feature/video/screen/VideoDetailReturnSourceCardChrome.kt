@@ -41,8 +41,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import kotlin.math.roundToInt
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -62,6 +64,8 @@ import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import com.android.purebilibili.core.ui.transition.resolveVideoCardDetailChromeAlpha
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeVisualFrame
+import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardInverseScale
+import com.android.purebilibili.navigation3.predictiveback.resolveMiuixVideoCardInverseScaleForDepth
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.data.model.response.ViewInfo
@@ -196,6 +200,8 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
     val miuixHost = LocalMiuixVideoCardTransitionState.current
     val viewportWidthPx = miuixHost.layoutWidthProvider().takeIf { it > 1f }
         ?: with(density) { configuration.screenWidthDp.dp.toPx() }
+    val viewportHeightPx = miuixHost.layoutHeightProvider().takeIf { it > 1f }
+        ?: with(density) { configuration.screenHeightDp.dp.toPx() }
     val layout = resolveVideoDetailReturnSourceCardLayout(
         viewportWidthPx = viewportWidthPx,
         sourceBounds = sourceBounds,
@@ -206,16 +212,32 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
 
     val cardWidth = with(density) { layout.cardWidthPx.toDp() }
     val cardHeight = with(density) { layout.cardHeightPx.toDp() }
-    val cardAnchorX = with(density) { layout.cardAnchorXInViewportPx.toDp() }
-    val cardAnchorY = with(density) { layout.cardAnchorYInViewportPx.toDp() }
     val infoWidth = with(density) { layout.infoWidthPx.toDp() }
     val infoHeight = with(density) { layout.infoHeightPx.toDp() }
-    val infoAnchorX = with(density) { layout.infoAnchorXInViewportPx.toDp() }
-    val infoAnchorY = with(density) { layout.infoAnchorYInViewportPx.toDp() }
-    val inverseScale = 1f / layout.sourceScale
-    // One physical source pixel, converted into the inverse-scaled flying entry. The outer
-    // shared-bounds shape clips this overdraw back to the card edge.
-    val sideBySideBottomOverscan = with(density) { inverseScale.toDp() }
+    val sourceScaleY = (
+        (sourceBounds?.height ?: layout.cardHeightPx) /
+            viewportHeightPx.coerceAtLeast(1f)
+        ).coerceIn(0.01f, 1f)
+    val frozenInfoAnchorXPx = layout.infoAnchorXInViewportPx * layout.sourceScale
+    val frozenInfoAnchorYPx = layout.infoAnchorYInViewportPx * layout.sourceScale
+    val frozenCardAnchorXPx = layout.cardAnchorXInViewportPx * layout.sourceScale
+    val frozenCardAnchorYPx = layout.cardAnchorYInViewportPx * layout.sourceScale
+
+    fun currentInverseScale(): MiuixVideoCardInverseScale {
+        return resolveMiuixVideoCardInverseScaleForDepth(
+            sourceScaleX = layout.sourceScale,
+            sourceScaleY = sourceScaleY,
+            depth = morphDepthProgressProvider(),
+        )
+    }
+
+    fun Modifier.landingOffset(anchorXPx: Float, anchorYPx: Float): Modifier = offset {
+        val inverse = currentInverseScale()
+        IntOffset(
+            x = (anchorXPx * inverse.scaleX).roundToInt(),
+            y = (anchorYPx * inverse.scaleY).roundToInt(),
+        )
+    }
 
     fun Modifier.landingLayer(): Modifier = graphicsLayer {
         val phase = phaseProvider()
@@ -227,8 +249,13 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
             isReturnGestureInProgress = isReturnGestureInProgress,
             sourceLayout = layout.layout,
         )
-        scaleX = inverseScale * frame.layoutScaleMultiplier
-        scaleY = inverseScale * frame.layoutScaleMultiplier
+        val inverse = resolveMiuixVideoCardInverseScaleForDepth(
+            sourceScaleX = layout.sourceScale,
+            sourceScaleY = sourceScaleY,
+            depth = morphDepthProgress,
+        )
+        scaleX = inverse.scaleX * frame.layoutScaleMultiplier
+        scaleY = inverse.scaleY * frame.layoutScaleMultiplier
         transformOrigin = TransformOrigin(0f, 0f)
         alpha = resolveVideoDetailFlyingSourceChromeAlpha(
             morphDepthProgress = morphDepthProgress,
@@ -273,7 +300,7 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                 modifier = modifier
                     .zIndex(-1f)
                     .align(Alignment.TopStart)
-                    .offset(x = cardAnchorX, y = cardAnchorY)
+                    .landingOffset(frozenCardAnchorXPx, frozenCardAnchorYPx)
                     .width(cardWidth)
                     .height(cardHeight)
                     .landingLayer()
@@ -283,9 +310,9 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                 modifier = modifier
                     .zIndex(1f)
                     .align(Alignment.TopStart)
-                    .offset(x = infoAnchorX, y = cardAnchorY)
+                    .landingOffset(frozenInfoAnchorXPx, frozenCardAnchorYPx)
                     .width(infoWidth)
-                    .height(cardHeight + sideBySideBottomOverscan)
+                    .height(cardHeight)
                     .landingLayer()
                     // This surface joins the cover on its start edge. Keeping start corners
                     // square prevents the two independently clipped rounded shapes from
@@ -323,7 +350,7 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
             modifier = modifier
                 .zIndex(1f)
                 .align(Alignment.TopStart)
-                .offset(x = infoAnchorX, y = infoAnchorY)
+                .landingOffset(frozenInfoAnchorXPx, frozenInfoAnchorYPx)
                 .width(infoWidth)
                 .height(infoHeight)
                 .landingLayer()
