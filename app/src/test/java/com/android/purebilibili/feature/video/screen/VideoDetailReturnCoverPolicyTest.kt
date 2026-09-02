@@ -203,6 +203,15 @@ class VideoDetailReturnCoverPolicyTest {
         assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
         assertTrue(holder.contains("alpha = flyingSourceChromeAlphaProvider()"))
         assertTrue(holder.contains("CardPositionManager.lastClickedNativeCardLayer == null"))
+        val chrome = File(
+            "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailReturnSourceCardChrome.kt",
+        ).takeIf { it.isFile }?.readText()
+            ?: File(
+                "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailReturnSourceCardChrome.kt",
+            ).readText()
+        assertTrue(chrome.contains("nativeInfoSlot("))
+        assertTrue(chrome.contains("widthPx * inverse.scaleX"))
+        assertTrue(chrome.contains("heightPx * inverse.scaleY"))
         val coverChromeGuard = holder
             .substringBefore("VideoDetailReturnCoverChrome(")
             .takeLast(500)

@@ -29,6 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -274,34 +278,66 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
     if (nativeCardLayer != null) {
         val infoCropXPx = layout.coverOffsetXPx + layout.coverWidthPx
         val infoCropYPx = layout.coverOffsetYPx + layout.coverHeightPx
-        fun Modifier.drawFrozenNativeCard(cropXPx: Float, cropYPx: Float): Modifier =
-            drawWithContent {
+        fun Modifier.nativeInfoSlot(
+            widthPx: Float,
+            heightPx: Float,
+            cropXPx: Float,
+            cropYPx: Float,
+        ): Modifier = offset {
+            val inverse = currentInverseScale()
+            IntOffset(
+                x = (frozenInfoAnchorXPx * inverse.scaleX).roundToInt(),
+                y = (frozenInfoAnchorYPx * inverse.scaleY).roundToInt(),
+            )
+        }.layout { measurable, _ ->
+            val inverse = currentInverseScale()
+            val w = (widthPx * inverse.scaleX).roundToInt().coerceAtLeast(1)
+            val h = (heightPx * inverse.scaleY).roundToInt().coerceAtLeast(1)
+            val placeable = measurable.measure(Constraints.fixed(w, h))
+            layout(w, h) { placeable.place(0, 0) }
+        }.clipToBounds().graphicsLayer {
+            val phase = phaseProvider()
+            val isReturnGestureInProgress = isReturnGestureInProgressProvider()
+            alpha = resolveVideoDetailFlyingSourceChromeAlpha(
+                morphDepthProgress = morphDepthProgressProvider(),
+                phase = phase,
+                isReturnGestureInProgress = isReturnGestureInProgress,
+                sourceLayout = layout.layout,
+            )
+        }.drawWithContent {
+            val inverse = currentInverseScale()
+            scale(
+                scaleX = inverse.scaleX,
+                scaleY = inverse.scaleY,
+                pivot = Offset.Zero,
+            ) {
                 translate(-cropXPx, -cropYPx) {
                     drawLayer(nativeCardLayer)
                 }
             }
+        }
         when (layout.layout) {
             VideoCardSourceLayout.STACKED -> Box(
                 modifier = modifier
                     .zIndex(1f)
                     .align(Alignment.TopStart)
-                    .landingOffset(frozenInfoAnchorXPx, frozenInfoAnchorYPx)
-                    .width(infoWidth)
-                    .height(infoHeight)
-                    .clipToBounds()
-                    .landingLayer()
-                    .drawFrozenNativeCard(0f, infoCropYPx),
+                    .nativeInfoSlot(
+                        widthPx = layout.infoWidthPx,
+                        heightPx = layout.infoHeightPx,
+                        cropXPx = 0f,
+                        cropYPx = infoCropYPx,
+                    ),
             )
             VideoCardSourceLayout.SIDE_BY_SIDE -> Box(
                 modifier = modifier
                     .zIndex(1f)
                     .align(Alignment.TopStart)
-                    .landingOffset(frozenInfoAnchorXPx, frozenCardAnchorYPx)
-                    .width(infoWidth)
-                    .height(cardHeight)
-                    .clipToBounds()
-                    .landingLayer()
-                    .drawFrozenNativeCard(infoCropXPx, 0f),
+                    .nativeInfoSlot(
+                        widthPx = layout.infoWidthPx,
+                        heightPx = layout.cardHeightPx,
+                        cropXPx = infoCropXPx,
+                        cropYPx = 0f,
+                    ),
             )
             VideoCardSourceLayout.COVER_ONLY -> Unit
         }
