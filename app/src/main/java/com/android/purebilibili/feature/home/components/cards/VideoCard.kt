@@ -796,6 +796,7 @@ internal fun ElegantVideoCard(
     val hasOverflowMenu = onDismiss != null || onWatchLater != null
     val hasTrailingCardAction = onUnfavorite != null || hasOverflowMenu
     val nativeCardLayer = rememberNativeVideoCardLayer()
+    var freezeNativeCardLayer by remember(video.bvid) { mutableStateOf(false) }
     
     val triggerCardClick = {
         cardCoordsRef.value?.takeIf { it.isAttached }?.boundsInRoot()?.let { bounds ->
@@ -882,6 +883,7 @@ internal fun ElegantVideoCard(
                 ),
                 sourceInstanceId = sharedSourceInstanceId,
             )
+            freezeNativeCardLayer = true
             captureNativeVideoCardImage(nativeCardLayer)
         }
         onClick(video.bvid, video.cid)
@@ -1007,7 +1009,10 @@ internal fun ElegantVideoCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .recordNativeVideoCardLayer(nativeCardLayer),
+                .recordNativeVideoCardLayer(
+                    layer = nativeCardLayer,
+                    freeze = freezeNativeCardLayer,
+                ),
         ) {
             Box(
                 modifier = Modifier

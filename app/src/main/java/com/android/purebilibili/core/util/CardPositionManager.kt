@@ -2,7 +2,7 @@ package com.android.purebilibili.core.util
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.layer.GraphicsLayer
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceLayout
@@ -65,8 +65,8 @@ object CardPositionManager {
     internal var lastClickedVideoSourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null
         private set
 
-    /** Pixel-perfect copy of the stationary list card, captured at click. */
-    internal var lastClickedNativeCardImage: ImageBitmap? = null
+    /** Frozen display list of the stationary card; drawn with drawLayer on the flying entry. */
+    internal var lastClickedNativeCardLayer: GraphicsLayer? = null
         private set
     
     /**
@@ -112,7 +112,7 @@ object CardPositionManager {
         lastClickedCoverBounds = null
         lastClickedVideoSourceLayout = VideoCardSourceLayout.COVER_ONLY
         lastClickedVideoSourceChromeSnapshot = null
-        lastClickedNativeCardImage = null
+        lastClickedNativeCardLayer = null
         lastClickedCardBounds = bounds
         lastScreenDensity = density
         isSingleColumnCard = isSingleColumn
@@ -179,8 +179,8 @@ object CardPositionManager {
         lastClickedVideoSourceChromeSnapshot = sourceChromeSnapshot
     }
 
-    internal fun recordNativeCardImage(image: ImageBitmap) {
-        lastClickedNativeCardImage = image
+    internal fun recordNativeCardLayer(layer: GraphicsLayer) {
+        lastClickedNativeCardLayer = layer
     }
     
     /**
@@ -195,7 +195,7 @@ object CardPositionManager {
         lastClickedVideoSourceCornerDp = null
         lastClickedVideoSourceLayout = VideoCardSourceLayout.COVER_ONLY
         lastClickedVideoSourceChromeSnapshot = null
-        lastClickedNativeCardImage = null
+        lastClickedNativeCardLayer = null
     }
 
     /**

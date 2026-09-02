@@ -551,7 +551,7 @@ class VideoSharedTransitionPolicyTest {
         ).readText()
         // 整卡 alpha=0 会落位黑闪；只对 info 区接 chrome alpha。
         assertTrue(homeCardSource.contains("infoContainerModifier.videoCardShellReturnChromeAlpha"))
-        assertTrue(homeCardSource.contains("recordNativeVideoCardLayer(nativeCardLayer)"))
+        assertTrue(homeCardSource.contains("recordNativeVideoCardLayer("))
         assertTrue(homeCardSource.contains("captureNativeVideoCardImage(nativeCardLayer)"))
         assertFalse(
             Regex(

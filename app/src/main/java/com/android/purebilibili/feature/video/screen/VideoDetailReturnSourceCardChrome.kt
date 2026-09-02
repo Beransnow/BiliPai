@@ -1,6 +1,5 @@
 package com.android.purebilibili.feature.video.screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -29,12 +28,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalConfiguration
@@ -269,14 +270,16 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
         )
     }
 
-    val nativeCardImage = CardPositionManager.lastClickedNativeCardImage
-    if (nativeCardImage != null) {
-        val infoCropX = with(density) {
-            (layout.coverOffsetXPx + layout.coverWidthPx).toDp()
-        }
-        val infoCropY = with(density) {
-            (layout.coverOffsetYPx + layout.coverHeightPx).toDp()
-        }
+    val nativeCardLayer = CardPositionManager.lastClickedNativeCardLayer
+    if (nativeCardLayer != null) {
+        val infoCropXPx = layout.coverOffsetXPx + layout.coverWidthPx
+        val infoCropYPx = layout.coverOffsetYPx + layout.coverHeightPx
+        fun Modifier.drawFrozenNativeCard(cropXPx: Float, cropYPx: Float): Modifier =
+            drawWithContent {
+                translate(-cropXPx, -cropYPx) {
+                    drawLayer(nativeCardLayer)
+                }
+            }
         when (layout.layout) {
             VideoCardSourceLayout.STACKED -> Box(
                 modifier = modifier
@@ -286,18 +289,9 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     .width(infoWidth)
                     .height(infoHeight)
                     .clipToBounds()
-                    .landingLayer(),
-            ) {
-                Image(
-                    bitmap = nativeCardImage,
-                    contentDescription = null,
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier
-                        .width(cardWidth)
-                        .height(cardHeight)
-                        .offset(y = -infoCropY),
-                )
-            }
+                    .landingLayer()
+                    .drawFrozenNativeCard(0f, infoCropYPx),
+            )
             VideoCardSourceLayout.SIDE_BY_SIDE -> Box(
                 modifier = modifier
                     .zIndex(1f)
@@ -306,18 +300,9 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     .width(infoWidth)
                     .height(cardHeight)
                     .clipToBounds()
-                    .landingLayer(),
-            ) {
-                Image(
-                    bitmap = nativeCardImage,
-                    contentDescription = null,
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier
-                        .width(cardWidth)
-                        .height(cardHeight)
-                        .offset(x = -infoCropX),
-                )
-            }
+                    .landingLayer()
+                    .drawFrozenNativeCard(infoCropXPx, 0f),
+            )
             VideoCardSourceLayout.COVER_ONLY -> Unit
         }
         return
