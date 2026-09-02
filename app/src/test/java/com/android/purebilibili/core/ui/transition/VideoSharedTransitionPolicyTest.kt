@@ -571,6 +571,33 @@ class VideoSharedTransitionPolicyTest {
     }
 
     @Test
+    fun nonHomeVideoCardsFreezeNativePixelsForReturnMorph() {
+        val cardSources = listOf(
+            "src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt",
+            "src/main/java/com/android/purebilibili/feature/video/ui/components/RelatedVideoItem.kt",
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/HomeStyleSingleColumnVideoCard.kt",
+            "src/main/java/com/android/purebilibili/feature/list/FavoritePersonalCard.kt",
+            "src/main/java/com/android/purebilibili/feature/list/HistoryPersonalCard.kt",
+            "src/main/java/com/android/purebilibili/feature/watchlater/WatchLaterScreen.kt",
+            "src/main/java/com/android/purebilibili/feature/dynamic/components/VideoCards.kt",
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/GlassVideoCard.kt",
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/CinematicVideoCard.kt",
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/StoryVideoCard.kt",
+        )
+        cardSources.forEach { path ->
+            val source = File(path).readText()
+            assertTrue(
+                source.contains("rememberNativeVideoCardSnapshotController("),
+                "$path is missing native snapshot capture",
+            )
+            assertTrue(
+                source.contains("nativeCardSnapshot.capture()"),
+                "$path does not freeze native pixels after recording position",
+            )
+        }
+    }
+
+    @Test
     fun videoDetailRootProvidesGlobalCardShellSharedBoundsTarget() {
         val detailSource = listOf(
             "VideoDetailTransitionHost.kt",

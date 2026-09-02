@@ -1,6 +1,8 @@
 package com.android.purebilibili.core.ui.transition
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -35,3 +37,22 @@ internal fun captureNativeVideoCardImage(
 
 @Composable
 internal fun rememberNativeVideoCardLayer() = rememberGraphicsLayer()
+
+internal class NativeVideoCardSnapshotController(
+    val modifier: Modifier,
+    val capture: () -> Unit,
+)
+
+@Composable
+internal fun rememberNativeVideoCardSnapshotController(key: Any): NativeVideoCardSnapshotController {
+    val layer = rememberNativeVideoCardLayer()
+    val freezeState = remember(key) { mutableStateOf(false) }
+    val modifier = Modifier.recordNativeVideoCardLayer(layer, freezeState.value)
+    return NativeVideoCardSnapshotController(
+        modifier = modifier,
+        capture = {
+            freezeState.value = true
+            captureNativeVideoCardImage(layer)
+        },
+    )
+}
