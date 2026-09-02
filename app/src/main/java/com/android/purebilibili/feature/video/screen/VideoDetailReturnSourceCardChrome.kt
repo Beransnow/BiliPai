@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.video.screen
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -27,10 +28,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -66,6 +69,7 @@ import com.android.purebilibili.core.ui.transition.resolveVideoCardDetailChromeA
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeVisualFrame
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardInverseScale
 import com.android.purebilibili.navigation3.predictiveback.resolveMiuixVideoCardInverseScaleForDepth
+import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.data.model.response.ViewInfo
@@ -263,6 +267,60 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
             isReturnGestureInProgress = isReturnGestureInProgress,
             sourceLayout = layout.layout,
         )
+    }
+
+    val nativeCardImage = CardPositionManager.lastClickedNativeCardImage
+    if (nativeCardImage != null) {
+        val infoCropX = with(density) {
+            (layout.coverOffsetXPx + layout.coverWidthPx).toDp()
+        }
+        val infoCropY = with(density) {
+            (layout.coverOffsetYPx + layout.coverHeightPx).toDp()
+        }
+        when (layout.layout) {
+            VideoCardSourceLayout.STACKED -> Box(
+                modifier = modifier
+                    .zIndex(1f)
+                    .align(Alignment.TopStart)
+                    .landingOffset(frozenInfoAnchorXPx, frozenInfoAnchorYPx)
+                    .width(infoWidth)
+                    .height(infoHeight)
+                    .clipToBounds()
+                    .landingLayer(),
+            ) {
+                Image(
+                    bitmap = nativeCardImage,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .width(cardWidth)
+                        .height(cardHeight)
+                        .offset(y = -infoCropY),
+                )
+            }
+            VideoCardSourceLayout.SIDE_BY_SIDE -> Box(
+                modifier = modifier
+                    .zIndex(1f)
+                    .align(Alignment.TopStart)
+                    .landingOffset(frozenInfoAnchorXPx, frozenCardAnchorYPx)
+                    .width(infoWidth)
+                    .height(cardHeight)
+                    .clipToBounds()
+                    .landingLayer(),
+            ) {
+                Image(
+                    bitmap = nativeCardImage,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .width(cardWidth)
+                        .height(cardHeight)
+                        .offset(x = -infoCropX),
+                )
+            }
+            VideoCardSourceLayout.COVER_ONLY -> Unit
+        }
+        return
     }
 
     val baseContainer = AppSurfaceTokens.cardContainer()

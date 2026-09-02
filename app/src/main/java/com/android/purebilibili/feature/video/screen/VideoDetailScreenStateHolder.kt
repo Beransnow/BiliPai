@@ -4484,6 +4484,7 @@ internal fun VideoDetailScreenStateHolder(
                             }
                             if (
                                 miuixVisualAssetsActive &&
+                                CardPositionManager.lastClickedNativeCardImage == null &&
                                 shouldDrawFlyingReconstructedSourceChrome(
                                     phase = videoCardDepthBackgroundState.phaseProvider(),
                                     isReturnGestureInProgress =

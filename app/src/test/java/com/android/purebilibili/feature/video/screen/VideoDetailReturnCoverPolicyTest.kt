@@ -202,6 +202,7 @@ class VideoDetailReturnCoverPolicyTest {
         assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
         assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
         assertTrue(holder.contains("alpha = flyingSourceChromeAlphaProvider()"))
+        assertTrue(holder.contains("CardPositionManager.lastClickedNativeCardImage == null"))
         val coverChromeGuard = holder
             .substringBefore("VideoDetailReturnCoverChrome(")
             .takeLast(500)

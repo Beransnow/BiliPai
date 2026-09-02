@@ -2,6 +2,7 @@ package com.android.purebilibili.core.util
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.ImageBitmap
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceLayout
@@ -63,6 +64,10 @@ object CardPositionManager {
 
     internal var lastClickedVideoSourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null
         private set
+
+    /** Pixel-perfect copy of the stationary list card, captured at click. */
+    internal var lastClickedNativeCardImage: ImageBitmap? = null
+        private set
     
     /**
      *  是否是单列卡片（故事卡片）
@@ -107,6 +112,7 @@ object CardPositionManager {
         lastClickedCoverBounds = null
         lastClickedVideoSourceLayout = VideoCardSourceLayout.COVER_ONLY
         lastClickedVideoSourceChromeSnapshot = null
+        lastClickedNativeCardImage = null
         lastClickedCardBounds = bounds
         lastScreenDensity = density
         isSingleColumnCard = isSingleColumn
@@ -172,6 +178,10 @@ object CardPositionManager {
         )
         lastClickedVideoSourceChromeSnapshot = sourceChromeSnapshot
     }
+
+    internal fun recordNativeCardImage(image: ImageBitmap) {
+        lastClickedNativeCardImage = image
+    }
     
     /**
      * 清除记录的位置
@@ -185,6 +195,7 @@ object CardPositionManager {
         lastClickedVideoSourceCornerDp = null
         lastClickedVideoSourceLayout = VideoCardSourceLayout.COVER_ONLY
         lastClickedVideoSourceChromeSnapshot = null
+        lastClickedNativeCardImage = null
     }
 
     /**
