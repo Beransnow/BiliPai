@@ -284,6 +284,7 @@ private fun AppMiuixSnackbarContainer(
                 ),
             )
             .squircleBackground(color = containerColor, cornerRadius = cornerRadius),
-        content = content,
-    )
+    ) {
+        content()
+    }
 }
