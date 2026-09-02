@@ -2379,7 +2379,8 @@ internal fun VideoDetailScreenStateHolder(
         userRequestedFullscreen,
         manualPortraitHoldActive,
         isVerticalVideo,
-        isPortraitFullscreen
+        isPortraitFullscreen,
+        windowSizeClass.isFoldableCoverScreen,
     ) {
         val requestedOrientation = resolvePhoneVideoRequestedOrientation(
             autoRotateEnabled = autoRotateEnabled,
@@ -2395,7 +2396,8 @@ internal fun VideoDetailScreenStateHolder(
             isInMultiWindowMode = isActivityInMultiWindowMode,
             isInPictureInPictureMode = isPipMode,
             // 展开态折叠屏也应遵循用户选择的默认全屏方向。
-            preferPortraitForFlatFoldable = false
+            preferPortraitForFlatFoldable = false,
+            preserveExactLandscapeSide = windowSizeClass.isFoldableCoverScreen,
         ) ?: return@LaunchedEffect
 
         activity?.applyPlayerRequestedOrientation(requestedOrientation)
@@ -2414,7 +2416,8 @@ internal fun VideoDetailScreenStateHolder(
         manualPortraitHoldActive,
         isActivityInMultiWindowMode,
         isPipMode,
-        isPortraitFullscreen
+        isPortraitFullscreen,
+        windowSizeClass.isFoldableCoverScreen,
     ) {
         if (!shouldObservePhoneAutoRotate(
                 autoRotateEnabled = autoRotateEnabled,
@@ -2442,7 +2445,8 @@ internal fun VideoDetailScreenStateHolder(
         manualPortraitHoldActive,
         isActivityInMultiWindowMode,
         isPipMode,
-        isPortraitFullscreen
+        isPortraitFullscreen,
+        windowSizeClass.isFoldableCoverScreen,
     ) {
         val hostActivity = activity
         if (
@@ -2475,7 +2479,8 @@ internal fun VideoDetailScreenStateHolder(
                     hostActivity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
                 val targetOrientation = resolvePhoneAutoRotateRequestedOrientation(
                     orientationDegrees = orientation,
-                    isCurrentlyLandscape = isCurrentlyLandscape
+                    isCurrentlyLandscape = isCurrentlyLandscape,
+                    useExactLandscapeSide = windowSizeClass.isFoldableCoverScreen,
                 )
                 val nowMs = SystemClock.elapsedRealtime()
                 val targetToApply = resolvePhoneAutoRotateTargetToApply(

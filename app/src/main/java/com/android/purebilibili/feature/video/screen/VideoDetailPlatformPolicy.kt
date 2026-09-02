@@ -605,7 +605,8 @@ internal fun resolvePhoneVideoRequestedOrientation(
     currentRequestedOrientation: Int? = null,
     isInMultiWindowMode: Boolean = false,
     isInPictureInPictureMode: Boolean = false,
-    preferPortraitForFlatFoldable: Boolean = false
+    preferPortraitForFlatFoldable: Boolean = false,
+    preserveExactLandscapeSide: Boolean = false,
 ): Int? {
     // A size class alone can classify a tablet or a large phone as a foldable. Keep this
     // preference out of compact layouts even if an upstream caller misclassifies the device.
@@ -667,16 +668,17 @@ internal fun resolvePhoneVideoRequestedOrientation(
                 preserveCurrentExactLandscapeSideWhileFullscreen(
                     requestedOrientation = fullscreenOrientation,
                     currentRequestedOrientation = currentRequestedOrientation,
-                    isFullscreenMode = isFullscreenMode
+                    isFullscreenMode = isFullscreenMode,
+                    preserveExactLandscapeSide = preserveExactLandscapeSide,
                 )
             }
-            // The orientation listener has already resolved the physical side on compact screens.
-            // Replacing that exact request with SENSOR_LANDSCAPE here can make some ROMs snap back
-            // to their default landscape side without emitting another sensor event to correct it.
+            // Foldable cover displays may need the listener's exact side preserved. Regular
+            // phones deliberately release an earlier exact request back to SENSOR_LANDSCAPE.
             isFullscreenMode -> preserveCurrentExactLandscapeSideWhileFullscreen(
                 requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
                 currentRequestedOrientation = currentRequestedOrientation,
-                isFullscreenMode = true
+                isFullscreenMode = true,
+                preserveExactLandscapeSide = preserveExactLandscapeSide,
             )
             else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
@@ -718,6 +720,7 @@ private fun resolveStableOrientationWhenAutoRotateDisabled(
 internal fun resolvePhoneAutoRotateRequestedOrientation(
     orientationDegrees: Int,
     isCurrentlyLandscape: Boolean,
+    useExactLandscapeSide: Boolean = false,
     portraitSnapDegrees: Int = 25,
     landscapeEnterMinDegrees: Int = 60,
     landscapeEnterMaxDegrees: Int = 120,
@@ -747,12 +750,21 @@ internal fun resolvePhoneAutoRotateRequestedOrientation(
     )
 
     return when {
-        // Keep emitting the physical landscape side after entry. Some foldable cover displays
-        // accept SENSOR_LANDSCAPE but keep the first 90-degree rotation indefinitely; an exact
-        // request gives those devices a real orientation change when gravity crosses 180°.
-        isCurrentlyLandscape && exactLandscapeKeep != null -> exactLandscapeKeep
+        // Regular phones should stay on SENSOR_LANDSCAPE so the platform can rotate between
+        // both sides without a fixed-side request racing a configuration update. Some foldable
+        // cover displays ignore that sensor request after the first turn, so only those windows
+        // receive the exact physical side as a fallback.
+        isCurrentlyLandscape && exactLandscapeKeep != null -> if (useExactLandscapeSide) {
+            exactLandscapeKeep
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        }
         portraitStable -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        !isCurrentlyLandscape && exactLandscapeEntry != null -> exactLandscapeEntry
+        !isCurrentlyLandscape && exactLandscapeEntry != null -> if (useExactLandscapeSide) {
+            exactLandscapeEntry
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+        }
         else -> null
     }
 }
@@ -788,9 +800,11 @@ private fun resolveCurrentExactLandscapeOrientation(currentRequestedOrientation:
 private fun preserveCurrentExactLandscapeSideWhileFullscreen(
     requestedOrientation: Int,
     currentRequestedOrientation: Int?,
-    isFullscreenMode: Boolean
+    isFullscreenMode: Boolean,
+    preserveExactLandscapeSide: Boolean,
 ): Int {
     if (
+        !preserveExactLandscapeSide ||
         !isFullscreenMode ||
         requestedOrientation != ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
     ) {
