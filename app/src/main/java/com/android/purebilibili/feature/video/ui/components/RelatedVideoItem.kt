@@ -169,7 +169,7 @@ internal fun rememberRelatedVideoCardLayout(): HomeFeedCardLayout {
 }
 
 /**
- * 相关推荐单列横卡：记录稳定来源标识与精确封面请求，供整卡 shared bounds 逐层返回。
+ * 相关推荐单列横卡：点击时冻结来源标识、几何与 chrome，供整卡 Morph 及逐层返回。
  * 与首页视频卡一致，由一个 sharedBounds 容器承载封面、标题、UP 信息和统计内容。
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -255,6 +255,20 @@ fun RelatedVideoItem(
                         ?.boundsInRoot(),
                     sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
                     sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                        title = video.title,
+                        ownerName = video.owner.name,
+                        ownerFaceUrl = video.owner.face,
+                        viewText = FormatUtils.formatStat(video.stat.view.toLong()),
+                        danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                        durationText = FormatUtils.formatDuration(video.duration),
+                        followed = isFollowed,
+                        // Related horizontal card keeps play/danmaku in the info column.
+                        infoPresentation = com.android.purebilibili.core.ui.transition
+                            .resolveVideoCardSourceInfoPresentation(
+                                publishTimeText = FormatUtils.formatPublishTime(video.pubdate),
+                                showStatsInInfo = true,
+                                showOverflowMenu = onMoreClick != null,
+                            ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
                     ),

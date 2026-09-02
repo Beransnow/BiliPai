@@ -70,6 +70,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
@@ -187,6 +188,17 @@ fun CinematicVideoCard(
                 coverBounds = coverBoundsRef.value,
                 sourceLayout = com.android.purebilibili.core.ui.transition.VideoCardSourceLayout.STACKED,
                 sourceChromeSnapshot = com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot(
+                    title = video.title,
+                    ownerName = video.owner.name,
+                    ownerFaceUrl = video.owner.face,
+                    viewText = FormatUtils.formatStat(video.stat.view.toLong()),
+                    danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                    durationText = FormatUtils.formatDuration(video.duration),
+                    infoPresentation = com.android.purebilibili.core.ui.transition
+                        .resolveVideoCardSourceInfoPresentation(
+                            publishTimeText = "",
+                            showStatsInInfo = false,
+                        ),
                     coverUrl = coverUrl,
                     coverCacheKey = coverCacheKey,
                 ),
@@ -222,7 +234,8 @@ fun CinematicVideoCard(
     val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
         isScrollInProgress = false,
         isReturningFromDetail = isReturningFromVideoDetail,
-        useCoverSharedBounds = useCardShellSharedBounds,
+        useCoverSharedBounds = useCardShellSharedBounds ||
+            (LocalMiuixVideoCardTransitionState.current.enabled && isSharedReturnTarget),
         isSharedReturnTarget = isSharedReturnTarget,
     )
     val cardShellShape = cardShape

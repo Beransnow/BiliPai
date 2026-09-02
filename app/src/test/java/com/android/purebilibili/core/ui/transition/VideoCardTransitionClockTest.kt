@@ -7,50 +7,42 @@ import kotlin.test.assertTrue
 
 class VideoCardTransitionClockTest {
     @Test
-    fun sharedMorphOwnsVisualProgressWhileMiuixOnlyReportsLifecycle() {
+    fun navigationOwnerCannotBePreemptedBySharedOrFallbackCompletion() {
         val clock = VideoCardTransitionClock()
         clock.beginOpening("home")
-        clock.followMiuixNavigationLifecycle(VideoCardTransitionSettleState.AutoEnter)
-        clock.reportSharedMorphProgress(.6f, true)
-        assertEquals(.6f, clock.depthProgress())
-
+        var depth = .6f
+        clock.bindNavigationDriver { depth }
+        clock.followNavigationDriver(VideoCardTransitionSettleState.AutoEnter)
         clock.reportSharedMorphProgress(1f, false)
-        assertEquals(VideoCardTransitionBackgroundPhase.HELD, clock.phase)
-        clock.beginReturning("home", 1f)
-        clock.followMiuixNavigationLifecycle(VideoCardTransitionSettleState.AutoReturn, -2f)
-        clock.reportSharedMorphProgress(.35f, true)
-        assertEquals(.35f, clock.depthProgress())
+        clock.markHeld()
+        assertEquals(VideoCardTransitionBackgroundPhase.OPENING, clock.phase)
+        assertEquals(.6f, clock.depthProgress())
+        clock.beginReturning("home", clock.depthProgress())
+        clock.followNavigationDriver(VideoCardTransitionSettleState.AutoReturn, -2f)
+        assertEquals(.6f, clock.depthProgress())
         assertEquals(-2f, clock.initialVelocity)
-
-        clock.reportSharedMorphProgress(0f, false)
+        clock.markIdle()
+        assertEquals(VideoCardTransitionBackgroundPhase.RETURNING, clock.phase)
+        depth = 0f
+        clock.followNavigationDriver(VideoCardTransitionSettleState.Idle)
         assertEquals(VideoCardTransitionBackgroundPhase.IDLE, clock.phase)
     }
 
     @Test
-    fun predictiveCancelOnlyChangesLifecycleState() {
+    fun predictiveCancelRestoresFromCurrentPositionWithoutOpeningReset() {
         val clock = VideoCardTransitionClock()
-        clock.followMiuixNavigationLifecycle(VideoCardTransitionSettleState.InteractiveSeek)
-        clock.followMiuixNavigationLifecycle(VideoCardTransitionSettleState.CancelRestore, 1f)
+        clock.bindNavigationDriver { .4f }
+        clock.followNavigationDriver(VideoCardTransitionSettleState.InteractiveSeek)
+        clock.followNavigationDriver(VideoCardTransitionSettleState.CancelRestore, 1f)
+        assertEquals(.4f, clock.depthProgress())
         assertTrue(clock.gestureRestoreInProgress)
         assertEquals(VideoCardTransitionSettleState.CancelRestore, clock.settleState)
-        clock.followMiuixNavigationLifecycle(VideoCardTransitionSettleState.Held)
+        clock.followNavigationDriver(VideoCardTransitionSettleState.Held)
         assertFalse(clock.gestureRestoreInProgress)
     }
 
     @Test
     fun depthPriority_gestureBeatsSharedBeatsFallback() {
-        assertEquals(
-            0f,
-            resolveVideoCardClockDepthProgress(
-                gestureBackProgress = null,
-                gestureStartDepth = 1f,
-                phase = VideoCardTransitionBackgroundPhase.IDLE,
-                sharedMorphActive = false,
-                sharedMorphFraction = null,
-                fallbackProgress = 1f,
-            ),
-            0.001f,
-        )
         assertEquals(
             0.4f,
             resolveVideoCardClockDepthProgress(
@@ -63,7 +55,7 @@ class VideoCardTransitionClockTest {
             ),
             0.001f,
         )
-        // RETURNING：标准 shared morph 是唯一视觉进度。
+        // RETURNING：shared 与 fallback 取较大值（shared 领先时跟 shared）
         assertEquals(
             0.75f,
             resolveVideoCardClockDepthProgress(
@@ -76,9 +68,9 @@ class VideoCardTransitionClockTest {
             ),
             0.001f,
         )
-        // shared 回灌为 0 时也不再由手工 fallback 覆盖。
+        // RETURNING：shared 因 Exit.None 瞬间掉到 0 时，保留 fallback 消糊曲线
         assertEquals(
-            0f,
+            0.8f,
             resolveVideoCardClockDepthProgress(
                 gestureBackProgress = null,
                 gestureStartDepth = 1f,
@@ -276,41 +268,16 @@ class VideoCardTransitionClockTest {
     }
 
     @Test
-    fun returnSharedMorphEndClearsDepthState() {
+    fun returnSharedMorphEndDoesNotForceIdle() {
         val clock = VideoCardTransitionClock()
         clock.beginOpening("home")
         clock.reportSharedMorphProgress(morphFraction = 1f, active = false)
         assertEquals(VideoCardTransitionBackgroundPhase.HELD, clock.phase)
         clock.beginReturning("home", startDepth = 1f)
+        // 详情 dispose / Exit.None：shared 结束且 fraction≈0 时仍保持 RETURNING，
+        // 留给 Host fallback 跑完模糊→清晰后再 markIdle。
         clock.reportSharedMorphProgress(morphFraction = 0f, active = false)
-        assertEquals(VideoCardTransitionBackgroundPhase.IDLE, clock.phase)
-        assertEquals(0f, clock.depthProgress(), 0.0001f)
-        assertEquals(null, clock.sourceRoute)
-    }
-
-    @Test
-    fun stableMiuixSourceEntryCannotRearmBlurAfterReturn() {
-        val clock = VideoCardTransitionClock()
-        clock.beginReturning("home", startDepth = 1f)
-        clock.followMiuixNavigationLifecycle(VideoCardTransitionSettleState.AutoReturn)
-        clock.reportSharedMorphProgress(morphFraction = 0f, active = false)
-
-        clock.followMiuixNavigationLifecycle(VideoCardTransitionSettleState.Held)
-
-        assertEquals(VideoCardTransitionBackgroundPhase.IDLE, clock.phase)
-        assertEquals(0f, clock.depthProgress(), 0.0001f)
-    }
-
-    @Test
-    fun miuixIdentityEndpointCannotFinishSharedBoundsEarly() {
-        val clock = VideoCardTransitionClock()
-        clock.beginOpening("home")
-        clock.reportSharedMorphProgress(morphFraction = 0.4f, active = true)
-
-        clock.followMiuixNavigationLifecycle(VideoCardTransitionSettleState.Idle)
-
-        assertEquals(VideoCardTransitionBackgroundPhase.OPENING, clock.phase)
-        assertEquals(0.4f, clock.depthProgress(), 0.0001f)
+        assertEquals(VideoCardTransitionBackgroundPhase.RETURNING, clock.phase)
     }
 
     @Test
@@ -365,9 +332,9 @@ class VideoCardTransitionClockTest {
             ),
             0.0001f,
         )
-        // shared progress 是唯一时钟；一旦回灌 0，旧 floor 不得覆盖它。
+        // shared 瞬间 0 时仍被 floor 顶住
         assertEquals(
-            0f,
+            1f,
             resolveVideoCardClockDepthProgress(
                 gestureBackProgress = null,
                 gestureStartDepth = 1f,

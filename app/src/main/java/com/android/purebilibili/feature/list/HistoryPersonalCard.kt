@@ -235,6 +235,21 @@ internal fun HistoryPersonalCard(
                     coverBounds = coverBounds.value,
                     sourceLayout = if (stacked) VideoCardSourceLayout.STACKED else VideoCardSourceLayout.SIDE_BY_SIDE,
                     sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                        title = video.title,
+                        ownerName = video.owner.name.takeIf { it.isNotBlank() }
+                            ?: if (item.business == HistoryBusiness.PGC) "番剧" else "未知作者",
+                        ownerFaceUrl = video.owner.face,
+                        viewText = FormatUtils.formatStat(video.stat.view.toLong()),
+                        danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                        durationText = FormatUtils.formatDuration(video.duration),
+                        infoPresentation = com.android.purebilibili.core.ui.transition
+                            .resolveVideoCardSourceInfoPresentation(
+                                publishTimeText = FormatUtils.formatPublishTime(video.view_at),
+                                // History cards show owner + viewed time, not play/danmaku stats.
+                                showStatsInInfo = false,
+                                ownerBeforePublish = true,
+                                showOverflowMenu = !batchMode,
+                            ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
                     ),

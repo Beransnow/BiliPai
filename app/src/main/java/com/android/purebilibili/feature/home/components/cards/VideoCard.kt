@@ -62,6 +62,7 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.HomeCoverReturnPrefetchEntry
 import com.android.purebilibili.core.util.HomeCoverReturnPrefetchRegistry
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.theme.BiliPink
@@ -99,6 +100,7 @@ import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionVisualSpec
@@ -826,8 +828,48 @@ internal fun ElegantVideoCard(
                 density = screenMetrics.density,
                 sourceCornerDp = cardCornerRadius.value.roundToInt(),
                 coverBounds = sourceCoverBounds,
+                // Dual-column home cards are cover-over-meta; freeze chrome so return text
+                // survives Loading and does not wait for destination ViewInfo.
                 sourceLayout = VideoCardSourceLayout.STACKED,
                 sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                    title = video.title,
+                    ownerName = video.owner.name,
+                    ownerFaceUrl = video.owner.face,
+                    viewText = if (video.stat.view > 0) {
+                        FormatUtils.formatStat(video.stat.view.toLong())
+                    } else {
+                        primaryStatText
+                    },
+                    danmakuText = secondaryStatText
+                        ?: FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                    durationText = durationText,
+                    followed = video.isFollowed,
+                    // Remember what the list info column actually paints (not cover badges).
+                    infoPresentation = com.android.purebilibili.core.ui.transition
+                        .resolveVideoCardSourceInfoPresentation(
+                            publishTimeText = publishTimeRowText,
+                            showStatsInInfo = scrollLitePolicy.showSecondaryStatsRow,
+                            showDurationInInfo = showDurationOutside,
+                            useTintedInfoSurface = infoSurfaceAppearance.useTintedSurface,
+                            showOverflowMenu = hasOverflowMenu,
+                        ),
+                    coverPresentation = VideoCardSourceCoverPresentation(
+                        showGradientMask = scrollLitePolicy.showCoverGradientMask,
+                        showStatsOnCover = scrollLitePolicy.showCompactStatsOnCover,
+                        showSecondaryStatOnCover = scrollLitePolicy.showCompactStatsOnCover &&
+                            frozenCompactStatsLayout.showSecondaryStat,
+                        showOnlineCountOnCover = scrollLitePolicy.showCompactStatsOnCover &&
+                            frozenCompactStatsLayout.showOnlineCount,
+                        showDurationOnCover = showDurationOnCover,
+                        showDurationAsStat = scrollLitePolicy.showCompactStatsOnCover &&
+                            showDurationOutside,
+                        useGlassStats = badgeStylePolicy.coverStyle == HomeVideoBadgeStyle.GLASS,
+                        onlineCountText = onlineCount,
+                        premiumBadgeText = premiumBadgeLabel.orEmpty(),
+                        showHistoryProgressBar = scrollLitePolicy.showHistoryProgressBar &&
+                            showHistoryProgressBar,
+                        historyProgressFraction = historyProgressFraction,
+                    ),
                     // Exact stationary list cover request (URL + key + Coil size).
                     coverUrl = coverUrl,
                     coverCacheKey = coverCacheKey,
@@ -934,10 +976,12 @@ internal fun ElegantVideoCard(
         val isCoverSharedReturnTarget = routeMatchesSharedReturnTarget && sharedSourceOwnershipAllowed
         val useCardShellSharedBounds = sharedTransitionOwnership.useCardContainerSharedBounds &&
             sharedSourceOwnershipAllowed
+        val miuixCardPixelOwnership =
+            LocalMiuixVideoCardTransitionState.current.enabled && isCoverSharedReturnTarget
         val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
             isScrollInProgress = scrollLiteModeEnabled,
             isReturningFromDetail = isReturningFromVideoDetail,
-            useCoverSharedBounds = useCardShellSharedBounds,
+            useCoverSharedBounds = useCardShellSharedBounds || miuixCardPixelOwnership,
             isSharedReturnTarget = isCoverSharedReturnTarget
         )
         // lastClicked 生命周期内钉住点击时的封面源，避免返回途中换 URL/质量触发重解码闪烁。

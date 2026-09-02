@@ -1348,6 +1348,18 @@ private fun WatchLaterVideoCard(
                     coverBounds = coverBoundsRef.value,
                     sourceLayout = if (stacked) VideoCardSourceLayout.STACKED else VideoCardSourceLayout.SIDE_BY_SIDE,
                     sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                        title = item.title,
+                        ownerName = item.owner.name.ifBlank { "未知UP主" },
+                        ownerFaceUrl = item.owner.face,
+                        viewText = formatNumber(item.stat.view),
+                        danmakuText = formatNumber(item.stat.danmaku),
+                        durationText = formatDuration(item.duration),
+                        infoPresentation = com.android.purebilibili.core.ui.transition
+                            .resolveVideoCardSourceInfoPresentation(
+                                publishTimeText = "",
+                                showStatsInInfo = true,
+                                showOverflowMenu = !isBatchMode,
+                            ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
                     ),

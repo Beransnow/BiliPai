@@ -16,15 +16,18 @@ import kotlin.test.assertTrue
 
 class VideoSharedTransitionPolicyTest {
     @Test
-    fun heroTimingUsesConfiguredDurationWithoutManualGeometryRetiming() {
-        val spec = resolveVideoHeroMotionSpec(360)
-
-        assertEquals(360, spec.enterDurationMillis)
-        assertFalse(
-            File(
-                "src/main/java/com/android/purebilibili/core/ui/transition/VideoSharedTransitionPolicy.kt",
-            ).readText().contains("resolveVideoSharedTransitionGeometryRatio"),
-        )
+    fun heroGeometryUsesDpNotPixelsAndKeepsMissingBoundsFallback() {
+        val card = Rect(0f, 0f, 100f, 60f)
+        val target = Rect(0f, 0f, 200f, 220f)
+        val small = resolveVideoHeroMotionSpec(360, card, card)
+        val large = resolveVideoHeroMotionSpec(360, card, target)
+        val dense = resolveVideoHeroMotionSpec(360, Rect(0f, 0f, 300f, 180f),
+            Rect(0f, 0f, 600f, 660f), density = 3f)
+        assertTrue(large.enterDurationMillis > small.enterDurationMillis)
+        assertEquals(large, dense)
+        assertEquals(360, resolveVideoHeroMotionSpec(360, null, target).enterDurationMillis)
+        assertEquals(360, resolveVideoHeroMotionSpec(360, Rect.Zero, target).enterDurationMillis)
+        assertEquals(360, resolveVideoHeroMotionSpec(360, card, target, Float.NaN).enterDurationMillis)
     }
 
     @Test
@@ -42,22 +45,21 @@ class VideoSharedTransitionPolicyTest {
     }
 
     @Test
-    fun heroEffectsAndSeekAreMonotonicWithoutLandingPulse() {
+    fun heroEffectsAndSeekAreMonotonicAndSpatialPulseIsBounded() {
         val spec = resolveVideoHeroMotionSpec(360)
         for (i in 0..1000) {
             val p = i / 1000f
             assertEquals(p, spec.predictiveSeekSpec.transform(p))
             assertTrue(spec.effectsEasing.transform(p) in 0f..1f)
+            assertTrue(resolveVideoHeroLandingScale(p, true) in .985f..1f)
+            assertEquals(1f, resolveVideoHeroLandingScale(p, false))
         }
-        val source = File(
-            "src/main/java/com/android/purebilibili/core/ui/transition/VideoSharedTransitionPolicy.kt",
-        ).readText()
-        assertFalse(source.contains("LANDING_COMPRESSION"))
-        assertFalse(source.contains("resolveVideoHeroLandingScale"))
+        assertEquals(1f, resolveVideoHeroLandingScale(0f, true))
+        assertEquals(1f, resolveVideoHeroLandingScale(1f, true))
     }
 
     @Test
-    fun standardSharedBoundsReturnAndProgrammaticSpecsAreExplicit() {
+    fun legacySharedBoundsSeekAndProgrammaticSpecsAreExplicit() {
         val motion = resolveVideoCardSharedTransitionMotionSpec("home", true)
         val detail = Rect(0f, 0f, 360f, 800f)
         val card = Rect(0f, 0f, 120f, 80f)

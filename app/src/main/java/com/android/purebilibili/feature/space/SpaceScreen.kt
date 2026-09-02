@@ -2914,6 +2914,17 @@ private fun SpaceHomeVideoCard(
                         coverBounds = coverBounds,
                         sourceLayout = VideoCardSourceLayout.STACKED,
                         sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                            title = video.title,
+                            ownerName = video.author,
+                            ownerFaceUrl = "",
+                            viewText = FormatUtils.formatStat(video.play.toLong()),
+                            danmakuText = FormatUtils.formatStat(video.comment.toLong()),
+                            durationText = video.length,
+                            infoPresentation = com.android.purebilibili.core.ui.transition
+                                .resolveVideoCardSourceInfoPresentation(
+                                    publishTimeText = FormatUtils.formatPublishTime(video.created),
+                                    showStatsInInfo = true,
+                                ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
                         ),
@@ -3100,6 +3111,17 @@ private fun SpaceAggregateMediaCard(
                         sourceCornerDp = cardCornerRadiusDp,
                         coverBounds = bounds,
                         sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                            title = item.title,
+                            ownerName = item.author,
+                            ownerFaceUrl = "",
+                            viewText = FormatUtils.formatStat(item.play.toLong()),
+                            danmakuText = FormatUtils.formatStat(item.danmaku.toLong()),
+                            durationText = item.length,
+                            infoPresentation = com.android.purebilibili.core.ui.transition
+                                .resolveVideoCardSourceInfoPresentation(
+                                    publishTimeText = "",
+                                    showStatsInInfo = true,
+                                ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
                         ),
@@ -3257,6 +3279,17 @@ private fun SpaceTopVideoCard(
                         sourceCornerDp = cardCornerRadiusDp,
                         coverBounds = bounds,
                         sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                            title = video.title,
+                            ownerName = "",
+                            ownerFaceUrl = "",
+                            viewText = FormatUtils.formatStat(video.stat.view),
+                            danmakuText = FormatUtils.formatStat(video.stat.danmaku),
+                            durationText = FormatUtils.formatDuration(video.duration),
+                            infoPresentation = com.android.purebilibili.core.ui.transition
+                                .resolveVideoCardSourceInfoPresentation(
+                                    publishTimeText = "",
+                                    showStatsInInfo = true,
+                                ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
                         ),
@@ -3455,6 +3488,18 @@ private fun SpaceArchiveListItemRow(
                         coverBounds = coverBounds,
                         sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
                         sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                            title = title,
+                            ownerName = "",
+                            ownerFaceUrl = "",
+                            viewText = FormatUtils.formatStat(play),
+                            danmakuText = FormatUtils.formatStat(secondaryCount),
+                            durationText = duration,
+                            infoPresentation = com.android.purebilibili.core.ui.transition
+                                .resolveVideoCardSourceInfoPresentation(
+                                    publishTimeText = publishTime,
+                                    showStatsInInfo = true,
+                                    showOverflowMenu = true,
+                                ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
                         ),

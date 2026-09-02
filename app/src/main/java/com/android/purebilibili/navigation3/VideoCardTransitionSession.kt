@@ -25,7 +25,7 @@ internal data class VideoCardTransitionSession(
     val isSingleColumnCard: Boolean,
     val sourceLayout: VideoCardSourceLayout,
     val sourceChromeSnapshot: VideoCardSourceChromeSnapshot?,
-    /** Click-time host origin retained only for legacy direction/background diagnostics. */
+    /** Navigation-host origin frozen at click, so the landing rect stays in one coordinate space. */
     val hostOriginInRoot: Offset = Offset.Zero,
 ) {
     val hasUsableSourceGeometry: Boolean

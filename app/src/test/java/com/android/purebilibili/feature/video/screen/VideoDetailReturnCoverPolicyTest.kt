@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.video.screen
 
+import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionPlaybackIntent
@@ -12,27 +14,126 @@ import java.io.File
 class VideoDetailReturnCoverPolicyTest {
 
     @Test
+    fun flyingSourceChromeOwnsClickFrameAndReturnLandingFrame() {
+        assertEquals(
+            1f,
+            resolveVideoDetailFlyingSourceChromeAlpha(
+                morphDepthProgress = 0f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            0f,
+            resolveVideoDetailFlyingSourceChromeAlpha(
+                morphDepthProgress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoDetailFlyingSourceChromeAlpha(
+                morphDepthProgress = 0f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = false,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+            0.001f,
+        )
+    }
+
+    @Test
+    fun flyingCoverUsesTheFrozenStationaryCardPresentation() {
+        val coverPresentation = VideoCardSourceCoverPresentation(
+            showGradientMask = true,
+            showStatsOnCover = true,
+            showSecondaryStatOnCover = true,
+            showDurationOnCover = true,
+            showHistoryProgressBar = true,
+            historyProgressFraction = 0.42f,
+        )
+        val model = resolveVideoDetailReturnSourceCardChromeModel(
+            info = null,
+            snapshot = VideoCardSourceChromeSnapshot(
+                title = "title",
+                ownerName = "owner",
+                viewText = "12.3万",
+                danmakuText = "456",
+                durationText = "05:20",
+                coverPresentation = coverPresentation,
+            ),
+        )
+
+        assertEquals(coverPresentation, model?.coverPresentation)
+        assertEquals(2f, resolveVideoDetailReturnCoverChromeDensityScale(0.5f), 0.001f)
+    }
+
+    @Test
+    fun restoredParentSessionDoesNotRetakeVisualAssetsWhileClockIsIdle() {
+        assertFalse(
+            shouldConsumeMiuixTransitionVisualAssets(
+                entryOwnsMiuixCardTransition = true,
+                phase = VideoCardTransitionBackgroundPhase.IDLE,
+                isReturnGestureInProgress = false,
+            )
+        )
+        assertTrue(
+            shouldConsumeMiuixTransitionVisualAssets(
+                entryOwnsMiuixCardTransition = true,
+                phase = VideoCardTransitionBackgroundPhase.IDLE,
+                isReturnGestureInProgress = true,
+            )
+        )
+        assertTrue(
+            shouldConsumeMiuixTransitionVisualAssets(
+                entryOwnsMiuixCardTransition = true,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isReturnGestureInProgress = false,
+            )
+        )
+        assertTrue(
+            shouldConsumeMiuixTransitionVisualAssets(
+                entryOwnsMiuixCardTransition = true,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = false,
+            )
+        )
+        assertFalse(
+            shouldConsumeMiuixTransitionVisualAssets(
+                entryOwnsMiuixCardTransition = false,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isReturnGestureInProgress = true,
+            )
+        )
+    }
+
+    @Test
     fun nestedDetailOnlyConsumesMiuixTransitionFromItsOwnSourceEntry() {
         assertTrue(
-            isVideoDetailEntryActiveCardTransitionSource(
+            isVideoDetailEntryActiveMiuixTransitionSource(
                 entrySourceRoute = "video/BV_PARENT",
                 activeSourceRoute = "video/BV_PARENT",
             )
         )
         assertTrue(
-            isVideoDetailEntryActiveCardTransitionSource(
+            isVideoDetailEntryActiveMiuixTransitionSource(
                 entrySourceRoute = "video/BV_PARENT?title=parent",
                 activeSourceRoute = "video/BV_PARENT?from=related",
             )
         )
         assertFalse(
-            isVideoDetailEntryActiveCardTransitionSource(
+            isVideoDetailEntryActiveMiuixTransitionSource(
                 entrySourceRoute = "home",
                 activeSourceRoute = "video/BV_PARENT",
             )
         )
         assertFalse(
-            isVideoDetailEntryActiveCardTransitionSource(
+            isVideoDetailEntryActiveMiuixTransitionSource(
                 entrySourceRoute = null,
                 activeSourceRoute = "video/BV_PARENT",
             )
@@ -42,8 +143,8 @@ class VideoDetailReturnCoverPolicyTest {
     @Test
     fun nestedReturnSessionOnlyChangesOutgoingDetailVisualState() {
         assertTrue(
-            shouldConsumeReturnSessionForVideoDetailEntry(
-                entryOwnsCardTransition = true,
+            shouldConsumeMiuixReturnSessionForVideoDetailEntry(
+                entryOwnsMiuixCardTransition = true,
                 isReturningFromDetail = true,
                 transitionEnabled = true,
                 sharedBoundsActive = true,
@@ -51,8 +152,8 @@ class VideoDetailReturnCoverPolicyTest {
             )
         )
         assertFalse(
-            shouldConsumeReturnSessionForVideoDetailEntry(
-                entryOwnsCardTransition = false,
+            shouldConsumeMiuixReturnSessionForVideoDetailEntry(
+                entryOwnsMiuixCardTransition = false,
                 isReturningFromDetail = true,
                 transitionEnabled = true,
                 sharedBoundsActive = true,
@@ -60,8 +161,8 @@ class VideoDetailReturnCoverPolicyTest {
             )
         )
         assertFalse(
-            shouldConsumeReturnSessionForVideoDetailEntry(
-                entryOwnsCardTransition = true,
+            shouldConsumeMiuixReturnSessionForVideoDetailEntry(
+                entryOwnsMiuixCardTransition = true,
                 isReturningFromDetail = true,
                 transitionEnabled = true,
                 sharedBoundsActive = true,
@@ -91,17 +192,24 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun sharedBoundsDoesNotRebuildSourceCardOrManuallyLandMedia() {
+    fun flyingEntryOwnsInformationAndCoverChrome() {
         val holder = File(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
         ).takeIf { it.isFile }?.readText()
             ?: File(
                 "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
             ).readText()
-        assertFalse(holder.contains("VideoDetailReturnSourceCardChrome("))
-        assertFalse(holder.contains("VideoDetailReturnCoverChrome("))
-        assertFalse(holder.contains("videoDetailReturnMediaLayout("))
-        assertTrue(holder.contains("videoCardShellSharedBoundsOrEmpty("))
+        assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
+        assertTrue(holder.contains("VideoDetailReturnCoverChrome("))
+        assertTrue(holder.contains("alpha = flyingSourceChromeAlphaProvider()"))
+        val coverChromeGuard = holder
+            .substringBefore("VideoDetailReturnCoverChrome(")
+            .takeLast(500)
+        assertTrue(coverChromeGuard.contains("if (miuixVisualAssetsActive)"))
+        val sourceChromeGuard = holder
+            .substringBefore("VideoDetailReturnSourceCardChrome(")
+            .takeLast(1_000)
+        assertTrue(sourceChromeGuard.contains("miuixVisualAssetsActive"))
     }
 
     @Test
@@ -272,14 +380,6 @@ class VideoDetailReturnCoverPolicyTest {
                 isVisible = false,
                 sharedBoundsActive = false,
                 isExitTransitionInProgress = true,
-            ),
-        )
-        assertTrue(
-            shouldKeepPlaybackSessionActiveForSharedReturnMorph(
-                isVisible = false,
-                sharedBoundsActive = true,
-                isExitTransitionInProgress = false,
-                isSharedTransitionActive = true,
             ),
         )
     }
@@ -1367,6 +1467,11 @@ class VideoDetailReturnCoverPolicyTest {
     @Test
     fun residentCoverPrefersStationaryListSnapshotOverRouteCover() {
         val snapshot = com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot(
+            title = "t",
+            ownerName = "up",
+            viewText = "1",
+            danmakuText = "2",
+            durationText = "1:00",
             coverUrl = "https://i0.hdslb.com/bfs/cover.jpg@640w_400h.webp",
             coverCacheKey = "cover_BV1_n_640x400",
             coverDecodeWidthPx = 640,
@@ -1386,6 +1491,11 @@ class VideoDetailReturnCoverPolicyTest {
     @Test
     fun residentCoverUsesClickSnapshotThenPrefetchBeforeRoute() {
         val click = com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot(
+            title = "t",
+            ownerName = "up",
+            viewText = "1",
+            danmakuText = "2",
+            durationText = "1:00",
             coverUrl = "https://list/cover@480w_300h.webp",
             coverCacheKey = "cover_BV1_n_480x300",
             coverDecodeWidthPx = 480,
@@ -1418,7 +1528,11 @@ class VideoDetailReturnCoverPolicyTest {
     fun residentCoverFallsBackToRouteWhenSnapshotHasNoCover() {
         val source = resolveVideoDetailResidentCoverSource(
             sourceChromeSnapshot = com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot(
-                coverUrl = "",
+                title = "t",
+                ownerName = "up",
+                viewText = "1",
+                danmakuText = "2",
+                durationText = "1:00",
             ),
             routeCoverUrl = "http://i0.hdslb.com/bfs/cover.jpg",
             bvid = "BV1",

@@ -1,10 +1,12 @@
 package com.android.purebilibili.core.ui.transition
 
+import com.android.purebilibili.core.ui.adaptive.MotionTier
+
 /**
  * 详情 → 来源卡片返回的**单一时间轴契约**（纯 Kotlin，无 Compose）。
  *
  * 目标：
- * - standard sharedBounds morph / 景深 blur / 封面 ownership 共用同一套数字
+ * - 导航 seek / sharedBounds morph / 景深 blur / 封面 ownership / 源卡 chrome 共用同一套数字
  * - feature 接线层只读这里的结果，不再各自发明时长或 ownership 分支
  *
  * 三条封面路径：
@@ -14,33 +16,40 @@ package com.android.purebilibili.core.ui.transition
  */
 
 /**
- * 源卡 sharedBounds Enter 延后淡入比例。
+ * 源卡 sharedBounds Enter 延后淡入比例（遗留字段）。
  *
  * **当前策略：始终 0 / 不延后整壳 Enter。**
- * 来源真实卡资源全程待命；标准 shared overlay 在结束时直接交还真实卡。
+ * 来源卡资源全程待命；Miuix 路径由飞行详情 entry 内的封面/文字在返回后半段
+ * 分段接管。整壳 delayed fadeIn 会在 overlay 卸层瞬间造成二次叠化，是落位闪烁主因。
  */
 internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0f
 
 /**
- * 详情侧控制层与媒体交接的标准 shared transition 时间窗。
+ * 源卡 chrome（标题/UP）在返回 settle 进度上的淡入起点。
+ * live 正文在此点起让位。该字段保留给详情页次要 chrome；来源卡像素改由
+ * [resolveVideoCardLiveReturnVisualHandoffAlpha] 控制。
  */
 internal object VideoCardTransitionVisualTimeline {
     const val DETAIL_CHROME_ENTER_START = 0.18f
     const val DETAIL_CHROME_ENTER_END = 0.72f
     const val SECONDARY_CONTENT_ENTER_START = 0.24f
     const val SECONDARY_CONTENT_ENTER_END = 0.82f
-    // The optional depth backdrop starts yielding before the shared overlay finishes.
-    // This only refreshes the backdrop; it never owns card or cover pixels.
+    // The frozen background page starts yielding before the flying card's internal content morph.
+    // This only refreshes the backdrop; it never reveals the source card as a stationary substitute.
     const val WHOLE_SOURCE_CARD_RETURN_START = 0.55f
     const val WHOLE_SOURCE_CARD_RETURN_END = 0.90f
     // Live player → cover. Keep the live frame dominant until the card is very close to landing.
     const val MEDIA_RETURN_START = 0.82f
     const val MEDIA_RETURN_END = 0.98f
+    // Detail controls/body → stationary-card chrome. Reuse the exact media handoff window:
+    // source text/badges must arrive with cover pixels, never earlier or after landing.
+    const val SOURCE_CHROME_RETURN_START = MEDIA_RETURN_START
+    const val SOURCE_CHROME_RETURN_END = MEDIA_RETURN_END
     const val SECONDARY_CONTENT_TRANSLATION_DP = 8
     const val REDUCED_MOTION_DURATION_MILLIS = 140
 }
 
-/** Standard shared progress enters this coordinate system without a second easing pass. */
+/** Spatial landing compression never enters this coordinate system. Do not ease it a second time. */
 internal fun resolveVisualProgress(
     morphProgress: Float,
     phase: VideoCardTransitionBackgroundPhase,
@@ -53,10 +62,10 @@ internal fun resolveVisualProgress(
 }
 
 /**
- * Optional frozen source-page depth snapshot release progress during a standard return.
+ * Frozen source-page snapshot release progress during a Miuix return.
  *
  * This releases the stale depth snapshot so the live page and haze sources can refresh behind the
- * shared overlay. It never owns source-card or cover pixels.
+ * flying card. It does not own card content; the Miuix flying detail entry owns cover/title/stat.
  */
 internal fun resolveVideoCardWholeSourceReturnAlpha(
     morphDepthProgress: Float,
@@ -66,14 +75,29 @@ internal fun resolveVideoCardWholeSourceReturnAlpha(
     end = VideoCardTransitionVisualTimeline.WHOLE_SOURCE_CARD_RETURN_END,
 )
 
+internal const val VIDEO_CARD_RETURN_CHROME_REVEAL_START =
+    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_START
+
 /**
- * 详情控制器在媒体交接窗口退出；来源卡的标题/统计完全由标准 shared bounds 中
- * 的真实来源 composable 接管，不再在详情壳重建。
+ * 来源卡标题/UP/统计/菜单与 live → cover 共用同一交接窗口。
+ * 它们在实时画面让给封面时同步出现，并在落位前完成。
+ */
+internal fun resolveVideoCardSourceChromeReturnAlpha(
+    morphDepthProgress: Float,
+): Float = resolveVideoCardTimelineWindowProgress(
+    progress = resolveVideoCardReturnSettleFromMorphDepth(morphDepthProgress),
+    start = VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_START,
+    end = VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_END,
+)
+
+/**
+ * 飞行卡内部内容形变窗口。详情控制器/信息在此窗口退出，来源卡标题/统计按互补
+ * alpha 进入；两者都跟随同一个 shared-bounds 壳移动，不在列表原位静态交接。
  */
 internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_START =
-    VideoCardTransitionVisualTimeline.MEDIA_RETURN_START
+    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_START
 internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_END =
-    VideoCardTransitionVisualTimeline.MEDIA_RETURN_END
+    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_END
 
 /**
  * 实时画面缩回时，播放器在 82%–98% 的最后落位段才变为封面。
@@ -87,7 +111,8 @@ internal const val VIDEO_CARD_LIVE_RETURN_VISUAL_HANDOFF_START =
  * live surface → 常驻封面的唯一媒体交接 alpha。
  *
  * 资源可以全程驻留，但在实时画面主导阶段必须保持透明；否则列表封面会与 player
- * surface 叠层。详情侧 resident cover 使用此值，来源真实卡由 shared overlay 接管。
+ * surface 叠层。详情侧 resident cover 与来源卡封面必须使用此值；标题/UP/统计
+ * 使用更早的 [resolveVideoCardSourceChromeReturnAlpha]。
  */
 internal fun resolveVideoCardLiveReturnVisualHandoffAlpha(
     morphDepthProgress: Float,
@@ -96,6 +121,36 @@ internal fun resolveVideoCardLiveReturnVisualHandoffAlpha(
     start = VideoCardTransitionVisualTimeline.MEDIA_RETURN_START,
     end = VideoCardTransitionVisualTimeline.MEDIA_RETURN_END,
 )
+
+/**
+ * Detail body (player 下方) visual frame during flying-card morph.
+ *
+ * [scale] shrinks toward the source-card info size so alpha crossfade is not the only cue —
+ * size mismatch between detail typography and card chrome is the main 穿帮 source.
+ */
+internal data class VideoCardSecondaryContentVisualFrame(
+    val alpha: Float,
+    val translationYDp: Float,
+    /** 1 = full detail layout; approaches [VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE] as chrome takes over. */
+    val scale: Float = 1f,
+    /** 0 = full detail ownership; 1 = fully yielded to source chrome. */
+    val handoffProgress: Float = 0f,
+)
+
+/**
+ * Source-card chrome visual frame; complementary to [VideoCardSecondaryContentVisualFrame].
+ *
+ * [layoutScaleMultiplier] is always **1** at every handoff step so the resting frame matches the
+ * stationary list card (no mid-flight size boost that leaves a second plate at land).
+ */
+internal data class VideoCardSourceChromeVisualFrame(
+    val alpha: Float,
+    val layoutScaleMultiplier: Float = 1f,
+    val handoffProgress: Float = 0f,
+)
+
+/** Detail body minimum uniform scale at full handoff (still readable mid-blend, not a hard pop). */
+internal const val VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE = 0.88f
 
 internal fun resolveVideoCardTimelineWindowProgress(
     progress: Float,
@@ -111,10 +166,11 @@ internal fun resolveVideoCardTimelineWindowProgress(
 }
 
 /**
- * Whether detail body / controls must yield during the shared media handoff.
+ * Whether detail body / controls must yield to source-card chrome on the flying entry.
  *
- * The standard card morph starts only after predictive back commits. The depth-only branch remains
- * a compatibility fallback for callers that can report progress before the phase update arrives.
+ * Miuix predictive seek often keeps [VideoCardTransitionBackgroundPhase.HELD] while
+ * [morphDepthProgress] drops with the finger. Requiring only RETURNING/gesture flags leaves
+ * detail content fully opaque under a fading-in landing chrome → visual 穿帮.
  */
 internal fun isVideoCardReturnContentYieldActive(
     phase: VideoCardTransitionBackgroundPhase,
@@ -132,7 +188,7 @@ internal fun isVideoCardReturnContentYieldActive(
     return false
 }
 
-/** Shared 0→1 handoff used by detail controls and live/resident media. */
+/** Shared 0→1 handoff used by detail body and source chrome (alpha + size). */
 internal fun resolveVideoCardContentHandoffProgress(
     morphDepthProgress: Float,
     phase: VideoCardTransitionBackgroundPhase,
@@ -147,7 +203,7 @@ internal fun resolveVideoCardContentHandoffProgress(
     ) {
         return 0f
     }
-    return resolveVideoCardLiveReturnVisualHandoffAlpha(depth)
+    return resolveVideoCardSourceChromeReturnAlpha(depth)
 }
 
 internal fun resolveVideoCardDetailChromeAlpha(
@@ -162,7 +218,7 @@ internal fun resolveVideoCardDetailChromeAlpha(
         isReturnGestureInProgress = isReturnGestureInProgress,
     )
     return when {
-        // Complementary to the live/resident media handoff.
+        // Complementary to source chrome; same window as body yield.
         handoff > 0f ||
             isVideoCardReturnContentYieldActive(
                 phase = phase,
@@ -177,6 +233,87 @@ internal fun resolveVideoCardDetailChromeAlpha(
             )
         else -> 1f
     }
+}
+
+internal fun resolveVideoCardSecondaryContentVisualFrame(
+    morphDepthProgress: Float,
+    phase: VideoCardTransitionBackgroundPhase,
+    isReturnGestureInProgress: Boolean,
+    motionTier: MotionTier,
+    sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.STACKED,
+): VideoCardSecondaryContentVisualFrame {
+    val depth = resolveVisualProgress(morphDepthProgress, phase, VideoSharedTransitionDirection.ENTER)
+    val returning = isVideoCardReturnContentYieldActive(
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+        morphDepthProgress = depth,
+    )
+    // Match landing chrome alpha so detail body and source-card text crossfade as a pair.
+    val handoff = resolveVideoCardSourceChromeVisualFrame(
+        morphDepthProgress = depth,
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+        sourceLayout = sourceLayout,
+    ).handoffProgress
+    val alpha = when {
+        // Detail body yields in the exact live → cover/source-card chrome window.
+        returning -> 1f - handoff
+        motionTier == MotionTier.Reduced -> depth
+        phase == VideoCardTransitionBackgroundPhase.OPENING ->
+            resolveVideoCardTimelineWindowProgress(
+                progress = depth,
+                start = VideoCardTransitionVisualTimeline.SECONDARY_CONTENT_ENTER_START,
+                end = VideoCardTransitionVisualTimeline.SECONDARY_CONTENT_ENTER_END,
+            )
+        else -> 1f
+    }
+    val scale = if (returning && motionTier != MotionTier.Reduced) {
+        1f - (1f - VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE) * handoff
+    } else {
+        1f
+    }
+    return VideoCardSecondaryContentVisualFrame(
+        alpha = alpha,
+        translationYDp = if (motionTier == MotionTier.Reduced) {
+            0f
+        } else {
+            VideoCardTransitionVisualTimeline.SECONDARY_CONTENT_TRANSLATION_DP.toFloat() *
+                (1f - alpha)
+        },
+        scale = scale.coerceIn(VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE, 1f),
+        handoffProgress = if (returning) handoff else 0f,
+    )
+}
+
+/**
+ * Source chrome alpha (title / UP / stats + card shell under live media).
+ *
+ * [VideoCardSourceLayout.STACKED] and [VideoCardSourceLayout.SIDE_BY_SIDE] both reuse the media
+ * handoff. Source text/badges and cover pixels therefore remain frame-synchronous.
+ */
+internal fun resolveVideoCardSourceChromeVisualFrame(
+    morphDepthProgress: Float,
+    phase: VideoCardTransitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+    isReturnGestureInProgress: Boolean = true,
+    sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.STACKED,
+): VideoCardSourceChromeVisualFrame {
+    val depth = morphDepthProgress.coerceIn(0f, 1f)
+    val yieldActive = isVideoCardReturnContentYieldActive(
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+        morphDepthProgress = depth,
+    )
+    val handoff = when {
+        !yieldActive -> 0f
+        // COVER_ONLY has no below/side info band; other layouts share the media handoff.
+        sourceLayout == VideoCardSourceLayout.COVER_ONLY -> 0f
+        else -> resolveVideoCardSourceChromeReturnAlpha(depth)
+    }
+    return VideoCardSourceChromeVisualFrame(
+        alpha = handoff,
+        layoutScaleMultiplier = 1f,
+        handoffProgress = handoff,
+    )
 }
 
 /**
@@ -210,6 +347,7 @@ internal data class VideoCardReturnListCoverContract(
 internal data class VideoCardReturnTimeline(
     val morphDurationMillis: Int,
     val settleBufferMillis: Long,
+    val chromeRevealStart: Float,
     val sourceEnterFadeDelayRatio: Float,
 ) {
     val suppressionWindowMillis: Long
@@ -230,10 +368,16 @@ internal enum class VideoCardReturnSessionPhase {
 
 internal fun resolveVideoCardReturnTimeline(
     morphDurationMillis: Int,
+    isQuickReturn: Boolean = false,
 ): VideoCardReturnTimeline {
     return VideoCardReturnTimeline(
         morphDurationMillis = morphDurationMillis.coerceAtLeast(0),
         settleBufferMillis = resolveVideoCardReturnSpringSettleBufferMs(),
+        chromeRevealStart = if (isQuickReturn) {
+            0f
+        } else {
+            VIDEO_CARD_RETURN_CHROME_REVEAL_START
+        },
         // 整壳 Enter 永不延后；快速/普通返回一致。
         sourceEnterFadeDelayRatio = VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO,
     )
@@ -243,7 +387,7 @@ internal fun resolveVideoCardReturnTimeline(
  * 源卡 shell sharedBounds 是否延后 Enter（整壳 fadeIn）。
  *
  * 一律 **false**：封面必须在列表位待命，卸层时零叠化；
- * 文字与布局完全由真实来源 composable 和标准 shared bounds 接管。
+ * 文字过渡只走 [resolveHomeCardChromeAlphaDuringShellReturnMorph] / chrome reveal。
  * [isQuickReturnFromDetail] 保留签名兼容。
  */
 @Suppress("UNUSED_PARAMETER")
@@ -272,7 +416,7 @@ internal fun canCoexistLiveSurfaceStableCoverAndChromeOnReturn(): Boolean = true
  * - 0 = 列表落位
  *
  * settle = 1 - depth：0 刚开始缩回，1 完全落位。
- * 详情正文 / 景深 **只读这一路**，禁止再 max(AVS, depth)。
+ * chrome / 详情正文 / 景深 **只读这一路**，禁止再 max(AVS, depth)。
  */
 internal fun resolveVideoCardReturnSettleFromMorphDepth(morphDepthProgress: Float): Float {
     return resolveVisualProgress(morphDepthProgress, VideoCardTransitionBackgroundPhase.RETURNING,
@@ -307,9 +451,9 @@ internal fun resolveVideoCardReturnSettleProgress(
 }
 
 /**
- * live morph 详情次要内容 alpha：settle 过 [yieldStart] 后淡出，交还真实来源卡。
+ * live morph 详情次要内容 alpha：settle 过 [yieldStart] 后淡出，给源卡标题让位。
  *
- * 优先 [morphDepthProgress] 单时钟；与标准 shared bounds 的 settle 同源。
+ * 优先 [morphDepthProgress] 单时钟；与源卡 chrome 的 settle 同源。
  */
 internal fun resolveVideoCardLiveMorphSecondaryContentAlpha(
     transitionProgress: Float = 1f,

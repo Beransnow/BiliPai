@@ -104,7 +104,6 @@ import com.android.purebilibili.resolveShortcutRoute
 import com.android.purebilibili.shouldNavigateToVideoFromNotification
 import com.android.purebilibili.core.ui.transition.LocalPredictiveBackBackgroundState
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
-import com.android.purebilibili.core.ui.SharedTransitionProvider
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.adaptive.toAdaptiveFoldPosture
 import com.android.purebilibili.core.ui.adaptive.HingeOcclusionInputShield
@@ -203,7 +202,7 @@ import com.android.purebilibili.navigation3.shouldActivateVideoDetailPlaybackSes
 import com.android.purebilibili.navigation3.shouldRecoverVideoPlayerAfterBackCancellation
 import com.android.purebilibili.navigation3.resolveBiliPaiVideoSource
 import com.android.purebilibili.navigation3.resolveVideoCardTransitionEnabledForSource
-import com.android.purebilibili.navigation3.shouldUseVideoCardSharedBoundsTransition
+import com.android.purebilibili.navigation3.shouldUseMiuixVideoCardMorph
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackAnimationStyle
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
 import com.android.purebilibili.navigation3.resolveInitialBiliPaiBackStack
@@ -498,8 +497,7 @@ fun AppNavigation(
     } else {
         videoSharedTransitionDurationMillis
     }
-    SharedTransitionProvider(enabled = sharedVideoCardTransitionEnabled) {
-        CompositionLocalProvider(
+    CompositionLocalProvider(
             LocalVideoSharedTransitionSpeedSettings provides videoSharedTransitionSpeedSettings,
             LocalVideoTransitionAdaptiveInfo provides videoTransitionAdaptiveInfo,
             com.android.purebilibili.core.plugin.skin.LocalUiSkinState provides uiSkinState,
@@ -765,11 +763,14 @@ fun AppNavigation(
                 relatedVideoTransitionEnabled = relatedVideoTransitionEnabled,
                 sourceRoute = session.sourceRoute,
             )
+            val hasUsableSourceBounds = session.cardBounds
+                ?.let { it.width > 1f && it.height > 1f } == true
             if (
-                shouldUseVideoCardSharedBoundsTransition(
+                shouldUseMiuixVideoCardMorph(
                     cardTransitionEnabled = transitionEnabledForSource,
                     reduceMotion = systemReduceMotion,
                     sourceRoute = session.sourceRoute,
+                    hasUsableSourceBounds = hasUsableSourceBounds,
                 )
             ) {
                 // Activate the source-cover session before NavDisplay mounts the destination.
@@ -3759,8 +3760,8 @@ fun AppNavigation(
                         appNavigationSettings.videoSharedReturnGestureFollowEnabled,
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
-                    // 标准 shared bounds 直接落到真实来源卡，不再用详情页重建卡片 chrome。
-                    preferWholeCardReturn = true,
+                    // Miuix 飞行 entry 独占过渡像素；列表真卡只保留布局，落位完成后再显示。
+                    preferWholeCardReturn = false,
                     onBack = { performSystemBackAction() },
                     onPrepareVideoCardSharedReturn = {
                         // 普通返回(顶部按钮/系统手势提交)兜底预热。
@@ -3929,6 +3930,5 @@ fun AppNavigation(
             )
         } // End of Main Box
         } // End of CompositionLocalProvider
-        } // End of SharedTransitionProvider
     }
 }

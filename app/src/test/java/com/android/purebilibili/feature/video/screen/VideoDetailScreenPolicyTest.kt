@@ -308,7 +308,7 @@ class VideoDetailScreenPolicyTest {
     }
 
     @Test
-    fun nestedVideoDetailScopesMediaSnapshotToTheActiveSharedEntry() {
+    fun nestedVideoDetailScopesMiuixChromeAndLandingToTheActiveEntry() {
         val stateHolderSource = File(
             "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt"
         ).readText()
@@ -316,7 +316,7 @@ class VideoDetailScreenPolicyTest {
             "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailTransitionHost.kt"
         ).readText()
 
-        assertTrue(transitionHostSource.contains("entryOwnsCardTransition"))
+        assertTrue(transitionHostSource.contains("entryOwnsMiuixCardTransition"))
         assertTrue(
             transitionHostSource.contains(
                 "activeSourceRoute = transitionBackgroundState.sourceRouteProvider()"
@@ -324,11 +324,14 @@ class VideoDetailScreenPolicyTest {
         )
         assertTrue(
             stateHolderSource.contains(
-                "LocalVideoCardSourceMediaSnapshot.current"
+                ".sourceChromeSnapshot\n            .takeIf { miuixVisualAssetsActive }"
             )
         )
-        assertFalse(stateHolderSource.contains("VideoDetailReturnSourceCardChrome("))
-        assertFalse(stateHolderSource.contains("videoDetailReturnMediaLayout("))
+        assertTrue(
+            stateHolderSource.contains(
+                "shouldConsumeMiuixTransitionVisualAssets("
+            )
+        )
     }
 
     @Test

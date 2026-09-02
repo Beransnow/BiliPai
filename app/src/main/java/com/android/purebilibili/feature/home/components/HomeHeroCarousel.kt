@@ -311,6 +311,17 @@ private fun HomeHeroCarouselCard(
                 sourceCornerDp = cardCornerDp.value.roundToInt(),
                 coverBounds = bounds,
                 sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
+                    title = video.title,
+                    ownerName = video.owner.name,
+                    ownerFaceUrl = video.owner.face,
+                    viewText = FormatUtils.formatStat(video.stat.view.toLong()),
+                    danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                    durationText = FormatUtils.formatDuration(video.duration),
+                    infoPresentation = com.android.purebilibili.core.ui.transition
+                        .resolveVideoCardSourceInfoPresentation(
+                            publishTimeText = "",
+                            showStatsInInfo = false,
+                        ),
                     coverUrl = normalizedCoverUrl,
                     coverCacheKey = normalizedCoverUrl,
                 ),
