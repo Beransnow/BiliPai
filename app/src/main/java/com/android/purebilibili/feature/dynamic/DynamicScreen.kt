@@ -1422,6 +1422,9 @@ private fun DynamicList(
     val dynamicGridKeys = remember(filteredItems) {
         filteredItems.map { "dynamic_${dynamicFeedItemKey(it)}" }
     }
+    val useManualPrependAnchor = remember(feedLayoutMode) {
+        shouldUseDynamicManualPrependAnchor(feedLayoutMode)
+    }
     val skeletonPulse = if (showSkeleton) {
         com.android.purebilibili.feature.dynamic.components.rememberDynamicFeedSkeletonPulse()
     } else {
@@ -1436,8 +1439,14 @@ private fun DynamicList(
             StaggeredGridCells.Adaptive(resolveDynamicTimelineMinColumnWidth())
         },
         state = listState,
-        prependItemKeys = dynamicGridKeys,
-        prependDividerIndex = if (isSelectedUserTabActive) -1 else oldContentDividerIndex,
+        // Keyed masonry lanes retain their visible content across prepends. Re-anchoring with
+        // scrollToItem after lane balancing can rebuild a tablet viewport from another lane.
+        prependItemKeys = if (useManualPrependAnchor) dynamicGridKeys else emptyList(),
+        prependDividerIndex = if (useManualPrependAnchor && !isSelectedUserTabActive) {
+            oldContentDividerIndex
+        } else {
+            -1
+        },
         contentPadding = PaddingValues(
             top = statusBarHeight + topPaddingExtra,
             bottom = bottomPadding
