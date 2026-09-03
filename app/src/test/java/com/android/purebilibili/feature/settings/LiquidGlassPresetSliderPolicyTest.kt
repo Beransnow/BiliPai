@@ -75,4 +75,23 @@ class LiquidGlassPresetSliderPolicyTest {
             0.0001f,
         )
     }
+
+    @Test
+    fun `custom position accounts for every advanced parameter`() {
+        val balanced = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.BALANCED)
+        val changedBlur = balanced.copy(
+            preset = LiquidGlassAdvancedPreset.CUSTOM,
+            progressiveBlurRadius = 0.8f,
+        )
+        val changedDistortion = balanced.copy(
+            preset = LiquidGlassAdvancedPreset.CUSTOM,
+            contentDistortion = 0f,
+        )
+
+        assertEquals(
+            false,
+            liquidGlassPresetSliderValue(changedBlur) ==
+                liquidGlassPresetSliderValue(changedDistortion),
+        )
+    }
 }

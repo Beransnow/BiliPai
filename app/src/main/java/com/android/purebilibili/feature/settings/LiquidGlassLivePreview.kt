@@ -633,27 +633,62 @@ internal fun liquidGlassPresetSliderValue(settings: LiquidGlassAdvancedSettings)
         LiquidGlassAdvancedPreset.BALANCED -> LIQUID_GLASS_PRESET_BALANCED_POSITION
         LiquidGlassAdvancedPreset.PRISM -> 1f
         LiquidGlassAdvancedPreset.CUSTOM -> {
-            val readableChromatic = resolveLiquidGlassAdvancedPreset(
-                LiquidGlassAdvancedPreset.READABLE
-            ).chromaticAberration
-            val balancedChromatic = resolveLiquidGlassAdvancedPreset(
-                LiquidGlassAdvancedPreset.BALANCED
-            ).chromaticAberration
-            val prismChromatic = resolveLiquidGlassAdvancedPreset(
-                LiquidGlassAdvancedPreset.PRISM
-            ).chromaticAberration
-            if (settings.chromaticAberration <= balancedChromatic) {
-                val fraction = (settings.chromaticAberration - readableChromatic) /
-                    (balancedChromatic - readableChromatic)
-                fraction.coerceIn(0f, 1f) * LIQUID_GLASS_PRESET_BALANCED_POSITION
+            val readable = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.READABLE)
+            val balanced = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.BALANCED)
+            val prism = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.PRISM)
+            val readableToBalanced = projectLiquidGlassSettingsOntoPresetSegment(
+                settings = settings,
+                start = readable,
+                end = balanced,
+            )
+            val balancedToPrism = projectLiquidGlassSettingsOntoPresetSegment(
+                settings = settings,
+                start = balanced,
+                end = prism,
+            )
+            if (readableToBalanced.second <= balancedToPrism.second) {
+                readableToBalanced.first * LIQUID_GLASS_PRESET_BALANCED_POSITION
             } else {
-                val fraction = (settings.chromaticAberration - balancedChromatic) /
-                    (prismChromatic - balancedChromatic)
                 LIQUID_GLASS_PRESET_BALANCED_POSITION +
-                    fraction.coerceIn(0f, 1f) * LIQUID_GLASS_PRESET_BALANCED_POSITION
+                    balancedToPrism.first * LIQUID_GLASS_PRESET_BALANCED_POSITION
             }
         }
     }
+
+/** Returns the nearest fraction on a preset segment and its squared six-parameter distance. */
+private fun projectLiquidGlassSettingsOntoPresetSegment(
+    settings: LiquidGlassAdvancedSettings,
+    start: LiquidGlassAdvancedSettings,
+    end: LiquidGlassAdvancedSettings,
+): Pair<Float, Float> {
+    val value = settings.asLiquidGlassPresetVector()
+    val startVector = start.asLiquidGlassPresetVector()
+    val endVector = end.asLiquidGlassPresetVector()
+    var dot = 0f
+    var lengthSquared = 0f
+    for (index in value.indices) {
+        val direction = endVector[index] - startVector[index]
+        dot += (value[index] - startVector[index]) * direction
+        lengthSquared += direction * direction
+    }
+    val fraction = if (lengthSquared > 0f) (dot / lengthSquared).coerceIn(0f, 1f) else 0f
+    var distanceSquared = 0f
+    for (index in value.indices) {
+        val projected = startVector[index] + (endVector[index] - startVector[index]) * fraction
+        val delta = value[index] - projected
+        distanceSquared += delta * delta
+    }
+    return fraction to distanceSquared
+}
+
+private fun LiquidGlassAdvancedSettings.asLiquidGlassPresetVector(): FloatArray = floatArrayOf(
+    progressiveBlurRadius,
+    progressiveBlurExtent,
+    progressiveBlurCurve,
+    contentReadability,
+    chromaticAberration,
+    contentDistortion,
+)
 
 private fun lerpLiquidGlassPresetValue(start: Float, end: Float, fraction: Float): Float =
     start + (end - start) * fraction.coerceIn(0f, 1f)
