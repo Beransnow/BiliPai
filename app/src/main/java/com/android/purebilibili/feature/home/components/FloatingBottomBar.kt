@@ -322,6 +322,27 @@ internal fun shouldAnimateIndicatorToSelectedIndex(
     return true
 }
 
+internal fun resolveFloatingDockVisualIndicatorPosition(
+    internalPosition: Float,
+    externalPosition: Float?,
+    maxTabIndex: Int,
+    externalPagerMotionEffectsEnabled: Boolean,
+    isDragging: Boolean,
+    ownedTargetIndex: Int?,
+    isPagerScrolling: Boolean,
+): Float {
+    if (
+        externalPagerMotionEffectsEnabled &&
+        !isDragging &&
+        ownedTargetIndex == null &&
+        isPagerScrolling &&
+        externalPosition != null
+    ) {
+        return externalPosition.coerceIn(0f, maxTabIndex.coerceAtLeast(0).toFloat())
+    }
+    return internalPosition
+}
+
 private class ExternalPagerIndicatorFollowGate {
     var ownedTargetIndex: Int? = null
     var previousExternalPosition: Float? = null
@@ -419,6 +440,7 @@ fun FloatingBottomBar(
     longPressDragSelectionEnabled: Boolean = false,
     dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
     onIndicatorPositionChanged: ((Float) -> Unit)? = null,
+    externalPagerMotionEffectsEnabled: Boolean = false,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
 ) {
@@ -630,6 +652,20 @@ fun FloatingBottomBar(
             }
         ).also { holder.instance = it }
     }
+    // Pager swipes are already continuous state. When explicitly requested, read that position
+    // in layout/draw instead of depending solely on the coroutine mirror above. This keeps the
+    // indicator attached to the finger while an adjacent control is resizing the dock.
+    val visualIndicatorPositionProvider: () -> Float = {
+        resolveFloatingDockVisualIndicatorPosition(
+            internalPosition = dampedDragAnimation.value,
+            externalPosition = indicatorPositionLatest?.invoke(),
+            maxTabIndex = maxTabIndex,
+            externalPagerMotionEffectsEnabled = externalPagerMotionEffectsEnabled,
+            isDragging = dampedDragAnimation.isDragging,
+            ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
+            isPagerScrolling = isScrollInProgressLatest(),
+        )
+    }
     LaunchedEffect(dampedDragAnimation) {
         snapshotFlow { dampedDragAnimation.value }
             .collect { position -> onIndicatorPositionChangedLatest.value?.invoke(position) }
@@ -638,7 +674,7 @@ fun FloatingBottomBar(
         if (tabWidthPx <= 0f) {
             0f
         } else {
-            val position = dampedDragAnimation.value
+            val position = visualIndicatorPositionProvider()
             if (itemIndex != position.fastRoundToInt().fastCoerceIn(0, maxTabIndex)) {
                 0f
             } else {
@@ -655,7 +691,7 @@ fun FloatingBottomBar(
     val baseContentAlphaProvider: (Int) -> Float = { itemIndex ->
         // Fade the dock copy of the selected label in every mode. Leaving it opaque
         // under a clamped right-edge indicator stacks two glyphs (重影).
-        val coverage = (1f - abs(itemIndex.toFloat() - dampedDragAnimation.value))
+        val coverage = (1f - abs(itemIndex.toFloat() - visualIndicatorPositionProvider()))
             .coerceIn(0f, 1f)
         1f - coverage
     }
@@ -732,9 +768,9 @@ fun FloatingBottomBar(
                     position = { size, _ ->
                         Offset(
                             if (isLtr) {
-                                (dampedDragAnimation.value + 0.5f) * tabWidthPx + panelOffset
+                                (visualIndicatorPositionProvider() + 0.5f) * tabWidthPx + panelOffset
                             } else {
-                                size.width - (dampedDragAnimation.value + 0.5f) * tabWidthPx + panelOffset
+                                size.width - (visualIndicatorPositionProvider() + 0.5f) * tabWidthPx + panelOffset
                             },
                             size.height / 2f
                         )
@@ -781,7 +817,7 @@ fun FloatingBottomBar(
     ) {
         CompositionLocalProvider(
             LocalFloatingBottomBarContentColor provides resolvedContentColor,
-            LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
+            LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
             LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
             LocalFloatingBottomBarBaseContentAlpha provides baseContentAlphaProvider,
         ) {
@@ -894,7 +930,7 @@ fun FloatingBottomBar(
                 },
                 LocalFloatingBottomBarContentColor provides colors.activeContentColor,
                 LocalFloatingBottomBarActiveContent provides true,
-                LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
+                LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
                 LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
             ) {
                 Row(
@@ -953,7 +989,7 @@ fun FloatingBottomBar(
                         .padding(horizontal = 4.dp)
                         .graphicsLayer {
                             val indicatorOffsetPx = resolveFloatingDockIndicatorOffsetPx(
-                                position = dampedDragAnimation.value,
+                                position = visualIndicatorPositionProvider(),
                                 tabWidthPx = tabWidthPx,
                                 tabsCount = safeTabsCount,
                                 indicatorWidthPx = fittedIndicatorWidthPx,
@@ -1023,7 +1059,7 @@ fun FloatingBottomBar(
                         .padding(horizontal = 4.dp)
                         .graphicsLayer {
                             val indicatorOffsetPx = resolveFloatingDockIndicatorOffsetPx(
-                                position = dampedDragAnimation.value,
+                                position = visualIndicatorPositionProvider(),
                                 tabWidthPx = tabWidthPx,
                                 tabsCount = safeTabsCount,
                                 indicatorWidthPx = fittedIndicatorWidthPx,
@@ -1044,7 +1080,7 @@ fun FloatingBottomBar(
                     CompositionLocalProvider(
                         LocalFloatingBottomBarContentColor provides colors.activeContentColor,
                         LocalFloatingBottomBarActiveContent provides true,
-                        LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
+                        LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
                         LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
                     ) {
                         Row(
@@ -1060,7 +1096,7 @@ fun FloatingBottomBar(
                                 .graphicsLayer {
                                     val contentTranslationPx =
                                         resolveFloatingDockClippedContentTranslationPx(
-                                            position = dampedDragAnimation.value,
+                                            position = visualIndicatorPositionProvider(),
                                             tabWidthPx = tabWidthPx,
                                             tabsCount = safeTabsCount,
                                             indicatorWidthPx = fittedIndicatorWidthPx,
@@ -1084,7 +1120,7 @@ fun FloatingBottomBar(
             Box(
                 modifier = Modifier
                     .graphicsLayer {
-                        val slotOffsetPx = dampedDragAnimation.value * tabWidthPx
+                        val slotOffsetPx = visualIndicatorPositionProvider() * tabWidthPx
                         translationX = if (isLtr) {
                             tabsContentStartPx + slotOffsetPx + panelOffset
                         } else {
