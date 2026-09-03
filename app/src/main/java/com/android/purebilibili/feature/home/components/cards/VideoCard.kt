@@ -1015,6 +1015,7 @@ internal fun ElegantVideoCard(
                 .recordNativeVideoCardLayer(
                     layer = nativeCardLayer,
                     freeze = freezeNativeCardLayer,
+                    bvid = video.bvid,
                 ),
         ) {
             Box(
@@ -1153,6 +1154,7 @@ internal fun ElegantVideoCard(
                     .recordNativeVideoCardLayer(
                         layer = nativeCoverOverlayLayer,
                         freeze = freezeNativeCardLayer,
+                        bvid = video.bvid,
                     ),
             ) {
             if (premiumBadgeLabel != null) {
