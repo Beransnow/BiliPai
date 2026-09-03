@@ -136,6 +136,9 @@ class FloatingBottomBarStructureTest {
         assertFalse(body.contains("remember(animationScope, tabWidthPx)"))
         assertTrue(dragPort.contains("pressReleaseJob?.cancel()"))
         assertFalse(dragPort.contains("isInside && wasInside"))
+        assertTrue(body.contains("resolveFloatingDockIndicatorLayerScaleX("))
+        assertTrue(body.contains("LocalFloatingBottomBarIndicatorStretchX provides indicatorStretchXProvider"))
+        assertTrue(body.contains("resolveFloatingDockCapturedContentHorizontalScale("))
         // Must not fall back to BiliPai self-developed drag stack.
         assertFalse(source.contains("rememberDampedDragAnimationState"))
         assertFalse(source.contains("horizontalDragGesture"))

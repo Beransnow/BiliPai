@@ -113,6 +113,9 @@ internal val LocalFloatingBottomBarItemAlignmentOffset =
 internal val LocalFloatingBottomBarBaseContentAlpha =
     staticCompositionLocalOf<(Int) -> Float> { { 1f } }
 
+internal val LocalFloatingBottomBarIndicatorStretchX =
+    staticCompositionLocalOf { { 1f } }
+
 /** 激活内容捕获层会为指示器提供每个槽位的选中态图标。 */
 internal val LocalFloatingBottomBarActiveContent = staticCompositionLocalOf { false }
 
@@ -361,6 +364,7 @@ fun RowScope.FloatingBottomBarItem(
     val indicatorPosition = LocalFloatingBottomBarIndicatorPosition.current
     val alignmentOffset = LocalFloatingBottomBarItemAlignmentOffset.current
     val baseContentAlpha = LocalFloatingBottomBarBaseContentAlpha.current
+    val indicatorStretchX = LocalFloatingBottomBarIndicatorStretchX.current
     val activeContent = LocalFloatingBottomBarActiveContent.current
     val contentColor = LocalFloatingBottomBarContentColor.current
     val selectionScale = remember(itemIndex, indicatorPosition, iconCrossScaleEnabled) {
@@ -395,7 +399,12 @@ fun RowScope.FloatingBottomBarItem(
             .weight(1f)
             .graphicsLayer {
                 val s = scale()
-                scaleX = s
+                val stretch = if (activeContent) indicatorStretchX() else 1f
+                scaleX = resolveFloatingDockCapturedContentHorizontalScale(
+                    itemScale = s,
+                    indicatorScaleX = stretch,
+                    indicatorScaleY = 1f,
+                )
                 scaleY = s
                 translationX = itemIndex?.let(alignmentOffset) ?: 0f
                 alpha = if (!activeContent && itemIndex != null) {
@@ -927,6 +936,18 @@ fun FloatingBottomBar(
             )
         }
 
+        val referenceTabWidthPx = with(density) {
+            FLOATING_DOCK_VELOCITY_REFERENCE_TAB_WIDTH_DP.dp.toPx()
+        }
+        val indicatorStretchXProvider: () -> Float = {
+            val scaleY = dampedDragAnimation.scaleY.coerceAtLeast(0.001f)
+            resolveFloatingDockIndicatorLayerScaleX(
+                baseScaleX = dampedDragAnimation.scaleX,
+                velocity = dampedDragAnimation.velocity,
+                tabWidthPx = tabWidthPx,
+                referenceTabWidthPx = referenceTabWidthPx,
+            ) / scaleY
+        }
         if (isLiquidGlassMode && backdrop != null) {
             CompositionLocalProvider(
                 LocalFloatingBottomBarTabScale provides {
@@ -936,6 +957,7 @@ fun FloatingBottomBar(
                 LocalFloatingBottomBarActiveContent provides true,
                 LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
                 LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
+                LocalFloatingBottomBarIndicatorStretchX provides indicatorStretchXProvider,
             ) {
                 Row(
                     Modifier
@@ -1029,10 +1051,13 @@ fun FloatingBottomBar(
                                 pillHighlight?.value?.copy(alpha = dampedDragAnimation.pressProgress)
                             },
                             layerBlock = {
-                                scaleX = dampedDragAnimation.scaleX
                                 scaleY = dampedDragAnimation.scaleY
-                                val velocity = dampedDragAnimation.velocity / 10f
-                                scaleX /= 1f - (abs(velocity) * 0.75f).fastCoerceIn(0f, 0.2f)
+                                scaleX = resolveFloatingDockIndicatorLayerScaleX(
+                                    baseScaleX = dampedDragAnimation.scaleX,
+                                    velocity = dampedDragAnimation.velocity,
+                                    tabWidthPx = tabWidthPx,
+                                    referenceTabWidthPx = referenceTabWidthPx,
+                                )
                             },
                             onDrawSurface = {
                                 val progress = dampedDragAnimation.pressProgress

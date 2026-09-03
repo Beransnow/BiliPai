@@ -522,13 +522,16 @@ internal fun resolveBiliPaiBottomBarSearchLayout(
     }
 
     val gap = AppSpacingTokens.Small
-    val availableWidth = (containerWidth - (minEdgePadding * 2)).coerceAtLeast(AppSpacingTokens.None)
+    val paddedAvailable = (containerWidth - (minEdgePadding * 2)).coerceAtLeast(AppSpacingTokens.None)
+    val fullAvailable = containerWidth.coerceAtLeast(AppSpacingTokens.None)
     val searchCircleSize = resolveBiliPaiBottomBarSearchCircleSize()
     val collapsedSearchWidth = searchCircleSize
     val compactHomeDockSize = searchCircleSize
     val expandedSearchWidth = minOf(
         AppSpacingTokens.TripleExtraLarge * 6 - AppSpacingTokens.Small,
-        (availableWidth - compactHomeDockSize - gap).coerceAtLeast(AppSpacingTokens.TripleExtraLarge * 3 + AppSpacingTokens.DoubleExtraLarge)
+        (paddedAvailable - compactHomeDockSize - gap).coerceAtLeast(
+            AppSpacingTokens.TripleExtraLarge * 3 + AppSpacingTokens.DoubleExtraLarge
+        )
     )
     val useCompactLayout = searchLayoutMode == BottomBarSearchLayoutMode.HOME_AND_SEARCH
     val targetSearchWidth = if (useCompactLayout && searchExpanded) {
@@ -536,18 +539,24 @@ internal fun resolveBiliPaiBottomBarSearchLayout(
     } else {
         collapsedSearchWidth
     }
-    val allocatableDockWidth =
-        (availableWidth - targetSearchWidth - gap).coerceAtLeast(AppSpacingTokens.None)
     val targetDockWidth = if (useCompactLayout && searchExpanded) {
-        compactHomeDockSize
+        minOf(
+            compactHomeDockSize,
+            (paddedAvailable - targetSearchWidth - gap).coerceAtLeast(AppSpacingTokens.None)
+        )
     } else {
-        minOf(baseDockWidth, allocatableDockWidth)
+        // Spend outer padding before shrinking navigation slots so icon+label
+        // geometry stays close to the search-off dock.
+        minOf(
+            baseDockWidth,
+            (fullAvailable - targetSearchWidth - gap).coerceAtLeast(AppSpacingTokens.None)
+        )
     }
     return BiliPaiBottomBarSearchLayout(
         dockWidth = targetDockWidth,
         searchWidth = targetSearchWidth,
         gap = gap,
-        // The indicator must match the compressed navigation slot. Keeping the pre-search
+        // The indicator must match the navigation slot. Keeping the pre-search
         // width makes it overlap neighbouring destinations and shifts it at the dock edges.
         minimumIndicatorWidth = AppSpacingTokens.None,
     )
