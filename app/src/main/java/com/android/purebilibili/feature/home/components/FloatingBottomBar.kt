@@ -584,7 +584,6 @@ fun FloatingBottomBar(
         safeTabsCount,
         density,
         isLtr,
-        matchedGeometry.pressedScale,
         dragTrackingMode,
     ) {
         DampedDragAnimation(
@@ -651,6 +650,11 @@ fun FloatingBottomBar(
                 }
             }
         ).also { holder.instance = it }
+    }
+    SideEffect {
+        // Search reserving space beside the dock can retarget indicator geometry. Updating the
+        // field keeps press bloom in sync without recreating the pointerInput owner.
+        dampedDragAnimation.pressedScale = matchedGeometry.pressedScale
     }
     // Pager swipes are already continuous state. When explicitly requested, read that position
     // in layout/draw instead of depending solely on the coroutine mirror above. This keeps the
@@ -762,7 +766,7 @@ fun FloatingBottomBar(
 
     val interactiveHighlight =
         if (isLiquidGlassMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            remember(animationScope, tabWidthPx) {
+            remember(animationScope) {
                 InteractiveHighlight(
                     animationScope = animationScope,
                     position = { size, _ ->

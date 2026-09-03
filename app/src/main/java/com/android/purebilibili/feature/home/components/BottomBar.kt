@@ -725,6 +725,10 @@ internal fun resolveBottomBarSearchEnabledForItem(
     return bottomBarSearchEnabled && currentItem == BottomNavItem.HOME
 }
 
+internal fun shouldReserveBottomBarSearchLayout(
+    bottomBarSearchEnabled: Boolean
+): Boolean = bottomBarSearchEnabled
+
 internal fun resolveBottomBarVisibleItemsForSearchMode(
     visibleItems: List<BottomNavItem>,
     bottomBarSearchEnabled: Boolean,
@@ -2355,8 +2359,7 @@ private fun MaterialBottomBar(
             isTablet = isTablet,
             showIcon = showIcon,
             showText = showText,
-            searchEnabled = resolveBottomBarSearchEnabledForItem(
-                currentItem = currentItem,
+            searchEnabled = shouldReserveBottomBarSearchLayout(
                 bottomBarSearchEnabled = homeSettings.isBottomBarSearchEnabled,
             ),
             onSearchClick = onSearchClick,
@@ -3190,6 +3193,9 @@ private fun BiliPaiFloatingBottomBar(
         currentItem = currentItem,
         bottomBarSearchEnabled = bottomBarSearchEnabled
     )
+    val searchLayoutReserved = shouldReserveBottomBarSearchLayout(
+        bottomBarSearchEnabled = bottomBarSearchEnabled
+    )
     val homeScrollOffset = LocalHomeScrollOffset.current
     val isPastSearchAutoExpandTopThreshold by remember(homeScrollOffset) {
         derivedStateOf {
@@ -3328,7 +3334,7 @@ private fun BiliPaiFloatingBottomBar(
                 containerWidth = maxWidth,
                 itemCount = totalItems,
                 minEdgePadding = tuning.outerHorizontalPaddingDp.dp,
-                searchEnabled = searchEnabled,
+                searchEnabled = searchLayoutReserved,
                 searchExpanded = effectiveSearchExpanded,
                 labelMode = labelMode,
                 searchLayoutMode = bottomBarSearchLayoutMode,
@@ -3599,7 +3605,7 @@ private fun BiliPaiFloatingBottomBar(
                 }
 
                 BiliPaiBottomBarSearchSlot(
-                    visible = searchEnabled,
+                    visible = searchLayoutReserved,
                     launchAdjustedSearchGap = launchAdjustedSearchGap,
                     searchWidth = searchWidth,
                     searchHeight = searchHeight,

@@ -400,7 +400,7 @@ class BottomBarLayoutPolicyTest {
     }
 
     @Test
-    fun `bottom search entry only renders on searchable home item`() {
+    fun `bottom search auto expand stays gated to the home item`() {
         assertEquals(
             true,
             resolveBottomBarSearchEnabledForItem(
@@ -421,6 +421,28 @@ class BottomBarLayoutPolicyTest {
                 currentItem = BottomNavItem.HOME,
                 bottomBarSearchEnabled = false
             )
+        )
+    }
+
+    @Test
+    fun `search layout stays reserved after leaving home so dock geometry does not jump`() {
+        assertEquals(true, shouldReserveBottomBarSearchLayout(bottomBarSearchEnabled = true))
+        assertEquals(false, shouldReserveBottomBarSearchLayout(bottomBarSearchEnabled = false))
+        assertEquals(
+            resolveBiliPaiBottomBarSearchLayout(
+                containerWidth = 393.dp,
+                itemCount = 4,
+                minEdgePadding = 20.dp,
+                searchEnabled = true,
+                searchExpanded = false,
+            ).dockWidth,
+            resolveBiliPaiBottomBarSearchLayout(
+                containerWidth = 393.dp,
+                itemCount = 4,
+                minEdgePadding = 20.dp,
+                searchEnabled = shouldReserveBottomBarSearchLayout(true),
+                searchExpanded = false,
+            ).dockWidth,
         )
     }
 
