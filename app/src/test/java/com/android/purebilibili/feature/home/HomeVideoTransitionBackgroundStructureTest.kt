@@ -40,6 +40,7 @@ class HomeVideoTransitionBackgroundStructureTest {
         assertTrue(source.contains("shouldUseHostOwnedVideoCardTransitionSnapshot("))
         assertTrue(source.contains("RenderNavigationContent(key)"))
         assertTrue(source.contains("sourceRoute = backgroundState.sourceRouteProvider()"))
+        assertTrue(source.contains("sourceBoundsProvider = backgroundState.sourceBoundsProvider"))
         assertFalse(source.contains("val predictiveBlurProgress = predictiveBackState.progressProvider()"))
     }
 

@@ -1,5 +1,8 @@
 package com.android.purebilibili.core.ui.transition
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import java.io.File
 import kotlin.test.Test
@@ -462,6 +465,53 @@ class VideoCardTransitionBackgroundPolicyTest {
         ).readText()
         assertFalse(backgroundSource.contains("translationX ="))
         assertFalse(backgroundSource.contains("translationY ="))
+        assertTrue(backgroundSource.contains("resolveVideoCardTransitionBackgroundScalePivot("))
+        assertTrue(backgroundSource.contains("transformOrigin = TransformOrigin(pivot.x, pivot.y)"))
+    }
+
+    @Test
+    fun backgroundScalePivotsAroundTheClickedCardCenter() {
+        val pivot = resolveVideoCardTransitionBackgroundScalePivot(
+            sourceBounds = Rect(100f, 200f, 300f, 400f),
+            canvasWidth = 1000f,
+            canvasHeight = 2000f,
+        )
+        assertEquals(0.2f, pivot.x, 0.0001f)
+        assertEquals(0.15f, pivot.y, 0.0001f)
+        assertEquals(
+            Offset(200f, 300f),
+            resolveVideoCardTransitionBackgroundScalePivotOffset(
+                sourceBounds = Rect(100f, 200f, 300f, 400f),
+                canvasSize = Size(1000f, 2000f),
+            ),
+        )
+    }
+
+    @Test
+    fun backgroundScaleFallsBackToScreenCenterWithoutCardBounds() {
+        assertEquals(
+            Offset(0.5f, 0.5f),
+            resolveVideoCardTransitionBackgroundScalePivot(
+                sourceBounds = null,
+                canvasWidth = 1080f,
+                canvasHeight = 2400f,
+            ),
+        )
+        assertEquals(
+            Offset(0.5f, 0.5f),
+            resolveVideoCardTransitionBackgroundScalePivot(
+                sourceBounds = Rect(10f, 10f, 10.5f, 10.5f),
+                canvasWidth = 1080f,
+                canvasHeight = 2400f,
+            ),
+        )
+        assertEquals(
+            Offset(540f, 1200f),
+            resolveVideoCardTransitionBackgroundScalePivotOffset(
+                sourceBounds = null,
+                canvasSize = Size(1080f, 2400f),
+            ),
+        )
     }
 
     @Test

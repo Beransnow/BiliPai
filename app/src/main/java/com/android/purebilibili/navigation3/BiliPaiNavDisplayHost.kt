@@ -395,6 +395,7 @@ internal fun BiliPaiNavDisplayHost(
     val transitionBackgroundState = remember(
         sourceMetadata.sourceRoute,
         sourceMetadata.sourceCornerDp,
+        sourceMetadata.sourceBounds,
         videoCardProgressProvider,
         videoCardExposureProvider,
         videoCardSnapshotHandle,
@@ -407,6 +408,7 @@ internal fun BiliPaiNavDisplayHost(
             phaseProvider = { videoCardClock.phase },
             exposureProvider = videoCardExposureProvider,
             sourceCornerDpProvider = { sourceMetadata.sourceCornerDp },
+            sourceBoundsProvider = { sourceMetadata.sourceBounds },
             snapshotHandle = videoCardSnapshotHandle,
             isReturnGestureInProgressProvider = videoCardGestureProvider,
             isGestureRestoreInProgressProvider = { videoCardClock.gestureRestoreInProgress },
@@ -557,6 +559,7 @@ internal fun BiliPaiNavDisplayHost(
             motionTierProvider = { transitionMotionTier },
             isLightBackgroundProvider = { isLightBackground },
             realtimeBlurEnabledProvider = { videoTransitionRealtimeBlurEnabled },
+            sourceBoundsProvider = { sourceMetadata.sourceBounds },
         )
         VideoCardTransitionNavBackdrop(
             visible = showVideoCardNavBackdrop,

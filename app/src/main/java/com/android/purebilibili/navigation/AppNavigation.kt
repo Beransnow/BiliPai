@@ -1837,6 +1837,9 @@ fun AppNavigation(
                         depthGestureRestoreProvider = {
                             videoCardTransitionClock.gestureRestoreInProgress
                         },
+                        sourceBoundsProvider = {
+                            navigation3SourceMetadata.sourceBounds
+                        },
                         isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
                         isLightBackground = isLightBackground,
                         realtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
@@ -1935,6 +1938,7 @@ fun AppNavigation(
                                                 scaleReductionProvider = {
                                                     backgroundScaleReduction
                                                 },
+                                                sourceBoundsProvider = backgroundState.sourceBoundsProvider,
                                                 snapshotHandle = backgroundState.snapshotHandle,
                                             )
                                         } else {
@@ -1954,6 +1958,7 @@ fun AppNavigation(
                                                 scaleReductionProvider = {
                                                     backgroundScaleReduction
                                                 },
+                                                sourceBoundsProvider = backgroundState.sourceBoundsProvider,
                                             )
                                         }
                                     } else {
