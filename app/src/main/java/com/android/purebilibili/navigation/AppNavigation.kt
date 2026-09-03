@@ -121,7 +121,10 @@ import com.android.purebilibili.core.ui.transition.shouldApplyPredictiveBackBlur
 import com.android.purebilibili.core.ui.transition.shouldApplyVideoCardTransitionBackgroundToRoute
 import com.android.purebilibili.core.ui.transition.shouldApplyVideoCardTransitionSnapshotOnRouteShell
 import com.android.purebilibili.core.ui.transition.shouldShowVideoCardTransitionSourceChrome
+import com.android.purebilibili.core.ui.transition.shouldDriveVideoCardTransitionChromeByProgress
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionChromeBottomBarRoute
+import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionChromeReveal
+import com.android.purebilibili.core.ui.transition.videoCardTransitionChromeReveal
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundScaleReduction
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundSource
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionExposure
@@ -1280,6 +1283,10 @@ fun AppNavigation(
             isVideoDetailDestination = isVideoDetailDestination,
             exposure = videoCardChromeExposure,
         )
+        val driveBottomBarByProgress = shouldDriveVideoCardTransitionChromeByProgress(
+            cardTransitionEnabled = cardTransitionEnabled,
+            exposure = videoCardChromeExposure,
+        )
         val bottomBarMountRoute = resolveVideoCardTransitionChromeBottomBarRoute(
             isVideoDetailDestination = isVideoDetailDestination,
             activeBottomTabRoute = activeBottomTabRoute,
@@ -1372,7 +1379,7 @@ fun AppNavigation(
         // - 且 (模式为始终显示 OR (模式为向下浏览时隐藏 AND 当前状态为可见))
         // - 且 模式不是永久隐藏
         val finalBottomBarVisible = showBottomBar &&
-            videoCardSourceChromeVisible &&
+            (driveBottomBarByProgress || videoCardSourceChromeVisible) &&
             bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN &&
             (
                 bottomBarVisibilityMode == SettingsManager.BottomBarVisibilityMode.ALWAYS_VISIBLE ||
@@ -1384,10 +1391,12 @@ fun AppNavigation(
             bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN &&
                 (
                     bottomBarMountGate ||
+                        driveBottomBarByProgress ||
                         bottomBarVisibilityState.currentState ||
                         bottomBarVisibilityState.targetState
                 )
         val bottomBarReservesSpace = bottomBarCanMount &&
+            !driveBottomBarByProgress &&
             (bottomBarVisibilityState.currentState || bottomBarVisibilityState.targetState)
         val bottomBarContentPadding = rememberAppBottomBarContentPadding(
             navigationBarsBottom = WindowInsets.navigationBars
@@ -1645,7 +1654,7 @@ fun AppNavigation(
                 pushNavigation3Key(BiliPaiNavKey.AicuQuery(uid = uid ?: 0L))
             },
             LocalSetBottomBarVisible provides setBottomBarVisible,
-            LocalBottomBarVisible provides finalBottomBarVisible,
+            LocalBottomBarVisible provides (finalBottomBarVisible && !driveBottomBarByProgress),
             LocalBottomBarContentPadding provides bottomBarContentPadding,
             LocalGlobalWallpaperBackdropVisible provides exposeGlobalHomeWallpaperChrome,
             LocalPredictiveBackGestureEnabled provides predictiveBackEnabled,
@@ -3832,6 +3841,20 @@ fun AppNavigation(
                 val bottomBarModifier = Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(1f)
+                    .then(
+                        if (driveBottomBarByProgress) {
+                            Modifier.videoCardTransitionChromeReveal(
+                                revealProvider = {
+                                    resolveVideoCardTransitionChromeReveal(
+                                        videoCardTransitionClock.depthProgress(),
+                                    )
+                                },
+                                slideDown = true,
+                            )
+                        } else {
+                            Modifier
+                        },
+                    )
 
                 Box(modifier = bottomBarModifier) {
                     BottomBarMatchedDockVisibility(

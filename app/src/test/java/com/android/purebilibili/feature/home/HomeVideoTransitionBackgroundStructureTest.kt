@@ -25,6 +25,7 @@ class HomeVideoTransitionBackgroundStructureTest {
         assertTrue(source.contains(".then(homeFeedSnapshotModifier)"))
         assertTrue(source.contains("BottomBarMatchedDockVisibility("))
         assertTrue(source.contains("edge = BottomBarMatchedDockEdge.TOP"))
+        assertTrue(source.contains("videoCardTransitionOverlayDepthEffect("))
         assertTrue(source.contains("shouldShowHomeOverlayChromeDuringVideoCardTransition("))
     }
 

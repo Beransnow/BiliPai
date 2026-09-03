@@ -48,6 +48,7 @@ import androidx.compose.material3.rememberDrawerState
 import com.android.purebilibili.feature.home.components.MineSideDrawer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -145,6 +146,7 @@ import com.android.purebilibili.core.ui.transition.shouldHomeFeedOwnVideoCardTra
 import com.android.purebilibili.core.ui.transition.shouldShowHomeOverlayChromeDuringVideoCardTransition
 import com.android.purebilibili.core.ui.transition.shouldUseRealtimeVideoCardTransitionBackgroundBlur
 import com.android.purebilibili.core.ui.transition.videoCardTransitionBackgroundEffect
+import com.android.purebilibili.core.ui.transition.videoCardTransitionOverlayDepthEffect
 import com.android.purebilibili.feature.home.components.BottomBarMatchedDockEdge
 import com.android.purebilibili.feature.home.components.BottomBarMatchedDockVisibility
 import com.android.purebilibili.core.ui.animation.DissolvableVideoCard  //  粒子消散动画
@@ -2276,11 +2278,35 @@ fun HomeScreen(
             MutableTransitionState(!appearHomeHeaderFromHidden)
         }
         homeHeaderVisibilityState.targetState = homeHeaderChromeVisible
+        val headerDepthDensity = LocalDensity.current
+        val headerDepthConfig = LocalConfiguration.current
         BottomBarMatchedDockVisibility(
             visibleState = homeHeaderVisibilityState,
             edge = BottomBarMatchedDockEdge.TOP,
             enterFadeDurationMillis = 255,
             exitFadeDurationMillis = 160,
+            modifier = Modifier.videoCardTransitionOverlayDepthEffect(
+                progressProvider = { videoCardClock?.depthProgress() ?: 0f },
+                phaseProvider = {
+                    videoCardClock?.phase ?: VideoCardTransitionBackgroundPhase.IDLE
+                },
+                motionTierProvider = videoCardTransitionBackgroundState.motionTierProvider,
+                sourceBoundsProvider = videoCardTransitionBackgroundState.sourceBoundsProvider,
+                canvasWidthProvider = {
+                    with(headerDepthDensity) { headerDepthConfig.screenWidthDp.dp.toPx() }
+                },
+                canvasHeightProvider = {
+                    with(headerDepthDensity) { headerDepthConfig.screenHeightDp.dp.toPx() }
+                },
+                scaleReductionProvider = {
+                    resolveVideoCardTransitionBackgroundScaleReduction(
+                        resolveVideoCardTransitionBackgroundSource(
+                            videoCardTransitionBackgroundState.sourceRouteProvider(),
+                        ),
+                    )
+                },
+                densityProvider = { headerDepthDensity.density },
+            ),
         ) {
         HomeHeader(
             headerOffsetProvider = headerOffsetProvider,
