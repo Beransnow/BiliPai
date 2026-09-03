@@ -34,7 +34,6 @@ import com.android.purebilibili.feature.home.components.liquid.InnerShadow
 import com.android.purebilibili.feature.home.components.liquid.innerShadow
 import com.android.purebilibili.feature.home.components.liquid.lens
 import com.android.purebilibili.feature.home.components.liquid.vibrancy
-import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -150,8 +149,7 @@ internal fun Modifier.biliPaiFloatingDockShell(
     lensIntensity: Float = 1f,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
 ): Modifier {
-    val forceLowBlurBudget = isLowBlurBudgetForced()
-    if (!enabled || backdrop == null || forceLowBlurBudget) {
+    if (!enabled || backdrop == null) {
         return this
             .graphicsLayer { translationX = panelOffsetPx }
             .background(containerColor, shape)
@@ -248,11 +246,6 @@ internal fun Modifier.biliPaiFloatingDockCaptureSurface(
     shape: Shape = CircleShape,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
 ): Modifier {
-    if (isLowBlurBudgetForced()) {
-        return this
-            .graphicsLayer { translationX = panelOffsetPx }
-            .background(containerColor.copy(alpha = liquidGlassTuning.surfaceAlpha), shape)
-    }
     val isDark = isSystemInDarkTheme()
     val density = LocalDensity.current
     val surfaceColor = containerColor.copy(alpha = liquidGlassTuning.surfaceAlpha)
@@ -351,7 +344,7 @@ internal fun BoxScope.BiliPaiFloatingDockIndicator(
     alignment: Alignment = Alignment.CenterStart,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
 ) {
-    if (!visible || isLowBlurBudgetForced()) return
+    if (!visible) return
     val pillHighlight = rememberBiliPaiGravityHighlight(extraDegrees = 90f)
     Box(
         modifier = Modifier

@@ -2,12 +2,13 @@ package com.android.purebilibili.feature.home.components
 
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class LiquidGlassRuntimeGuardStructureTest {
 
     @Test
-    fun `shared liquid glass leaves consume the runtime visual guard`() {
+    fun `runtime guard trims secondary effects without overriding primary glass toggle`() {
         val floatingChrome = source("FloatingDockChrome.kt")
         val floatingBar = source("FloatingBottomBar.kt")
         val progressiveTop = source("ProgressiveTopChrome.kt")
@@ -15,12 +16,14 @@ class LiquidGlassRuntimeGuardStructureTest {
         val homeHeader = source("HomeHeader.kt")
         val videoCard = source("cards/VideoCard.kt")
 
-        assertTrue(floatingChrome.contains("isLowBlurBudgetForced()"))
+        assertFalse(floatingChrome.contains("isLowBlurBudgetForced()"))
         assertTrue(floatingBar.contains("PlainMiuixFloatingBottomBar("))
-        assertTrue(floatingBar.contains("isLowBlurBudgetForced()"))
+        assertFalse(floatingBar.contains("isLowBlurBudgetForced()"))
         assertTrue(progressiveTop.contains("isLowBlurBudgetForced()"))
-        assertTrue(bottomBar.contains("isLowBlurBudgetForced(forceLowBlurBudget)"))
+        assertFalse(bottomBar.contains("isLowBlurBudgetForced("))
         assertTrue(homeHeader.contains("!isLowBlurBudgetForced(forceLowBlurBudget)"))
+        assertFalse(homeHeader.contains("val isLiquidGlassMode = false"))
+        assertTrue(homeHeader.contains("renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP"))
         assertTrue(videoCard.contains("!isLowBlurBudgetForced()"))
     }
 

@@ -1352,7 +1352,8 @@ internal fun Modifier.homeTopChromeSurface(
     preferFlatGlass: Boolean = false,
     darkThemeWhiteOverlayMultiplier: Float = 0.86f
 ): Modifier = composed {
-    val isLiquidGlassMode = false
+    val isLiquidGlassMode = renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP ||
+        renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
     // Liquid chrome always reuses the bottom-bar BiliPai material so every reusable surface
     // (top dock / search / continuous slab / segmented dock) stays visually identical.
     if (isLiquidGlassMode) {

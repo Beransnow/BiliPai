@@ -80,7 +80,6 @@ import com.android.purebilibili.feature.home.components.liquid.rememberCombinedB
 import com.android.purebilibili.feature.home.components.liquid.vibrancy
 import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
 import com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry
-import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation
 import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
 import com.android.purebilibili.feature.home.components.miuix.InteractiveHighlight
@@ -423,23 +422,6 @@ fun FloatingBottomBar(
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
 ) {
-    if (mode == FloatingBottomBarMode.LiquidGlass && isLowBlurBudgetForced()) {
-        PlainMiuixFloatingBottomBar(
-            selectedIndex = selectedIndex(),
-            onSelected = onSelected,
-            onReselected = onReselected,
-            tabsCount = tabsCount,
-            modifier = modifier,
-            colors = FloatingBottomBarColors(
-                containerColor = colors.containerColor.copy(alpha = 1f),
-                indicatorColor = colors.indicatorColor,
-                contentColor = colors.contentColor,
-                activeContentColor = colors.activeContentColor,
-            ),
-            content = content,
-        )
-        return
-    }
     val isInDark = isSystemInDarkTheme()
     val pillShape = remember { resolveSharedBottomBarCapsuleShape() }
     val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass

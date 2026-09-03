@@ -129,7 +129,6 @@ import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.blur.BlurStyles
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.adaptive.MotionTier
-import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
 import dev.chrisbanes.haze.HazeState
@@ -1014,7 +1013,9 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
     materialPressProgress: Float = 0f,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f)
 ): Modifier = composed {
-    val effectiveForceLowBlurBudget = isLowBlurBudgetForced(forceLowBlurBudget)
+    // The global liquid-glass switch owns primary navigation chrome. Runtime jank
+    // downgrades may trim secondary effects, but must not silently turn this surface solid.
+    val effectiveForceLowBlurBudget = forceLowBlurBudget
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
     val renderGlassEffects = shouldRenderBottomBarLiquidGlassEffects(
         glassEnabled = glassEnabled,
@@ -3136,7 +3137,7 @@ private fun BiliPaiFloatingBottomBar(
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
     val effectiveGlassEnabled = shouldRenderBottomBarLiquidGlassEffects(
         glassEnabled = glassEnabled,
-        forceLowBlurBudget = isLowBlurBudgetForced(forceLowBlurBudget),
+        forceLowBlurBudget = forceLowBlurBudget,
     )
     val biliPaiContainerColor = resolveBiliPaiBottomBarShellColor(
         containerColor = containerColor,
@@ -3789,8 +3790,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     interactionModifier: Modifier = Modifier
 ) {
     if (!visible) return
-    val forceLowBlurBudget = isLowBlurBudgetForced()
-    val effectiveIndicatorEffectsEnabled = indicatorEffectsEnabled && !forceLowBlurBudget
+    val effectiveIndicatorEffectsEnabled = indicatorEffectsEnabled
     val rawIndicatorLayerTransform = if (effectiveIndicatorEffectsEnabled) {
         resolveBottomBarIndicatorLayerTransform(
             motionProgress = motionProgress,
@@ -3812,7 +3812,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     } else {
         rawIndicatorLayerTransform
     }
-    val pillHighlight = if (glassEnabled && !forceLowBlurBudget) {
+    val pillHighlight = if (glassEnabled) {
         rememberBiliPaiGravityHighlight(
             iosIndicatorSpecular,
             extraDegrees = if (swapMotionAxes) 0f else 90f,
@@ -3820,7 +3820,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     } else {
         null
     }
-    val indicatorBackdrop = if (!glassEnabled || forceLowBlurBudget) {
+    val indicatorBackdrop = if (!glassEnabled) {
         null
     } else if (shouldUseBottomBarCombinedIndicatorBackdrop(liquidGlassPreset)) {
         contentBackdrop
