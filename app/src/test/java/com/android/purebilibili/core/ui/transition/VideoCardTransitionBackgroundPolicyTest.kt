@@ -205,6 +205,116 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
+    fun sourceChromeHidesWhileOpeningAndSettledThenReturnsOnPredictiveBack() {
+        assertFalse(
+            shouldShowVideoCardTransitionSourceChrome(
+                isVideoDetailDestination = true,
+                exposure = VideoCardTransitionExposure.Opening,
+            )
+        )
+        assertFalse(
+            shouldShowVideoCardTransitionSourceChrome(
+                isVideoDetailDestination = true,
+                exposure = VideoCardTransitionExposure.SettledHidden,
+            )
+        )
+        assertTrue(
+            shouldShowVideoCardTransitionSourceChrome(
+                isVideoDetailDestination = true,
+                exposure = VideoCardTransitionExposure.BackPreview,
+            )
+        )
+        assertFalse(
+            shouldShowVideoCardTransitionSourceChrome(
+                isVideoDetailDestination = true,
+                exposure = VideoCardTransitionExposure.Restoring,
+            )
+        )
+        assertTrue(
+            shouldShowVideoCardTransitionSourceChrome(
+                isVideoDetailDestination = true,
+                exposure = VideoCardTransitionExposure.Returning,
+            )
+        )
+        assertTrue(
+            shouldShowVideoCardTransitionSourceChrome(
+                isVideoDetailDestination = false,
+                exposure = VideoCardTransitionExposure.Idle,
+            )
+        )
+    }
+
+    @Test
+    fun homeOverlayChromeMatchesSourceChromePhases() {
+        assertFalse(
+            shouldShowHomeOverlayChromeDuringVideoCardTransition(
+                VideoCardTransitionExposure.Opening,
+            )
+        )
+        assertFalse(
+            shouldShowHomeOverlayChromeDuringVideoCardTransition(
+                VideoCardTransitionExposure.SettledHidden,
+            )
+        )
+        assertTrue(
+            shouldShowHomeOverlayChromeDuringVideoCardTransition(
+                VideoCardTransitionExposure.BackPreview,
+            )
+        )
+        assertFalse(
+            shouldShowHomeOverlayChromeDuringVideoCardTransition(
+                VideoCardTransitionExposure.Restoring,
+            )
+        )
+        assertTrue(
+            shouldShowHomeOverlayChromeDuringVideoCardTransition(
+                VideoCardTransitionExposure.Returning,
+            )
+        )
+        assertTrue(
+            shouldShowHomeOverlayChromeDuringVideoCardTransition(
+                VideoCardTransitionExposure.Idle,
+            )
+        )
+    }
+
+    @Test
+    fun homeFeedOwnsHostSnapshotSoRouteShellDoesNotRecordTheHeader() {
+        assertTrue(
+            shouldHomeFeedOwnVideoCardTransitionSnapshot(
+                sourceRoute = "home",
+                hasSnapshotHandle = true,
+            )
+        )
+        assertFalse(
+            shouldHomeFeedOwnVideoCardTransitionSnapshot(
+                sourceRoute = "home",
+                hasSnapshotHandle = false,
+            )
+        )
+        assertFalse(
+            shouldHomeFeedOwnVideoCardTransitionSnapshot(
+                sourceRoute = "dynamic",
+                hasSnapshotHandle = true,
+            )
+        )
+        assertFalse(
+            shouldApplyVideoCardTransitionSnapshotOnRouteShell(
+                entryRoute = "main_host",
+                sourceRoute = "home",
+                activeMainHostRoute = "home",
+            )
+        )
+        assertTrue(
+            shouldApplyVideoCardTransitionSnapshotOnRouteShell(
+                entryRoute = "dynamic",
+                sourceRoute = "dynamic",
+                activeMainHostRoute = "home",
+            )
+        )
+    }
+
+    @Test
     fun navBackdrop_isHiddenWhenPredictiveReturnTargetsAnotherVideoDetail() {
         assertFalse(
             shouldShowVideoCardTransitionNavBackdrop(

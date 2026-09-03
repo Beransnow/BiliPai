@@ -415,6 +415,7 @@ internal fun BiliPaiNavDisplayHost(
             preferWholeCardReturnProvider = { latestPreferWholeCardReturn },
             motionTierProvider = { transitionMotionTier },
             isLightBackgroundProvider = { isLightBackground },
+            realtimeBlurEnabledProvider = { videoTransitionRealtimeBlurEnabled },
         )
     }
     val videoCardLayoutWidthProvider = remember(videoCardTransitionProgress) {

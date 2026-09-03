@@ -128,6 +128,40 @@ internal fun shouldUseHostOwnedVideoCardTransitionSnapshot(
     ?.substringBefore('?')
     ?.startsWith("video/") != true
 
+/**
+ * 首页 feed 自己录冻结层，顶栏 overlay 才能留在快照之上做独立滑入/滑出。
+ */
+internal fun shouldHomeFeedOwnVideoCardTransitionSnapshot(
+    sourceRoute: String?,
+    hasSnapshotHandle: Boolean,
+): Boolean {
+    if (!hasSnapshotHandle) return false
+    if (!shouldUseHostOwnedVideoCardTransitionSnapshot(sourceRoute)) return false
+    return sourceRoute?.substringBefore("?") == "home"
+}
+
+/** 首页 feed 已接管快照时，路由壳只钉页、不再整页录顶栏。 */
+internal fun shouldApplyVideoCardTransitionSnapshotOnRouteShell(
+    entryRoute: String?,
+    sourceRoute: String?,
+    activeMainHostRoute: String?,
+): Boolean {
+    if (!shouldUseHostOwnedVideoCardTransitionSnapshot(sourceRoute)) return false
+    if (
+        !shouldApplyVideoCardTransitionBackgroundToRoute(
+            entryRoute = entryRoute,
+            sourceRoute = sourceRoute,
+            activeMainHostRoute = activeMainHostRoute,
+        )
+    ) {
+        return false
+    }
+    return !shouldHomeFeedOwnVideoCardTransitionSnapshot(
+        sourceRoute = sourceRoute,
+        hasSnapshotHandle = true,
+    )
+}
+
 internal data class VideoCardTransitionBackgroundFrame(
     val blurRadiusPx: Float,
     val scrimAlpha: Float,
@@ -160,6 +194,7 @@ internal data class VideoCardTransitionBackgroundState(
     val preferWholeCardReturnProvider: () -> Boolean = { true },
     val motionTierProvider: () -> MotionTier = { MotionTier.Normal },
     val isLightBackgroundProvider: () -> Boolean = { false },
+    val realtimeBlurEnabledProvider: () -> Boolean = { false },
 )
 
 internal val LocalVideoCardTransitionBackgroundState = compositionLocalOf {

@@ -511,6 +511,8 @@ class AppNavigationNavigation3BridgeStructureTest {
         assertTrue(source.contains("val isVideoDetailDestination = isVideoDetailRoute(currentRoute)"))
         assertTrue(source.contains("val bottomBarMountRoute = if (isVideoDetailDestination)"))
         assertTrue(source.contains("activeRoute = bottomBarMountRoute"))
+        assertTrue(source.contains("shouldShowVideoCardTransitionSourceChrome("))
+        assertTrue(source.contains("videoCardSourceChromeVisible"))
         assertTrue(source.contains("!isVideoDetailDestination"))
         assertTrue(source.contains("bottomBarMountGate ||"))
         assertTrue(source.contains("bottomBarVisibilityState.currentState ||"))
