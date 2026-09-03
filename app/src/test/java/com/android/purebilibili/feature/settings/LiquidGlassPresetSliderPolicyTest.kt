@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.settings
 
 import com.android.purebilibili.core.store.LiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.resolveLiquidGlassAdvancedPreset
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -92,6 +93,23 @@ class LiquidGlassPresetSliderPolicyTest {
             false,
             liquidGlassPresetSliderValue(changedBlur) ==
                 liquidGlassPresetSliderValue(changedDistortion),
+        )
+    }
+
+    @Test
+    fun `live preview uses the production floating indicator stack`() {
+        val root = listOf(File("."), File("..")).first { File(it, "app/src/main").exists() }
+        val source = File(
+            root,
+            "app/src/main/java/com/android/purebilibili/feature/settings/" +
+                "LiquidGlassLivePreview.kt",
+        ).readText()
+
+        assertEquals(true, source.contains("FloatingBottomBar("))
+        assertEquals(true, source.contains("FloatingBottomBarItem("))
+        assertEquals(
+            true,
+            source.contains("onSelected = { previewSelectedBottomBarIndex = it }"),
         )
     }
 }

@@ -71,6 +71,7 @@ import com.android.purebilibili.core.store.HomeCardInfoGlassMode
 import com.android.purebilibili.core.store.HomeDurationStyle
 import com.android.purebilibili.core.ui.LocalWallpaperHazeState
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.util.HapticType
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -1443,7 +1444,9 @@ internal fun ElegantVideoCard(
             }
             // Miuix liquid glass — independent of Haze, samples the home feed layer.
             val liquidModifier = if (
-                infoSurfaceAppearance.useRealtimeLiquidGlass && homeMiuixBackdrop != null
+                infoSurfaceAppearance.useRealtimeLiquidGlass &&
+                homeMiuixBackdrop != null &&
+                !isLowBlurBudgetForced()
             ) {
                 Modifier.drawBackdrop(
                     backdrop = homeMiuixBackdrop,

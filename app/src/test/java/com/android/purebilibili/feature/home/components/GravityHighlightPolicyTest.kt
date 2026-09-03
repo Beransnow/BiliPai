@@ -1,7 +1,10 @@
 package com.android.purebilibili.feature.home.components
 
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class GravityHighlightPolicyTest {
 
@@ -20,5 +23,30 @@ class GravityHighlightPolicyTest {
 
         assertEquals(0f, direction.first, 0.0001f)
         assertEquals(-1f, direction.second, 0.0001f)
+    }
+
+    @Test
+    fun `sensor state is deferred to the draw phase through a shared state holder`() {
+        val root = listOf(File("."), File("..")).first { File(it, "app/src/main").exists() }
+        val shared = File(
+            root,
+            "app/src/main/java/com/android/purebilibili/feature/home/components/" +
+                "FloatingDockChrome.kt",
+        ).readText()
+        val floatingBar = File(
+            root,
+            "app/src/main/java/com/android/purebilibili/feature/home/components/" +
+                "FloatingBottomBar.kt",
+        ).readText()
+        val legacyBar = File(
+            root,
+            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt",
+        ).readText()
+
+        assertTrue(shared.contains("): State<Highlight>"))
+        assertTrue(shared.contains("quantizedDirection.value"))
+        assertFalse(shared.contains("val tilt by rememberDeviceTilt()"))
+        assertFalse(floatingBar.contains("fun rememberGravityRotatedHighlight("))
+        assertFalse(legacyBar.contains("fun rememberGravityRotatedHighlight("))
     }
 }

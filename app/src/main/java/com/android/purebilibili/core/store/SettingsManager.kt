@@ -1548,8 +1548,8 @@ object SettingsManager {
     private val KEY_CRASH_TRACKING_CONSENT_SHOWN = booleanPreferencesKey("crash_tracking_consent_shown")
     private val KEY_LIQUID_GLASS_MODE = intPreferencesKey("liquid_glass_mode")
     private val KEY_LIQUID_GLASS_STRENGTH = floatPreferencesKey("liquid_glass_strength")
-    // V2 intentionally avoids reviving stale values from the removed legacy tuning UI.
-    // Existing installs therefore start from the current BiliPai baseline (0.5f).
+    // V2 stores the continuous material position; reads migrate the complete legacy selection
+    // when this key is absent so upgrades preserve the user's clear/balanced/frosted intent.
     private val KEY_LIQUID_GLASS_PROGRESS = floatPreferencesKey("liquid_glass_material_progress_v2")
     private val KEY_LIQUID_GLASS_PREVIEW_IMAGE_URI =
         stringPreferencesKey("liquid_glass_preview_image_uri")

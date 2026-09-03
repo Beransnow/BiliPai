@@ -40,7 +40,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -80,27 +79,19 @@ import com.android.purebilibili.feature.home.components.liquid.rememberCombinedB
 import com.android.purebilibili.feature.home.components.liquid.vibrancy
 import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
 import com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation
 import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
 import com.android.purebilibili.feature.home.components.miuix.InteractiveHighlight
-import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.cos
 import kotlin.math.sign
-import kotlin.math.sin
-import kotlin.math.sqrt
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.blur
 import top.yukonga.miuix.kmp.blur.drawBackdrop
-import top.yukonga.miuix.kmp.blur.highlight.BloomStroke
-import top.yukonga.miuix.kmp.blur.highlight.Highlight
-import top.yukonga.miuix.kmp.blur.highlight.LightPosition
-import top.yukonga.miuix.kmp.blur.highlight.LightSource
 import com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource
-import top.yukonga.miuix.kmp.blur.sensor.rememberDeviceTilt
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import androidx.compose.material3.LocalContentColor as M3LocalContentColor
 import top.yukonga.miuix.kmp.theme.LocalContentColor as MiuixLocalContentColor
@@ -262,70 +253,6 @@ val FloatingBottomBarDefaultShellHeight: Dp = 56.dp
 
 const val FloatingBottomBarPressedScale: Float =
     com.android.purebilibili.core.ui.BottomBarReferencePressedScale
-
-private val iosIndicatorSpecular: Highlight = Highlight(
-    width = 1.dp,
-    alpha = 1f,
-    style = BloomStroke(
-        color = Color.White.copy(alpha = 0.12f),
-        innerBlurRadius = 2.0.dp,
-        primaryLight = LightSource(
-            position = LightPosition(0.5f, -0.3f, -0.05f),
-            color = Color.White,
-            intensity = 1f,
-        ),
-        secondaryLight = LightSource(
-            position = LightPosition(0.5f, 0.8f, -0.5f),
-            color = Color.White,
-            intensity = 0.4f,
-        ),
-        dualPeak = true,
-    ),
-)
-
-private const val LIGHT_REF_X = 0.5f
-private const val LIGHT_REF_Y = 0.7f
-private const val GRAVITY_DIR_THRESHOLD_SQ = 0.01f
-
-@Composable
-internal fun rememberGravityRotatedHighlight(
-    extraDegrees: Float = 0f,
-    width: Dp = 1.dp,
-): Highlight {
-    val base = iosIndicatorSpecular
-    val baseStyle = base.style as BloomStroke
-    val tilt by rememberDeviceTilt()
-    val rotatedPrimary = remember(tilt, baseStyle.primaryLight, extraDegrees) {
-        val basePrimary = baseStyle.primaryLight
-        val gx = tilt.gravityX
-        val gy = tilt.gravityY
-        val gMagSq = gx * gx + gy * gy
-        val (lx0, ly0) = if (gMagSq > GRAVITY_DIR_THRESHOLD_SQ) {
-            val invMag = 1f / sqrt(gMagSq)
-            (gx * invMag) to (gy * invMag)
-        } else {
-            0f to -1f
-        }
-        val rad = extraDegrees * PI / 180.0
-        val c = cos(rad).toFloat()
-        val s = sin(rad).toFloat()
-        val lx = c * lx0 - s * ly0
-        val ly = s * lx0 + c * ly0
-        basePrimary.copy(
-            position = LightPosition(
-                x = LIGHT_REF_X + lx,
-                y = LIGHT_REF_Y + ly,
-                z = basePrimary.position.z,
-            ),
-        )
-    }
-    return remember(base, rotatedPrimary, width) {
-        base.copy(
-            width = width,
-            style = baseStyle.copy(primaryLight = rotatedPrimary),
-        )
-    }
-}
 
 internal const val EXTERNAL_PAGER_INDICATOR_CATCH_UP_EPSILON = 0.05f
 
@@ -495,6 +422,23 @@ fun FloatingBottomBar(
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
 ) {
+    if (mode == FloatingBottomBarMode.LiquidGlass && isLowBlurBudgetForced()) {
+        PlainMiuixFloatingBottomBar(
+            selectedIndex = selectedIndex(),
+            onSelected = onSelected,
+            onReselected = onReselected,
+            tabsCount = tabsCount,
+            modifier = modifier,
+            colors = FloatingBottomBarColors(
+                containerColor = colors.containerColor.copy(alpha = 1f),
+                indicatorColor = colors.indicatorColor,
+                contentColor = colors.contentColor,
+                activeContentColor = colors.activeContentColor,
+            ),
+            content = content,
+        )
+        return
+    }
     val isInDark = isSystemInDarkTheme()
     val pillShape = remember { resolveSharedBottomBarCapsuleShape() }
     val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass
@@ -824,8 +768,8 @@ fun FloatingBottomBar(
             null
         }
 
-    val baseHighlight = if (isLiquidGlassMode) rememberGravityRotatedHighlight(extraDegrees = -45f) else null
-    val pillHighlight = if (isLiquidGlassMode) rememberGravityRotatedHighlight(
+    val baseHighlight = if (isLiquidGlassMode) rememberBiliPaiGravityHighlight(extraDegrees = -45f) else null
+    val pillHighlight = if (isLiquidGlassMode) rememberBiliPaiGravityHighlight(
         extraDegrees = 90f,
         width = resolveDockPillHighlightWidthDp(
             indicatorWidthDp = fittedIndicatorWidth.value,
@@ -906,7 +850,7 @@ fun FloatingBottomBar(
                                                 liquidGlassTuning.shellChromaticAberrationAmount,
                                         )
                                     },
-                                    highlight = { baseHighlight?.copy(alpha = 0.75f) },
+                                    highlight = { baseHighlight?.value?.copy(alpha = 0.75f) },
                                     layerBlock = {
                                         val width = size.width.coerceAtLeast(1f)
                                         val s = lerp(
@@ -1059,7 +1003,7 @@ fun FloatingBottomBar(
                                 )
                             },
                             highlight = {
-                                pillHighlight?.copy(alpha = dampedDragAnimation.pressProgress)
+                                pillHighlight?.value?.copy(alpha = dampedDragAnimation.pressProgress)
                             },
                             layerBlock = {
                                 scaleX = dampedDragAnimation.scaleX

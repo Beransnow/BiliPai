@@ -114,11 +114,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
-import kotlin.math.PI
-import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.roundToInt
-import kotlin.math.sin
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.alpha
 import com.android.purebilibili.core.ui.blur.shouldAllowDirectHazeLiquidGlassFallback
@@ -129,6 +126,7 @@ import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.blur.BlurStyles
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
 import dev.chrisbanes.haze.HazeState
@@ -169,7 +167,6 @@ import com.android.purebilibili.core.store.LiquidGlassMode
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.FastOutSlowInEasing
 import kotlin.math.sign
-import kotlin.math.sqrt
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop as MiuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.blur as miuixBlur
@@ -180,7 +177,6 @@ import top.yukonga.miuix.kmp.blur.highlight.LightPosition
 import top.yukonga.miuix.kmp.blur.highlight.LightSource
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
-import top.yukonga.miuix.kmp.blur.sensor.rememberDeviceTilt
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Search
 private val iosIndicatorSpecular: MiuixHighlight = MiuixHighlight(
@@ -202,45 +198,6 @@ private val iosIndicatorSpecular: MiuixHighlight = MiuixHighlight(
         dualPeak = true
     )
 )
-
-private const val MIUIX_LIGHT_REF_X = 0.5f
-private const val MIUIX_LIGHT_REF_Y = 0.7f
-private const val MIUIX_GRAVITY_DIR_THRESHOLD_SQ = 0.01f
-
-@Composable
-private fun rememberGravityRotatedHighlight(
-    base: MiuixHighlight,
-    extraDegrees: Float = 0f
-): MiuixHighlight {
-    val baseStyle = base.style as BloomStroke
-    val tilt by rememberDeviceTilt()
-    val rotatedPrimary = remember(tilt, baseStyle.primaryLight, extraDegrees) {
-        val gx = tilt.gravityX
-        val gy = tilt.gravityY
-        val gMagSq = gx * gx + gy * gy
-        val (lx0, ly0) = if (gMagSq > MIUIX_GRAVITY_DIR_THRESHOLD_SQ) {
-            val invMag = 1f / sqrt(gMagSq)
-            (gx * invMag) to (gy * invMag)
-        } else {
-            0f to -1f
-        }
-        val rad = extraDegrees * PI / 180.0
-        val c = cos(rad).toFloat()
-        val s = sin(rad).toFloat()
-        val lx = c * lx0 - s * ly0
-        val ly = s * lx0 + c * ly0
-        baseStyle.primaryLight.copy(
-            position = LightPosition(
-                x = MIUIX_LIGHT_REF_X + lx,
-                y = MIUIX_LIGHT_REF_Y + ly,
-                z = baseStyle.primaryLight.position.z
-            )
-        )
-    }
-    return remember(base, baseStyle, rotatedPrimary) {
-        base.copy(style = baseStyle.copy(primaryLight = rotatedPrimary))
-    }
-}
 
 /**
  * 底部导航项枚举。图标由当前主题的导航图标策略统一解析。
@@ -1054,10 +1011,11 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
     materialPressProgress: Float = 0f,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f)
 ): Modifier = composed {
+    val effectiveForceLowBlurBudget = isLowBlurBudgetForced(forceLowBlurBudget)
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
     val renderGlassEffects = shouldRenderBottomBarLiquidGlassEffects(
         glassEnabled = glassEnabled,
-        forceLowBlurBudget = forceLowBlurBudget,
+        forceLowBlurBudget = effectiveForceLowBlurBudget,
     )
     val useHazeBlur = shouldUseAndroidNativeFloatingHazeBlur(
         glassEnabled = renderGlassEffects,
@@ -1075,7 +1033,7 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
         liquidGlassTuning = liquidGlassTuning
     )
     val baseHighlight = if (renderGlassEffects) {
-        rememberGravityRotatedHighlight(iosIndicatorSpecular, extraDegrees = -45f)
+        rememberBiliPaiGravityHighlight(iosIndicatorSpecular, extraDegrees = -45f)
     } else {
         null
     }
@@ -1091,14 +1049,18 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                     motionTier = motionTier,
                     isScrolling = false,
                     isTransitionRunning = isTransitionRunning,
-                    forceLowBudget = forceLowBlurBudget
+                    forceLowBudget = effectiveForceLowBlurBudget
                 )
             } else {
                 Modifier
             }
         )
         .run {
-            if (backdrop != null && !useHazeBlur) {
+            if (
+                backdrop != null &&
+                !useHazeBlur &&
+                (renderGlassEffects || blurEnabled)
+            ) {
                 this
                     .dropShadow(
                         shape = shape,
@@ -1157,7 +1119,7 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                             }
                         },
                         highlight = {
-                            baseHighlight?.copy(
+                            baseHighlight?.value?.copy(
                                 alpha = if (renderGlassEffects) {
                                     0.75f * materialSpec.highlightWidthScale *
                                         effectiveShellLensIntensity
@@ -3171,7 +3133,7 @@ private fun BiliPaiFloatingBottomBar(
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
     val effectiveGlassEnabled = shouldRenderBottomBarLiquidGlassEffects(
         glassEnabled = glassEnabled,
-        forceLowBlurBudget = forceLowBlurBudget,
+        forceLowBlurBudget = isLowBlurBudgetForced(forceLowBlurBudget),
     )
     val biliPaiContainerColor = resolveBiliPaiBottomBarShellColor(
         containerColor = containerColor,
@@ -3824,7 +3786,9 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     interactionModifier: Modifier = Modifier
 ) {
     if (!visible) return
-    val rawIndicatorLayerTransform = if (indicatorEffectsEnabled) {
+    val forceLowBlurBudget = isLowBlurBudgetForced()
+    val effectiveIndicatorEffectsEnabled = indicatorEffectsEnabled && !forceLowBlurBudget
+    val rawIndicatorLayerTransform = if (effectiveIndicatorEffectsEnabled) {
         resolveBottomBarIndicatorLayerTransform(
             motionProgress = motionProgress,
             velocityItemsPerSecond = velocityItemsPerSecond,
@@ -3845,11 +3809,15 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     } else {
         rawIndicatorLayerTransform
     }
-    val pillHighlight = rememberGravityRotatedHighlight(
-        iosIndicatorSpecular,
-        extraDegrees = if (swapMotionAxes) 0f else 90f,
-    )
-    val indicatorBackdrop = if (!glassEnabled) {
+    val pillHighlight = if (glassEnabled && !forceLowBlurBudget) {
+        rememberBiliPaiGravityHighlight(
+            iosIndicatorSpecular,
+            extraDegrees = if (swapMotionAxes) 0f else 90f,
+        )
+    } else {
+        null
+    }
+    val indicatorBackdrop = if (!glassEnabled || forceLowBlurBudget) {
         null
     } else if (shouldUseBottomBarCombinedIndicatorBackdrop(liquidGlassPreset)) {
         contentBackdrop
@@ -3862,7 +3830,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
             .graphicsLayer {
                 translationX = indicatorTranslationXPx + indicatorPanelOffsetPx
                 translationY = indicatorTranslationYPx + indicatorPanelOffsetYPx
-                if (indicatorBackdrop == null && indicatorEffectsEnabled) {
+                if (indicatorBackdrop == null && effectiveIndicatorEffectsEnabled) {
                     scaleX = indicatorLayerTransform.scaleX
                     scaleY = indicatorLayerTransform.scaleY
                 }
@@ -3891,7 +3859,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
                             }
                         },
                         highlight = {
-                            pillHighlight.copy(alpha = effectivePressProgress)
+                            pillHighlight?.value?.copy(alpha = effectivePressProgress)
                         },
                         onDrawSurface = {
                             val surfaceFade = (1f - effectivePressProgress).coerceIn(0f, 1f)
@@ -3908,7 +3876,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
                             }
                         },
                         layerBlock = {
-                            if (indicatorEffectsEnabled) {
+                            if (effectiveIndicatorEffectsEnabled) {
                                 scaleX = indicatorLayerTransform.scaleX
                                 scaleY = indicatorLayerTransform.scaleY
                             }

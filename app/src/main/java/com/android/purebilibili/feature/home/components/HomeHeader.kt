@@ -65,6 +65,7 @@ import com.android.purebilibili.core.ui.blur.BlurStyles
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
@@ -2710,7 +2711,7 @@ fun HomeHeader(
                                     usesMatchedTopControls = useBottomBarMatchedTopControls,
                                     renderMode = searchChromeRenderMode,
                                     hasBackdrop = miuixBackdrop != null,
-                                )
+                                ) && !isLowBlurBudgetForced(forceLowBlurBudget)
                             Box(
                                 modifier = Modifier
                                     .fillMaxHeight()

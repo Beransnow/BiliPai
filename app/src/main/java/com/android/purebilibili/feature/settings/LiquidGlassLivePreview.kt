@@ -33,6 +33,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,6 +66,10 @@ import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
 import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import com.android.purebilibili.feature.home.components.BottomNavItem
+import com.android.purebilibili.feature.home.components.FloatingBottomBar
+import com.android.purebilibili.feature.home.components.FloatingBottomBarColors
+import com.android.purebilibili.feature.home.components.FloatingBottomBarItem
+import com.android.purebilibili.feature.home.components.FloatingBottomBarMode
 import com.android.purebilibili.feature.home.components.resolveFloatingDockGeometryScale
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.home.components.resolveMaterialBottomBarIcon
@@ -203,7 +208,7 @@ internal fun LiquidGlassAdjustmentPanel(
             text = if (readabilityMode == LiquidGlassReadabilityMode.STABLE) {
                 "推荐：始终使用主题文字色，显示稳定，也更省电。"
             } else {
-                "根据玻璃后方的明暗自动切换文字颜色，复杂背景下更易辨认。"
+                "根据当前显示区域的明暗自动切换文字颜色，复杂背景下更易辨认。"
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -759,8 +764,10 @@ private fun LiquidGlassHomeSample(
     val previewBottomBarItems = remember(bottomBarItems) {
         bottomBarItems.ifEmpty { listOf(BottomNavItem.HOME) }
     }
-    val previewSelectedBottomBarIndex = remember(previewBottomBarItems) {
-        previewBottomBarItems.indexOf(BottomNavItem.HOME).takeIf { it >= 0 } ?: 0
+    var previewSelectedBottomBarIndex by remember(previewBottomBarItems) {
+        mutableIntStateOf(
+            previewBottomBarItems.indexOf(BottomNavItem.HOME).takeIf { it >= 0 } ?: 0
+        )
     }
     val previewSearchHeight = 40.dp
 
@@ -903,35 +910,45 @@ private fun LiquidGlassHomeSample(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
+            FloatingBottomBar(
+                selectedIndex = { previewSelectedBottomBarIndex },
+                onSelected = { previewSelectedBottomBarIndex = it },
+                onReselected = {},
+                backdrop = backdrop,
+                tabsCount = previewBottomBarItems.size,
                 modifier = Modifier
-                    .height(48.dp)
-                    .biliPaiFloatingDockShell(
-                        backdrop = backdrop,
-                        containerColor = glassColor,
-                        pressProgress = 0f,
-                        shape = CircleShape,
-                        liquidGlassTuning = tuning,
-                    )
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(
-                    if (previewBottomBarItems.size <= 3) 22.dp else 12.dp
+                    .weight(1f)
+                    .height(48.dp),
+                mode = FloatingBottomBarMode.LiquidGlass,
+                colors = FloatingBottomBarColors(
+                    containerColor = glassColor,
+                    indicatorColor = MaterialTheme.colorScheme.primary,
+                    contentColor = bottomContentColor,
+                    activeContentColor = MaterialTheme.colorScheme.primary,
                 ),
-                verticalAlignment = Alignment.CenterVertically,
+                shellHeight = 48.dp,
+                indicatorHeight = 44.dp,
+                liquidGlassTuning = tuning,
             ) {
                 previewBottomBarItems.forEachIndexed { index, item ->
-                    Icon(
-                        imageVector = resolveMaterialBottomBarIcon(
-                            item = item,
-                            selected = index == previewSelectedBottomBarIndex,
-                        ),
-                        contentDescription = item.label,
-                        tint = if (index == previewSelectedBottomBarIndex) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            bottomContentColor
-                        },
-                    )
+                    FloatingBottomBarItem(
+                        onClick = { previewSelectedBottomBarIndex = index },
+                        selected = index == previewSelectedBottomBarIndex,
+                        itemIndex = index,
+                    ) {
+                        Icon(
+                            imageVector = resolveMaterialBottomBarIcon(
+                                item = item,
+                                selected = index == previewSelectedBottomBarIndex,
+                            ),
+                            contentDescription = item.label,
+                            tint = if (index == previewSelectedBottomBarIndex) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                bottomContentColor
+                            },
+                        )
+                    }
                 }
             }
             if (bottomBarSearchEnabled) {

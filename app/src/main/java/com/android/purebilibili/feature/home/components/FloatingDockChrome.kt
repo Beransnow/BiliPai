@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +34,7 @@ import com.android.purebilibili.feature.home.components.liquid.InnerShadow
 import com.android.purebilibili.feature.home.components.liquid.innerShadow
 import com.android.purebilibili.feature.home.components.liquid.lens
 import com.android.purebilibili.feature.home.components.liquid.vibrancy
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -73,7 +74,7 @@ private val iosIndicatorSpecular: Highlight = Highlight(
 private const val LIGHT_REF_X = 0.5f
 private const val LIGHT_REF_Y = 0.7f
 private const val GRAVITY_DIR_THRESHOLD_SQ = 0.01f
-internal const val GRAVITY_HIGHLIGHT_QUANTIZE_DEGREES = 8f
+internal const val GRAVITY_HIGHLIGHT_QUANTIZE_DEGREES = 3f
 
 internal fun quantizeGravityHighlightDirection(
     gravityX: Float,
@@ -94,12 +95,12 @@ internal fun quantizeGravityHighlightDirection(
 
 @Composable
 internal fun rememberBiliPaiGravityHighlight(
+    base: Highlight = iosIndicatorSpecular,
     extraDegrees: Float = 0f,
-): Highlight {
-    val base = iosIndicatorSpecular
-    val baseStyle = base.style as BloomStroke
+    width: Dp = base.width,
+): State<Highlight> {
     val tiltState = rememberDeviceTilt()
-    val quantizedDir by remember {
+    val quantizedDirection = remember(tiltState) {
         derivedStateOf {
             quantizeGravityHighlightDirection(
                 gravityX = tiltState.value.gravityX,
@@ -107,24 +108,29 @@ internal fun rememberBiliPaiGravityHighlight(
             )
         }
     }
-    val rotatedPrimary = remember(quantizedDir, baseStyle.primaryLight, extraDegrees) {
-        val basePrimary = baseStyle.primaryLight
-        val (lx0, ly0) = quantizedDir
-        val rad = extraDegrees * PI / 180.0
-        val c = cos(rad).toFloat()
-        val s = sin(rad).toFloat()
-        val lx = c * lx0 - s * ly0
-        val ly = s * lx0 + c * ly0
-        basePrimary.copy(
-            position = LightPosition(
-                x = LIGHT_REF_X + lx,
-                y = LIGHT_REF_Y + ly,
-                z = basePrimary.position.z,
-            ),
-        )
-    }
-    return remember(base, rotatedPrimary) {
-        base.copy(style = baseStyle.copy(primaryLight = rotatedPrimary))
+    return remember(base, extraDegrees, quantizedDirection, width) {
+        derivedStateOf {
+            val baseStyle = base.style as BloomStroke
+            val basePrimary = baseStyle.primaryLight
+            val (lx0, ly0) = quantizedDirection.value
+            val rad = extraDegrees * PI / 180.0
+            val c = cos(rad).toFloat()
+            val s = sin(rad).toFloat()
+            val lx = c * lx0 - s * ly0
+            val ly = s * lx0 + c * ly0
+            base.copy(
+                width = width,
+                style = baseStyle.copy(
+                    primaryLight = basePrimary.copy(
+                        position = LightPosition(
+                            x = LIGHT_REF_X + lx,
+                            y = LIGHT_REF_Y + ly,
+                            z = basePrimary.position.z,
+                        ),
+                    ),
+                ),
+            )
+        }
     }
 }
 
@@ -144,7 +150,8 @@ internal fun Modifier.biliPaiFloatingDockShell(
     lensIntensity: Float = 1f,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
 ): Modifier {
-    if (!enabled || backdrop == null) {
+    val forceLowBlurBudget = isLowBlurBudgetForced()
+    if (!enabled || backdrop == null || forceLowBlurBudget) {
         return this
             .graphicsLayer { translationX = panelOffsetPx }
             .background(containerColor, shape)
@@ -185,7 +192,7 @@ internal fun Modifier.biliPaiFloatingDockShell(
     )
     val highlightBlock = remember(baseHighlight, highlightAlpha) {
         val block: BackdropEffectScope.() -> Highlight? = {
-            baseHighlight.copy(alpha = highlightAlpha)
+            baseHighlight.value.copy(alpha = highlightAlpha)
         }
         block
     }
@@ -241,6 +248,11 @@ internal fun Modifier.biliPaiFloatingDockCaptureSurface(
     shape: Shape = CircleShape,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
 ): Modifier {
+    if (isLowBlurBudgetForced()) {
+        return this
+            .graphicsLayer { translationX = panelOffsetPx }
+            .background(containerColor.copy(alpha = liquidGlassTuning.surfaceAlpha), shape)
+    }
     val isDark = isSystemInDarkTheme()
     val density = LocalDensity.current
     val surfaceColor = containerColor.copy(alpha = liquidGlassTuning.surfaceAlpha)
@@ -339,7 +351,7 @@ internal fun BoxScope.BiliPaiFloatingDockIndicator(
     alignment: Alignment = Alignment.CenterStart,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
 ) {
-    if (!visible) return
+    if (!visible || isLowBlurBudgetForced()) return
     val pillHighlight = rememberBiliPaiGravityHighlight(extraDegrees = 90f)
     Box(
         modifier = Modifier
@@ -372,7 +384,7 @@ internal fun BoxScope.BiliPaiFloatingDockIndicator(
                                         ),
                                 )
                             },
-                            highlight = { pillHighlight.copy(alpha = pressProgress) },
+                            highlight = { pillHighlight.value.copy(alpha = pressProgress) },
                             layerBlock = {
                                 this.scaleX = scaleX
                                 this.scaleY = scaleY
