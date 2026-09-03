@@ -9,9 +9,31 @@ import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import com.android.purebilibili.core.util.CardPositionManager
 
+internal const val VIDEO_CARD_FLYING_OVERLAY_COVER_DEPTH = 0.001f
+
 /**
- * The flying overlay owns the clicked card. The list slot must be empty until land,
- * otherwise a frozen duplicate sits under the morph.
+ * Click pre-arms OPENING before NavDisplay mounts the destination. Hide the list slot
+ * only once that overlay is actually covering the source bounds, otherwise the click
+ * flashes an empty card-shaped hole.
+ */
+internal fun isVideoCardFlyingOverlayCoveringSource(
+    phase: VideoCardTransitionBackgroundPhase,
+    depthProgress: Float,
+    isReturnGestureInProgress: Boolean,
+): Boolean {
+    if (isReturnGestureInProgress) return true
+    return when (phase) {
+        VideoCardTransitionBackgroundPhase.OPENING,
+        VideoCardTransitionBackgroundPhase.RETURNING,
+        -> depthProgress > VIDEO_CARD_FLYING_OVERLAY_COVER_DEPTH
+        VideoCardTransitionBackgroundPhase.HELD -> true
+        VideoCardTransitionBackgroundPhase.IDLE -> false
+    }
+}
+
+/**
+ * The flying overlay owns the clicked card. The list slot must be empty while that
+ * overlay covers the source, otherwise a frozen duplicate sits under the morph.
  */
 internal fun shouldHideStationarySourceCard(
     isSharedMorphSourceCard: Boolean,
@@ -20,15 +42,11 @@ internal fun shouldHideStationarySourceCard(
     isReturnGestureInProgress: Boolean,
 ): Boolean {
     if (!isSharedMorphSourceCard) return false
-    if (isReturnGestureInProgress) return true
-    return when (phase) {
-        VideoCardTransitionBackgroundPhase.OPENING,
-        VideoCardTransitionBackgroundPhase.HELD,
-        -> true
-        VideoCardTransitionBackgroundPhase.RETURNING ->
-            depthProgress > 0.001f
-        VideoCardTransitionBackgroundPhase.IDLE -> false
-    }
+    return isVideoCardFlyingOverlayCoveringSource(
+        phase = phase,
+        depthProgress = depthProgress,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+    )
 }
 
 internal fun isRecordedNativeCardSource(bvid: String): Boolean {
@@ -44,7 +62,7 @@ internal fun isRecordedNativeCardSource(bvid: String): Boolean {
  *
  * [GraphicsLayer.toImageBitmap] is suspend and cannot run from a click callback. Keep the
  * recorded layer and draw it with [androidx.compose.ui.graphics.layer.drawLayer].
- * While this card is the morph source, skip drawing at the list coordinates so the slot is empty.
+ * While the flying overlay covers this card, skip drawing at the list coordinates.
  */
 @Composable
 internal fun Modifier.recordNativeVideoCardLayer(

@@ -6,6 +6,25 @@ import kotlin.test.assertTrue
 
 class VideoCardNativeSnapshotPolicyTest {
     @Test
+    fun clickKeepsTheListCardUntilTheFlyingOverlayCoversIt() {
+        assertFalse(
+            shouldHideStationarySourceCard(
+                isSharedMorphSourceCard = true,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                depthProgress = 0f,
+                isReturnGestureInProgress = false,
+            ),
+        )
+        assertFalse(
+            isVideoCardFlyingOverlayCoveringSource(
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                depthProgress = 0f,
+                isReturnGestureInProgress = false,
+            ),
+        )
+    }
+
+    @Test
     fun stationarySourceCardIsEmptyWhileTheFlyingCardOwnsTheSlot() {
         assertTrue(
             shouldHideStationarySourceCard(
