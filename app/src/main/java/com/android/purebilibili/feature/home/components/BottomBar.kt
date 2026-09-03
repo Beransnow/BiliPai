@@ -114,8 +114,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.alpha
 import com.android.purebilibili.core.ui.blur.shouldAllowDirectHazeLiquidGlassFallback
