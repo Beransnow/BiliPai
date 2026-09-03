@@ -174,6 +174,9 @@ import com.android.purebilibili.feature.home.components.FrostedBottomBar
 import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.BottomBarMatchedDockEdge
 import com.android.purebilibili.feature.home.components.BottomBarMatchedDockVisibility
+import com.android.purebilibili.feature.home.components.LiquidGlassRenderConfig
+import com.android.purebilibili.feature.home.components.LocalLiquidGlassRenderConfig
+import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.home.components.rememberBottomBarUiSkinDecoration
 import com.android.purebilibili.feature.home.components.rememberDynamicPublishSkinDecoration
 import com.android.purebilibili.feature.home.components.rememberHomeUiSkinDecoration
@@ -397,6 +400,21 @@ fun AppNavigation(
             homeSettings = homeSettings,
         )
     }
+    val liquidGlassRenderConfig = remember(
+        homeSettings.liquidGlassProgress,
+        homeSettings.liquidGlassAdvancedSettings,
+        homeSettings.liquidGlassReadabilityMode,
+        homeSettings.bottomBarLiquidGlassPreset,
+    ) {
+        LiquidGlassRenderConfig(
+            tuning = resolveLiquidGlassTuning(
+                progress = homeSettings.liquidGlassProgress,
+                advancedSettings = homeSettings.liquidGlassAdvancedSettings,
+                readabilityMode = homeSettings.liquidGlassReadabilityMode,
+            ),
+            preset = homeSettings.bottomBarLiquidGlassPreset,
+        )
+    }
     val uiSkinState by rememberUiSkinState(context)
     val bottomBarUiSkinDecoration = rememberBottomBarUiSkinDecoration(uiSkinState)
     val homeUiSkinDecoration = rememberHomeUiSkinDecoration(uiSkinState)
@@ -508,6 +526,7 @@ fun AppNavigation(
     CompositionLocalProvider(
             LocalVideoSharedTransitionSpeedSettings provides videoSharedTransitionSpeedSettings,
             LocalVideoTransitionAdaptiveInfo provides videoTransitionAdaptiveInfo,
+            LocalLiquidGlassRenderConfig provides liquidGlassRenderConfig,
             com.android.purebilibili.core.plugin.skin.LocalUiSkinState provides uiSkinState,
         ) {
         // [新增] 全局底栏状态管理
