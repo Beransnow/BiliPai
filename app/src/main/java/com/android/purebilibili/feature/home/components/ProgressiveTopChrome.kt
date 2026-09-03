@@ -14,7 +14,6 @@ import top.yukonga.miuix.kmp.blur.ProgressiveBlur
 import top.yukonga.miuix.kmp.blur.progressiveTextureBlur
 
 internal const val BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP = 10f
-internal const val BILIPAI_PROGRESSIVE_TOP_BLUR_CLEAR_TAIL_FRACTION = 0.08f
 private const val BILIPAI_PROGRESSIVE_TOP_BLUR_MIN_EXTENSION_DP = 20f
 private const val BILIPAI_PROGRESSIVE_TOP_BLUR_EXTRA_EXTENSION_DP = 28f
 private val BiliPaiProgressiveTopBlurShape = RoundedCornerShape(
@@ -45,25 +44,6 @@ internal fun shouldExtendProgressiveTopBlurBelowTabs(
     tabRowIncludedInBlur: Boolean,
 ): Boolean = progressiveBlurEnabled && !tabRowIncludedInBlur
 
-/**
- * End the blur before the clipped container edge. Miuix already renders the clear end at native
- * resolution; keeping a short clear tail prevents the final antialiased shape row from reading as
- * a horizontal divider over scrolling content.
- */
-internal fun resolveSeamlessProgressiveTopBlurGradient(
-    gradient: ProgressiveBlur,
-): ProgressiveBlur {
-    val seamlessEndFraction = minOf(
-        gradient.endFraction,
-        1f - BILIPAI_PROGRESSIVE_TOP_BLUR_CLEAR_TAIL_FRACTION,
-    )
-    return if (seamlessEndFraction > gradient.startFraction) {
-        gradient.copy(endFraction = seamlessEndFraction)
-    } else {
-        gradient
-    }
-}
-
 /** Shared home-style edge blur for immersive floating top chrome. */
 internal fun Modifier.biliPaiProgressiveTopBlur(
     backdrop: Backdrop?,
@@ -81,19 +61,16 @@ internal fun Modifier.biliPaiProgressiveTopBlur(
     val source = requireNotNull(backdrop)
     return composed {
         if (isLowBlurBudgetForced()) return@composed this
-        val seamlessGradient = remember(gradient) {
-            resolveSeamlessProgressiveTopBlurGradient(gradient)
-        }
         // The non-composable factory creates new shape/effect callbacks on each call.
         // Keep their identity while the material is unchanged, so an unrelated header
         // recomposition does not rebuild the progressive stack and its sharp-end effect.
         // Geometry changes and source redraws are still handled by Miuix's draw node.
-        val effect = remember(source, shape, blurRadiusDp, seamlessGradient) {
+        val effect = remember(source, shape, blurRadiusDp, gradient) {
             Modifier.progressiveTextureBlur(
                 backdrop = source,
                 shape = shape,
                 blurRadius = blurRadiusDp,
-                gradient = seamlessGradient,
+                gradient = gradient,
             )
         }
         this.then(effect)

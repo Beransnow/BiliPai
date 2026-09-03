@@ -6,7 +6,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import top.yukonga.miuix.kmp.blur.ProgressiveBlur
 
 class ProgressiveTopChromePolicyTest {
     @Test
@@ -32,24 +31,6 @@ class ProgressiveTopChromePolicyTest {
         assertEquals(41.dp, resolveProgressiveTopBlurBottomExtension(true, 0.75f))
         assertEquals(48.dp, resolveProgressiveTopBlurBottomExtension(true, 1f))
         assertEquals(0.dp, resolveProgressiveTopBlurBottomExtension(false, 1f))
-    }
-
-    @Test
-    fun progressiveBlurKeepsAClearTailBeforeTheClippedBottomEdge() {
-        assertEquals(
-            0.92f,
-            resolveSeamlessProgressiveTopBlurGradient(ProgressiveBlur.Top).endFraction,
-            absoluteTolerance = 0.0001f,
-        )
-        assertEquals(
-            0.75f,
-            resolveSeamlessProgressiveTopBlurGradient(
-                ProgressiveBlur.Top.copy(endFraction = 0.75f),
-            ).endFraction,
-        )
-
-        val source = loadSource("feature/home/components/ProgressiveTopChrome.kt")
-        assertTrue(source.contains("gradient = seamlessGradient"))
     }
 
     @Test

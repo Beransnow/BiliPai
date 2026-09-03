@@ -1354,9 +1354,10 @@ internal fun Modifier.homeTopChromeSurface(
 ): Modifier = composed {
     val isLiquidGlassMode = renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP ||
         renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
-    // Liquid chrome always reuses the bottom-bar BiliPai material so every reusable surface
-    // (top dock / search / continuous slab / segmented dock) stays visually identical.
-    if (isLiquidGlassMode) {
+    // Compact controls reuse the bottom-bar material. The full-width top slab deliberately keeps
+    // the progressive blur path so its lower edge fades into content instead of becoming a clipped
+    // glass-shell boundary.
+    if (isLiquidGlassMode && !useProgressiveTopBlur) {
         return@composed this.homeTopBottomBarMatchedSurface(
             renderMode = renderMode,
             shape = shape,
