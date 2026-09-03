@@ -114,6 +114,7 @@ import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionO
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionPlaybackIntent
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionVisualSpec
 import com.android.purebilibili.core.store.SettingsManager
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedBoundsResizeMode
 import com.android.purebilibili.core.ui.transition.shouldEnableVideoCoverSharedTransition
 import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrEmpty
@@ -938,9 +939,12 @@ internal fun ElegantVideoCard(
             coverSharedEnabled = coverSharedEnabled,
             isQuickReturnLimited = isQuickReturnLimited
         )
-        val videoSharedPlaybackIntent = remember(context) {
+        val autoPlayOnOpenEnabled by SettingsManager
+            .getClickToPlay(context)
+            .collectAsStateWithLifecycle(initialValue = SettingsManager.getClickToPlaySync(context))
+        val videoSharedPlaybackIntent = remember(autoPlayOnOpenEnabled) {
             resolveVideoSharedTransitionPlaybackIntent(
-                clickToPlayEnabled = SettingsManager.getClickToPlaySync(context)
+                clickToPlayEnabled = autoPlayOnOpenEnabled
             )
         }
         val homeSharedTransitionSpecs = remember(
