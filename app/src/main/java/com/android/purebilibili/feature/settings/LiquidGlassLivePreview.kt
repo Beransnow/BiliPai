@@ -68,15 +68,14 @@ import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.resolveFloatingDockGeometryScale
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.home.components.resolveMaterialBottomBarIcon
+import com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource
 import com.android.purebilibili.feature.home.components.rememberLiquidGlassAdaptiveContentColor
 import com.android.purebilibili.feature.home.components.rememberLiquidGlassAdaptiveReadabilityState
 import com.android.purebilibili.feature.home.components.trackLiquidGlassAdaptiveReadability
 import coil3.compose.AsyncImage
 import kotlin.math.abs
 import kotlin.math.roundToInt
-import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.ProgressiveBlur
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 @Composable
 internal fun LiquidGlassAdjustmentPanel(
@@ -684,7 +683,8 @@ private fun LiquidGlassHomeSample(
     bottomBarSearchEnabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val backdrop = rememberLayerBackdrop()
+    val backdropSource = rememberChromeBackdropSource()
+    val backdrop = backdropSource.backdrop
     val tuning = remember(progress, advancedSettings, readabilityMode) {
         resolveLiquidGlassTuning(progress, advancedSettings, readabilityMode)
     }
@@ -756,7 +756,7 @@ private fun LiquidGlassHomeSample(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(backdrop)
+                .then(backdropSource.modifier)
         ) {
             Box(
                 modifier = Modifier

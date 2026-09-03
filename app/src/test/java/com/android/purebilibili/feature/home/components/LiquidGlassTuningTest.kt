@@ -79,6 +79,26 @@ class LiquidGlassTuningTest {
     }
 
     @Test
+    fun `frosted backdrop blur stays stronger than balanced without the heavy cascade`() {
+        val middle = resolveLiquidGlassTuning(progress = 0.5f)
+        val frosted = resolveLiquidGlassTuning(progress = 1f)
+
+        assertEquals(
+            LIQUID_GLASS_BALANCED_BACKDROP_BLUR_RADIUS_DP,
+            middle.backdropBlurRadius,
+            0.0001f,
+        )
+        assertEquals(
+            LIQUID_GLASS_FROSTED_BACKDROP_BLUR_RADIUS_DP,
+            frosted.backdropBlurRadius,
+            0.0001f,
+        )
+        assertTrue(frosted.backdropBlurRadius > middle.backdropBlurRadius)
+        // 10dp × density 4 × 0.45 σ-factor = 18, below Miuix's σ≈20 8× blend band.
+        assertTrue(frosted.backdropBlurRadius * 4f * 0.45f < 20f)
+    }
+
+    @Test
     fun `shell refraction height stays in a capsule-safe range`() {
         val clear = resolveLiquidGlassTuning(progress = 0f)
         val frosted = resolveLiquidGlassTuning(progress = 1f)

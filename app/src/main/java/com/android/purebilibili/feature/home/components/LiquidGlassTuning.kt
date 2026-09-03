@@ -39,6 +39,8 @@ data class LiquidGlassTuning(
 private const val UPSTREAM_BALANCED_READABILITY = 0.62f
 private const val UPSTREAM_BALANCED_CHROMATIC_CONTROL = 0.56f
 private const val UPSTREAM_INDICATOR_CHROMATIC_ABERRATION = 0.5f
+internal const val LIQUID_GLASS_BALANCED_BACKDROP_BLUR_RADIUS_DP = 4f
+internal const val LIQUID_GLASS_FROSTED_BACKDROP_BLUR_RADIUS_DP = 10f
 
 internal fun resolveLiquidGlassTuning(
     progress: Float,
@@ -88,8 +90,15 @@ internal fun resolveLiquidGlassTuning(
         // The clear endpoint intentionally preserves the dynamic dock's formerly accidental
         // crystal-glass recipe: no backdrop blur, but enough tint, saturation and refraction
         // to keep the capsule legible over moving content. The midpoint remains the original
-        // BiliPai material and the frosted endpoint retains its stronger diffusion.
-        backdropBlurRadius = midpointLerp(0f, 4f, 24f, normalizedProgress),
+        // BiliPai material. Frosted stays stronger, but is capped so typical densities stay
+        // in a single Miuix 4× blur pass instead of the 8×/16× cross-fade band (σ≈20 / σ≈44)
+        // that renders two full cascades per capsule and hitches the live slider.
+        backdropBlurRadius = midpointLerp(
+            0f,
+            LIQUID_GLASS_BALANCED_BACKDROP_BLUR_RADIUS_DP,
+            LIQUID_GLASS_FROSTED_BACKDROP_BLUR_RADIUS_DP,
+            normalizedProgress,
+        ),
         progressiveBlurRadius = advancedSettings.progressiveBlurRadius.coerceIn(0f, 1f) * 40f,
         progressiveBlurEndFraction = 0.25f +
             advancedSettings.progressiveBlurExtent.coerceIn(0f, 1f) * 0.75f,
