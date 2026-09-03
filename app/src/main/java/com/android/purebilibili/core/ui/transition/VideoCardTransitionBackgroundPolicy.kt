@@ -325,23 +325,27 @@ internal fun Modifier.videoCardTransitionOverlayDepthEffect(
     phaseProvider: () -> VideoCardTransitionBackgroundPhase,
     motionTierProvider: () -> MotionTier,
     sourceBoundsProvider: () -> Rect?,
-    canvasWidthProvider: () -> Float,
-    canvasHeightProvider: () -> Float,
     scaleReductionProvider: () -> Float = { VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION },
     densityProvider: () -> Float,
 ): Modifier = this.graphicsLayer {
     val progress = progressProvider()
     val phase = phaseProvider()
     val motionTier = motionTierProvider()
-    val scale = resolveVideoCardTransitionContentScale(
+    // Keep the live chrome on the same visual frame contract as the retained source page.
+    // In particular, phase-specific radius quantization must match on both layers or their
+    // shared edge reads as a sharp blur step during predictive back.
+    val frame = resolveVideoCardTransitionBackgroundFrame(
         progress = progress,
         phase = phase,
         motionTier = motionTier,
         isGestureRestoreInProgress = false,
+        density = densityProvider(),
         scaleReduction = scaleReductionProvider(),
     )
-    val canvasW = canvasWidthProvider()
-    val canvasH = canvasHeightProvider()
+    // The caller supplies a full-viewport layer, so use its measured coordinates instead
+    // of LocalConfiguration. This keeps the pivot identical under edge-to-edge insets.
+    val canvasW = size.width
+    val canvasH = size.height
     val pivot = resolveVideoCardTransitionOverlayDepthPivot(
         sourceBounds = sourceBoundsProvider(),
         canvasWidth = canvasW,
@@ -349,21 +353,11 @@ internal fun Modifier.videoCardTransitionOverlayDepthEffect(
         overlayWidth = size.width,
         overlayHeight = size.height,
     )
-    scaleX = scale
-    scaleY = scale
+    scaleX = frame.contentScale
+    scaleY = frame.contentScale
     transformOrigin = TransformOrigin(pivot.x, pivot.y)
-    val depth = resolveVideoCardTransitionDepthProgress(progress, phase)
-    val blurPx = if (
-        phase != VideoCardTransitionBackgroundPhase.IDLE &&
-        motionTier != MotionTier.Reduced &&
-        android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
-    ) {
-        resolveVideoCardTransitionMaxBlurRadiusPx(motionTier, densityProvider()) * depth
-    } else {
-        0f
-    }
-    renderEffect = if (blurPx > 0.01f) {
-        BlurEffect(blurPx, blurPx, TileMode.Clamp)
+    renderEffect = if (frame.blurRadiusPx > 0.01f) {
+        BlurEffect(frame.blurRadiusPx, frame.blurRadiusPx, TileMode.Clamp)
     } else {
         null
     }

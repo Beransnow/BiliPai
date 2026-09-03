@@ -56,6 +56,9 @@ internal fun isRecordedNativeCardSource(bvid: String): Boolean {
     return clicked == id || clicked.endsWith(":$id")
 }
 
+internal fun isNativeVideoCardLayerDrawable(widthPx: Int, heightPx: Int): Boolean =
+    widthPx > 1 && heightPx > 1
+
 /**
  * Records the stationary list card into a graphics layer so a click can freeze native pixels
  * instead of reconstructing title/spacing on the flying detail entry.
@@ -67,12 +70,14 @@ internal fun isRecordedNativeCardSource(bvid: String): Boolean {
 @Composable
 internal fun Modifier.recordNativeVideoCardLayer(
     layer: GraphicsLayer,
-    freeze: Boolean,
+    freezeProvider: () -> Boolean,
     bvid: String = "",
 ): Modifier {
     val bgState = LocalVideoCardTransitionBackgroundState.current
     return drawWithContent {
-        if (!freeze) {
+        // Read the latch in draw. Waiting for recomposition after a click can otherwise
+        // overwrite the frozen first-click card after OPENING has hidden its info band.
+        if (!freezeProvider()) {
             layer.record {
                 this@drawWithContent.drawContent()
             }
@@ -93,13 +98,21 @@ internal fun Modifier.recordNativeVideoCardLayer(
 internal fun captureNativeVideoCardImage(
     layer: GraphicsLayer,
 ) {
-    CardPositionManager.recordNativeCardLayer(layer)
+    CardPositionManager.recordNativeCardLayer(
+        layer.takeIf {
+            isNativeVideoCardLayerDrawable(it.size.width, it.size.height)
+        },
+    )
 }
 
 internal fun captureNativeCoverOverlayLayer(
     layer: GraphicsLayer,
 ) {
-    CardPositionManager.recordNativeCoverOverlayLayer(layer)
+    CardPositionManager.recordNativeCoverOverlayLayer(
+        layer.takeIf {
+            isNativeVideoCardLayerDrawable(it.size.width, it.size.height)
+        },
+    )
 }
 
 @Composable
@@ -118,11 +131,15 @@ internal fun rememberNativeVideoCardSnapshotController(key: Any): NativeVideoCar
     val freezeState = remember(key) { mutableStateOf(false) }
     val bvid = (key as? String).orEmpty()
     return NativeVideoCardSnapshotController(
-        modifier = Modifier.recordNativeVideoCardLayer(layer, freezeState.value, bvid),
+        modifier = Modifier.recordNativeVideoCardLayer(
+            layer = layer,
+            freezeProvider = { freezeState.value },
+            bvid = bvid,
+        ),
         coverOverlayModifier = Modifier.recordNativeVideoCardLayer(
-            coverOverlayLayer,
-            freezeState.value,
-            bvid,
+            layer = coverOverlayLayer,
+            freezeProvider = { freezeState.value },
+            bvid = bvid,
         ),
         capture = {
             freezeState.value = true

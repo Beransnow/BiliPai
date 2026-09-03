@@ -799,7 +799,7 @@ internal fun ElegantVideoCard(
     val hasTrailingCardAction = onUnfavorite != null || hasOverflowMenu
     val nativeCardLayer = rememberNativeVideoCardLayer()
     val nativeCoverOverlayLayer = rememberNativeVideoCardLayer()
-    var freezeNativeCardLayer by remember(video.bvid) { mutableStateOf(false) }
+    val freezeNativeCardLayer = remember(video.bvid) { mutableStateOf(false) }
     
     val triggerCardClick = {
         cardCoordsRef.value?.takeIf { it.isAttached }?.boundsInRoot()?.let { bounds ->
@@ -886,7 +886,9 @@ internal fun ElegantVideoCard(
                 ),
                 sourceInstanceId = sharedSourceInstanceId,
             )
-            freezeNativeCardLayer = true
+            // The mounted draw modifier reads this latch directly, so the layer freezes
+            // before OPENING can hide the stationary title and statistics.
+            freezeNativeCardLayer.value = true
             captureNativeVideoCardImage(nativeCardLayer)
             captureNativeCoverOverlayLayer(nativeCoverOverlayLayer)
         }
@@ -1018,7 +1020,7 @@ internal fun ElegantVideoCard(
                 .fillMaxWidth()
                 .recordNativeVideoCardLayer(
                     layer = nativeCardLayer,
-                    freeze = freezeNativeCardLayer,
+                    freezeProvider = { freezeNativeCardLayer.value },
                     bvid = video.bvid,
                 ),
         ) {
@@ -1157,7 +1159,7 @@ internal fun ElegantVideoCard(
                     .fillMaxSize()
                     .recordNativeVideoCardLayer(
                         layer = nativeCoverOverlayLayer,
-                        freeze = freezeNativeCardLayer,
+                        freezeProvider = { freezeNativeCardLayer.value },
                         bvid = video.bvid,
                     ),
             ) {

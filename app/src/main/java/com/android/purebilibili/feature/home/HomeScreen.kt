@@ -48,7 +48,6 @@ import androidx.compose.material3.rememberDrawerState
 import com.android.purebilibili.feature.home.components.MineSideDrawer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -2279,36 +2278,47 @@ fun HomeScreen(
         }
         homeHeaderVisibilityState.targetState = homeHeaderChromeVisible
         val headerDepthDensity = LocalDensity.current
-        val headerDepthConfig = LocalConfiguration.current
-        BottomBarMatchedDockVisibility(
-            visibleState = homeHeaderVisibilityState,
-            edge = BottomBarMatchedDockEdge.TOP,
-            enterFadeDurationMillis = 255,
-            exitFadeDurationMillis = 160,
-            modifier = Modifier.videoCardTransitionOverlayDepthEffect(
-                progressProvider = { videoCardClock?.depthProgress() ?: 0f },
-                phaseProvider = {
-                    videoCardClock?.phase ?: VideoCardTransitionBackgroundPhase.IDLE
-                },
-                motionTierProvider = videoCardTransitionBackgroundState.motionTierProvider,
-                sourceBoundsProvider = videoCardTransitionBackgroundState.sourceBoundsProvider,
-                canvasWidthProvider = {
-                    with(headerDepthDensity) { headerDepthConfig.screenWidthDp.dp.toPx() }
-                },
-                canvasHeightProvider = {
-                    with(headerDepthDensity) { headerDepthConfig.screenHeightDp.dp.toPx() }
-                },
-                scaleReductionProvider = {
-                    resolveVideoCardTransitionBackgroundScaleReduction(
-                        resolveVideoCardTransitionBackgroundSource(
-                            videoCardTransitionBackgroundState.sourceRouteProvider(),
-                        ),
-                    )
-                },
-                densityProvider = { headerDepthDensity.density },
-            ),
+        val activeHeaderDepthClock = videoCardClock?.takeIf {
+            it.phase != VideoCardTransitionBackgroundPhase.IDLE &&
+                (homeHeaderVisibilityState.currentState || homeHeaderVisibilityState.targetState)
+        }
+        // Keep the RenderEffect layer full-screen even though only the header paints into it.
+        // A header-sized layer clamps the blur kernel at the chrome bottom and produces the
+        // horizontal seam visible during predictive back.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (activeHeaderDepthClock != null) {
+                        Modifier.videoCardTransitionOverlayDepthEffect(
+                            progressProvider = { activeHeaderDepthClock.depthProgress() },
+                            phaseProvider = { activeHeaderDepthClock.phase },
+                            motionTierProvider =
+                                videoCardTransitionBackgroundState.motionTierProvider,
+                            sourceBoundsProvider =
+                                videoCardTransitionBackgroundState.sourceBoundsProvider,
+                            scaleReductionProvider = {
+                                resolveVideoCardTransitionBackgroundScaleReduction(
+                                    resolveVideoCardTransitionBackgroundSource(
+                                        videoCardTransitionBackgroundState.sourceRouteProvider(),
+                                    ),
+                                )
+                            },
+                            densityProvider = { headerDepthDensity.density },
+                        )
+                    } else {
+                        Modifier
+                    },
+                ),
+            contentAlignment = Alignment.TopStart,
         ) {
-        HomeHeader(
+            BottomBarMatchedDockVisibility(
+                visibleState = homeHeaderVisibilityState,
+                edge = BottomBarMatchedDockEdge.TOP,
+                enterFadeDurationMillis = 255,
+                exitFadeDurationMillis = 160,
+            ) {
+            HomeHeader(
             headerOffsetProvider = headerOffsetProvider,
             isHeaderCollapseEnabled = collapseSearchOnScroll,
             isTopTabsAutoCollapseEnabled = collapseTabsOnScroll,
@@ -2387,7 +2397,8 @@ fun HomeScreen(
             forceLowBlurBudget = forceLowBlurBudget,
             interactionBudget = homeInteractionMotionBudget,
             uiSkinDecoration = homeUiSkinDecoration
-        )
+            )
+            }
         }
 
         AnimatedVisibility(
