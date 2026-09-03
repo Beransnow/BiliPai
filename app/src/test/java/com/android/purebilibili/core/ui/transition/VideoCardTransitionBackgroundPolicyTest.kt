@@ -279,6 +279,26 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
+    fun predictiveBackBottomBarUsesTheRetainedTabInsteadOfTheVideoRoute() {
+        assertEquals(
+            "home",
+            resolveVideoCardTransitionChromeBottomBarRoute(
+                isVideoDetailDestination = true,
+                activeBottomTabRoute = "video/BV1",
+                retainedTabRoute = "home",
+            ),
+        )
+        assertEquals(
+            "dynamic",
+            resolveVideoCardTransitionChromeBottomBarRoute(
+                isVideoDetailDestination = false,
+                activeBottomTabRoute = "dynamic",
+                retainedTabRoute = "home",
+            ),
+        )
+    }
+
+    @Test
     fun homeFeedOwnsHostSnapshotSoRouteShellDoesNotRecordTheHeader() {
         assertTrue(
             shouldHomeFeedOwnVideoCardTransitionSnapshot(

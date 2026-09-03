@@ -1721,8 +1721,7 @@ fun HomeScreen(
         AppScaffold(
                 modifier = Modifier
                     .fillMaxSize()
-                    .nestedScroll(nestedScrollConnection)
-                    .then(homeFeedSnapshotModifier),
+                    .nestedScroll(nestedScrollConnection),
                 containerColor = AppSurfaceTokens.chromeBackground(),
                 bottomBar = {
                    // BottomBar logic handled by parent
@@ -1736,6 +1735,8 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
+                            // 快照在 haze/backdrop 内侧：顶栏 overlay 才能采到退后页，而不是空层。
+                            .then(homeFeedSnapshotModifier)
                             .then(homeMiuixBackdropSource?.modifier ?: Modifier)
                             // 首页使用 Pager + Lazy 子层，source 挂在外层容器更稳定。
                             .then(

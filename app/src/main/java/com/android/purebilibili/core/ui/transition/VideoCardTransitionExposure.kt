@@ -126,3 +126,15 @@ internal fun shouldShowHomeOverlayChromeDuringVideoCardTransition(
         else -> true
     }
 }
+
+/**
+ * 详情在栈顶时 [activeBottomTabRoute] 是 video/…，不在底栏目的地里。
+ * 预测返回要滑出底栏时，改用进详情前的 tab 路由。
+ */
+internal fun resolveVideoCardTransitionChromeBottomBarRoute(
+    isVideoDetailDestination: Boolean,
+    activeBottomTabRoute: String?,
+    retainedTabRoute: String?,
+): String? {
+    return if (isVideoDetailDestination) retainedTabRoute else activeBottomTabRoute
+}

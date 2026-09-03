@@ -121,6 +121,7 @@ import com.android.purebilibili.core.ui.transition.shouldApplyPredictiveBackBlur
 import com.android.purebilibili.core.ui.transition.shouldApplyVideoCardTransitionBackgroundToRoute
 import com.android.purebilibili.core.ui.transition.shouldApplyVideoCardTransitionSnapshotOnRouteShell
 import com.android.purebilibili.core.ui.transition.shouldShowVideoCardTransitionSourceChrome
+import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionChromeBottomBarRoute
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundScaleReduction
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundSource
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionExposure
@@ -1279,11 +1280,11 @@ fun AppNavigation(
             isVideoDetailDestination = isVideoDetailDestination,
             exposure = videoCardChromeExposure,
         )
-        val bottomBarMountRoute = if (isVideoDetailDestination) {
-            currentBottomNavItem.route
-        } else {
-            activeBottomTabRoute
-        }
+        val bottomBarMountRoute = resolveVideoCardTransitionChromeBottomBarRoute(
+            isVideoDetailDestination = isVideoDetailDestination,
+            activeBottomTabRoute = activeBottomTabRoute,
+            retainedTabRoute = currentBottomNavItem.route,
+        )
         val isSettingsScreen = activeBottomTabRoute == ScreenRoutes.Settings.route
         val shouldHideBottomBarOnTablet = isTabletLayout && isSettingsScreen
 
@@ -1321,7 +1322,7 @@ fun AppNavigation(
             isVideoDetailDestination = isVideoDetailDestination
         )
         val showBottomBar = shouldShowBottomBarForNavigation(
-            activeRoute = activeBottomTabRoute,
+            activeRoute = bottomBarMountRoute,
             visibleBottomBarRoutes = visibleBottomBarRoutes,
             useSideNavigation = useSideNavigation,
             shouldHideBottomBarOnTablet = shouldHideBottomBarOnTablet,
