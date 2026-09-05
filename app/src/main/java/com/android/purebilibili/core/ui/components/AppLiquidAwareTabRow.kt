@@ -127,7 +127,8 @@ fun <T> AppLiquidAwareTabRow(
         return
     }
     val selectedIndex = options.indexOfFirst { it.value == selectedValue }.coerceAtLeast(0)
-    val resolvedDragSelectionEnabled = dragSelectionEnabled ?: (options.size > 1)
+    // All enabled liquid docks support direct dragging, including scrollable rails.
+    val resolvedDragSelectionEnabled = enabled && options.size > 1
     // Give every tab enough room for its longest label. The row itself remains
     // horizontally scrollable, so labels are never ellipsized or clipped on
     // narrow phones; this also applies to shared rows such as UP space tabs.

@@ -212,7 +212,8 @@ internal fun BottomBarFloatingSegmentedControl(
             tapPressRefractionEnabled = tapPressRefractionEnabled,
             indicatorIdleSurfaceColorOverride = indicatorIdleSurfaceColorOverride,
             isScrollInProgressProvider = isScrollInProgressProvider,
-            dragSelectionEnabled = dragSelectionEnabled && enabled && itemCount > 1,
+            // No per-screen exceptions for the shared liquid dock gesture.
+            dragSelectionEnabled = enabled && itemCount > 1,
             longPressDragSelectionEnabled =
                 longPressDragSelectionEnabled && enabled && itemCount > 1,
             dragTrackingMode = DampedDragTrackingMode.SPRING,
