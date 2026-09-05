@@ -461,7 +461,7 @@ fun FloatingBottomBar(
     content: @Composable RowScope.() -> Unit
 ) {
     val isInDark = isSystemInDarkTheme()
-    val segmentedGeometry = geometryMode == FloatingBottomBarGeometryMode.Segmented
+    val segmentedGeometry = geometryMode != FloatingBottomBarGeometryMode.Dock
     val horizontalPadding = contentHorizontalPadding.coerceAtLeast(0.dp)
     val verticalPadding = contentVerticalPadding.coerceIn(0.dp, shellHeight.coerceAtLeast(0.dp) / 2)
     val horizontalPaddingLatest = rememberUpdatedState(horizontalPadding)

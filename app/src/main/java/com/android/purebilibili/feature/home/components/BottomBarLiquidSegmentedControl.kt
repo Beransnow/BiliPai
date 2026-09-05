@@ -413,6 +413,7 @@ fun BottomBarLiquidSegmentedControl(
     isScrollInProgressProvider: () -> Boolean = { false },
     externalPagerMotionEffectsEnabled: Boolean = false,
     liquidGlassTuningOverride: LiquidGlassTuning? = null,
+    geometryMode: FloatingBottomBarGeometryMode = FloatingBottomBarGeometryMode.Segmented,
 ) {
     if (items.isEmpty()) return
 
@@ -505,6 +506,7 @@ fun BottomBarLiquidSegmentedControl(
         isScrollInProgressProvider = isScrollInProgressProvider,
         externalPagerMotionEffectsEnabled = externalPagerMotionEffectsEnabled,
         liquidGlassTuningOverride = liquidGlassTuningOverride,
+        geometryMode = geometryMode,
     )
 }
 
