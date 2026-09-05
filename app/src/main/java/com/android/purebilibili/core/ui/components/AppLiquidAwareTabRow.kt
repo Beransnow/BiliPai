@@ -4,10 +4,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -148,9 +146,8 @@ fun <T> AppLiquidAwareTabRow(
         BoxWithConstraints(
             modifier = modifier
                 .widthIn(max = viewportMaxWidth)
-                // The liquid shell intentionally draws beyond its content bounds for capture.
-                // A rectangular scroll viewport would expose that overflow at either edge.
-                .clip(CircleShape),
+                // Keep both endcaps visible even when the rail's own ends are offscreen.
+                .liquidDockViewport(),
         ) {
             val viewportWidthPx = with(density) { maxWidth.toPx() }
             val itemWidthPx = with(density) { readableTabWidth.toPx() }
