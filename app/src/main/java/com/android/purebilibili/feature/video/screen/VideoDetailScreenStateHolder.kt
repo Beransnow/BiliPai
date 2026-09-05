@@ -3107,6 +3107,7 @@ internal fun VideoDetailScreenStateHolder(
                 handleTopBarAction(resolveVideoDetailTopBarAction(isHomeButton = true))
             },
             videoPlayerSectionTarget = videoPlayerSectionTarget,
+            residentCoverSource = residentCoverSource,
             sponsorSegment = sponsorSegment,
             showSponsorSkipButton = showSponsorSkipButton,
             sponsorContributionState = sponsorContributionState,
@@ -4451,6 +4452,7 @@ internal fun VideoDetailScreenStateHolder(
                                 },
                                 endDrawerRequestKey = collapsedPlayerMoreRequestKey,
                                 videoPlayerSectionTarget = videoPlayerSectionTarget,
+                                residentCoverSource = residentCoverSource,
                                 sponsorSegment = sponsorSegment,
                                 showSponsorSkipButton = showSponsorSkipButton,
                                 sponsorContributionState = sponsorContributionState,
