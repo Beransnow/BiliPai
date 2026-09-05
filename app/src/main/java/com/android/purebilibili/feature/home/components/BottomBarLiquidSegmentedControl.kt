@@ -398,6 +398,7 @@ fun BottomBarLiquidSegmentedControl(
     containerVerticalPadding: Dp = AppSpacingTokens.ExtraSmall,
     liquidGlassEffectsEnabled: Boolean = true,
     dragSelectionEnabled: Boolean = true,
+    // Compatibility alias for drag enablement; indicators now always start dragging directly.
     longPressDragSelectionEnabled: Boolean = false,
     preferInlineContentStyle: Boolean = false,
     forceEqualWidth: Boolean = false,

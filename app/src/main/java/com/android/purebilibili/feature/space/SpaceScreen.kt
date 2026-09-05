@@ -2639,8 +2639,7 @@ private fun SpaceSecondarySwitchRow(
                 indicatorHeight = spec.indicatorHeightDp.dp,
                 labelFontSize = 14.sp,
                 liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled,
-                dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail,
-                longPressDragSelectionEnabled = useScrollableRail,
+                dragSelectionEnabled = spec.dragSelectionEnabled || useScrollableRail,
                 onIndicatorPositionChanged = { position ->
                     if (useScrollableRail) {
                         scrollState.dispatchRawDelta(

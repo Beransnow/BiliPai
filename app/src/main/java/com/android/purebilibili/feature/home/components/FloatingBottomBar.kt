@@ -1196,9 +1196,10 @@ fun FloatingBottomBar(
                     .then(interactiveHighlight?.gestureModifier ?: Modifier)
                     .then(
                         when {
-                            longPressDragSelectionEnabled && safeTabsCount > 1 ->
-                                dampedDragAnimation.longPressModifier
-                            dragSelectionEnabled && safeTabsCount > 1 ->
+                            // Legacy long-press callers also use immediate indicator dragging.
+                            // The hit target is only the selected slot, leaving the rest of a
+                            // scrollable rail available for ordinary horizontal scrolling.
+                            (dragSelectionEnabled || longPressDragSelectionEnabled) && safeTabsCount > 1 ->
                                 dampedDragAnimation.modifier
                             else -> Modifier
                         }
