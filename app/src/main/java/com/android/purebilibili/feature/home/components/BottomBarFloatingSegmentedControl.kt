@@ -130,7 +130,7 @@ internal fun BottomBarFloatingSegmentedControl(
     } else {
         FloatingBottomBarMode.None
     }
-    val effectiveHeight = height.coerceAtLeast(48.dp)
+    val effectiveHeight = height.coerceAtLeast(0.dp)
     val effectiveItemWidth = itemWidth?.coerceAtLeast(48.dp)
     val horizontalPadding = containerHorizontalPadding.coerceAtLeast(0.dp)
     val verticalPadding = containerVerticalPadding.coerceIn(0.dp, effectiveHeight / 2)
