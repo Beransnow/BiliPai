@@ -29,6 +29,10 @@ enum class DampedDragTrackingMode {
     DIRECT,
 }
 
+// Match the five-destination home dock; a two-item control must not amplify the
+// same slot velocity fourfold merely because its selectable range is shorter.
+internal fun normalizeFloatingDockDragVelocity(slotVelocity: Float): Float = slotVelocity / 4f
+
 /**
  * Floating dock damped-drag kernel: spring-followed value, press/scale springs, velocity
  * deformation sampling, and [modifier] driven by [inspectDragGestures] + [canDrag].
@@ -263,7 +267,7 @@ class DampedDragAnimation(
             System.currentTimeMillis(),
             Offset(value, 0f)
         )
-        val targetVelocity = velocityTracker.calculateVelocity().x / (valueRange.endInclusive - valueRange.start)
+        val targetVelocity = normalizeFloatingDockDragVelocity(velocityTracker.calculateVelocity().x)
         animationScope.launch { velocityAnimation.animateTo(targetVelocity, velocityAnimationSpec) }
     }
 }

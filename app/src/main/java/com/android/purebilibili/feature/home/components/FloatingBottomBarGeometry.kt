@@ -204,6 +204,12 @@ internal fun resolveFloatingDockSlotWidthPx(
 ): Float = (containerWidthPx - horizontalPaddingPx.coerceAtLeast(0f) * 2f)
     .coerceAtLeast(0f) / itemCount.coerceAtLeast(1)
 
+internal fun resolveFloatingDockDragReferenceWidthPx(
+    tabWidthPx: Float,
+    horizontalPaddingPx: Float,
+): Float = (tabWidthPx.coerceAtLeast(0f) * 5f + horizontalPaddingPx.coerceAtLeast(0f) * 2f)
+    .coerceAtLeast(1f)
+
 internal fun resolveFloatingDockRefractionProgress(
     pressProgress: Float,
     tapPressRefractionEnabled: Boolean,

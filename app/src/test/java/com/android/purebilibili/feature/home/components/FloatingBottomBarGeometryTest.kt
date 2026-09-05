@@ -8,6 +8,15 @@ import kotlin.test.assertTrue
 class FloatingBottomBarGeometryTest {
 
     @Test
+    fun `short controls retain the five slot home drag reference width`() {
+        for (count in listOf(2, 3, 5)) {
+            val slot = resolveFloatingDockSlotWidthPx(64f * count + 8f, 4f, count)
+            assertEquals(328f, resolveFloatingDockDragReferenceWidthPx(slot, 4f))
+        }
+        assertEquals(1f, resolveFloatingDockDragReferenceWidthPx(0f, 0f))
+    }
+
+    @Test
     fun `custom padding keeps all slots inside the padded content band`() {
         for (padding in listOf(0f, 4f, 12f, 24f)) {
             val slot = resolveFloatingDockSlotWidthPx(360f, padding, 5)

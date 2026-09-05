@@ -16,6 +16,13 @@ import kotlinx.coroutines.withContext
 class DampedDragAnimationTargetTest {
 
     @Test
+    fun `velocity uses the home reference without a selectable range divisor`() {
+        assertEquals(2f, normalizeFloatingDockDragVelocity(8f))
+        assertEquals(-2f, normalizeFloatingDockDragVelocity(-8f))
+        assertEquals(0f, normalizeFloatingDockDragVelocity(0f))
+    }
+
+    @Test
     fun `disposing animation owner cancels pending press and release`() = runTest {
         val clock = BroadcastFrameClock()
         withContext(clock) {

@@ -586,12 +586,16 @@ fun FloatingBottomBar(
 
     val offsetAnimation = remember { Animatable(0f) }
     val rubberBandPx = with(density) { 4.dp.toPx() }
-    val panelOffset by remember(rubberBandPx) {
+    val panelOffset by remember(rubberBandPx, density, horizontalPadding) {
         derivedStateOf {
             if (totalWidthPx == 0f) {
                 0f
             } else {
-                val fraction = (offsetAnimation.value / totalWidthPx).fastCoerceIn(-1f, 1f)
+                val referenceWidth = resolveFloatingDockDragReferenceWidthPx(
+                    tabWidthPx = tabWidthPx,
+                    horizontalPaddingPx = with(density) { horizontalPadding.toPx() },
+                )
+                val fraction = (offsetAnimation.value / referenceWidth).fastCoerceIn(-1f, 1f)
                 rubberBandPx * fraction.sign * EaseOut.transform(abs(fraction))
             }
         }
