@@ -31,7 +31,7 @@ class BottomBarFloatingSegmentedControlBackdropStructureTest {
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
         )
 
-        assertTrue(source.contains("modifier = rootModifier.height(height)"))
+        assertTrue(source.contains("modifier = rootModifier.height(effectiveHeight)"))
         assertTrue(source.contains("modifier = Modifier.matchParentSize()"))
     }
 

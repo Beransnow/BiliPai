@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
@@ -18,7 +19,6 @@ import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -79,7 +79,8 @@ class DampedDragAnimation(
     // Pager progress can request a new position every frame. Keep exactly one value mutation
     // alive so an older coroutine can never run after a newer request and restore stale UI.
     private var valueTrackingJob: Job? = null
-    private var pressReleaseJob: Job? = null
+    private var pressJob: Job? = null
+    private var releaseJob: Job? = null
 
     val value: Float get() = valueAnimation.value
     val targetValue: Float get() = requestedValue
@@ -174,8 +175,9 @@ class DampedDragAnimation(
 
     fun press() {
         velocityTracker.resetTracking()
-        pressReleaseJob?.cancel()
-        pressReleaseJob = animationScope.launch {
+        releaseJob?.cancel()
+        pressJob?.cancel()
+        pressJob = animationScope.launch {
             launch { pressProgressAnimation.animateTo(1f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(pressedScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(pressedScale, scaleYAnimationSpec) }
@@ -183,15 +185,20 @@ class DampedDragAnimation(
     }
 
     fun release() {
-        pressReleaseJob?.cancel()
-        pressReleaseJob = animationScope.launch {
-            awaitFrame()
+        releaseJob?.cancel()
+        releaseJob = animationScope.launch {
+            withFrameNanos { }
             if (value != targetValue) {
-                val threshold = (valueRange.endInclusive - valueRange.start) * 0.025f
-                snapshotFlow { valueAnimation.value }
-                    .filter { abs(it - targetValue) < threshold }
+                val threshold = ((valueRange.endInclusive - valueRange.start) * 0.025f)
+                    .coerceAtLeast(visibilityThreshold.coerceAtLeast(0.001f))
+                snapshotFlow { abs(valueAnimation.value - targetValue) }
+                    .filter { it <= threshold }
                     .first()
             }
+            // Finish the visible press before taking ownership of its scale Animatables.
+            // A tap schedules press and release in the same turn; cancelling here earlier
+            // would suppress the entire enlargement, especially without a moving pager.
+            pressJob?.join()
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(initialScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(initialScale, scaleYAnimationSpec) }

@@ -8,6 +8,8 @@
 //   ├─ Base Row (unselected)     // dropShadow + drawBackdrop(vibrancy+blur+lens) + shellHeight
 //   ├─ Foreground Row (active)   // alpha=0 + replayed capture + drawBackdrop + indicatorHeight
 //   └─ Moving indicator Box      // combinedBackdrop + lens(depth, chromatic) + innerShadow
+// Segmented geometry replaces the captured active Row with a full-height foreground above
+// the background-only lens, so flatter indicators cannot crop or stretch their labels.
 //
 // BiliPai-only knobs: nullable backdrop, shellHeight / indicatorHeight parameters.
 package com.android.purebilibili.feature.home.components
@@ -115,6 +117,9 @@ internal val LocalFloatingBottomBarBaseContentAlpha =
 
 internal val LocalFloatingBottomBarIndicatorStretchX =
     staticCompositionLocalOf { { 1f } }
+
+private val LocalFloatingBottomBarForegroundAlpha =
+    staticCompositionLocalOf<(Int) -> Float> { { 1f } }
 
 /** 激活内容捕获层会为指示器提供每个槽位的选中态图标。 */
 internal val LocalFloatingBottomBarActiveContent = staticCompositionLocalOf { false }
@@ -366,6 +371,7 @@ fun RowScope.FloatingBottomBarItem(
     val baseContentAlpha = LocalFloatingBottomBarBaseContentAlpha.current
     val indicatorStretchX = LocalFloatingBottomBarIndicatorStretchX.current
     val activeContent = LocalFloatingBottomBarActiveContent.current
+    val foregroundAlpha = LocalFloatingBottomBarForegroundAlpha.current
     val contentColor = LocalFloatingBottomBarContentColor.current
     val selectionScale = remember(itemIndex, indicatorPosition, iconCrossScaleEnabled) {
         {
@@ -409,6 +415,8 @@ fun RowScope.FloatingBottomBarItem(
                 translationX = itemIndex?.let(alignmentOffset) ?: 0f
                 alpha = if (!activeContent && itemIndex != null) {
                     baseContentAlpha(itemIndex)
+                } else if (activeContent && itemIndex != null) {
+                    foregroundAlpha(itemIndex)
                 } else {
                     1f
                 }
@@ -443,6 +451,7 @@ fun FloatingBottomBar(
     indicatorHeight: Dp = FloatingBottomBarIndicatorHeight,
     indicatorWidth: Dp? = null,
     minimumIndicatorWidth: Dp = 0.dp,
+    geometryMode: FloatingBottomBarGeometryMode = FloatingBottomBarGeometryMode.Dock,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
@@ -454,6 +463,7 @@ fun FloatingBottomBar(
     content: @Composable RowScope.() -> Unit
 ) {
     val isInDark = isSystemInDarkTheme()
+    val separateForeground = geometryMode == FloatingBottomBarGeometryMode.Segmented
     val pillShape = remember { resolveSharedBottomBarCapsuleShape() }
     val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass
     val isBlurMode = mode == FloatingBottomBarMode.Blur
@@ -475,7 +485,7 @@ fun FloatingBottomBar(
             colors.containerColor
         }
 
-    val tabsBackdropSource = if (isLiquidGlassMode) rememberChromeBackdropSource() else null
+    val tabsBackdropSource = if (isLiquidGlassMode && !separateForeground) rememberChromeBackdropSource() else null
     val tabsBackdrop = tabsBackdropSource?.backdrop
     val density = LocalDensity.current
     val shellLensDp = resolveCompactDockLensDp(shellHeight.value)
@@ -529,7 +539,14 @@ fun FloatingBottomBar(
     val fittedIndicatorHeight = resolveFloatingDockIndicatorHeightDp(
         requestedHeightDp = indicatorHeight.value,
         tabWidthDp = fittedIndicatorWidth.value,
+        geometryMode = geometryMode,
     ).dp
+    val indicatorLensHeightRatio = if (separateForeground) {
+        (fittedIndicatorHeight.value / indicatorHeight.value.coerceAtLeast(0.001f))
+            .coerceIn(0f, 1f)
+    } else {
+        1f
+    }
     val matchedGeometry = remember(shellHeight, fittedIndicatorHeight) {
         resolveMatchedLiquidIndicatorGeometry(
             dockHeightDp = shellHeight.value,
@@ -812,7 +829,7 @@ fun FloatingBottomBar(
     val combinedBackdrop = if (backdrop != null && tabsBackdrop != null) {
         rememberCombinedBackdrop(backdrop, tabsBackdrop)
     } else {
-        null
+        backdrop
     }
 
     Box(
@@ -948,7 +965,7 @@ fun FloatingBottomBar(
                 referenceTabWidthPx = referenceTabWidthPx,
             ) / scaleY
         }
-        if (isLiquidGlassMode && backdrop != null) {
+        if (isLiquidGlassMode && backdrop != null && !separateForeground) {
             CompositionLocalProvider(
                 LocalFloatingBottomBarTabScale provides {
                     lerp(1f, tabPressScale, dampedDragAnimation.pressProgress)
@@ -1034,10 +1051,10 @@ fun FloatingBottomBar(
                             effects = {
                                 val progress = dampedDragAnimation.pressProgress
                                 lens(
-                                    refractionHeight = indicatorLensHeightPx * progress *
+                                    refractionHeight = indicatorLensHeightPx * progress * indicatorLensHeightRatio *
                                         liquidGlassTuning.indicatorLensBoost *
                                         liquidGlassTuning.contentDistortionScale,
-                                    refractionAmount = indicatorLensAmountPx * progress *
+                                    refractionAmount = indicatorLensAmountPx * progress * indicatorLensHeightRatio *
                                         liquidGlassTuning.indicatorEdgeWarpBoost *
                                         liquidGlassTuning.contentDistortionScale,
                                     depthEffect = true,
@@ -1106,7 +1123,7 @@ fun FloatingBottomBar(
                         .width(fittedIndicatorWidth),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    CompositionLocalProvider(
+                    if (!separateForeground) CompositionLocalProvider(
                         LocalFloatingBottomBarContentColor provides colors.activeContentColor,
                         LocalFloatingBottomBarActiveContent provides true,
                         LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
@@ -1143,6 +1160,35 @@ fun FloatingBottomBar(
                 }
             }
 
+            if (separateForeground) {
+                // Content owns the full shell content band, independent of the flatter lens.
+                // Do not capture these glyphs in the lens: its smaller mask would crop them.
+                CompositionLocalProvider(
+                    LocalFloatingBottomBarContentColor provides colors.activeContentColor,
+                    LocalFloatingBottomBarActiveContent provides true,
+                    LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
+                    LocalFloatingBottomBarForegroundAlpha provides { index ->
+                        1f - baseContentAlphaProvider(index)
+                    },
+                    LocalFloatingBottomBarTabScale provides {
+                        lerp(1f, tabPressScale, dampedDragAnimation.pressProgress)
+                    },
+                ) {
+                    Row(
+                        Modifier
+                            .clearAndSetSemantics {}
+                            .height(shellHeight)
+                            .padding(4.dp)
+                            .graphicsLayer {
+                                translationX = panelOffset
+                                clip = false
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                        content = { content(this) },
+                    )
+                }
+            }
+
             // The selected capsule can be wider than its tab when the adjacent search button
             // compresses the dock. Keep pointer input in the logical tab slot so the visual
             // overflow cannot steal taps from neighbouring destinations.
@@ -1174,7 +1220,7 @@ fun FloatingBottomBar(
                         onClick = onReselected,
                     )
                     .clearAndSetSemantics {}
-                    .height(fittedIndicatorHeight)
+                    .height(if (separateForeground) shellHeight else fittedIndicatorHeight)
                     .width(tabWidthDp),
             )
         }

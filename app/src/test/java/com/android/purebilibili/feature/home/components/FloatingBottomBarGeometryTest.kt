@@ -8,6 +8,25 @@ import kotlin.test.assertTrue
 class FloatingBottomBarGeometryTest {
 
     @Test
+    fun `segmented geometry flattens narrow slots without changing dock geometry`() {
+        for (width in listOf(40f, 48f, 56f, 64f, 108f)) {
+            val height = resolveFloatingDockIndicatorHeightDp(
+                requestedHeightDp = 52f,
+                tabWidthDp = width,
+                geometryMode = FloatingBottomBarGeometryMode.Segmented,
+            )
+            assertEquals(minOf(52f, width / 1.6f), height, 0.001f)
+            assertTrue(width / height >= 1.6f - 0.001f)
+            assertEquals(0f, resolveFloatingDockIndicatorOffsetPx(0f, width, 3, width))
+            assertEquals(width * 2, resolveFloatingDockIndicatorOffsetPx(2f, width, 3, width))
+        }
+        assertEquals(52f, resolveFloatingDockIndicatorHeightDp(52f, 56f))
+        assertEquals(52f, resolveFloatingDockIndicatorHeightDp(
+            52f, 108f, FloatingBottomBarGeometryMode.Segmented,
+        ))
+    }
+
+    @Test
     fun `upstream effect padding combines 24dp lens and 16dp press bloom`() {
         assertEquals(
             40f,
