@@ -8,6 +8,26 @@ import kotlin.test.assertTrue
 class FloatingBottomBarGeometryTest {
 
     @Test
+    fun `segmented resting inset matches home without sacrificing flat aspect`() {
+        for ((shell, slot) in listOf(40f to 66f, 44f to 72f, 56f to 90f)) {
+            val height = resolveFloatingDockIndicatorHeightDp(
+                requestedHeightDp = 30f,
+                tabWidthDp = slot,
+                geometryMode = FloatingBottomBarGeometryMode.Segmented,
+                shellHeightDp = shell,
+            )
+            assertEquals(2f, (shell - height) / 2, 0.001f)
+            assertTrue(slot / height >= 1.6f)
+        }
+        assertEquals(30f, resolveFloatingDockIndicatorHeightDp(
+            30f, 48f, FloatingBottomBarGeometryMode.Segmented, 40f,
+        ), 0.001f)
+        assertEquals(52f, resolveFloatingDockIndicatorHeightDp(
+            52f, 75f, FloatingBottomBarGeometryMode.Dock, 56f,
+        ), 0.001f)
+    }
+
+    @Test
     fun `short controls retain the five slot home drag reference width`() {
         for (count in listOf(2, 3, 5)) {
             val slot = resolveFloatingDockSlotWidthPx(64f * count + 8f, 4f, count)

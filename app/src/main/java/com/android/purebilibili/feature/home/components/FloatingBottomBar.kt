@@ -541,6 +541,7 @@ fun FloatingBottomBar(
         requestedHeightDp = indicatorHeight.value,
         tabWidthDp = fittedIndicatorWidth.value,
         geometryMode = geometryMode,
+        shellHeightDp = shellHeight.value,
     ).dp
     val indicatorLensHeightRatio = if (segmentedGeometry) {
         (fittedIndicatorHeight.value / indicatorHeight.value.coerceAtLeast(0.001f))
