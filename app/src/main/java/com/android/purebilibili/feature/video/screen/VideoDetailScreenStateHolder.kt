@@ -4374,6 +4374,9 @@ internal fun VideoDetailScreenStateHolder(
                                         .fillMaxSize()
                                         .videoDetailReturnMediaLayout(
                                             landingLayout = landingLayoutForMedia,
+                                            // Match the section cover below the status-bar backdrop
+                                            // before the resident cover hands off to manual playback.
+                                            contentTopInset = playerTopInset,
                                             handoffProgressProvider =
                                                 returnMediaHandoffProgressProvider,
                                             inverseScaleXProvider = {
