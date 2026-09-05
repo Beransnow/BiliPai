@@ -7,12 +7,29 @@ import kotlin.test.assertTrue
 class BottomBarFloatingSegmentedControlBackdropStructureTest {
 
     @Test
+    fun `appearance overrides reach the shared home dock renderer`() {
+        val entry = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarLiquidSegmentedControl.kt")
+        val wrapper = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt")
+        val renderer = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/FloatingBottomBar.kt")
+        for (parameter in listOf("tapPressRefractionEnabled", "indicatorIdleSurfaceColorOverride")) {
+            assertTrue(entry.contains("$parameter = $parameter"))
+            assertTrue(wrapper.contains("$parameter = $parameter"))
+        }
+        assertTrue(wrapper.contains("contentHorizontalPadding = horizontalPadding"))
+        assertTrue(wrapper.contains("contentVerticalPadding = verticalPadding"))
+        assertTrue(renderer.contains("resolveFloatingDockRefractionProgress("))
+        assertTrue(renderer.contains("color = indicatorIdleSurfaceColorOverride ?:"))
+        assertTrue(renderer.contains(".background(indicatorIdleSurfaceColorOverride ?:"))
+        assertTrue(renderer.contains("horizontalPaddingLatest.value.toPx()"))
+    }
+
+    @Test
     fun `external backdrop stays singular and local sampling is fallback only`() {
         val source = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
         )
 
-        assertTrue(source.contains("val localBackdrop = rememberLayerBackdrop()"))
+        assertTrue(source.contains("val localBackdrop = if (liquidGlassEnabled && miuixBackdrop == null)"))
         assertTrue(source.contains("miuixBackdrop ?: localBackdrop"))
         assertTrue(source.contains("effectiveBackdrop != null && miuixBackdrop == null"))
         assertTrue(!source.contains("rememberCombinedBackdrop(localBackdrop, miuixBackdrop)"))

@@ -452,6 +452,10 @@ fun FloatingBottomBar(
     indicatorWidth: Dp? = null,
     minimumIndicatorWidth: Dp = 0.dp,
     geometryMode: FloatingBottomBarGeometryMode = FloatingBottomBarGeometryMode.Dock,
+    contentHorizontalPadding: Dp = 4.dp,
+    contentVerticalPadding: Dp = 4.dp,
+    tapPressRefractionEnabled: Boolean = true,
+    indicatorIdleSurfaceColorOverride: Color? = null,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
@@ -464,6 +468,9 @@ fun FloatingBottomBar(
 ) {
     val isInDark = isSystemInDarkTheme()
     val separateForeground = geometryMode == FloatingBottomBarGeometryMode.Segmented
+    val horizontalPadding = contentHorizontalPadding.coerceAtLeast(0.dp)
+    val verticalPadding = contentVerticalPadding.coerceIn(0.dp, shellHeight.coerceAtLeast(0.dp) / 2)
+    val horizontalPaddingLatest = rememberUpdatedState(horizontalPadding)
     val pillShape = remember { resolveSharedBottomBarCapsuleShape() }
     val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass
     val isBlurMode = mode == FloatingBottomBarMode.Blur
@@ -625,7 +632,7 @@ fun FloatingBottomBar(
                 if (tabWidthPx == 0f) return@DampedDragAnimation false
 
                 val indicatorX = animation.value * tabWidthPx
-                val padding = with(density) { 4.dp.toPx() }
+                val padding = with(density) { horizontalPaddingLatest.value.toPx() }
                 val globalTouchX = if (isLtr) {
                     padding + indicatorX + offset.x
                 } else {
@@ -856,8 +863,11 @@ fun FloatingBottomBar(
                     .onGloballyPositioned { coords ->
                         totalWidthPx = coords.size.width.toFloat()
                         dragHitTest.dockWindowLeftPx = coords.positionInWindow().x
-                        val contentWidthPx = totalWidthPx - with(density) { 8.dp.toPx() }
-                        tabWidthPx = (contentWidthPx / safeTabsCount).coerceAtLeast(0f)
+                        tabWidthPx = resolveFloatingDockSlotWidthPx(
+                            containerWidthPx = totalWidthPx,
+                            horizontalPaddingPx = with(density) { horizontalPadding.toPx() },
+                            itemCount = safeTabsCount,
+                        )
                     }
                     .graphicsLayer {
                         translationX = panelOffset
@@ -947,7 +957,7 @@ fun FloatingBottomBar(
                         }
                     )
                     .height(shellHeight)
-                    .padding(4.dp),
+                    .padding(horizontal = horizontalPadding, vertical = verticalPadding),
                 verticalAlignment = Alignment.CenterVertically,
                 content = { content(this) }
             )
@@ -1014,7 +1024,7 @@ fun FloatingBottomBar(
                         )
                         .then(interactiveHighlight?.modifier ?: Modifier)
                         .height(fittedIndicatorHeight)
-                        .padding(horizontal = 4.dp),
+                        .padding(horizontal = horizontalPadding),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     content(this)
@@ -1024,12 +1034,12 @@ fun FloatingBottomBar(
 
         if (tabWidthPx > 0f) {
             val tabWidthDp = with(density) { tabWidthPx.toDp() }
-            val tabsContentStartPx = with(density) { 4.dp.toPx() }
+            val tabsContentStartPx = with(density) { horizontalPadding.toPx() }
 
             if (isLiquidGlassMode && combinedBackdrop != null) {
                 Box(
                     Modifier
-                        .padding(horizontal = 4.dp)
+                        .padding(horizontal = horizontalPadding)
                         .graphicsLayer {
                             val indicatorOffsetPx = resolveFloatingDockIndicatorOffsetPx(
                                 position = visualIndicatorPositionProvider(),
@@ -1049,7 +1059,12 @@ fun FloatingBottomBar(
                             backdrop = combinedBackdrop,
                             shape = { pillShape },
                             effects = {
-                                val progress = dampedDragAnimation.pressProgress
+                                val progress = resolveFloatingDockRefractionProgress(
+                                    pressProgress = dampedDragAnimation.pressProgress,
+                                    tapPressRefractionEnabled = tapPressRefractionEnabled,
+                                    isDragging = dampedDragAnimation.isDragging,
+                                    isPagerScrolling = isScrollInProgressLatest(),
+                                )
                                 lens(
                                     refractionHeight = indicatorLensHeightPx * progress * indicatorLensHeightRatio *
                                         liquidGlassTuning.indicatorLensBoost *
@@ -1079,7 +1094,7 @@ fun FloatingBottomBar(
                             onDrawSurface = {
                                 val progress = dampedDragAnimation.pressProgress
                                 drawRect(
-                                    color = if (!isInDark) {
+                                    color = indicatorIdleSurfaceColorOverride ?: if (!isInDark) {
                                         Color.Black.copy(alpha = 0.1f)
                                     } else {
                                         Color.White.copy(alpha = 0.1f)
@@ -1102,7 +1117,7 @@ fun FloatingBottomBar(
             } else {
                 Box(
                     modifier = Modifier
-                        .padding(horizontal = 4.dp)
+                        .padding(horizontal = horizontalPadding)
                         .graphicsLayer {
                             val indicatorOffsetPx = resolveFloatingDockIndicatorOffsetPx(
                                 position = visualIndicatorPositionProvider(),
@@ -1118,7 +1133,7 @@ fun FloatingBottomBar(
                             clip = false
                         }
                         .clip(pillShape)
-                        .background(colors.indicatorColor.copy(alpha = 0.15f), pillShape)
+                        .background(indicatorIdleSurfaceColorOverride ?: colors.indicatorColor.copy(alpha = 0.15f), pillShape)
                         .height(fittedIndicatorHeight)
                         .width(fittedIndicatorWidth),
                     contentAlignment = Alignment.CenterStart
@@ -1135,7 +1150,7 @@ fun FloatingBottomBar(
                                 .wrapContentWidth(align = Alignment.Start, unbounded = true)
                                 .requiredWidth(
                                     with(density) {
-                                        (totalWidthPx - 8.dp.toPx()).toDp()
+                                        (totalWidthPx - (horizontalPadding * 2).toPx()).coerceAtLeast(0f).toDp()
                                     }
                                 )
                                 .height(fittedIndicatorHeight)
@@ -1178,7 +1193,7 @@ fun FloatingBottomBar(
                         Modifier
                             .clearAndSetSemantics {}
                             .height(shellHeight)
-                            .padding(4.dp)
+                            .padding(horizontal = horizontalPadding, vertical = verticalPadding)
                             .graphicsLayer {
                                 translationX = panelOffset
                                 clip = false

@@ -62,6 +62,8 @@ internal fun BottomBarFloatingSegmentedControl(
     externalPagerMotionEffectsEnabled: Boolean = false,
     liquidGlassTuningOverride: LiquidGlassTuning? = null,
     onItemReselected: (() -> Unit)? = null,
+    tapPressRefractionEnabled: Boolean = true,
+    indicatorIdleSurfaceColorOverride: Color? = null,
     itemContent: (@Composable ColumnScope.(index: Int, label: String, selected: Boolean) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
@@ -130,8 +132,10 @@ internal fun BottomBarFloatingSegmentedControl(
     }
     val effectiveHeight = height.coerceAtLeast(48.dp)
     val effectiveItemWidth = itemWidth?.coerceAtLeast(48.dp)
+    val horizontalPadding = containerHorizontalPadding.coerceAtLeast(0.dp)
+    val verticalPadding = containerVerticalPadding.coerceIn(0.dp, effectiveHeight / 2)
     val rootModifier = if (effectiveItemWidth != null) {
-        modifier.width(effectiveItemWidth * itemCount + containerHorizontalPadding * 2)
+        modifier.width(effectiveItemWidth * itemCount + horizontalPadding * 2)
     } else {
         modifier
     }
@@ -144,9 +148,9 @@ internal fun BottomBarFloatingSegmentedControl(
         modifier = rootModifier.height(effectiveHeight)
     ) {
         val indicatorWidthDp = when {
-            effectiveItemWidth != null -> effectiveItemWidth.value
             constraints.hasBoundedWidth ->
-                ((maxWidth.value - 8f).coerceAtLeast(0f) / itemCount)
+                resolveFloatingDockSlotWidthPx(maxWidth.value, horizontalPadding.value, itemCount)
+            effectiveItemWidth != null -> effectiveItemWidth.value
             else -> indicatorHeight.value * FLOATING_DOCK_MIN_INDICATOR_ASPECT
         }
         val fittedSegmentedIndicatorWidth = resolveSegmentedControlIndicatorWidthDp(
@@ -202,6 +206,10 @@ internal fun BottomBarFloatingSegmentedControl(
             indicatorWidth = fittedSegmentedIndicatorWidth,
             geometryMode = FloatingBottomBarGeometryMode.Segmented,
             indicatorPositionProvider = indicatorPositionProvider,
+            contentHorizontalPadding = horizontalPadding,
+            contentVerticalPadding = verticalPadding,
+            tapPressRefractionEnabled = tapPressRefractionEnabled,
+            indicatorIdleSurfaceColorOverride = indicatorIdleSurfaceColorOverride,
             isScrollInProgressProvider = isScrollInProgressProvider,
             dragSelectionEnabled = dragSelectionEnabled && enabled && itemCount > 1,
             longPressDragSelectionEnabled =
