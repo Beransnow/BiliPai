@@ -1335,10 +1335,11 @@ fun LivePlayerScreen(
         }
     }
 
-    // SC 全屏大字浮层（盖住播放器与弹幕层，仅响应实时新 SC，点击/超时自动消失）
+    // SC 左下角非侵入式悬浮卡片（不遮挡中央视频画面，仅响应实时新 SC，带倒计时与独立关闭）
     if (portraitPresentation.showMediaOverlays) {
         LiveSuperChatFlashOverlay(
             flashFlow = viewModel.superChatFlashFlow,
+            onUserClick = onUserClick,
             modifier = Modifier.fillMaxSize()
         )
     }
