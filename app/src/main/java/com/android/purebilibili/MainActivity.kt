@@ -2233,7 +2233,7 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         if (!startupRecoveryRedirected) {
-            StartupRecovery.onMainPaused()
+            StartupRecovery.onMainPaused(this)
         }
         super.onPause()
     }
