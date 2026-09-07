@@ -110,7 +110,7 @@ fun SearchVideoFilterBar(
             modifier = Modifier.weight(1f),
             height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
             indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
-            labelFontSize = 13.sp,
+            labelFontSize = 12.sp,
             allowNativeLabelOverflow = true,
             miuixBackdrop = miuixBackdrop,
             liquidGlassEffectsEnabled = true,
