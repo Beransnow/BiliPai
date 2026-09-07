@@ -179,6 +179,16 @@ internal fun resolveTopTabDockEndInsetDp(
  */
 internal fun resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface: Boolean): Float = 3f
 
+internal fun resolveTopTabIndicatorShape(
+    showIcon: Boolean,
+    showText: Boolean,
+): Shape =
+    if (showIcon && showText) {
+        RoundedCornerShape(12.dp)
+    } else {
+        resolveSharedBottomBarCapsuleShape()
+    }
+
 internal fun resolveTopTabDockIndicatorWidthDp(
     itemWidthDp: Float,
     horizontalGapDp: Float,
@@ -1754,7 +1764,7 @@ private fun LightweightHomeTopTabs(
                                         .biliPaiFloatingDockCaptureSurface(
                                             backdrop = miuixBackdrop,
                                             containerColor = topTabIndicatorCaptureSurfaceColor,
-                                            shape = resolveSharedBottomBarCapsuleShape(),
+                                            shape = resolveTopTabIndicatorShape(showIcon = showIcon, showText = showText),
                                             liquidGlassTuning = resolvedLiquidGlassTuning,
                                         )
                                 } else {
@@ -1990,7 +2000,7 @@ private fun LightweightHomeTopTabs(
                             scaleY = indicatorScaleY,
                             velocity = indicatorVelocity,
                             isDark = isDarkTheme,
-                            shape = resolveSharedBottomBarCapsuleShape(),
+                            shape = resolveTopTabIndicatorShape(showIcon = showIcon, showText = showText),
                             liquidGlassTuning = resolvedLiquidGlassTuning
                         )
                     }
@@ -2007,7 +2017,7 @@ private fun LightweightHomeTopTabs(
                             scaleY = indicatorScaleY,
                             velocity = indicatorVelocity,
                             isDark = isDarkTheme,
-                            shape = resolveSharedBottomBarCapsuleShape(),
+                            shape = resolveTopTabIndicatorShape(showIcon = showIcon, showText = showText),
                             liquidGlassTuning = resolvedLiquidGlassTuning
                         )
                     }
@@ -2024,7 +2034,7 @@ private fun LightweightHomeTopTabs(
                             scaleY = indicatorScaleY,
                             velocity = indicatorVelocity,
                             isDark = isDarkTheme,
-                            shape = resolveSharedBottomBarCapsuleShape(),
+                            shape = resolveTopTabIndicatorShape(showIcon = showIcon, showText = showText),
                             liquidGlassTuning = resolvedLiquidGlassTuning
                         )
                     }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -53,6 +54,7 @@ internal fun <T> AppMiuixSegmentedControl(
             selectedValue = selectedValue,
             enabled = enabled,
             compact = true,
+            scrollable = false,
             minTabWidth = 0.dp,
             colors = colors,
             preferredCornerRadius = preferredCornerRadius,
@@ -130,7 +132,8 @@ internal fun <T> AppMiuixTabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
-            compact = !scrollable && options.size <= 2,
+            compact = !scrollable || options.size <= 2,
+            scrollable = scrollable && options.size > 2,
             minTabWidth = minTabWidth,
             colors = colors,
             preferredCornerRadius = preferredCornerRadius,
@@ -198,6 +201,7 @@ private fun <T> AppMiuixNonGlassTabs(
     selectedValue: T,
     enabled: Boolean,
     compact: Boolean,
+    scrollable: Boolean = false,
     minTabWidth: Dp,
     colors: AppSegmentedControlColors,
     preferredCornerRadius: Dp,
@@ -222,12 +226,16 @@ private fun <T> AppMiuixNonGlassTabs(
     val labelWidth = with(density) { (labelSizes.maxOfOrNull { it.width } ?: 0).toDp() }
     val geometry = resolveMiuixNonGlassControlGeometry(compact, textHeight)
     val targetHeight = height ?: geometry.height
-    val interactiveHeight = maxOf(targetHeight, AppChromeSizeTokens.MinimumTouchTarget)
+    val interactiveHeight = if (height != null) {
+        maxOf(targetHeight, AppChromeSizeTokens.MinimumTouchTarget)
+    } else {
+        maxOf(geometry.height, AppChromeSizeTokens.MinimumTouchTarget)
+    }
     val outerGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
         nativeMinimumHeight = interactiveHeight + 8.dp,
     )
-    val readableWidth = if (compact) {
+    val readableWidth = if (compact || !scrollable || options.size <= 2) {
         0.dp
     } else {
         maxOf(
@@ -237,6 +245,29 @@ private fun <T> AppMiuixNonGlassTabs(
         )
     }
     val scrollState = rememberLazyListState()
+    val shouldPinScroll = !scrollable || options.size <= 2
+    LaunchedEffect(scrollState, shouldPinScroll) {
+        if (shouldPinScroll) {
+            snapshotFlow { scrollState.firstVisibleItemIndex to scrollState.firstVisibleItemScrollOffset }
+                .collect { (index, offset) ->
+                    if (index != 0 || offset != 0) {
+                        scrollState.scrollToItem(0, 0)
+                    }
+                }
+        }
+    }
+    LaunchedEffect(scrollable, selectedIndex, options.size, shouldPinScroll) {
+        if (options.isEmpty()) return@LaunchedEffect
+        if (shouldPinScroll) {
+            withFrameNanos { }
+            if (scrollState.firstVisibleItemIndex != 0 || scrollState.firstVisibleItemScrollOffset != 0) {
+                scrollState.scrollToItem(0, 0)
+            }
+        } else if (selectedIndex == 0 || selectedIndex == options.lastIndex) {
+            withFrameNanos { }
+            scrollState.scrollToItem(selectedIndex)
+        }
+    }
     BoxWithConstraints(
         modifier = modifier
             .heightIn(min = AppChromeSizeTokens.MinimumTouchTarget)

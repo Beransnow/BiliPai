@@ -254,7 +254,7 @@ fun <T> AppNativeTabRow(
         labels = options.map { it.label },
         allowLabelOverflow = allowLabelOverflow,
     )
-    val effectiveScrollable = !forceEqualWidth &&
+    val effectiveScrollable = !forceEqualWidth && options.size > 2 &&
         (scrollable || options.size > 3 || readableMinTabWidth > minTabWidth)
     val viewportBoundedModifier = modifier.widthIn(
         max = LocalConfiguration.current.screenWidthDp.dp,
