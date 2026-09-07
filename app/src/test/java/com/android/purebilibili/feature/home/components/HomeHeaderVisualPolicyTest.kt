@@ -612,6 +612,12 @@ class HomeHeaderVisualPolicyTest {
                 AndroidNativeVariant.MIUIX
             )
         )
+        assertFalse(
+            shouldUseDetachedHomeTopTabDock(
+                presentation = AppTopTabPresentation.MOVING_CAPSULE,
+                liquidGlassEnabled = false,
+            )
+        )
         assertFalse(shouldShowUnifiedHomeTopPanelDivider(UiPreset.IOS))
         assertTrue(
             shouldShowUnifiedHomeTopPanelDivider(

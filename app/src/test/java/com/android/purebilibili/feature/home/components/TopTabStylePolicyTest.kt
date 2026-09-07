@@ -455,6 +455,15 @@ class TopTabStylePolicyTest {
         )
         assertFalse(
             shouldHomeTopTabUseFloatingBottomBarDock(
+                skinPlainStyle = false,
+                hasSkinStickerIcons = false,
+                presentation = AppTopTabPresentation.MOVING_CAPSULE,
+                liquidGlassEnabled = false,
+                selectionIndicatorStyle = HomeSelectionIndicatorStyle.CAPSULE,
+            )
+        )
+        assertFalse(
+            shouldHomeTopTabUseFloatingBottomBarDock(
                 skinPlainStyle = true,
                 hasSkinStickerIcons = false,
                 presentation = AppTopTabPresentation.MOVING_CAPSULE,

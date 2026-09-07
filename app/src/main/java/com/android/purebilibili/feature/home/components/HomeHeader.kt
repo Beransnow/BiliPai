@@ -577,7 +577,9 @@ internal fun shouldUseUnifiedHomeTopPanel(chromePolicy: AppTopChromePolicy): Boo
 
 internal fun shouldUseDetachedHomeTopTabDock(
     presentation: AppTopTabPresentation,
+    liquidGlassEnabled: Boolean = true,
 ): Boolean {
+    if (!liquidGlassEnabled) return false
     return presentation != AppTopTabPresentation.MATERIAL_UNDERLINE
 }
 
@@ -1575,7 +1577,10 @@ fun HomeHeader(
     val isTabGlassEnabled = topChromeMaterialMode == TopTabMaterialMode.LIQUID_GLASS
     val isTabBlurEnabled = topChromeMaterialMode == TopTabMaterialMode.BLUR
     val useUnifiedTopPanel = shouldUseUnifiedHomeTopPanel(topChromePolicy)
-    val useDetachedTopTabDock = shouldUseDetachedHomeTopTabDock(topChromePolicy.tabPresentation)
+    val useDetachedTopTabDock = shouldUseDetachedHomeTopTabDock(
+        presentation = topChromePolicy.tabPresentation,
+        liquidGlassEnabled = topChromeLiquidGlassEnabled,
+    )
     val embedTopTabsInUnifiedPanel = useUnifiedTopPanel && !useDetachedTopTabDock
     val enableTopTabSecondaryBlur = shouldEnableTopTabSecondaryBlur(
         hasHeaderBlur = hazeState != null,
