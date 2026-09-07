@@ -196,6 +196,8 @@ fun LivePlayerControls(
     showLockButton: Boolean = false,
     // [新增] 截图当前帧并保存到相册
     onCaptureScreenshot: () -> Unit = {},
+    // [新增] 点赞连击
+    onLike: ((Int) -> Unit)? = null,
     gesturePolicy: LivePlayerGesturePolicy = LivePlayerGesturePolicy(true, true),
     usePortraitControls: Boolean = false,
     isClearScreen: Boolean = false,
@@ -569,6 +571,14 @@ fun LivePlayerControls(
                     enabled = true,
                     onClick = onOpenSend
                 )
+
+                if (onLike != null) {
+                    Spacer(Modifier.width(AppSpacingTokens.Small))
+                    LiveLikeButton(
+                        tint = LiveStatusPalette.MediaContent,
+                        onLike = onLike
+                    )
+                }
 
                 Spacer(Modifier.width(AppSpacingTokens.Medium))
                 

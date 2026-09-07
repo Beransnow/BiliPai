@@ -774,9 +774,10 @@ private fun ChatInputBar(
 }
 
 @Composable
-private fun LiveLikeButton(
+internal fun LiveLikeButton(
     tint: Color,
-    onLike: (Int) -> Unit
+    onLike: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var likeCount by remember { mutableIntStateOf(0) }
     var flushJob by remember { mutableStateOf<Job?>(null) }

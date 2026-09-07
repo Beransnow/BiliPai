@@ -113,7 +113,9 @@ import com.android.purebilibili.feature.video.ui.overlay.LiveDanmakuOverlay
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.ui.components.resolveVideoViewportLayout
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.blur.materials.HazeMaterials
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
+import com.android.purebilibili.core.ui.blur.hazeEffectCompat
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
@@ -950,6 +952,7 @@ fun LivePlayerScreen(
                 onEnterPip = { enterLivePip() },
                 showLockButton = isFullscreen,
                 onCaptureScreenshot = { captureLiveScreenshot() },
+                onLike = { count -> viewModel.clickLike(count) },
                 applyTopSystemBarPadding = shouldApplyLiveTopControlSystemInsets(
                     layoutMode = liveLayoutMode,
                     isFullscreen = isFullscreen
@@ -1167,6 +1170,7 @@ fun LivePlayerScreen(
                             metrics = overlayMetrics
                         )
                     }
+                    val overlayShape = AppShapes.borderedContainer(ContainerLevel.Floating)
                     AppSurface(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
@@ -1175,12 +1179,17 @@ fun LivePlayerScreen(
                                 bottom = overlayMetrics.bottomControlReserveDp.dp
                             )
                             .width(overlayWidthDp.dp)
-                            .height(overlayHeightDp.dp),
-                        shape = AppShapes.borderedContainer(ContainerLevel.Floating),
-                        color = roomColorTokens.baseBackgroundColor.copy(alpha = 0.18f),
+                            .height(overlayHeightDp.dp)
+                            .clip(overlayShape)
+                            .hazeEffectCompat(
+                                state = hazeState,
+                                style = HazeMaterials.ultraThin()
+                            ),
+                        shape = overlayShape,
+                        color = roomColorTokens.baseBackgroundColor.copy(alpha = 0.28f),
                         border = androidx.compose.foundation.BorderStroke(
                             AppSpacingTokens.Micro / 2f,
-                            roomColorTokens.inputOverlayColor.copy(alpha = 0.12f)
+                            roomColorTokens.inputOverlayColor.copy(alpha = 0.15f)
                         )
                     ) {
                         LandscapeChatOverlay(
@@ -1252,6 +1261,7 @@ fun LivePlayerScreen(
                                     selectedInteractionTab = 0
                                     showPortraitInteractionSheet = true
                                 },
+                                hazeState = hazeState,
                                 modifier = Modifier
                                     .fillMaxWidth(0.82f)
                                     .heightIn(max = portraitOverlayPanelHeightDp.dp),
@@ -1262,6 +1272,8 @@ fun LivePlayerScreen(
                             onOpenSend = { showSendDanmakuSheet = true },
                             onToggleChat = { isPortraitChatVisible = !isPortraitChatVisible },
                             onOpenMore = { showPortraitMoreSheet = true },
+                            onLike = { count -> viewModel.clickLike(count) },
+                            hazeState = hazeState,
                             modifier = Modifier.fillMaxWidth(),
                         )
                     }
