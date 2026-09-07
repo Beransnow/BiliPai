@@ -2587,8 +2587,12 @@ private fun SpaceSecondarySwitchRow(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val liquidGlassEnabled =
-        com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
+    val context = LocalContext.current
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(initialValue = null)
+    val liquidGlassEnabled = homeSettings?.androidNativeLiquidGlassEnabled
+        ?: com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
     val spec = remember(items, selectedId) {
         resolveSpaceSecondarySwitchChromeSpec(items = items, selectedId = selectedId)
     }
@@ -2616,7 +2620,14 @@ private fun SpaceSecondarySwitchRow(
             viewportWidthDp = maxWidth.value.roundToInt(),
             containerHorizontalPaddingDp = containerHorizontalPaddingDp
         )
-        val itemWidth = itemWidthDp.dp
+        // When scrollable, never clamp below preferred width so long category
+        // titles (e.g. "合集·点评视频") are fully readable without truncation.
+        val effectiveItemWidthDp = if (useScrollableRail) {
+            maxOf(itemWidthDp, preferredItemWidthDp)
+        } else {
+            itemWidthDp
+        }
+        val itemWidth = effectiveItemWidthDp.dp
         val viewportWidthPx = with(density) { maxWidth.toPx() }
         val itemWidthPx = with(density) { itemWidth.toPx() }
         val containerHorizontalPaddingPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() }
@@ -2635,12 +2646,13 @@ private fun SpaceSecondarySwitchRow(
                 items = items.map { it.title },
                 selectedIndex = spec.selectedIndex,
                 onSelected = { index -> items.getOrNull(index)?.id?.let(onSelect) },
-                itemWidth = itemWidth.takeIf { useScrollableRail },
+                itemWidth = itemWidth.takeIf { useScrollableRail || items.size <= 2 },
                 height = spec.heightDp.dp,
                 indicatorHeight = spec.indicatorHeightDp.dp,
                 labelFontSize = 14.sp,
                 liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled,
                 dragSelectionEnabled = spec.dragSelectionEnabled || useScrollableRail,
+                preferInlineContentStyle = true,
                 onIndicatorPositionChanged = { position ->
                     if (useScrollableRail) {
                         scrollState.dispatchRawDelta(
@@ -2660,6 +2672,10 @@ private fun SpaceSecondarySwitchRow(
                     Modifier
                         .liquidDockViewport()
                         .horizontalScroll(scrollState)
+                } else if (items.size <= 2) {
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentWidth(Alignment.CenterHorizontally)
                 } else {
                     Modifier.fillMaxWidth()
                 }

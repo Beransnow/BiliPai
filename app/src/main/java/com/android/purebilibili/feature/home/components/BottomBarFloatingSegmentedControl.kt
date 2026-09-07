@@ -65,6 +65,7 @@ internal fun BottomBarFloatingSegmentedControl(
     tapPressRefractionEnabled: Boolean = true,
     indicatorIdleSurfaceColorOverride: Color? = null,
     geometryMode: FloatingBottomBarGeometryMode = FloatingBottomBarGeometryMode.Segmented,
+    preferInlineContentStyle: Boolean = false,
     itemContent: (@Composable ColumnScope.(index: Int, label: String, selected: Boolean) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
@@ -106,12 +107,17 @@ internal fun BottomBarFloatingSegmentedControl(
             onSurface = MaterialTheme.colorScheme.onSurface,
             enabled = enabled,
         )
-    val shellColor = containerColorOverride ?: resolveBiliPaiBottomBarShellColor(
+    val defaultShellColor = resolveBiliPaiBottomBarShellColor(
         containerColor = AppSurfaceTokens.cardContainer(),
         liquidGlassEnabled = liquidGlassEnabled,
         darkTheme = isDarkTheme,
         liquidGlassTuning = liquidGlassTuning,
     )
+    val shellColor = containerColorOverride ?: if (preferInlineContentStyle) {
+        Color.Transparent
+    } else {
+        defaultShellColor
+    }
     // A supplied page backdrop already contains the pixels behind this dock. Combining it
     // with a local source can make MIUI's native background-blur graph sample itself when
     // nested pages mount another backdrop (for example Bangumi/Film), overflowing RenderThread.
@@ -220,6 +226,7 @@ internal fun BottomBarFloatingSegmentedControl(
             onIndicatorPositionChanged = onIndicatorPositionChanged,
             externalPagerMotionEffectsEnabled = externalPagerMotionEffectsEnabled,
             liquidGlassTuning = liquidGlassTuning,
+            preferInlineContentStyle = preferInlineContentStyle,
         ) {
             items.forEachIndexed { index, label ->
                 val selected = index == safeSelectedIndex

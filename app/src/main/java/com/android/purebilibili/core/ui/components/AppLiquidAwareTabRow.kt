@@ -3,8 +3,10 @@ package com.android.purebilibili.core.ui.components
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -55,6 +57,7 @@ fun <T> AppThemeAdaptiveTabRow(
     dragSelectionEnabled: Boolean? = null,
     tapPressRefractionEnabled: Boolean = true,
     miuixBackdrop: Backdrop? = null,
+    preferInlineContentStyle: Boolean = false,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
 ) {
@@ -73,6 +76,7 @@ fun <T> AppThemeAdaptiveTabRow(
         dragSelectionEnabled = dragSelectionEnabled,
         tapPressRefractionEnabled = tapPressRefractionEnabled,
         miuixBackdrop = miuixBackdrop,
+        preferInlineContentStyle = preferInlineContentStyle,
         indicatorPositionProvider = indicatorPositionProvider,
         isScrollInProgressProvider = isScrollInProgressProvider,
     )
@@ -99,6 +103,7 @@ fun <T> AppLiquidAwareTabRow(
     dragSelectionEnabled: Boolean? = null,
     tapPressRefractionEnabled: Boolean = true,
     miuixBackdrop: Backdrop? = null,
+    preferInlineContentStyle: Boolean = false,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
 ) {
@@ -140,18 +145,23 @@ fun <T> AppLiquidAwareTabRow(
     val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp
     // Liquid rows and MD3 retain beta.21's 72dp default and overflow contract. Only the
     // non-glass Miuix renderer uses beta.22's 48dp accessibility minimum.
-    val needsHorizontalScroll = scrollable || readableTabWidth > resolvedMinTabWidth
+    val needsHorizontalScroll = scrollable || options.size > 4 || readableTabWidth > resolvedMinTabWidth
     if (needsHorizontalScroll) {
         val scrollState = rememberScrollState()
         val density = LocalDensity.current
         BoxWithConstraints(
             modifier = modifier
                 .widthIn(max = viewportMaxWidth)
-                // Keep both endcaps visible even when the rail's own ends are offscreen.
+                .clip(CircleShape)
                 .liquidDockViewport(),
+            contentAlignment = Alignment.CenterStart,
         ) {
             val viewportWidthPx = with(density) { maxWidth.toPx() }
             val itemWidthPx = with(density) { readableTabWidth.toPx() }
+            val totalContentWidthPx = with(density) {
+                (readableTabWidth * options.size + AppSpacingTokens.ExtraSmall * 2).toPx()
+            }
+            val contentOverflows = totalContentWidthPx > viewportWidthPx
             KeepScrollableTabSelectionVisible(
                 scrollState = scrollState,
                 selectedIndex = selectedIndex,
@@ -175,19 +185,32 @@ fun <T> AppLiquidAwareTabRow(
                 dragSelectionEnabled = resolvedDragSelectionEnabled,
                 tapPressRefractionEnabled = tapPressRefractionEnabled,
                 miuixBackdrop = miuixBackdrop,
+                preferInlineContentStyle = preferInlineContentStyle,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = isScrollInProgressProvider,
             )
         }
     } else {
+        val isCompact = (compactMiuixWhenTwoOptions && options.size <= 2) || (minTabWidth.isSpecified && !scrollable)
+        val rowModifier = if (isCompact) {
+            modifier.wrapContentWidth(Alignment.CenterHorizontally)
+        } else {
+            modifier
+        }
+        val rowItemWidth = if (isCompact) {
+            readableTabWidth
+        } else {
+            null
+        }
         BottomBarLiquidSegmentedControl(
             items = options.map { it.label },
             selectedIndex = selectedIndex,
             onSelected = { index ->
                 options.getOrNull(index)?.let { onSelectionChange(it.value) }
             },
-            modifier = modifier,
+            modifier = rowModifier,
             enabled = enabled,
+            itemWidth = rowItemWidth,
             height = height,
             indicatorHeight = indicatorHeight,
             labelFontSize = labelFontSize,
@@ -195,6 +218,7 @@ fun <T> AppLiquidAwareTabRow(
             dragSelectionEnabled = resolvedDragSelectionEnabled,
             tapPressRefractionEnabled = tapPressRefractionEnabled,
             miuixBackdrop = miuixBackdrop,
+            preferInlineContentStyle = preferInlineContentStyle,
             indicatorPositionProvider = indicatorPositionProvider,
             isScrollInProgressProvider = isScrollInProgressProvider,
         )

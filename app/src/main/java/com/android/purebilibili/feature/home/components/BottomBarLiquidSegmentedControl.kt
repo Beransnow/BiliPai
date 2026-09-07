@@ -508,6 +508,7 @@ fun BottomBarLiquidSegmentedControl(
         externalPagerMotionEffectsEnabled = externalPagerMotionEffectsEnabled,
         liquidGlassTuningOverride = liquidGlassTuningOverride,
         geometryMode = geometryMode,
+        preferInlineContentStyle = preferInlineContentStyle,
     )
 }
 

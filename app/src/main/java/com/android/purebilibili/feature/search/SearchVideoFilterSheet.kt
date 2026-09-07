@@ -117,6 +117,7 @@ fun SearchVideoFilterBar(
             tapPressRefractionEnabled = true,
             // Drag the selected pill directly; the remaining rail still scrolls.
             dragSelectionEnabled = orderOptions.size > 1,
+            preferInlineContentStyle = true,
         )
         VerticalDivider(
             modifier = Modifier
