@@ -245,6 +245,7 @@ fun LivePlayerControls(
     val latestToggleFullscreen by rememberUpdatedState(onToggleFullscreen)
     val latestPortraitTap by rememberUpdatedState(onPortraitTap)
     val latestOpenPortraitMore by rememberUpdatedState(onOpenPortraitMore)
+    val latestOnLike by rememberUpdatedState(onLike)
     
     // 锁定时控制栏强制隐藏
     val effectiveControlsVisible = isControlsVisible && !isLocked && !usePortraitControls
@@ -265,8 +266,11 @@ fun LivePlayerControls(
                                     else isControlsVisible = !isControlsVisible
                                 },
                                 onDoubleTap = {
-                                    // Consume portrait double taps without pausing or toggling chrome twice.
-                                    if (gesturePolicy.doubleTapPlayback) latestPlayPause()
+                                    if (gesturePolicy.doubleTapPlayback) {
+                                        latestPlayPause()
+                                    } else if (usePortraitControls) {
+                                        latestOnLike?.invoke(1)
+                                    }
                                 },
                                 onLongPress = if (usePortraitControls) {
                                     { latestOpenPortraitMore() }
