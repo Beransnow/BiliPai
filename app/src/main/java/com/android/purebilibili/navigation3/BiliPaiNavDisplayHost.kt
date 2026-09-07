@@ -332,6 +332,11 @@ internal fun BiliPaiNavDisplayHost(
         snapshotFlow { videoCardTransitionProgress.settleStateOrNull() }.collect { state ->
             if (state != null) {
                 videoCardClock.followNavigationDriver(state, videoCardTransitionProgress.releaseVelocity())
+                if (state == VideoCardTransitionSettleState.Idle) {
+                    // LiveNavTransitionScope reads the shared navigation presentation even after
+                    // its video entry leaves. Release it before another route reuses that driver.
+                    videoCardTransitionProgress.clear()
+                }
                 VideoCardTransitionDiagnostics.onMotionPhase(
                     state, heroMotion, sourceMetadata.sourceLayout, diagnosticConfiguration,
                 )
@@ -479,6 +484,7 @@ internal fun BiliPaiNavDisplayHost(
     // 恢复 0.2.2 的预测返回背景链路：目标返回页（栈前一 key）在预测返回手势中
     // 随手势进度模糊/消退，迁移到 Miuix 导航时该 provide 曾丢失。
     val predictiveBackBackgroundState = remember(
+        currentKey,
         cardMorphAvailable,
         videoCardTransitionProgress,
         currentBackTarget,
@@ -494,7 +500,7 @@ internal fun BiliPaiNavDisplayHost(
                 } else {
                     miuixTransitionBlurEnabled
                 }
-                if (!blurEnabled) {
+                if (!blurEnabled || !isCardMorphDestinationNavKey(currentKey)) {
                     0f
                 } else {
                     videoCardTransitionProgress.gestureBackProgress()

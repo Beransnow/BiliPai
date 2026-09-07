@@ -349,6 +349,10 @@ internal class MiuixVideoCardTransitionProgress {
         }
     }
 
+    fun clear() {
+        topScope = null
+    }
+
     fun depthOr(fallback: Float): Float = topScope
         ?.let { resolveMiuixVideoCardDepthProgress(it.relativeDepth) }
         ?: fallback.coerceIn(0f, 1f)

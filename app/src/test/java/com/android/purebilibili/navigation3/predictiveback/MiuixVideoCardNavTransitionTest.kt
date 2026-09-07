@@ -108,6 +108,20 @@ class MiuixVideoCardNavTransitionTest {
         assertEquals(VideoCardTransitionSettleState.AutoReturn, progress.settleStateOrNull())
         scope.relativeDepth = -1f
         assertEquals(VideoCardTransitionSettleState.Idle, progress.settleStateOrNull())
+
+        // The same live presentation subsequently drives a settings navigation. A released
+        // video scope must not turn that unrelated transition back into video depth/blur.
+        progress.clear()
+        scope.relativeDepth = -.2f
+        scope.role = NavRole.Incoming
+        assertEquals(null, progress.depthOrNull())
+        assertEquals(null, progress.settleStateOrNull())
+        assertEquals(null, progress.gestureBackProgress())
+        assertEquals(false, progress.isGestureInProgress())
+        assertEquals(0f, progress.depthOr(0f))
+
+        progress.bind(scope)
+        assertEquals(.8f, progress.depthOrNull())
     }
     @Test
     fun transitionKeepsOneOpaqueFlyingCardWithoutStationaryRevealMask() {
