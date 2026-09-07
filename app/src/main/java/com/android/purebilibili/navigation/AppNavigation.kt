@@ -1278,11 +1278,9 @@ fun AppNavigation(
         // 经 fromStorageValue 归一化后由策略层按 routeTransition 分发,不再改变 handler 选择;
         // exitDirection 默认 "auto" 时走 autoDerived(卡片来源方向),显式值(follow_gesture /
         // always_left / always_right)直接覆盖。
-        val currentUiStyle = com.android.purebilibili.core.theme.LocalAppUiStyle.current
         val predictiveBackAnimationStyle = if (appNavigationSettings.predictiveBackEnabled) {
-            BiliPaiPredictiveBackAnimationStyle.resolveAdaptiveDefault(
-                uiStyle = currentUiStyle,
-                value = appNavigationSettings.predictiveBackAnimationStyle,
+            BiliPaiPredictiveBackAnimationStyle.fromStorageValue(
+                appNavigationSettings.predictiveBackAnimationStyle,
             )
         } else {
             BiliPaiPredictiveBackAnimationStyle.NONE
