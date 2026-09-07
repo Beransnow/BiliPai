@@ -85,6 +85,17 @@ internal fun resolveProcessExitSubReasonLabel(subReason: Int): String = when (su
 }
 
 /**
+ * ApplicationExitInfo.getSubReason() 在公版 SDK 中被 @hide，通过反射在 Android 12+ (API 31+) 安全提取。
+ */
+internal fun extractApplicationExitSubReason(exitInfo: ApplicationExitInfo): Int {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return 0
+    return runCatching {
+        val method = exitInfo.javaClass.getMethod("getSubReason")
+        (method.invoke(exitInfo) as? Number)?.toInt() ?: 0
+    }.getOrDefault(0)
+}
+
+/**
  * 读取系统记录的历史退出 Trace（含 Native 崩溃的 Tombstone 或 ANR 堆栈）。
  */
 @RequiresApi(Build.VERSION_CODES.R)
@@ -232,9 +243,10 @@ internal object Android17Diagnostics {
                         append("KB · rss=")
                         append(exitInfo.rss)
                         append("KB")
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && exitInfo.subReason != 0) {
+                        val subReasonCode = extractApplicationExitSubReason(exitInfo)
+                        if (subReasonCode != 0) {
                             append(" · subReason=")
-                            append(resolveProcessExitSubReasonLabel(exitInfo.subReason))
+                            append(resolveProcessExitSubReasonLabel(subReasonCode))
                         }
                         exitInfo.description
                             ?.trim()
@@ -274,8 +286,9 @@ internal object Android17Diagnostics {
             prefs.edit().putLong(KEY_LAST_CRASH_SNAPSHOT_TIMESTAMP, exitInfo.timestamp).apply()
 
             val reason = resolveProcessExitReasonLabel(exitInfo.reason)
-            val subReason = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && exitInfo.subReason != 0) {
-                resolveProcessExitSubReasonLabel(exitInfo.subReason)
+            val subReasonCode = extractApplicationExitSubReason(exitInfo)
+            val subReason = if (subReasonCode != 0) {
+                resolveProcessExitSubReasonLabel(subReasonCode)
             } else null
             val trace = readProcessExitTrace(exitInfo)
 
