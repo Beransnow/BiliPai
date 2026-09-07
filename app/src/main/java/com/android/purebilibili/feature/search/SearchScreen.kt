@@ -124,6 +124,7 @@ import com.android.purebilibili.core.ui.videoCardTitleMaxLines
 import com.android.purebilibili.core.ui.videoCardTitleOverflow
 import com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton
 import com.android.purebilibili.core.ui.skeleton.ContentVideoGridSkeleton
+import com.android.purebilibili.core.ui.skeleton.ContentVideoGridSkeletonFixedColumns
 import com.android.purebilibili.core.ui.OfficialVerifyAvatarBadge
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
@@ -151,6 +152,7 @@ import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.home.resolveReturnAnimationSuppressionDurationMs
 import com.android.purebilibili.core.store.HomeDurationStyle
 import com.android.purebilibili.core.store.HomeFeedCardStyle
+import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager  //  读取动画设置
 import com.android.purebilibili.data.repository.SearchOrder
 import com.android.purebilibili.data.repository.SearchDuration
@@ -781,8 +783,38 @@ fun SearchScreen(
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
         .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.BILIPAI)
-    val cardLayout = remember(homeFeedCardStyle) {
-        resolveHomeFeedCardLayout(homeFeedCardStyle)
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(initialValue = HomeSettings())
+    val searchContentWidth = resolveSearchContentWidth(
+        isExpandedScreen = windowSizeClass.isExpandedScreen,
+        widthDp = windowSizeClass.widthDp
+    )
+    val videoGridColumns = remember(
+        searchContentWidth,
+        listLayout.singleColumn,
+        homeSettings.gridColumnCount,
+        homeSettings.homeFeedCardWidthPreset,
+        windowSizeClass.widthSizeClass
+    ) {
+        resolveSearchVideoGridColumns(
+            singleColumn = listLayout.singleColumn,
+            contentWidthDp = searchContentWidth.value.toInt(),
+            fixedColumnCount = homeSettings.gridColumnCount,
+            cardWidthPreset = homeSettings.homeFeedCardWidthPreset,
+            widthSizeClass = windowSizeClass.widthSizeClass
+        )
+    }
+    val cardLayout = remember(
+        homeFeedCardStyle,
+        videoGridColumns,
+        windowSizeClass.widthSizeClass,
+    ) {
+        resolveHomeFeedCardLayout(
+            style = homeFeedCardStyle,
+            gridColumns = videoGridColumns,
+            widthSizeClass = windowSizeClass.widthSizeClass,
+        )
     }
     val isSearchResultsScrolling by remember(historyListState, resultGridState, resultListState, searchPagerState) {
         derivedStateOf {
@@ -1003,9 +1035,10 @@ fun SearchScreen(
             if (state.showResults) {
                 Column(
                     modifier = Modifier
+                        .responsiveContentWidth(maxWidth = searchContentWidth)
                         .fillMaxSize()
                         .graphicsLayer { alpha = exitContentAlpha }
-                    ) {
+                ) {
                             Spacer(modifier = Modifier.height(contentTopPadding + 8.dp))
                             //  搜索彩蛋消息横幅
                             val easterEggMsg = state.easterEggMessage
@@ -1223,24 +1256,38 @@ fun SearchScreen(
                         if (pagePresentation.body == SearchResultBodyMode.LOADING) {
                             // 结果形态已知：用骨架占位，不用主题 Loading 动画。
                             when (targetSearchType) {
-                                SearchType.VIDEO -> ContentVideoGridSkeleton(
-                                    minItemWidth = searchLayoutPolicy.resultGridMinItemWidthDp.dp,
-                                    coverAspectRatio = cardLayout.coverAspectRatio,
-                                    contentPadding = PaddingValues(
-                                        top = 0.dp,
-                                        bottom = resultBottomPadding,
-                                        start = cardLayout.outerPaddingDp.dp,
-                                        end = cardLayout.outerPaddingDp.dp,
-                                    ),
-                                    horizontalSpacing = cardLayout.itemSpacingDp.dp,
-                                    verticalSpacing = cardLayout.itemSpacingDp.dp,
-                                )
+                                SearchType.VIDEO -> {
+                                    val skeletonModifier = Modifier
+                                        .then(
+                                            if (videoGridColumns == 1) {
+                                                Modifier.responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
+                                            } else {
+                                                Modifier
+                                            }
+                                        )
+                                        .fillMaxSize()
+                                    ContentVideoGridSkeletonFixedColumns(
+                                        columns = videoGridColumns,
+                                        coverAspectRatio = cardLayout.coverAspectRatio,
+                                        contentPadding = PaddingValues(
+                                            top = 0.dp,
+                                            bottom = resultBottomPadding,
+                                            start = cardLayout.outerPaddingDp.dp,
+                                            end = cardLayout.outerPaddingDp.dp,
+                                        ),
+                                        spacing = cardLayout.itemSpacingDp.dp,
+                                        modifier = skeletonModifier,
+                                    )
+                                }
                                 SearchType.UP, SearchType.LIVE_USER -> ContentMediaListSkeleton(
                                     useUserRow = true,
                                     contentPadding = PaddingValues(
                                         top = 0.dp,
                                         bottom = resultBottomPadding,
                                     ),
+                                    modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
+                                        .fillMaxSize(),
                                 )
                                 else -> ContentMediaListSkeleton(
                                     useUserRow = false,
@@ -1248,6 +1295,9 @@ fun SearchScreen(
                                         top = 0.dp,
                                         bottom = resultBottomPadding,
                                     ),
+                                    modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
+                                        .fillMaxSize(),
                                 )
                             }
                         } else if (pagePresentation.body == SearchResultBodyMode.ERROR) {
@@ -1280,9 +1330,15 @@ fun SearchScreen(
                             com.android.purebilibili.data.model.response.SearchType.VIDEO -> {
                                 // Size cover requests against the actual result pane, including split windows.
                                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                                    val videoGridColumns = resolveVideoListColumns(listLayout.singleColumn, maxWidth.value)
+                                    val actualGridColumns = resolveSearchVideoGridColumns(
+                                        singleColumn = listLayout.singleColumn,
+                                        contentWidthDp = maxWidth.value.toInt(),
+                                        fixedColumnCount = homeSettings.gridColumnCount,
+                                        cardWidthPreset = homeSettings.homeFeedCardWidthPreset,
+                                        widthSizeClass = windowSizeClass.widthSizeClass
+                                    )
                                     val searchCoverRequestSpec = remember(
-                                        maxWidth, density.density, cardLayout, searchLayoutPolicy, videoGridColumns
+                                        maxWidth, density.density, cardLayout, searchLayoutPolicy, actualGridColumns
                                     ) {
                                         resolveHomeCoverRequestSpec(
                                             cardWidthDp = resolveSearchGridCardWidthDp(
@@ -1290,14 +1346,24 @@ fun SearchScreen(
                                                 minItemWidthDp = searchLayoutPolicy.resultGridMinItemWidthDp.toFloat(),
                                                 horizontalPaddingDp = cardLayout.outerPaddingDp.toFloat(),
                                                 spacingDp = cardLayout.itemSpacingDp.toFloat(),
-                                                fixedColumnCount = videoGridColumns,
+                                                fixedColumnCount = actualGridColumns,
                                             ),
                                             density = density.density,
                                             useLowQualityCover = false,
                                         )
                                     }
+                                    val videoGridModifier = Modifier
+                                        .then(
+                                            if (actualGridColumns == 1) {
+                                                Modifier.responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
+                                            } else {
+                                                Modifier
+                                            }
+                                        )
+                                        .fillMaxSize()
+                                        .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                                 LazyVerticalGrid(
-                                    columns = GridCells.Fixed(videoGridColumns),
+                                    columns = GridCells.Fixed(actualGridColumns),
                                     state = activePageGridState,
                                     contentPadding = PaddingValues(
                                         top = 0.dp,
@@ -1307,9 +1373,7 @@ fun SearchScreen(
                                     ),
                                     horizontalArrangement = Arrangement.spacedBy(cardLayout.itemSpacingDp.dp),
                                     verticalArrangement = Arrangement.spacedBy(cardLayout.itemSpacingDp.dp),
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
+                                    modifier = videoGridModifier
                         ) {
                                 itemsIndexed(
                                     pageResultState.searchResults,
@@ -1326,7 +1390,7 @@ fun SearchScreen(
                                             val highlightedTitle = rememberSearchHighlightedTitle(video)
                                             ElegantVideoCard(
                                                 video = video,
-                                                singleColumn = videoGridColumns == 1,
+                                                singleColumn = actualGridColumns == 1,
                                                 index = index,
                                                 animationEnabled = false, // The stable item wrapper owns column-switch motion.
                                                 motionTier = cardMotionTier,
@@ -1446,6 +1510,7 @@ fun SearchScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                                 ) {
@@ -1526,6 +1591,7 @@ fun SearchScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                                 ) {
@@ -1609,6 +1675,7 @@ fun SearchScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                                 ) {
@@ -1688,6 +1755,7 @@ fun SearchScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                                 ) {
@@ -1742,6 +1810,7 @@ fun SearchScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                                 ) {
@@ -1819,6 +1888,7 @@ fun SearchScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                                 ) {
@@ -1862,6 +1932,7 @@ fun SearchScreen(
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
+                                        .responsiveContentWidth(maxWidth = resolveSearchSingleColumnResultMaxWidth())
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                                 ) {

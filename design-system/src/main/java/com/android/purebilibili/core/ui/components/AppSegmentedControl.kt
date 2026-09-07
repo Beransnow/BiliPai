@@ -86,22 +86,34 @@ fun shouldFillMaxWidthAppSegmentedControl(
     longestLabelLength: Int,
 ): Boolean = optionCount >= 2 || longestLabelLength >= 1
 
+fun shouldUseCompactMiuixTabRow(
+    optionCount: Int,
+    scrollable: Boolean,
+    compactWhenTwoOptions: Boolean,
+): Boolean = optionCount == 2 && !scrollable && compactWhenTwoOptions
+
+fun resolveCompactMiuixTabRowWidth(
+    viewportWidth: Dp,
+    minTabWidth: Dp,
+    optionCount: Int,
+    scrollable: Boolean,
+): Dp = if (optionCount == 2 && !scrollable) minTabWidth * 2 else viewportWidth
+
 fun resolveReadableNativeTabMinWidth(
     requestedMinWidth: Dp,
     labels: List<String>,
     allowLabelOverflow: Boolean,
 ): Dp {
     if (!allowLabelOverflow || labels.isEmpty()) return requestedMinWidth
-    val longestLabelLength = labels.maxOf(String::length)
-    // Short labels retain the compact tab sizing. Long CJK/compound titles (for
-    // example UP-space collection names) need extra glyph breathing room because
-    // their measured width is noticeably larger than a simple character estimate.
-    val estimatedWidthDp = if (longestLabelLength >= 7) {
-        longestLabelLength * 20 + 32
-    } else {
-        longestLabelLength * 16 + 24
-    }
-    return maxOf(requestedMinWidth, estimatedWidthDp.dp)
+    val maxEstimatedWidthDp = labels.maxOfOrNull { label ->
+        val textWidth = label.sumOf { char ->
+            if (char.code in 0..127) 8 else 16
+        }
+        val padding = if (textWidth > 64) 28 else 24
+        textWidth + padding
+    } ?: 0
+    val boundedEstimatedWidthDp = maxEstimatedWidthDp.coerceAtMost(176)
+    return maxOf(requestedMinWidth, boundedEstimatedWidthDp.dp)
 }
 
 fun resolveAppLiquidSegmentedControlSpec(

@@ -163,6 +163,13 @@ fun ForwardedContent(
             primary = visibleDynamicDesc,
             fallback = visibleOpusSummaryDesc
         )
+        val forwardedEmoteMap = remember(content?.desc, content?.major?.opus?.summary, preferredDesc) {
+            buildMap {
+                putAll(collectDynamicEmojiUrlMap(content?.desc?.rich_text_nodes.orEmpty()))
+                putAll(collectDynamicEmojiUrlMap(content?.major?.opus?.summary?.rich_text_nodes.orEmpty()))
+                putAll(collectDynamicEmojiUrlMap(preferredDesc?.rich_text_nodes.orEmpty()))
+            }
+        }
         preferredDesc?.let { desc ->
             if (shouldRenderDynamicRichText(desc)) {
                 RichTextContent(
@@ -171,7 +178,8 @@ fun ForwardedContent(
                     onTopicClick = onTopicClick,
                     onBlankTap = openOrigDynamic.takeIf {
                         onDynamicDetailClick != null && origDynamicId.isNotEmpty()
-                    }
+                    },
+                    extraEmoteUrlMap = forwardedEmoteMap,
                 )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
             }

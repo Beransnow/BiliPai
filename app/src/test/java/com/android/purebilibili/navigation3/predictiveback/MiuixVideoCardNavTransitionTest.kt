@@ -169,6 +169,16 @@ class MiuixVideoCardNavTransitionTest {
             0.0001f,
         )
         assertEquals(
+            32f,
+            resolveMiuixVideoCardGestureCornerPx(
+                sourceCornerPx = 16f,
+                morphProgress = 1f,
+                floatingCornerPx = 32f,
+                fullscreenCornerPx = 32f,
+            ),
+            0.0001f,
+        )
+        assertEquals(
             16f,
             resolveMiuixVideoCardGestureCornerPx(
                 sourceCornerPx = 16f,

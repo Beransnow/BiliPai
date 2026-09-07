@@ -47,7 +47,7 @@ private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_DP = 12f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = VideoHeroMotionTokens.OPEN_BLUR_QUANTUM_PX
 /** 返回消糊段更粗量化，降低 BlurEffect 每帧更新次数。 */
 internal const val VIDEO_CARD_TRANSITION_RETURN_BLUR_QUANTUM_PX = VideoHeroMotionTokens.RETURN_BLUR_QUANTUM_PX
-// 页面整体只后退 1.5%；被点击卡片由 shared overlay 自己放大，避免双重缩放。
+// 页面整体保持克制后退 1.5%（缩至 ~0.985）；避免大幅缩放拉出白边缝隙及顶栏模糊断层。
 internal const val VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION = 0.015f
 private const val VIDEO_CARD_TRANSITION_RELATED_SCALE_REDUCTION =
     VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION
@@ -244,7 +244,7 @@ internal fun resolveVideoCardTransitionContentScale(
         progress = progress,
         phase = phase,
     )
-    return 1f - scaleReduction.coerceIn(0f, 0.05f) * depthProgress
+    return 1f - scaleReduction.coerceIn(0f, 0.08f) * depthProgress
 }
 
 /**

@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.clickable
@@ -18,6 +20,7 @@ import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.components.AppListItem
 import com.android.purebilibili.core.ui.components.AppRadioButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextField
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -399,7 +402,9 @@ fun DynamicDetailScreen(
                     //  [新增] 大屏/横屏：左卡片 + 右评论（对齐 BiliPai 横屏分栏）
                     AppSplitLayout(
                         primaryRatio = 0.5f,
-                        modifier = Modifier.padding(paddingValues),
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .consumeWindowInsets(paddingValues),
                         primaryContent = {
                             LazyColumn(
                                 state = detailListState,
@@ -433,6 +438,7 @@ fun DynamicDetailScreen(
                                         modifier = Modifier
                                             .align(Alignment.BottomCenter)
                                             .fillMaxWidth()
+                                            .imePadding()
                                             .padding(horizontal = AppSpacingTokens.ExtraLarge)
                                             .padding(bottom = AppSpacingTokens.Medium),
                                         contentAlignment = Alignment.Center,
@@ -453,16 +459,23 @@ fun DynamicDetailScreen(
                                     ) {
                                         commentContent()
                                     }
-                                    Box(
+                                    AppSurface(
                                         modifier = Modifier
                                             .align(Alignment.BottomCenter)
                                             .fillMaxWidth()
-                                            .padding(
-                                                horizontal = AppSpacingTokens.Large,
-                                                vertical = AppSpacingTokens.Medium,
-                                            ),
+                                            .imePadding(),
+                                        color = MaterialTheme.colorScheme.surface,
+                                        tonalElevation = 3.dp,
+                                        shadowElevation = 8.dp,
                                     ) {
-                                        commentComposer(Modifier.fillMaxWidth())
+                                        commentComposer(
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(
+                                                    horizontal = AppSpacingTokens.Large,
+                                                    vertical = AppSpacingTokens.Medium,
+                                                )
+                                        )
                                     }
                                 }
                             }
@@ -473,6 +486,7 @@ fun DynamicDetailScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues)
+                            .consumeWindowInsets(paddingValues)
                             .responsiveContentWidth(maxWidth = resolveDynamicFeedMaxWidth())
                     ) {
                         LazyColumn(
@@ -496,6 +510,7 @@ fun DynamicDetailScreen(
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .fillMaxWidth()
+                                    .imePadding()
                                     .padding(horizontal = AppSpacingTokens.ExtraLarge)
                                     .padding(bottom = AppSpacingTokens.Medium),
                                 contentAlignment = Alignment.Center,
@@ -507,15 +522,24 @@ fun DynamicDetailScreen(
                                 )
                             }
                         } else {
-                            commentComposer(
-                                Modifier
+                            AppSurface(
+                                modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .fillMaxWidth()
-                                    .padding(
-                                        horizontal = AppSpacingTokens.Large,
-                                        vertical = AppSpacingTokens.Medium,
-                                    ),
-                            )
+                                    .imePadding(),
+                                color = MaterialTheme.colorScheme.surface,
+                                tonalElevation = 3.dp,
+                                shadowElevation = 8.dp,
+                            ) {
+                                commentComposer(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            horizontal = AppSpacingTokens.Large,
+                                            vertical = AppSpacingTokens.Medium,
+                                        ),
+                                )
+                            }
                         }
                     }
                 }
@@ -526,7 +550,10 @@ fun DynamicDetailScreen(
                     onLoadMore = interactionViewModel::loadMoreSubReplies,
                     onSortModeChange = interactionViewModel::setSubReplySortMode,
                     onUserClick = onUserClick,
-                    onReplyClick = { reply -> interactionViewModel.startCommentReply(reply) },
+                    onReplyClick = { reply ->
+                        interactionViewModel.closeSubReply()
+                        interactionViewModel.startCommentReply(reply)
+                    },
                     onCommentLike = { rpid -> interactionViewModel.likeComment(rpid) },
                     currentMid = com.android.purebilibili.core.store.TokenManager.midCache ?: 0L,
                     onDeleteComment = { rpid ->

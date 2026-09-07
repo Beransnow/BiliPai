@@ -771,6 +771,18 @@ fun DynamicCardV2(
             primary = visibleDynamicDesc,
             fallback = visibleOpusSummaryDescForBody
         )
+        val dynamicCardEmoteMap = remember(content?.desc, opus?.summary, preferredBodyDesc, fullOpusContentBlocks) {
+            buildMap {
+                putAll(collectDynamicEmojiUrlMap(content?.desc?.rich_text_nodes.orEmpty()))
+                putAll(collectDynamicEmojiUrlMap(opus?.summary?.rich_text_nodes.orEmpty()))
+                putAll(collectDynamicEmojiUrlMap(preferredBodyDesc?.rich_text_nodes.orEmpty()))
+                fullOpusContentBlocks.forEach { block ->
+                    if (block is OpusContentBlock.Text) {
+                        putAll(collectDynamicEmojiUrlMap(block.richTextNodes))
+                    }
+                }
+            }
+        }
         if (!hasFullOpusDetailContent) preferredBodyDesc?.let { desc ->
             if (shouldRenderDynamicRichText(desc)) {
                 RichTextContent(
@@ -778,6 +790,7 @@ fun DynamicCardV2(
                     onUserClick = onUserClick,
                     onTopicClick = onTopicClick,
                     onVoteClick = { voteId -> pendingVoteId = voteId },
+                    extraEmoteUrlMap = dynamicCardEmoteMap,
                 )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
             }
@@ -925,6 +938,7 @@ fun DynamicCardV2(
                                         onUserClick = onUserClick,
                                         onTopicClick = onTopicClick,
                                         onVoteClick = { voteId -> pendingVoteId = voteId },
+                                        extraEmoteUrlMap = dynamicCardEmoteMap,
                                     )
                                 }
                             } else {
@@ -1743,6 +1757,7 @@ fun RichTextContent(
     lineHeight: TextUnit = MaterialTheme.typography.bodyLarge.lineHeight,
     maxLines: Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Clip,
+    extraEmoteUrlMap: Map<String, String> = emptyMap(),
 ) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
@@ -1754,12 +1769,15 @@ fun RichTextContent(
     }
     val primaryColor = MaterialTheme.colorScheme.primary
     val textColor = MaterialTheme.colorScheme.onSurface
-    val richText = remember(desc, primaryColor, textColor, catalogEmoteMap) {
+    val richText = remember(desc, primaryColor, textColor, catalogEmoteMap, extraEmoteUrlMap) {
         buildDynamicRichText(
             desc = desc,
             primaryColor = primaryColor,
             textColor = textColor,
-            extraEmoteUrlMap = catalogEmoteMap
+            extraEmoteUrlMap = buildMap {
+                putAll(catalogEmoteMap)
+                putAll(extraEmoteUrlMap)
+            }
         )
     }
     val annotatedText = richText.annotatedString

@@ -1386,10 +1386,12 @@ internal fun Modifier.homeTopChromeSurface(
                     blurRadiusDp = liquidGlassTuning?.progressiveBlurRadius
                         ?: BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP,
                     gradient = ProgressiveBlur.Top.copy(
+                        startFraction = liquidGlassTuning?.progressiveBlurStartFraction
+                            ?: BILIPAI_PROGRESSIVE_TOP_BLUR_START_FRACTION,
                         endFraction = liquidGlassTuning?.progressiveBlurEndFraction
                             ?: ProgressiveBlur.Top.endFraction,
                         curve = liquidGlassTuning?.progressiveBlurCurve
-                            ?: ProgressiveBlur.Top.curve,
+                            ?: BILIPAI_PROGRESSIVE_TOP_BLUR_FALLOFF_CURVE,
                     ),
                 )
                 .background(surfaceColor, shape)
@@ -1410,10 +1412,12 @@ internal fun Modifier.homeTopChromeSurface(
                             blurRadiusDp = liquidGlassTuning?.progressiveBlurRadius
                                 ?: BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP,
                             gradient = ProgressiveBlur.Top.copy(
+                                startFraction = liquidGlassTuning?.progressiveBlurStartFraction
+                                    ?: BILIPAI_PROGRESSIVE_TOP_BLUR_START_FRACTION,
                                 endFraction = liquidGlassTuning?.progressiveBlurEndFraction
                                     ?: ProgressiveBlur.Top.endFraction,
                                 curve = liquidGlassTuning?.progressiveBlurCurve
-                                    ?: ProgressiveBlur.Top.curve,
+                                    ?: BILIPAI_PROGRESSIVE_TOP_BLUR_FALLOFF_CURVE,
                             ),
                         )
                     } else if (hazeState != null) {
