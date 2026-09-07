@@ -327,39 +327,49 @@ internal fun Modifier.videoCardTransitionOverlayDepthEffect(
     sourceBoundsProvider: () -> Rect?,
     scaleReductionProvider: () -> Float = { VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION },
     densityProvider: () -> Float,
-): Modifier = this.graphicsLayer {
-    val progress = progressProvider()
-    val phase = phaseProvider()
-    val motionTier = motionTierProvider()
-    // Keep the live chrome on the same visual frame contract as the retained source page.
-    // In particular, phase-specific radius quantization must match on both layers or their
-    // shared edge reads as a sharp blur step during predictive back.
-    val frame = resolveVideoCardTransitionBackgroundFrame(
-        progress = progress,
-        phase = phase,
-        motionTier = motionTier,
-        isGestureRestoreInProgress = false,
-        density = densityProvider(),
-        scaleReduction = scaleReductionProvider(),
-    )
-    // The caller supplies a full-viewport layer, so use its measured coordinates instead
-    // of LocalConfiguration. This keeps the pivot identical under edge-to-edge insets.
-    val canvasW = size.width
-    val canvasH = size.height
-    val pivot = resolveVideoCardTransitionOverlayDepthPivot(
-        sourceBounds = sourceBoundsProvider(),
-        canvasWidth = canvasW,
-        canvasHeight = canvasH,
-        overlayWidth = size.width,
-        overlayHeight = size.height,
-    )
-    scaleX = frame.contentScale
-    scaleY = frame.contentScale
-    transformOrigin = TransformOrigin(pivot.x, pivot.y)
-    renderEffect = if (frame.blurRadiusPx > 0.01f) {
-        BlurEffect(frame.blurRadiusPx, frame.blurRadiusPx, TileMode.Clamp)
-    } else {
-        null
+): Modifier {
+    // Reuse the effect while quantization keeps the radius unchanged. Keep this cache local
+    // to the modifier, outside snapshot state, so layer updates do not trigger composition.
+    var cachedBlurRadiusPx = Float.NaN
+    var cachedBlurEffect: BlurEffect? = null
+    return this.graphicsLayer {
+        val progress = progressProvider()
+        val phase = phaseProvider()
+        val motionTier = motionTierProvider()
+        // Keep the live chrome on the same visual frame contract as the retained source page.
+        // In particular, phase-specific radius quantization must match on both layers or their
+        // shared edge reads as a sharp blur step during predictive back.
+        val frame = resolveVideoCardTransitionBackgroundFrame(
+            progress = progress,
+            phase = phase,
+            motionTier = motionTier,
+            isGestureRestoreInProgress = false,
+            density = densityProvider(),
+            scaleReduction = scaleReductionProvider(),
+        )
+        // The caller supplies a full-viewport layer, so use its measured coordinates instead
+        // of LocalConfiguration. This keeps the pivot identical under edge-to-edge insets.
+        val canvasW = size.width
+        val canvasH = size.height
+        val pivot = resolveVideoCardTransitionOverlayDepthPivot(
+            sourceBounds = sourceBoundsProvider(),
+            canvasWidth = canvasW,
+            canvasHeight = canvasH,
+            overlayWidth = size.width,
+            overlayHeight = size.height,
+        )
+        scaleX = frame.contentScale
+        scaleY = frame.contentScale
+        transformOrigin = TransformOrigin(pivot.x, pivot.y)
+        if (frame.blurRadiusPx != cachedBlurRadiusPx) {
+            cachedBlurRadiusPx = frame.blurRadiusPx
+            cachedBlurEffect = if (frame.blurRadiusPx > 0.01f) {
+                BlurEffect(frame.blurRadiusPx, frame.blurRadiusPx, TileMode.Clamp)
+            } else {
+                null
+            }
+        }
+        renderEffect = cachedBlurEffect
     }
 }
 
@@ -1131,11 +1141,12 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
     sourceBoundsProvider: () -> Rect? = { null },
     snapshotHandle: VideoCardTransitionSnapshotHandle? = null,
 ): Modifier {
-    val fallbackContentLayer = rememberGraphicsLayer()
-    val fallbackSnapshotState = remember { VideoCardTransitionSnapshotLayerState() }
     val isHostOwnedSnapshot = snapshotHandle != null
-    val contentLayer = snapshotHandle?.contentLayer ?: fallbackContentLayer
-    val snapshotState = snapshotHandle?.state ?: fallbackSnapshotState
+    // A host-owned handle already supplies both resources; allocate the fallback only when
+    // this source actually owns its snapshot (including after a handle ownership change).
+    val effectiveSnapshotHandle = snapshotHandle ?: rememberVideoCardTransitionSnapshotHandle()
+    val contentLayer = effectiveSnapshotHandle.contentLayer
+    val snapshotState = effectiveSnapshotHandle.state
     val view = LocalView.current
     var deviceCornerRadiusPx by remember { mutableFloatStateOf(0f) }
     // Host 共享 handle：dispose 时不 wipe 会话，但标记 display list 过期。
