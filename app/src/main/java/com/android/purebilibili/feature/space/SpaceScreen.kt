@@ -2652,7 +2652,6 @@ private fun SpaceSecondarySwitchRow(
                 labelFontSize = 14.sp,
                 liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled,
                 dragSelectionEnabled = spec.dragSelectionEnabled || useScrollableRail,
-                preferInlineContentStyle = true,
                 onIndicatorPositionChanged = { position ->
                     if (useScrollableRail) {
                         scrollState.dispatchRawDelta(

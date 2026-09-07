@@ -462,6 +462,7 @@ fun FloatingBottomBar(
 ) {
     val isInDark = isSystemInDarkTheme()
     val segmentedGeometry = geometryMode != FloatingBottomBarGeometryMode.Dock
+    val allowOverflow = !segmentedGeometry
     val horizontalPadding = contentHorizontalPadding.coerceAtLeast(0.dp)
     val verticalPadding = contentVerticalPadding.coerceIn(0.dp, shellHeight.coerceAtLeast(0.dp) / 2)
     val horizontalPaddingLatest = rememberUpdatedState(horizontalPadding)
@@ -854,7 +855,13 @@ fun FloatingBottomBar(
                 overflow = scaleOverflowDp,
                 shellHeight = shellHeight,
             )
-            .graphicsLayer { clip = false },
+            .then(
+                if (allowOverflow) {
+                    Modifier.graphicsLayer { clip = false }
+                } else {
+                    Modifier
+                }
+            ),
         contentAlignment = Alignment.CenterStart
     ) {
         CompositionLocalProvider(
@@ -876,7 +883,9 @@ fun FloatingBottomBar(
                     }
                     .graphicsLayer {
                         translationX = panelOffset
-                        clip = false
+                        if (allowOverflow) {
+                            clip = false
+                        }
                     }
                     .dropShadow(
                         shape = pillShape,
@@ -998,7 +1007,9 @@ fun FloatingBottomBar(
                         .then(tabsBackdropSource?.modifier ?: Modifier)
                         .graphicsLayer {
                             translationX = panelOffset
-                            clip = false
+                            if (allowOverflow) {
+                                clip = false
+                            }
                         }
                         .drawBackdrop(
                             backdrop = backdrop,
@@ -1057,7 +1068,9 @@ fun FloatingBottomBar(
                             } else {
                                 -indicatorOffsetPx + panelOffset
                             }
-                            clip = false
+                            if (allowOverflow) {
+                                clip = false
+                            }
                         }
                         .clearAndSetSemantics {}
                         .drawBackdrop(
@@ -1135,7 +1148,9 @@ fun FloatingBottomBar(
                             } else {
                                 -indicatorOffsetPx + panelOffset
                             }
-                            clip = false
+                            if (allowOverflow) {
+                                clip = false
+                            }
                         }
                         .clip(pillShape)
                         .background(indicatorIdleSurfaceColorOverride ?: colors.indicatorColor.copy(alpha = 0.15f), pillShape)
@@ -1192,7 +1207,9 @@ fun FloatingBottomBar(
                         } else {
                             -tabsContentStartPx - slotOffsetPx + panelOffset
                         }
-                        clip = false
+                        if (allowOverflow) {
+                            clip = false
+                        }
                     }
                     .then(interactiveHighlight?.gestureModifier ?: Modifier)
                     .then(
