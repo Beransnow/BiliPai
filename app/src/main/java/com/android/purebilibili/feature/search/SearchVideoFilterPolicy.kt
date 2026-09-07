@@ -225,3 +225,42 @@ fun resolveSearchVideoFilterDragScrollDeltaPx(
     }
 }
 
+const val SEARCH_TYPE_TAB_MIN_VISIBLE_ITEM_COUNT = 5
+const val SEARCH_TYPE_TAB_PREFERRED_FULL_ROW_MIN_WIDTH_DP = 64
+
+fun shouldScrollSearchTypeTabs(
+    itemCount: Int,
+    viewportWidthDp: Int,
+    preferredFullRowMinWidthDp: Int = SEARCH_TYPE_TAB_PREFERRED_FULL_ROW_MIN_WIDTH_DP,
+): Boolean {
+    if (itemCount <= 0 || viewportWidthDp <= 0) return false
+    return (viewportWidthDp / itemCount) < preferredFullRowMinWidthDp
+}
+
+fun resolveSearchTypeTabAdaptiveItemWidthDp(
+    itemCount: Int,
+    viewportWidthDp: Int,
+    visibleItemCount: Int = SEARCH_TYPE_TAB_MIN_VISIBLE_ITEM_COUNT,
+): Int {
+    if (itemCount <= 0 || viewportWidthDp <= 0) return 68
+    val rawWidthDp = viewportWidthDp / visibleItemCount.coerceAtLeast(1)
+    return rawWidthDp.coerceIn(60, 80)
+}
+
+fun resolveSearchTypeTabDragScrollDeltaPx(
+    indicatorPosition: Float,
+    itemWidthPx: Float,
+    viewportWidthPx: Float,
+    currentScrollPx: Float,
+    containerHorizontalPaddingPx: Float = 0f,
+    edgePaddingPx: Float = 0f
+): Float = resolveSearchVideoFilterDragScrollDeltaPx(
+    indicatorPosition = indicatorPosition,
+    itemWidthPx = itemWidthPx,
+    viewportWidthPx = viewportWidthPx,
+    currentScrollPx = currentScrollPx,
+    containerHorizontalPaddingPx = containerHorizontalPaddingPx,
+    edgePaddingPx = edgePaddingPx,
+)
+
+

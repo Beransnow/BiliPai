@@ -437,6 +437,16 @@ class SearchScreenPolicyTest {
         assertTrue(searchSource.contains("externalPagerMotionEffectsEnabled = true"))
         assertTrue(searchSource.contains("indicatorPositionProvider = {"))
         assertTrue(searchSource.contains("pagerState.currentPage + pagerState.currentPageOffsetFraction"))
+        val typeTabRowBody = searchSource
+            .substringAfter("private fun SearchResultTypeTabRow(")
+            .substringBefore("private fun rememberSearchHighlightedTitle(")
+        assertTrue(typeTabRowBody.contains("shouldScrollSearchTypeTabs("))
+        assertTrue(typeTabRowBody.contains("resolveSearchTypeTabAdaptiveItemWidthDp("))
+        assertTrue(typeTabRowBody.contains(".liquidDockViewport()"))
+        assertTrue(typeTabRowBody.contains(".horizontalScroll(scrollState)"))
+        assertTrue(typeTabRowBody.contains("KeepScrollableTabSelectionVisible("))
+        assertTrue(typeTabRowBody.contains("onIndicatorPositionChanged = { position ->"))
+        assertTrue(typeTabRowBody.contains("resolveSearchTypeTabDragScrollDeltaPx("))
         assertFalse(searchSource.contains("androidx.compose.material3.ScrollableTabRow("))
         assertFalse(searchSource.contains("tabIndicatorOffset("))
         // Top bar uses native BasicTextField + TextFieldValue (not AppSearchField wrapper).

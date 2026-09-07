@@ -20,6 +20,8 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.components.KeepScrollableTabSelectionVisible
+import com.android.purebilibili.core.ui.components.liquidDockViewport
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -2643,29 +2645,82 @@ private fun SearchResultTypeTabRow(
     miuixBackdrop: MiuixBackdrop? = null,
 ) {
     if (tabs.isEmpty()) return
-    BottomBarLiquidSegmentedControl(
-        items = tabs.map { it.displayName },
-        selectedIndex = pagerState.currentPage.coerceIn(0, tabs.lastIndex),
-        onSelected = { index ->
-            tabs.getOrNull(index)?.let { onTabClick(index, it) }
-        },
+    val scrollState = rememberScrollState()
+    val density = LocalDensity.current
+    val selectedIndex = pagerState.currentPage.coerceIn(0, tabs.lastIndex)
+
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 2.dp),
-        height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
-        indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
-        labelFontSize = 13.sp,
-        allowNativeLabelOverflow = true,
-        miuixBackdrop = miuixBackdrop,
-        liquidGlassEffectsEnabled = true,
-        tapPressRefractionEnabled = true,
-        dragSelectionEnabled = tabs.size > 1,
-        indicatorPositionProvider = {
-            pagerState.currentPage + pagerState.currentPageOffsetFraction
-        },
-        isScrollInProgressProvider = { pagerState.isScrollInProgress },
-        externalPagerMotionEffectsEnabled = true,
-    )
+        contentAlignment = Alignment.CenterStart
+    ) {
+        val viewportWidthDp = maxWidth.value.roundToInt()
+        val useScrollableRail = shouldScrollSearchTypeTabs(
+            itemCount = tabs.size,
+            viewportWidthDp = viewportWidthDp
+        )
+        val itemWidthDp = resolveSearchTypeTabAdaptiveItemWidthDp(
+            itemCount = tabs.size,
+            viewportWidthDp = viewportWidthDp
+        )
+        val itemWidth = itemWidthDp.dp
+        val viewportWidthPx = with(density) { maxWidth.toPx() }
+        val itemWidthPx = with(density) { itemWidth.toPx() }
+        val containerHorizontalPaddingPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() }
+        val dragFollowEdgePaddingPx = with(density) { 12.dp.toPx() }
+
+        KeepScrollableTabSelectionVisible(
+            scrollState = scrollState,
+            selectedIndex = if (useScrollableRail) selectedIndex else 0,
+            itemWidthPx = itemWidthPx,
+            viewportWidthPx = viewportWidthPx,
+            contentPaddingPx = containerHorizontalPaddingPx,
+        )
+
+        BottomBarLiquidSegmentedControl(
+            items = tabs.map { it.displayName },
+            selectedIndex = selectedIndex,
+            onSelected = { index ->
+                tabs.getOrNull(index)?.let { onTabClick(index, it) }
+            },
+            itemWidth = itemWidth.takeIf { useScrollableRail },
+            height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
+            indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+            labelFontSize = 13.5.sp,
+            allowNativeLabelOverflow = true,
+            miuixBackdrop = miuixBackdrop,
+            liquidGlassEffectsEnabled = true,
+            tapPressRefractionEnabled = !useScrollableRail,
+            dragSelectionEnabled = tabs.size > 1,
+            indicatorPositionProvider = {
+                pagerState.currentPage + pagerState.currentPageOffsetFraction
+            },
+            isScrollInProgressProvider = { pagerState.isScrollInProgress },
+            externalPagerMotionEffectsEnabled = true,
+            onIndicatorPositionChanged = { position ->
+                if (useScrollableRail) {
+                    scrollState.dispatchRawDelta(
+                        resolveSearchTypeTabDragScrollDeltaPx(
+                            indicatorPosition = position,
+                            itemWidthPx = itemWidthPx,
+                            viewportWidthPx = viewportWidthPx,
+                            currentScrollPx = scrollState.value.toFloat(),
+                            containerHorizontalPaddingPx = containerHorizontalPaddingPx,
+                            edgePaddingPx = dragFollowEdgePaddingPx
+                        )
+                    )
+                }
+            },
+            modifier = if (useScrollableRail) {
+                Modifier
+                    .liquidDockViewport()
+                    .horizontalScroll(scrollState)
+            } else {
+                Modifier.fillMaxWidth()
+            },
+        )
+    }
 }
 
 @Composable
