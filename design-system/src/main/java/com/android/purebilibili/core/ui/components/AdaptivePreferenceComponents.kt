@@ -621,10 +621,8 @@ internal fun AdaptiveSwitchPreferenceContent(
                     Box(
                         modifier = Modifier
                             .size(visualSpec.iconContainerSizeDp.dp)
-                            .adaptiveSquircleBackground(
-                                color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
-                                cornerRadius = visualSpec.iconCornerRadiusDp.dp,
-                            ),
+                            .clip(MaterialTheme.shapes.small)
+                            .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
@@ -928,10 +926,8 @@ private fun Md3NativeListItemContent(
                 Box(
                     modifier = Modifier
                         .size(iconContainerSize)
-                        .adaptiveSquircleBackground(
-                            color = iconContainerColor.copy(alpha = iconBackgroundAlpha),
-                            cornerRadius = iconCornerRadius,
-                        ),
+                        .clip(MaterialTheme.shapes.small)
+                        .background(iconContainerColor.copy(alpha = iconBackgroundAlpha)),
                     contentAlignment = Alignment.Center,
                 ) {
                     when {

@@ -15,5 +15,18 @@ internal enum class BiliPaiPredictiveBackAnimationStyle(val storageValue: String
                 else -> entries.find { it.storageValue == value } ?: MIUIX
             }
         }
+
+        fun resolveAdaptiveDefault(
+            uiStyle: com.android.purebilibili.core.theme.AppUiStyle,
+            value: String?,
+        ): BiliPaiPredictiveBackAnimationStyle {
+            if (value.isNullOrBlank() || value == "default" || value == "miuix") {
+                return when (uiStyle) {
+                    com.android.purebilibili.core.theme.AppUiStyle.MATERIAL3 -> AOSP
+                    com.android.purebilibili.core.theme.AppUiStyle.MIUIX -> MIUIX
+                }
+            }
+            return fromStorageValue(value)
+        }
     }
 }
