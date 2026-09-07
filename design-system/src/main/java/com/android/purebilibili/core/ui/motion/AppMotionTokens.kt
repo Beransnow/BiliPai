@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.IntOffset
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
+import top.yukonga.miuix.kmp.anim.folmeSpring
 
 object AppMotionEasing {
     val EmphasizedEnter: Easing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
@@ -141,6 +142,26 @@ object AppMotionTokens {
         dampingRatio = 0.82f,
         stiffness = 380f
     )
+
+    // ═══ Miuix / Xiaomi HyperOS 官方 Folme 物理弹簧阻尼体系 ═══
+
+    /** Miuix 默认交互弹簧 (damping=0.95, response=0.35s) */
+    fun <T> folmeDefaultSpring(): SpringSpec<T> = folmeSpring(damping = 0.95f, response = 0.35f)
+
+    /** Miuix 弹窗窗口弹簧 (damping=0.90, response=0.30s) */
+    fun <T> folmeDialogSpring(): SpringSpec<T> = folmeSpring(damping = 0.90f, response = 0.30f)
+
+    /** Miuix 底部抽屉回弹弹簧 (damping=0.85, response=0.40s) */
+    fun <T> folmeBottomSheetSpring(): SpringSpec<T> = folmeSpring(damping = 0.85f, response = 0.40f)
+
+    /** Miuix 按压下沉回弹弹簧 (dampingRatio=0.80, stiffness=600) */
+    fun <T> folmePressSpring(): SpringSpec<T> = spring(dampingRatio = 0.80f, stiffness = 600f)
+
+    /** 自定义参数的 Folme 弹簧规范 */
+    fun <T> folmeSpringSpec(
+        damping: Float = 0.95f,
+        response: Float = 0.35f,
+    ): SpringSpec<T> = folmeSpring(damping = damping, response = response)
 
     @Composable
     fun <T> standardSpec(): FiniteAnimationSpec<T> = resolveStandardSpec(

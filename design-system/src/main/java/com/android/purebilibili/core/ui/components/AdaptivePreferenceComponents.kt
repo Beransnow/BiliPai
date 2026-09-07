@@ -212,8 +212,7 @@ internal fun resolveAdaptiveListRowVisualSpec(
             insideVerticalPaddingDp = 14,
             trailingIconSizeDp = 14,
             trailingSpacingDp = 6,
-            minTouchTargetHeightDp = if (isMiuixNonGlassEnabled(uiStyle, liquidGlassEnabled)) 48
-                else chromeTokens.rowMinTouchTargetDp
+            minTouchTargetHeightDp = 48
         )
     } else {
         AdaptiveListRowVisualSpec(
@@ -539,7 +538,7 @@ fun AdaptivePreferenceGroupRenderer(
 
     if (uiStyle == AppUiStyle.MIUIX) {
         MiuixCard(
-            modifier = modifier.padding(horizontal = if (isMiuixNonGlassEnabled()) 16.dp else 14.dp),
+            modifier = modifier.padding(horizontal = 16.dp),
             cornerRadius = visualSpec.groupCornerRadiusDp.dp,
             insideMargin = PaddingValues(0.dp),
             colors = MiuixCardDefaults.defaultColors(color = resolvedContainerColor)

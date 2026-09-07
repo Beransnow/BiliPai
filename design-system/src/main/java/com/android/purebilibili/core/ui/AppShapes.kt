@@ -62,12 +62,13 @@ object AppShapes {
         uiStyle: AppUiStyle,
         liquidGlassEnabled: Boolean = true,
     ): Dp {
-        if (isMiuixNonGlassEnabled(uiStyle, liquidGlassEnabled)) {
+        if (uiStyle == AppUiStyle.MIUIX) {
             when (level) {
                 ContainerLevel.Card -> return 16.dp
                 ContainerLevel.MediaCover -> return 12.dp
                 ContainerLevel.ProminentCard -> return 20.dp
                 ContainerLevel.Chip -> return 10.dp
+                ContainerLevel.Dialog -> return 28.dp
                 else -> Unit
             }
         }
@@ -178,11 +179,11 @@ object AppShapes {
         liquidGlassEnabled = LocalAppThemeConfig.current.liquidGlassEnabled,
     )
 
-    /** Uses the 12dp media role only in non-glass Miuix and preserves each legacy shape. */
+    /** Uses the 12dp media role in Miuix and preserves each legacy shape in MD3. */
     @Composable
     fun mediaCover(
         legacyLevel: ContainerLevel = ContainerLevel.Card,
-    ): Shape = if (isMiuixNonGlassEnabled()) {
+    ): Shape = if (LocalAppUiStyle.current == AppUiStyle.MIUIX) {
         container(ContainerLevel.MediaCover)
     } else {
         container(legacyLevel)
@@ -191,7 +192,7 @@ object AppShapes {
     @Composable
     fun borderedMediaCover(
         legacyLevel: ContainerLevel = ContainerLevel.Card,
-    ): Shape = if (isMiuixNonGlassEnabled()) {
+    ): Shape = if (LocalAppUiStyle.current == AppUiStyle.MIUIX) {
         borderedContainer(ContainerLevel.MediaCover)
     } else {
         borderedContainer(legacyLevel)
@@ -200,7 +201,7 @@ object AppShapes {
     @Composable
     fun mediaCoverCornerDp(
         legacyLevel: ContainerLevel = ContainerLevel.Card,
-    ): Dp = if (isMiuixNonGlassEnabled()) {
+    ): Dp = if (LocalAppUiStyle.current == AppUiStyle.MIUIX) {
         containerCornerDp(ContainerLevel.MediaCover)
     } else {
         containerCornerDp(legacyLevel)
