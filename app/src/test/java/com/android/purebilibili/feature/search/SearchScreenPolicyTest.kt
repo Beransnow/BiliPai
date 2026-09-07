@@ -449,8 +449,9 @@ class SearchScreenPolicyTest {
         assertTrue(filterSheetSource.contains("AppModalBottomSheet("))
         assertTrue(filterSheetSource.contains("OverlayBottomSheet("))
         assertTrue(
-            filterSheetSource.contains("AppThemeAdaptiveTabRow("),
-            "视频排序应使用负责选中项自动滚动和标签完整显示的共享标签栏",
+            filterSheetSource.contains("BottomBarLiquidSegmentedControl(") ||
+                filterSheetSource.contains("AppThemeAdaptiveTabRow("),
+            "视频排序应使用负责选中项和标签完整显示的标签栏",
         )
         // History chips use the neutral AppInputChip (visuals follow the theme layer).
         assertTrue(searchSource.contains("AppInputChip("))

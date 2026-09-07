@@ -45,7 +45,7 @@ import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.BottomSheetHost
 import com.android.purebilibili.core.ui.components.AppSegmentOption
-import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
+import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -101,23 +101,21 @@ fun SearchVideoFilterBar(
             .padding(start = 8.dp, end = 4.dp, top = 2.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AppThemeAdaptiveTabRow(
-            options = orderTabs,
-            selectedValue = currentOrder,
-            onSelectionChange = onOrderChange,
+        BottomBarLiquidSegmentedControl(
+            items = orderTabs.map { it.label },
+            selectedIndex = orderOptions.indexOf(currentOrder).coerceAtLeast(0),
+            onSelected = { index ->
+                orderOptions.getOrNull(index)?.let(onOrderChange)
+            },
             modifier = Modifier.weight(1f),
-            // Let the tab row own its viewport and keep selection visible in every theme.
-            // An outer horizontalScroll hides clipping from the native selection scroller.
-            scrollable = true,
-            minTabWidth = 72.dp,
             height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
             indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
             labelFontSize = 13.sp,
+            allowNativeLabelOverflow = true,
             miuixBackdrop = miuixBackdrop,
+            liquidGlassEffectsEnabled = true,
             tapPressRefractionEnabled = true,
-            // Drag the selected pill directly; the remaining rail still scrolls.
             dragSelectionEnabled = orderOptions.size > 1,
-            preferInlineContentStyle = true,
         )
         VerticalDivider(
             modifier = Modifier

@@ -458,7 +458,6 @@ fun FloatingBottomBar(
     onIndicatorPositionChanged: ((Float) -> Unit)? = null,
     externalPagerMotionEffectsEnabled: Boolean = false,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
-    preferInlineContentStyle: Boolean = false,
     content: @Composable RowScope.() -> Unit
 ) {
     val isInDark = isSystemInDarkTheme()
@@ -879,19 +878,13 @@ fun FloatingBottomBar(
                         translationX = panelOffset
                         clip = false
                     }
-                    .then(
-                        if (!preferInlineContentStyle) {
-                            Modifier.dropShadow(
-                                shape = pillShape,
-                                shadow = Shadow(
-                                    radius = 10.dp,
-                                    color = Color.Black,
-                                    alpha = if (isInDark) 0.2f else 0.1f,
-                                ),
-                            )
-                        } else {
-                            Modifier
-                        }
+                    .dropShadow(
+                        shape = pillShape,
+                        shadow = Shadow(
+                            radius = 10.dp,
+                            color = Color.Black,
+                            alpha = if (isInDark) 0.2f else 0.1f,
+                        ),
                     )
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
@@ -900,13 +893,6 @@ fun FloatingBottomBar(
                     )
                     .then(
                         when {
-                            preferInlineContentStyle -> {
-                                if (containerColor.alpha > 0f) {
-                                    Modifier.background(containerColor, pillShape)
-                                } else {
-                                    Modifier
-                                }
-                            }
                             isLiquidGlassMode && backdrop != null -> {
                                 Modifier.drawBackdrop(
                                     backdrop = backdrop,
@@ -969,7 +955,7 @@ fun FloatingBottomBar(
                         }
                     )
                     .then(
-                        if (!preferInlineContentStyle && isLiquidGlassMode && interactiveHighlight != null) {
+                        if (isLiquidGlassMode && interactiveHighlight != null) {
                             interactiveHighlight.modifier
                         } else {
                             Modifier
@@ -1014,46 +1000,34 @@ fun FloatingBottomBar(
                             translationX = panelOffset
                             clip = false
                         }
-                        .then(
-                            if (!preferInlineContentStyle) {
-                                Modifier.drawBackdrop(
-                                    backdrop = backdrop,
-                                    shape = { pillShape },
-                                    effects = {
-                                        vibrancy(liquidGlassTuning.saturation)
-                                        blur(
-                                            liquidGlassTuning.backdropBlurRadius.dp.toPx(),
-                                            liquidGlassTuning.backdropBlurRadius.dp.toPx()
-                                        )
-                                        lens(
-                                            refractionHeight = shellRefractionHeightPx,
-                                            refractionAmount = shellRefractionAmountPx,
-                                            chromaticAberration =
-                                                liquidGlassTuning.shellChromaticAberrationAmount,
-                                        )
-                                    },
-                                    onDrawSurface = {
-                                        drawRect(containerColor)
-                                        if (liquidGlassTuning.contentReadabilityScrimAlpha > 0f) {
-                                            drawRect(
-                                                readabilityScrimColor.copy(
-                                                    alpha = liquidGlassTuning.contentReadabilityScrimAlpha
-                                                )
-                                            )
-                                        }
-                                    },
+                        .drawBackdrop(
+                            backdrop = backdrop,
+                            shape = { pillShape },
+                            effects = {
+                                vibrancy(liquidGlassTuning.saturation)
+                                blur(
+                                    liquidGlassTuning.backdropBlurRadius.dp.toPx(),
+                                    liquidGlassTuning.backdropBlurRadius.dp.toPx()
                                 )
-                            } else {
-                                Modifier
-                            }
+                                lens(
+                                    refractionHeight = shellRefractionHeightPx,
+                                    refractionAmount = shellRefractionAmountPx,
+                                    chromaticAberration =
+                                        liquidGlassTuning.shellChromaticAberrationAmount,
+                                )
+                            },
+                            onDrawSurface = {
+                                drawRect(containerColor)
+                                if (liquidGlassTuning.contentReadabilityScrimAlpha > 0f) {
+                                    drawRect(
+                                        readabilityScrimColor.copy(
+                                            alpha = liquidGlassTuning.contentReadabilityScrimAlpha
+                                        )
+                                    )
+                                }
+                            },
                         )
-                        .then(
-                            if (!preferInlineContentStyle && interactiveHighlight != null) {
-                                interactiveHighlight.modifier
-                            } else {
-                                Modifier
-                            }
-                        )
+                        .then(interactiveHighlight?.modifier ?: Modifier)
                         .height(capturedContentHeight)
                         .padding(horizontal = horizontalPadding),
                     verticalAlignment = Alignment.CenterVertically,
