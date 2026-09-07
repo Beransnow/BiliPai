@@ -129,4 +129,46 @@ class SearchVideoFilterPolicyTest {
             )
         )
     }
+
+    @Test
+    fun adaptiveItemWidth_compactScreensShowThreeItems() {
+        assertTrue(shouldScrollSearchVideoFilter(itemCount = 6, viewportWidthDp = 270))
+        assertEquals(90, resolveSearchVideoFilterAdaptiveItemWidthDp(itemCount = 6, viewportWidthDp = 270))
+    }
+
+    @Test
+    fun adaptiveItemWidth_roomyScreensDoNotScroll() {
+        assertFalse(shouldScrollSearchVideoFilter(itemCount = 6, viewportWidthDp = 600))
+    }
+
+    @Test
+    fun dragScrollDelta_scrollsWhenReachingEdges() {
+        val midDelta = resolveSearchVideoFilterDragScrollDeltaPx(
+            indicatorPosition = 1f,
+            itemWidthPx = 90f,
+            viewportWidthPx = 270f,
+            currentScrollPx = 0f,
+            edgePaddingPx = 12f
+        )
+        assertEquals(0f, midDelta)
+
+        val rightDelta = resolveSearchVideoFilterDragScrollDeltaPx(
+            indicatorPosition = 2.5f,
+            itemWidthPx = 90f,
+            viewportWidthPx = 270f,
+            currentScrollPx = 0f,
+            edgePaddingPx = 12f
+        )
+        assertTrue(rightDelta > 0f)
+
+        val leftDelta = resolveSearchVideoFilterDragScrollDeltaPx(
+            indicatorPosition = 0f,
+            itemWidthPx = 90f,
+            viewportWidthPx = 270f,
+            currentScrollPx = 50f,
+            edgePaddingPx = 12f
+        )
+        assertTrue(leftDelta < 0f)
+    }
 }
+
