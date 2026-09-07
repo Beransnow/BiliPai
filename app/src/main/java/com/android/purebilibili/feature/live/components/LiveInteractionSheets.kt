@@ -21,6 +21,8 @@ import androidx.compose.material.icons.outlined.Report
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.components.AppAssistChip
 import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppInputChip
+import com.android.purebilibili.core.ui.rememberAppClearIcon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -353,27 +355,53 @@ private fun LiveRuleSection(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun LiveKeywordSection(
     shieldInfo: LiveShieldInfo?,
     enabled: Boolean,
     onDeleteKeyword: (String) -> Unit
 ) {
+    val clearIcon = rememberAppClearIcon()
     Column(verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
         AppText("关键词", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         val keywords = shieldInfo?.keywords.orEmpty()
         if (keywords.isEmpty()) {
             AppText("暂无屏蔽词", color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
-            keywords.forEach { item ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AppText(item.keyword, modifier = Modifier.weight(1f))
-                    AppIconButton(enabled = enabled, onClick = { onDeleteKeyword(item.keyword) }) {
-                        AppIcon(Icons.Outlined.Delete, contentDescription = "删除")
-                    }
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                keywords.forEach { item ->
+                    AppInputChip(
+                        selected = false,
+                        onClick = {},
+                        label = {
+                            AppText(
+                                text = item.keyword,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 13.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        trailingIcon = {
+                            AppIconButton(
+                                onClick = { if (enabled) onDeleteKeyword(item.keyword) },
+                                enabled = enabled,
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                AppIcon(
+                                    clearIcon,
+                                    contentDescription = "删除屏蔽词",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -392,20 +420,42 @@ private fun LiveShieldUserSection(
         if (users.isEmpty()) {
             AppText("暂无屏蔽用户", color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
-            users.forEach { user ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AppIcon(Icons.Outlined.Block, contentDescription = null)
-                    AppText(
-                        text = user.uname.ifBlank { user.uid.toString() },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = AppSpacingTokens.Medium)
-                    )
-                    AppTextButton(enabled = enabled, onClick = { onUnblockUser(user) }) {
-                        AppText("解除")
+            Column(
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                users.forEach { user ->
+                    AppSurface(
+                        color = AppSurfaceTokens.cardContainer(),
+                        shape = AppShapes.container(ContainerLevel.Chip),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = AppSpacingTokens.Medium,
+                                    vertical = AppSpacingTokens.Small
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            AppIcon(
+                                Icons.Outlined.Block,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            AppText(
+                                text = user.uname.ifBlank { user.uid.toString() },
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = AppSpacingTokens.Medium)
+                            )
+                            AppTextButton(enabled = enabled, onClick = { onUnblockUser(user) }) {
+                                AppText("解除")
+                            }
+                        }
                     }
                 }
             }
