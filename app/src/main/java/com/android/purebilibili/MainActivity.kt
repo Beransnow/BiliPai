@@ -1632,7 +1632,8 @@ open class MainActivity : AppCompatActivity() {
                         isOnAudioModeScreen = isInAudioModeRoute,
                         isInPipMode = isInPipMode,
                         hasCurrentItem = audioNowPlayingItem != null,
-                        barEnabled = audioNowPlayingBarEnabled
+                        barEnabled = audioNowPlayingBarEnabled,
+                        isVideoDetailDestination = isInVideoDetail
                     )
                     val playbackOverlayState = remember(
                         isInPipMode,

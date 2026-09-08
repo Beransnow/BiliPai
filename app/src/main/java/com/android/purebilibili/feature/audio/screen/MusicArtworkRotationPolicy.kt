@@ -15,19 +15,26 @@ internal fun shouldRotateMusicArtwork(
     reduceMotion: Boolean
 ): Boolean = isPlaying && !reduceMotion
 
+internal fun resolveMusicArtworkRotationDurationMs(playbackSpeed: Float): Int {
+    val speed = playbackSpeed.coerceIn(0.25f, 4f)
+    return (MUSIC_ARTWORK_ROTATION_DURATION_MS / speed).toInt().coerceAtLeast(250)
+}
+
 @Composable
 internal fun rememberMusicArtworkRotationDegrees(
     active: Boolean,
-    contentKey: String
+    contentKey: String,
+    playbackSpeed: Float = 1f
 ): () -> Float {
     val rotation = remember(contentKey) { Animatable(0f) }
-    LaunchedEffect(active, contentKey) {
+    val durationMs = resolveMusicArtworkRotationDurationMs(playbackSpeed)
+    LaunchedEffect(active, contentKey, durationMs) {
         if (!active) return@LaunchedEffect
         while (isActive) {
             rotation.animateTo(
                 targetValue = rotation.value + 360f,
                 animationSpec = tween(
-                    durationMillis = MUSIC_ARTWORK_ROTATION_DURATION_MS,
+                    durationMillis = durationMs,
                     easing = LinearEasing
                 )
             )

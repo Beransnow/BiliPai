@@ -52,7 +52,8 @@ internal data class AudioNowPlayingBarState(
     val title: String,
     val artist: String,
     val coverUrl: String,
-    val isPlaying: Boolean
+    val isPlaying: Boolean,
+    val playbackSpeed: Float = 1f
 )
 
 @Composable
@@ -82,7 +83,8 @@ internal fun AudioNowPlayingBar(
             isPlaying = state.isPlaying,
             reduceMotion = reduceMotion
         ),
-        contentKey = state.coverUrl
+        contentKey = state.coverUrl,
+        playbackSpeed = state.playbackSpeed
     )
     AppSurface(
         modifier = modifier

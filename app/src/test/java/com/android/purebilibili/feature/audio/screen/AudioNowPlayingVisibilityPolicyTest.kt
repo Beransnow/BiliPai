@@ -66,5 +66,25 @@ class AudioNowPlayingVisibilityPolicyTest {
                 barEnabled = false
             )
         )
+        assertFalse(
+            resolveAudioNowPlayingVisible(
+                sessionActive = true,
+                isOnAudioModeScreen = false,
+                isInPipMode = false,
+                hasCurrentItem = true,
+                barEnabled = true,
+                isVideoDetailDestination = true
+            )
+        )
+        assertFalse(
+            resolveAudioNowPlayingVisible(
+                sessionActive = true,
+                isOnAudioModeScreen = false,
+                isInPipMode = false,
+                hasCurrentItem = true,
+                barEnabled = true,
+                isChromeTransitionRunning = true
+            )
+        )
     }
 }

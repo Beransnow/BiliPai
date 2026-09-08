@@ -16,6 +16,26 @@ class MusicWavyProgressPolicyTest {
     }
 
     @Test
+    fun wavySliderOnlyWhenLiquidGlassIsOn() {
+        assertTrue(
+            shouldUseMusicWavyProgress(
+                glassEnabled = true,
+                isPlaying = true,
+                isDragging = false,
+                reduceMotion = false
+            )
+        )
+        assertFalse(
+            shouldUseMusicWavyProgress(
+                glassEnabled = false,
+                isPlaying = true,
+                isDragging = false,
+                reduceMotion = false
+            )
+        )
+    }
+
+    @Test
     fun progressMapsBetweenValueAndFraction() {
         assertEquals(0.25f, resolveMusicProgressFraction(25f, 0f, 100f))
         assertEquals(0f, resolveMusicProgressFraction(0f, 10f, 10f))

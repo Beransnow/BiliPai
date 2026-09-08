@@ -4005,7 +4005,9 @@ fun AppNavigation(
                 isOnAudioModeScreen = currentNavigation3Key is BiliPaiNavKey.AudioMode,
                 isInPipMode = isInPipMode,
                 hasCurrentItem = audioNowPlayingItem != null,
-                barEnabled = audioNowPlayingBarEnabled
+                barEnabled = audioNowPlayingBarEnabled,
+                isVideoDetailDestination = isVideoDetailDestination,
+                isChromeTransitionRunning = driveBottomBarByProgress
             )
             if (showAudioNowPlaying && audioNowPlayingItem != null) {
                 val playbackManager = miniPlayerManager ?: MiniPlayerManager.getInstance(context)
@@ -4014,7 +4016,8 @@ fun AppNavigation(
                         title = audioNowPlayingItem.title,
                         artist = audioNowPlayingItem.owner,
                         coverUrl = audioNowPlayingItem.cover,
-                        isPlaying = playbackManager.isPlaying
+                        isPlaying = playbackManager.isPlaying,
+                        playbackSpeed = playbackManager.player?.playbackParameters?.speed ?: 1f
                     ),
                     onExpand = {
                         pushNavigation3Route(

@@ -60,6 +60,7 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppIconButtonDefaults
 import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
+import com.android.purebilibili.core.ui.components.AppSlider
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
@@ -861,7 +862,8 @@ private fun PlayerPage(
                 rotate = shouldRotateMusicArtwork(
                     isPlaying = state.isPlaying,
                     reduceMotion = reduceMotion
-                )
+                ),
+                playbackSpeed = state.playbackSpeed
             )
         }
         Spacer(Modifier.height(20.dp))
@@ -909,7 +911,7 @@ private fun PlayerPage(
             )
         }
         Spacer(Modifier.height(12.dp))
-        MusicProgress(state, onSeek)
+        MusicProgress(state, onSeek, glassEnabled = chromeSpec.glassEnabled)
         Spacer(Modifier.height(8.dp))
         PlaybackControls(
             state = state,
@@ -1044,11 +1046,13 @@ private fun MusicArtwork(
     bitmap: ImageBitmap?,
     modifier: Modifier,
     shape: Shape = CircleShape,
-    rotate: Boolean = false
+    rotate: Boolean = false,
+    playbackSpeed: Float = 1f
 ) {
     val rotationDegrees = rememberMusicArtworkRotationDegrees(
         active = rotate,
-        contentKey = coverUrl
+        contentKey = coverUrl,
+        playbackSpeed = playbackSpeed
     )
     Box(
         modifier = modifier
@@ -1085,7 +1089,11 @@ private fun MusicArtwork(
 }
 
 @Composable
-private fun MusicProgress(state: MusicPlayerUiState, onSeek: (Long) -> Unit) {
+private fun MusicProgress(
+    state: MusicPlayerUiState,
+    onSeek: (Long) -> Unit,
+    glassEnabled: Boolean
+) {
     val duration = state.durationMs.coerceAtLeast(1L)
     var draggedPosition by remember { mutableStateOf<Float?>(null) }
     val context = LocalContext.current
@@ -1097,24 +1105,35 @@ private fun MusicProgress(state: MusicPlayerUiState, onSeek: (Long) -> Unit) {
         ) == 0f
     }
     val sliderValue = draggedPosition ?: state.positionMs.coerceIn(0L, duration).toFloat()
-    val wavy = shouldAnimateMusicWavyProgress(
-        isPlaying = state.isPlaying,
-        isDragging = draggedPosition != null,
-        reduceMotion = reduceMotion
-    )
-    MusicWavySlider(
-        value = sliderValue,
-        onValueChange = { draggedPosition = it },
-        onValueChangeFinished = {
-            draggedPosition?.let { onSeek(it.toLong()) }
-            draggedPosition = null
-        },
-        valueRange = 0f..duration.toFloat(),
-        wavy = wavy,
-        activeColor = MusicAccentColor,
-        inactiveColor = MusicContentColor.copy(alpha = 0.28f),
-        thumbColor = MusicAccentColor
-    )
+    val onSliderChange: (Float) -> Unit = { draggedPosition = it }
+    val onSliderChangeFinished = {
+        draggedPosition?.let { onSeek(it.toLong()) }
+        draggedPosition = null
+    }
+    if (glassEnabled) {
+        MusicWavySlider(
+            value = sliderValue,
+            onValueChange = onSliderChange,
+            onValueChangeFinished = onSliderChangeFinished,
+            valueRange = 0f..duration.toFloat(),
+            wavy = shouldUseMusicWavyProgress(
+                glassEnabled = true,
+                isPlaying = state.isPlaying,
+                isDragging = draggedPosition != null,
+                reduceMotion = reduceMotion
+            ),
+            activeColor = MusicAccentColor,
+            inactiveColor = MusicContentColor.copy(alpha = 0.28f),
+            thumbColor = MusicAccentColor
+        )
+    } else {
+        AppSlider(
+            value = sliderValue,
+            onValueChange = onSliderChange,
+            onValueChangeFinished = onSliderChangeFinished,
+            valueRange = 0f..duration.toFloat()
+        )
+    }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         AppText(formatMusicTime(state.positionMs), color = MusicContentColor.copy(alpha = 0.78f), fontSize = 12.sp)
         AppText("-${formatMusicTime((state.durationMs - state.positionMs).coerceAtLeast(0L))}", color = MusicContentColor.copy(alpha = 0.78f), fontSize = 12.sp)
@@ -1398,12 +1417,24 @@ private fun LyricsPrimaryControls(
     onOpenSettings: () -> Unit,
     onHideControls: () -> Unit
 ) {
-    val panelColor = resolveMusicImmersivePanelColor(glassTintColor)
-    val panelContentColor = resolveMusicPlayerContentColor(
-        backgroundColor = panelColor,
-        onLightBackground = MaterialTheme.colorScheme.onSurface,
-        onDarkBackground = Color.White,
+    val chromeSpec = resolveMusicPlayerChromeSpec(
+        uiStyle = LocalAppUiStyle.current,
+        glassEnabled = glassEnabled
     )
+    val panelColor = if (glassEnabled) {
+        resolveMusicImmersivePanelColor(glassTintColor)
+    } else {
+        AppSurfaceTokens.surfaceContainer()
+    }
+    val panelContentColor = if (glassEnabled) {
+        resolveMusicPlayerContentColor(
+            backgroundColor = panelColor,
+            onLightBackground = MaterialTheme.colorScheme.onSurface,
+            onDarkBackground = Color.White,
+        )
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
     val panelShape = AppShapes.borderedContainer(ContainerLevel.Card)
     AppSurface(
         modifier = Modifier
@@ -1417,17 +1448,30 @@ private fun LyricsPrimaryControls(
                 liquidGlassTuning = liquidGlassTuning,
             ),
         shape = panelShape,
-        color = Color.Transparent,
+        color = if (glassEnabled) Color.Transparent else panelColor,
         contentColor = panelContentColor,
+        tonalElevation = if (chromeSpec.uiStyle == com.android.purebilibili.core.theme.AppUiStyle.MATERIAL3 && !glassEnabled) {
+            1.dp
+        } else {
+            0.dp
+        }
     ) {
         CompositionLocalProvider(LocalMusicContentColor provides panelContentColor) {
             Column(
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                MusicProgress(state, onSeek)
+                MusicProgress(state, onSeek, glassEnabled = glassEnabled)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    PlaybackControls(state, onPlayPause, onPrevious, onNext, modifier = Modifier.weight(1f))
+                    PlaybackControls(
+                        state = state,
+                        onPlayPause = onPlayPause,
+                        onPrevious = onPrevious,
+                        onNext = onNext,
+                        modifier = Modifier.weight(1f),
+                        playButtonSizeDp = chromeSpec.playButtonSizeDp,
+                        skipButtonSizeDp = chromeSpec.skipButtonSizeDp
+                    )
                     AppTextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
                         AppText("歌词设置", color = MusicContentColor, fontSize = 12.sp)
                     }

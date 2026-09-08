@@ -11,6 +11,17 @@ internal fun shouldAnimateMusicWavyProgress(
     reduceMotion: Boolean
 ): Boolean = isPlaying && !isDragging && !reduceMotion
 
+internal fun shouldUseMusicWavyProgress(
+    glassEnabled: Boolean,
+    isPlaying: Boolean,
+    isDragging: Boolean,
+    reduceMotion: Boolean
+): Boolean = glassEnabled && shouldAnimateMusicWavyProgress(
+    isPlaying = isPlaying,
+    isDragging = isDragging,
+    reduceMotion = reduceMotion
+)
+
 internal fun resolveMusicProgressFraction(
     value: Float,
     rangeStart: Float,

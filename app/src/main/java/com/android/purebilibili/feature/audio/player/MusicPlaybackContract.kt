@@ -90,7 +90,8 @@ internal data class MusicPlayerUiState(
     val queue: List<MusicQueueItemUi> = emptyList(),
     val currentQueueIndex: Int = -1,
     val playMode: PlayMode = PlayMode.SEQUENTIAL,
-    val shuffleEnabled: Boolean = false
+    val shuffleEnabled: Boolean = false,
+    val playbackSpeed: Float = 1f
 ) {
     val queueControls: MusicQueueControlState
         get() = resolveMusicQueueControlState(

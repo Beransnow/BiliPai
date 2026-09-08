@@ -54,7 +54,8 @@ private data class AudioPlaybackSnapshot(
     val isPlaying: Boolean = false,
     val isBuffering: Boolean = false,
     val positionMs: Long = 0L,
-    val durationMs: Long = 0L
+    val durationMs: Long = 0L,
+    val playbackSpeed: Float = 1f
 )
 
 internal fun resolveAudioModeTrackTitle(
@@ -140,6 +141,13 @@ internal fun AudioModeMusicPlayer(
     var showSpeedMenu by remember { mutableStateOf(false) }
     var showShare by remember { mutableStateOf(false) }
     val engagementState by engagementViewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(engagementViewModel) {
+        engagementViewModel.events.collect { event ->
+            if (event is com.android.purebilibili.feature.video.viewmodel.VideoEngagementEvent.Message) {
+                viewModel.toast(event.text)
+            }
+        }
+    }
     val commentViewModel: VideoCommentViewModel = viewModel()
     val currentSpeed = player?.playbackParameters?.speed ?: 1f
 
@@ -232,7 +240,8 @@ internal fun AudioModeMusicPlayer(
             queue = queue,
             currentQueueIndex = currentIndex,
             playMode = playMode,
-            shuffleEnabled = shuffleEnabled
+            shuffleEnabled = shuffleEnabled,
+            playbackSpeed = playback.playbackSpeed
         ),
         onBack = onBack,
         onPlayPause = { player?.handleAudioModePlayPause() },
@@ -278,7 +287,13 @@ internal fun AudioModeMusicPlayer(
         onToggleOrientation = onToggleOrientation,
         orientationActionLabel = orientationActionLabel,
         isLiked = engagementState.isLiked,
-        onLikeClick = { engagementViewModel.toggleLike() },
+        onLikeClick = {
+            engagementViewModel.toggleLike(
+                aid = info.aid,
+                bvid = info.bvid,
+                currentlyLiked = engagementState.isLiked
+            )
+        },
         onCommentsClick = { showComments = true },
         isFavorited = engagementState.isFavorited,
         onFavoriteClick = { engagementViewModel.toggleFavorite() },
@@ -419,6 +434,7 @@ private fun Player?.readAudioPlaybackSnapshot(): AudioPlaybackSnapshot {
         isPlaying = player.isPlaying,
         isBuffering = player.playbackState == Player.STATE_BUFFERING,
         positionMs = player.currentPosition.coerceAtLeast(0L),
-        durationMs = player.duration.coerceAtLeast(0L)
+        durationMs = player.duration.coerceAtLeast(0L),
+        playbackSpeed = player.playbackParameters.speed
     )
 }
