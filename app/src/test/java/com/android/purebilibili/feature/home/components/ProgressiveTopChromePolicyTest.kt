@@ -130,7 +130,7 @@ class ProgressiveTopChromePolicyTest {
         assertTrue(search.contains("val resultTopPadding = resultChromePadding.calculateTopPadding()"))
         assertTrue(search.contains("top = resultTopPadding"))
         assertTrue(search.contains("if (!state.showResults)"))
-        assertTrue(search.contains("searchTopChromeGlass(dockShape)"))
+        assertTrue(search.contains("searchTopChromeGlass(inputShape, chromeSpec.inputHeightDp)"))
         assertTrue(search.contains("if (immersiveSearchChrome) Color.Transparent else searchTopBarHeaderColor"))
         assertTrue(watchLater.contains("watchLaterChromeSource?.modifier"))
         assertTrue(watchLater.contains("globalWallpaperAwareBackground(AppSurfaceTokens.groupedListContainer())"))

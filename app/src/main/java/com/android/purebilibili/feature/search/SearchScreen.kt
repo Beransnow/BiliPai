@@ -116,7 +116,9 @@ import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCa
 import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.HomeTopChromeRenderMode
 import com.android.purebilibili.feature.home.components.LocalLiquidGlassRenderConfig
-import com.android.purebilibili.feature.home.components.homeTopChromeSurface
+import com.android.purebilibili.feature.home.components.homeTopBottomBarMatchedSurface
+import com.android.purebilibili.feature.home.components.resolveFloatingDockGeometryScale
+import com.android.purebilibili.feature.home.components.resolveHomeTopEdgeButtonShape
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
@@ -1191,7 +1193,7 @@ fun SearchScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .then(searchChromeSource?.modifier ?: Modifier)
-                                .globalWallpaperAwareBackground()
+                        .globalWallpaperAwareBackground()
                                 .verticalPriorityHorizontalPagerSwipe(
                                     state = searchPagerState,
                                     enabled = true,
@@ -2057,7 +2059,7 @@ fun SearchScreen(
                     onDeleteHistory = viewModel::deleteHistory,
                     modifier = Modifier
                         .then(searchChromeSource?.modifier ?: Modifier)
-                                .globalWallpaperAwareBackground()
+                        .globalWallpaperAwareBackground()
                         .graphicsLayer { alpha = exitContentAlpha }
                         .then(
                             if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier
@@ -2235,22 +2237,25 @@ fun SearchTopBar(
     } else {
         HomeTopChromeRenderMode.PLAIN
     }
-    fun Modifier.searchTopChromeGlass(shape: androidx.compose.ui.graphics.Shape): Modifier {
+    fun Modifier.searchTopChromeGlass(
+        shape: androidx.compose.ui.graphics.Shape,
+        controlHeightDp: Int,
+    ): Modifier {
         if (!glassActive) return this
-        return homeTopChromeSurface(
+        return homeTopBottomBarMatchedSurface(
             renderMode = glassRenderMode,
             shape = shape,
-            surfaceColor = Color.Transparent,
             hazeState = null,
             miuixBackdrop = miuixBackdrop,
-            liquidStyle = com.android.purebilibili.core.store.LiquidGlassStyle.CLASSIC,
+            liquidGlassStyle = com.android.purebilibili.core.store.LiquidGlassStyle.CLASSIC,
             liquidGlassTuning = liquidGlassRenderConfig.tuning,
             liquidGlassPreset = liquidGlassRenderConfig.preset,
             motionTier = MotionTier.Normal,
             isScrolling = isScrollInProgressProvider(),
             isTransitionRunning = false,
             forceLowBlurBudget = false,
-            useProgressiveTopBlur = false,
+            drawShellLens = true,
+            shellLensIntensity = resolveFloatingDockGeometryScale(controlHeightDp.toFloat()),
         )
     }
 
@@ -2345,23 +2350,22 @@ fun SearchTopBar(
         Column {
             Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
 
-            val dockShape = resolveSharedBottomBarCapsuleShape()
             Row(
                 modifier = Modifier
                     .responsiveContentWidth()
+                    .heightIn(min = topBarRowMinHeightDp.dp)
                     .padding(horizontal = 12.dp, vertical = 8.dp)
                     .padding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues())
-                    .then(entryMotionModifier)
-                    .heightIn(min = topBarRowMinHeightDp.dp)
-                    .searchTopChromeGlass(dockShape)
-                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                    .then(entryMotionModifier),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val inputShape = resolveSearchInputShape(topChromePolicy)
-                val actionShape = AppShapes.container(chromeSpec.actionShapeLevel)
+                val actionShape = resolveHomeTopEdgeButtonShape(topChromePolicy)
                 SearchTopBarIconButton(
                     onClick = onBack,
-                    modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
+                    modifier = Modifier
+                        .size(chromeSpec.clearActionSizeDp.dp)
+                        .searchTopChromeGlass(actionShape, chromeSpec.clearActionSizeDp)
                 ) {
                     AppIcon(
                         backIcon,
@@ -2401,6 +2405,7 @@ fun SearchTopBar(
                         .weight(1f)
                         .fillMaxWidth()
                         .height(chromeSpec.inputHeightDp.dp)
+                        .searchTopChromeGlass(inputShape, chromeSpec.inputHeightDp)
                         .onFocusChanged { onFocusChanged(it.isFocused) }
                 )
 
@@ -2411,6 +2416,7 @@ fun SearchTopBar(
                     enabled = canSubmit,
                     modifier = Modifier
                         .size(chromeSpec.submitActionSizeDp.dp)
+                        .searchTopChromeGlass(actionShape, chromeSpec.submitActionSizeDp)
                         .then(
                             if (glassActive) {
                                 Modifier
@@ -2439,10 +2445,14 @@ fun SearchTopBar(
                     )
                 }
 
+                Spacer(modifier = Modifier.width(chromeSpec.horizontalGapDp.dp))
+
                 SearchTopBarIconButton(
                     onClick = onClearQuery,
                     enabled = query.isNotEmpty(),
-                    modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
+                    modifier = Modifier
+                        .size(chromeSpec.clearActionSizeDp.dp)
+                        .searchTopChromeGlass(actionShape, chromeSpec.clearActionSizeDp)
                 ) {
                     AppIcon(
                         clearIcon,
