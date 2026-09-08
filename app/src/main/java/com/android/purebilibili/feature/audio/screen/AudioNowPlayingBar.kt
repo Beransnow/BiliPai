@@ -27,19 +27,26 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.motion.rememberSystemReduceMotion
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.android.purebilibili.feature.home.components.LiquidGlassTuning
+import com.android.purebilibili.feature.home.components.LocalLiquidGlassRenderConfig
 import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
+import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
 import kotlin.math.abs
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 
 internal data class AudioNowPlayingBarState(
     val title: String,
@@ -57,14 +64,26 @@ internal fun AudioNowPlayingBar(
     onSkipPrevious: () -> Unit,
     onDismiss: () -> Unit,
     glassEnabled: Boolean = LocalSettingsLiquidGlassEnabled.current,
+    miuixBackdrop: MiuixBackdrop? = null,
+    liquidGlassTuning: LiquidGlassTuning = LocalLiquidGlassRenderConfig.current.tuning,
+    liftAboveBottomBar: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val chrome = resolveMusicPlayerChromeSpec(
         uiStyle = LocalAppUiStyle.current,
         glassEnabled = glassEnabled
     )
-    val shape = AppShapes.container(ContainerLevel.Card)
+    val shape = resolveSharedBottomBarCapsuleShape()
     val containerColor = AppSurfaceTokens.surfaceContainer()
+    val glassActive = glassEnabled && miuixBackdrop != null
+    val reduceMotion = rememberSystemReduceMotion()
+    val coverRotationDegrees = rememberMusicArtworkRotationDegrees(
+        active = shouldRotateMusicArtwork(
+            isPlaying = state.isPlaying,
+            reduceMotion = reduceMotion
+        ),
+        contentKey = state.coverUrl
+    )
     AppSurface(
         modifier = modifier
             .fillMaxWidth()
@@ -72,20 +91,15 @@ internal fun AudioNowPlayingBar(
             .padding(
                 start = chrome.horizontalPaddingDp.dp,
                 end = chrome.horizontalPaddingDp.dp,
-                bottom = 72.dp
+                bottom = if (liftAboveBottomBar) 72.dp else 8.dp
             )
-            .then(
-                if (glassEnabled) {
-                    Modifier.biliPaiFloatingDockShell(
-                        backdrop = null,
-                        containerColor = containerColor,
-                        pressProgress = 0f,
-                        shape = shape,
-                        enabled = false
-                    )
-                } else {
-                    Modifier
-                }
+            .biliPaiFloatingDockShell(
+                backdrop = miuixBackdrop,
+                containerColor = containerColor,
+                pressProgress = 0f,
+                shape = shape,
+                enabled = glassActive,
+                liquidGlassTuning = liquidGlassTuning,
             )
             .clickable(onClick = onExpand)
             .audioNowPlayingSkipGesture(
@@ -93,8 +107,8 @@ internal fun AudioNowPlayingBar(
                 onSkipPrevious = onSkipPrevious
             ),
         shape = shape,
-        color = containerColor,
-        tonalElevation = if (chrome.uiStyle == com.android.purebilibili.core.theme.AppUiStyle.MATERIAL3 && !glassEnabled) {
+        color = if (glassActive) Color.Transparent else containerColor,
+        tonalElevation = if (chrome.uiStyle == com.android.purebilibili.core.theme.AppUiStyle.MATERIAL3 && !glassActive) {
             3.dp
         } else {
             0.dp
@@ -112,6 +126,7 @@ internal fun AudioNowPlayingBar(
                 contentDescription = null,
                 modifier = Modifier
                     .size(44.dp)
+                    .graphicsLayer { rotationZ = coverRotationDegrees() }
                     .clip(if (chrome.coverShapeIsCircle) CircleShape else AppShapes.container(ContainerLevel.Field)),
                 contentScale = ContentScale.Crop
             )

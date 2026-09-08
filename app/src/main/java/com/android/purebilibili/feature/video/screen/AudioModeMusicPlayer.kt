@@ -1,3 +1,5 @@
+@file:androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+
 package com.android.purebilibili.feature.video.screen
 
 import androidx.compose.foundation.background
@@ -20,7 +22,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import com.android.purebilibili.core.player.PlayerVolumeController
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.Page
 import com.android.purebilibili.feature.audio.player.AudioNowPlayingSession
@@ -29,6 +33,7 @@ import com.android.purebilibili.feature.audio.player.MusicLyricCandidateUi
 import com.android.purebilibili.feature.audio.player.MusicQueueItemUi
 import com.android.purebilibili.feature.audio.screen.MusicPlayerContent
 import com.android.purebilibili.feature.audio.viewmodel.MusicViewModel
+import com.android.purebilibili.feature.video.player.MiniPlayerManager
 import com.android.purebilibili.feature.video.player.PlaylistManager
 import com.android.purebilibili.feature.video.playback.audio.resolveAudioQualityControlPresentation
 import com.android.purebilibili.feature.video.share.VideoShareSheet
@@ -182,6 +187,22 @@ internal fun AudioModeMusicPlayer(
     }
     val currentIndex = playlistIndex.takeIf { it in queue.indices } ?: 0
     val coverUrl = queue.getOrNull(currentIndex)?.coverUrl ?: FormatUtils.fixImageUrl(info.pic)
+    val audioNowPlayingBarEnabled by SettingsManager
+        .getAudioNowPlayingBarEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
+    LaunchedEffect(player, info.bvid, info.cid, displayTitle, coverUrl, audioNowPlayingBarEnabled) {
+        if (!audioNowPlayingBarEnabled) return@LaunchedEffect
+        val exoPlayer = player as? ExoPlayer ?: return@LaunchedEffect
+        MiniPlayerManager.getInstance(context).setVideoInfo(
+            bvid = info.bvid,
+            title = displayTitle,
+            cover = coverUrl,
+            owner = info.owner.name,
+            cid = info.cid,
+            aid = info.aid,
+            externalPlayer = exoPlayer
+        )
+    }
     val audioQualityPresentation = remember(
         successState.availableAudioQualities,
         successState.selectedAudioQuality

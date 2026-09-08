@@ -42,7 +42,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.feature.article.ArticleDetailScreen
 import com.android.purebilibili.feature.article.shouldUseArticleNoOpRouteTransition
 import com.android.purebilibili.feature.audio.library.resolveListenVideoPlaybackSelection
+import com.android.purebilibili.feature.audio.player.AudioNowPlayingSession
+import com.android.purebilibili.feature.audio.screen.AudioNowPlayingBar
+import com.android.purebilibili.feature.audio.screen.AudioNowPlayingBarState
 import com.android.purebilibili.feature.audio.screen.ListenVideoRoute
+import com.android.purebilibili.feature.audio.screen.resolveAudioNowPlayingVisible
 import com.android.purebilibili.feature.home.HomeVideoClickRequest
 import com.android.purebilibili.feature.home.HomeVideoClickSource
 import com.android.purebilibili.feature.home.HomeScreen
@@ -3987,6 +3991,56 @@ fun AppNavigation(
                         }
                     }
                 }
+            }
+
+            val audioNowPlayingBarEnabled by SettingsManager
+                .getAudioNowPlayingBarEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
+            val audioNowPlayingActive by AudioNowPlayingSession.active.collectAsStateWithLifecycle()
+            val audioPlaylist by PlaylistManager.playlist.collectAsStateWithLifecycle()
+            val audioPlaylistIndex by PlaylistManager.currentIndex.collectAsStateWithLifecycle()
+            val audioNowPlayingItem = audioPlaylist.getOrNull(audioPlaylistIndex)
+            val showAudioNowPlaying = resolveAudioNowPlayingVisible(
+                sessionActive = audioNowPlayingActive,
+                isOnAudioModeScreen = currentNavigation3Key is BiliPaiNavKey.AudioMode,
+                isInPipMode = isInPipMode,
+                hasCurrentItem = audioNowPlayingItem != null,
+                barEnabled = audioNowPlayingBarEnabled
+            )
+            if (showAudioNowPlaying && audioNowPlayingItem != null) {
+                val playbackManager = miniPlayerManager ?: MiniPlayerManager.getInstance(context)
+                AudioNowPlayingBar(
+                    state = AudioNowPlayingBarState(
+                        title = audioNowPlayingItem.title,
+                        artist = audioNowPlayingItem.owner,
+                        coverUrl = audioNowPlayingItem.cover,
+                        isPlaying = playbackManager.isPlaying
+                    ),
+                    onExpand = {
+                        pushNavigation3Route(
+                            ScreenRoutes.AudioMode.createRoute(
+                                bvid = audioNowPlayingItem.bvid,
+                                cid = audioNowPlayingItem.cid
+                            )
+                        )
+                    },
+                    onPlayPause = { playbackManager.togglePlayPause() },
+                    onSkipNext = { playbackManager.playNext() },
+                    onSkipPrevious = { playbackManager.playPrevious() },
+                    onDismiss = {
+                        if (playbackManager.isPlaying) {
+                            playbackManager.togglePlayPause()
+                        }
+                        AudioNowPlayingSession.dismiss()
+                    },
+                    glassEnabled = effectiveHomeSettings.androidNativeLiquidGlassEnabled,
+                    miuixBackdrop = bottomBarBackdrop,
+                    liquidGlassTuning = liquidGlassRenderConfig.tuning,
+                    liftAboveBottomBar = bottomBarCanMount,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .zIndex(2f)
+                )
             }
 
             // BiliPai MainScreenBackHandler: onBackCompleted → animateToPage(home)

@@ -1595,6 +1595,7 @@ object SettingsManager {
     private val KEY_BACKGROUND_PLAYBACK_ENABLED = booleanPreferencesKey("background_playback_enabled")
     private val KEY_AUDIO_FOCUS_ENABLED = booleanPreferencesKey("audio_focus_enabled")
     private val KEY_AUDIO_MODE_AUTO_PIP_ENABLED = booleanPreferencesKey("audio_mode_auto_pip_enabled")
+    private val KEY_AUDIO_NOW_PLAYING_BAR_ENABLED = booleanPreferencesKey("audio_now_playing_bar_enabled")
     private val KEY_VIDEO_AI_SUMMARY_ENTRY_ENABLED = booleanPreferencesKey("video_ai_summary_entry_enabled")
     private val KEY_VIDEO_NOTE_ENABLED = booleanPreferencesKey("video_note_enabled")
     private val KEY_VIDEO_NOTE_DEFAULT_COLLAPSED = booleanPreferencesKey("video_note_default_collapsed")
@@ -5984,6 +5985,15 @@ object SettingsManager {
     fun getAudioModeAutoPipEnabledSync(context: Context): Boolean {
         return context.getSharedPreferences("mini_player", Context.MODE_PRIVATE)
             .getBoolean("audio_mode_auto_pip_enabled", false)
+    }
+
+    fun getAudioNowPlayingBarEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
+        .map { preferences -> preferences[KEY_AUDIO_NOW_PLAYING_BAR_ENABLED] ?: true }
+
+    suspend fun setAudioNowPlayingBarEnabled(context: Context, value: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_AUDIO_NOW_PLAYING_BAR_ENABLED] = value
+        }
     }
 
     internal fun shouldEnableAudioModeAutoPipToggle(mode: MiniPlayerMode): Boolean {

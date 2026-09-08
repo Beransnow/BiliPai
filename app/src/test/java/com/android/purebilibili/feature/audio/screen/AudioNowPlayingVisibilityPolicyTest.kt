@@ -13,7 +13,8 @@ class AudioNowPlayingVisibilityPolicyTest {
                 sessionActive = true,
                 isOnAudioModeScreen = false,
                 isInPipMode = false,
-                hasCurrentItem = true
+                hasCurrentItem = true,
+                barEnabled = true
             )
         )
     }
@@ -25,7 +26,8 @@ class AudioNowPlayingVisibilityPolicyTest {
                 sessionActive = true,
                 isOnAudioModeScreen = true,
                 isInPipMode = false,
-                hasCurrentItem = true
+                hasCurrentItem = true,
+                barEnabled = true
             )
         )
         assertFalse(
@@ -33,7 +35,8 @@ class AudioNowPlayingVisibilityPolicyTest {
                 sessionActive = true,
                 isOnAudioModeScreen = false,
                 isInPipMode = true,
-                hasCurrentItem = true
+                hasCurrentItem = true,
+                barEnabled = true
             )
         )
         assertFalse(
@@ -41,7 +44,8 @@ class AudioNowPlayingVisibilityPolicyTest {
                 sessionActive = true,
                 isOnAudioModeScreen = false,
                 isInPipMode = false,
-                hasCurrentItem = false
+                hasCurrentItem = false,
+                barEnabled = true
             )
         )
         assertFalse(
@@ -49,7 +53,17 @@ class AudioNowPlayingVisibilityPolicyTest {
                 sessionActive = false,
                 isOnAudioModeScreen = false,
                 isInPipMode = false,
-                hasCurrentItem = true
+                hasCurrentItem = true,
+                barEnabled = true
+            )
+        )
+        assertFalse(
+            resolveAudioNowPlayingVisible(
+                sessionActive = true,
+                isOnAudioModeScreen = false,
+                isInPipMode = false,
+                hasCurrentItem = true,
+                barEnabled = false
             )
         )
     }

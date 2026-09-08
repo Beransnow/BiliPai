@@ -4,7 +4,8 @@ internal fun resolveAudioNowPlayingVisible(
     sessionActive: Boolean,
     isOnAudioModeScreen: Boolean,
     isInPipMode: Boolean,
-    hasCurrentItem: Boolean
+    hasCurrentItem: Boolean,
+    barEnabled: Boolean
 ): Boolean {
-    return sessionActive && !isOnAudioModeScreen && !isInPipMode && hasCurrentItem
+    return barEnabled && sessionActive && !isOnAudioModeScreen && !isInPipMode && hasCurrentItem
 }

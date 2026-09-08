@@ -371,6 +371,7 @@ internal fun MusicPlayerContent(
                                 ),
                                 chromeSpec = chromeSpec,
                                 glassEnabled = glassEnabled,
+                                reduceMotion = effectiveReduceMotion,
                                 onPlayPause = onPlayPause,
                                 onSeek = { positionMs ->
                                     progressSeekRevision += 1
@@ -469,6 +470,7 @@ internal fun MusicPlayerContent(
                     ),
                     chromeSpec = chromeSpec,
                     glassEnabled = glassEnabled,
+                    reduceMotion = effectiveReduceMotion,
                     onPlayPause = onPlayPause,
                     onSeek = { positionMs ->
                         progressSeekRevision += 1
@@ -815,6 +817,7 @@ private fun PlayerPage(
     artworkSizeDp: Int,
     chromeSpec: MusicPlayerChromeSpec,
     glassEnabled: Boolean,
+    reduceMotion: Boolean,
     onPlayPause: () -> Unit,
     onSeek: (Long) -> Unit,
     onPrevious: (() -> Unit)?,
@@ -854,7 +857,11 @@ private fun PlayerPage(
                 coverUrl = state.coverUrl,
                 bitmap = artworkBitmap,
                 modifier = Modifier.size(artworkSizeDp.dp),
-                shape = if (chromeSpec.coverShapeIsCircle) CircleShape else AppShapes.container(ContainerLevel.Card)
+                shape = if (chromeSpec.coverShapeIsCircle) CircleShape else AppShapes.container(ContainerLevel.Card),
+                rotate = shouldRotateMusicArtwork(
+                    isPlaying = state.isPlaying,
+                    reduceMotion = reduceMotion
+                )
             )
         }
         Spacer(Modifier.height(20.dp))
@@ -1036,10 +1043,16 @@ private fun MusicArtwork(
     coverUrl: String,
     bitmap: ImageBitmap?,
     modifier: Modifier,
-    shape: Shape = CircleShape
+    shape: Shape = CircleShape,
+    rotate: Boolean = false
 ) {
+    val rotationDegrees = rememberMusicArtworkRotationDegrees(
+        active = rotate,
+        contentKey = coverUrl
+    )
     Box(
         modifier = modifier
+            .graphicsLayer { rotationZ = rotationDegrees() }
             .clip(shape)
             .background(
                 Brush.linearGradient(

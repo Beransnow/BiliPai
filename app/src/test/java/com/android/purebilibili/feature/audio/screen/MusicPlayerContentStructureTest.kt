@@ -54,6 +54,8 @@ class MusicPlayerContentStructureTest {
 
         assertTrue(playerPage.contains("MusicSecondaryControls("))
         assertTrue(playerPage.contains("CircleShape"))
+        assertTrue(playerPage.contains("shouldRotateMusicArtwork("))
+        assertTrue(source.contains("rememberMusicArtworkRotationDegrees("))
         assertTrue(playerPage.contains("onLikeClick"))
         assertTrue(source.contains("Icons.Outlined.Shuffle"))
         assertTrue(source.contains("Icons.Outlined.Repeat"))
