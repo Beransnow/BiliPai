@@ -64,6 +64,7 @@ fun SearchTrendingScreen(
     val pullRefreshState = rememberPullToRefreshState()
 
     AppScaffold(
+        blurContentReady = !state.isLoading,
         topBar = {
             AppTopBar(
                 title = "bilibili 热搜",

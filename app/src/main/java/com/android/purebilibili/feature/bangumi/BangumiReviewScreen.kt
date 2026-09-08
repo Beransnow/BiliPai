@@ -130,6 +130,7 @@ fun BangumiReviewScreen(
     }
 
     AppScaffold(
+        blurContentReady = !loading,
         topBar = {
             AppTopBar(
                 title = title.ifBlank { "点评" },

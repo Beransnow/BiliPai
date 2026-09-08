@@ -20,7 +20,6 @@ import android.content.Context
 import android.graphics.RenderEffect as AndroidRenderEffect
 import android.graphics.Shader
 import android.os.Build
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -540,7 +539,7 @@ fun DynamicCommentSheet(
                 }
             }
             }
-            AnimatedVisibility(
+            androidx.compose.animation.AnimatedVisibility(
                 visible = hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL &&
                     subReplyState.rootReply != null,
                 enter = fadeIn(animationSpec = tween(220)) +

@@ -103,7 +103,12 @@ fun TopicDetailScreen(
     val liquidGlassEnabled = rememberAppChromeLiquidGlassEnabled(
         androidNativeEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled,
     )
-    val topicBackdrop = if (liquidGlassEnabled) rememberLayerBackdrop() else null
+    val showInitialSkeleton = shouldShowTopicInitialSkeleton(
+        isLoading = state.isLoading,
+        hasDetails = state.details != null,
+        itemCount = state.items.size,
+    )
+    val topicBackdrop = if (liquidGlassEnabled && !showInitialSkeleton) rememberLayerBackdrop() else null
     var showPublishComposer by remember { mutableStateOf(false) }
 
     LaunchedEffect(topicId) {
@@ -111,6 +116,7 @@ fun TopicDetailScreen(
     }
 
     AppScaffold(
+        blurContentReady = !showInitialSkeleton,
         contentWindowInsets = WindowInsets.statusBars,
         topBar = {
             AppTopBar(
@@ -133,11 +139,6 @@ fun TopicDetailScreen(
             )
         },
     ) { padding ->
-        val showInitialSkeleton = shouldShowTopicInitialSkeleton(
-            isLoading = state.isLoading,
-            hasDetails = state.details != null,
-            itemCount = state.items.size,
-        )
         Box(
             modifier = Modifier
                 .fillMaxSize()

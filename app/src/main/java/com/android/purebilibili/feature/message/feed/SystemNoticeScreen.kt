@@ -140,6 +140,7 @@ fun SystemNoticeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AppScaffold(
+        blurContentReady = !uiState.isLoading,
         topBar = {
             AppTopBar(
                 title = "系统通知",

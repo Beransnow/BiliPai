@@ -173,6 +173,7 @@ fun LiveAreaDetailScreen(
     }
 
     AppScaffold(
+        blurContentReady = !isLoading,
         modifier = Modifier.fillMaxSize(),
         topBar = {
             Column {

@@ -119,9 +119,6 @@ import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
-import top.yukonga.miuix.kmp.blur.LayerBackdrop
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
@@ -349,7 +346,12 @@ fun SpaceScreen(
         enabled = spaceThemeConfig.progressiveTopBlurEnabled && !spaceThemeConfig.headerBlurEnabled,
         hasBackdrop = true,
     ) && !isLowBlurBudgetForced()
-    val spaceChromeBackdrop = if (spaceProgressiveBlur) rememberLayerBackdrop() else null
+    val spaceChromeSource = if (spaceProgressiveBlur && uiState is SpaceUiState.Success) {
+        com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
+    } else {
+        null
+    }
+    val spaceChromeBackdrop = spaceChromeSource?.takeIf { it.isReady }?.backdrop
     AppScaffold(
         topBar = {
             BiliPaiImmersiveTopBar(
@@ -654,7 +656,7 @@ fun SpaceScreen(
                             },
                             sharedTransitionScope = sharedTransitionScope,
                             animatedVisibilityScope = animatedVisibilityScope,
-                            chromeBackdrop = spaceChromeBackdrop,
+                            chromeCaptureModifier = spaceChromeSource?.modifier ?: Modifier,
                             chromeTopInset = scaffoldPadding.calculateTopPadding(),
                             hazeState = hazeState,
                             onPinnedChromeHeightChanged = { heightPx ->
@@ -978,7 +980,7 @@ private fun SpaceContent(
     onSpaceDynamicDeleteClick: (DynamicDeleteAction) -> Unit,
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?,
-    chromeBackdrop: LayerBackdrop? = null,
+    chromeCaptureModifier: Modifier = Modifier,
     chromeTopInset: Dp = 0.dp,
     hazeState: HazeState? = null,
     onPinnedChromeHeightChanged: (Int) -> Unit = {},
@@ -1243,11 +1245,7 @@ private fun SpaceContent(
             modifier = Modifier
                 .fillMaxSize()
                 .then(
-                    if (chromeBackdrop != null) {
-                        Modifier.layerBackdrop(chromeBackdrop)
-                    } else {
-                        Modifier
-                    }
+                    chromeCaptureModifier
                 )
                 .then(if (hazeState != null) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
                 .globalWallpaperAwareBackground(MaterialTheme.colorScheme.surface),

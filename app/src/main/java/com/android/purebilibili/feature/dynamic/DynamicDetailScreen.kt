@@ -161,6 +161,7 @@ fun DynamicDetailScreen(
     var previewSourceRect by remember { mutableStateOf<Rect?>(null) }
     var previewTextContent by remember { mutableStateOf<ImagePreviewTextContent?>(null) }
     AppScaffold(
+        blurContentReady = uiState !is DynamicDetailUiState.Loading,
         topBar = {
             AppTopBar(
                 title = screenTitle,

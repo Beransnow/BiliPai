@@ -684,6 +684,7 @@ fun FollowingListScreen(
     var groupDialogMixed by remember { mutableStateOf(false) }
 
     AppScaffold(
+        blurContentReady = uiState !is FollowingListUiState.Loading,
         snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
         topBar = {
             Column {

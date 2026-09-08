@@ -183,6 +183,7 @@ fun LikeMeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AppScaffold(
+        blurContentReady = !uiState.isLoading,
         topBar = {
             AppTopBar(
                 title = "收到的赞",

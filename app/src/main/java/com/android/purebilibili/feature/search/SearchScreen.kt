@@ -120,8 +120,6 @@ import com.android.purebilibili.feature.home.components.homeTopChromeSurface
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -1022,11 +1020,12 @@ fun SearchScreen(
                 .globalWallpaperAwareBackground()
                 .padding(padding)
         ) {
-            val searchChromeBackdrop = if (progressiveTopBlurEnabled || effectiveLiquidGlassEnabled) {
-                rememberLayerBackdrop()
+            val searchChromeSource = if ((progressiveTopBlurEnabled || effectiveLiquidGlassEnabled) && !state.isSearching) {
+                com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
             } else {
                 null
             }
+            val searchChromeBackdrop = searchChromeSource?.takeIf { it.isReady }?.backdrop
             val immersiveSearchChrome = shouldUseBiliPaiProgressiveTopBlur(
                 enabled = progressiveTopBlurEnabled,
                 hasBackdrop = searchChromeBackdrop != null,
@@ -1191,7 +1190,8 @@ fun SearchScreen(
                             userScrollEnabled = false,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .then(if (searchChromeBackdrop != null) Modifier.layerBackdrop(searchChromeBackdrop) else Modifier)
+                                .then(searchChromeSource?.modifier ?: Modifier)
+                                .globalWallpaperAwareBackground()
                                 .verticalPriorityHorizontalPagerSwipe(
                                     state = searchPagerState,
                                     enabled = true,
@@ -2056,7 +2056,8 @@ fun SearchScreen(
                     onClearHistory = viewModel::clearHistory,
                     onDeleteHistory = viewModel::deleteHistory,
                     modifier = Modifier
-                        .then(if (searchChromeBackdrop != null) Modifier.layerBackdrop(searchChromeBackdrop) else Modifier)
+                        .then(searchChromeSource?.modifier ?: Modifier)
+                                .globalWallpaperAwareBackground()
                         .graphicsLayer { alpha = exitContentAlpha }
                         .then(
                             if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier

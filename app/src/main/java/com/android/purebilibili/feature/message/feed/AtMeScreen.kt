@@ -144,6 +144,7 @@ fun AtMeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AppScaffold(
+        blurContentReady = !uiState.isLoading,
         topBar = {
             AppTopBar(
                 title = "@我",

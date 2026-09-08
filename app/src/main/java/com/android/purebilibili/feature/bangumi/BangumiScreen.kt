@@ -86,6 +86,7 @@ fun BangumiScreen(
     LocalNavigationBackHandler(enabled = true, onBackCompleted = handleBack)
 
     AppScaffold(
+        blurContentReady = shouldCaptureBangumiHubChrome(state),
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0.dp),
         snackbarHost = { SnackbarHost(snackbarHostState) },

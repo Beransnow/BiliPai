@@ -13,8 +13,7 @@ import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource
 
 /** List pages keep their viewport full height and apply scaffold insets as scroll content padding. */
 @Composable
@@ -26,6 +25,8 @@ internal fun ImmersiveAppScaffold(
     snackbarHost: @Composable () -> Unit = {},
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
+    // Keep false until any outgoing skeleton transition has left composition.
+    blurContentReady: Boolean = true,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val config = LocalAppThemeConfig.current
@@ -33,16 +34,18 @@ internal fun ImmersiveAppScaffold(
         enabled = config.progressiveTopBlurEnabled && !config.headerBlurEnabled && topBar != null,
         hasBackdrop = true,
     ) && !isLowBlurBudgetForced()
-    val backdrop = if (progressive) rememberLayerBackdrop() else null
+    val source = if (progressive && blurContentReady) rememberChromeBackdropSource() else null
+    val backdrop = source?.takeIf { it.isReady }?.backdrop
+    val blurActive = progressive && backdrop != null
     AppScaffold(
         modifier = modifier,
         topBar = {
             if (topBar != null) {
                 BiliPaiImmersiveTopBar(
                     backdrop = backdrop,
-                    enabled = progressive,
+                    enabled = blurActive,
                     modifier = Modifier.background(
-                        if (progressive) Color.Transparent else globalWallpaperAwareChromeColor(containerColor)
+                        if (blurActive) Color.Transparent else globalWallpaperAwareChromeColor(containerColor)
                     ),
                     content = topBar,
                 )
@@ -57,7 +60,7 @@ internal fun ImmersiveAppScaffold(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier)
+                .then(source?.modifier ?: Modifier)
                 .globalWallpaperAwareBackground(containerColor),
         ) {
             content(padding)

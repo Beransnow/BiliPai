@@ -150,6 +150,7 @@ fun ReplyMeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     AppScaffold(
+        blurContentReady = !uiState.isLoading,
         topBar = {
             AppTopBar(
                 title = "回复我的",

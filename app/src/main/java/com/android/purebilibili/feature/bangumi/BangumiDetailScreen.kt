@@ -86,6 +86,7 @@ fun BangumiDetailScreen(
     }
     
     AppScaffold(
+        blurContentReady = detailState !is BangumiDetailState.Loading,
         topBar = {
             AppTopBar(
                 title = "番剧详情",

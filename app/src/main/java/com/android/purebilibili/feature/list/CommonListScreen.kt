@@ -169,8 +169,6 @@ import com.android.purebilibili.feature.video.player.PlaylistSession
 import com.android.purebilibili.core.util.resolveScrollToTopPlan
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 internal enum class FavoriteContentMode {
     BASE_LIST,
@@ -793,7 +791,21 @@ fun CommonListScreen(
     } else {
         null
     }
-    val commonListChromeBackdrop = if (isProgressiveTopBlurEnabled || liquidGlassEnabled) rememberLayerBackdrop() else null
+    val loadingChromeContent = when {
+        favoriteViewModel != null && isSearchDestination && searchQuery.isNotBlank() ->
+            favoriteSearchUiState.isLoading && favoriteSearchUiState.items.isEmpty()
+        favoriteContentMode == FavoriteContentMode.PAGER ->
+            selectedFolderUiState.isLoading && selectedFolderUiState.items.isEmpty()
+        favoriteContentMode == FavoriteContentMode.SINGLE_FOLDER ->
+            singleFolderUiState.isLoading && singleFolderUiState.items.isEmpty()
+        else -> state.isLoading && state.items.isEmpty()
+    }
+    val commonListChromeSource = if ((isProgressiveTopBlurEnabled || liquidGlassEnabled) && !loadingChromeContent) {
+        com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
+    } else {
+        null
+    }
+    val commonListChromeBackdrop = commonListChromeSource?.takeIf { it.isReady }?.backdrop
     val videoCardAppearance = remember(homeSettings, liquidGlassEnabled) {
         resolveCommonListVideoCardAppearance(
             homeSettings = homeSettings,
@@ -837,14 +849,15 @@ fun CommonListScreen(
     )
 
     // 决定顶栏背景 (使用私有的 localHazeState)
-    val useProgressiveHeaderBlur = shouldUseBiliPaiProgressiveTopBlur(
+    val progressiveHeaderRequested = shouldUseBiliPaiProgressiveTopBlur(
         enabled = isProgressiveTopBlurEnabled,
-        hasBackdrop = commonListChromeBackdrop != null,
+        hasBackdrop = true,
     ) && !com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced()
+    val useProgressiveHeaderBlur = progressiveHeaderRequested && commonListChromeBackdrop != null
     val commonListScrollUnderHeader = shouldScrollCommonListUnderHeader(
         isHistoryPage = historyViewModel != null,
         headerCollapseEnabled = commonListHeaderCollapseEnabled,
-        captureScrollableContent = useProgressiveHeaderBlur,
+        captureScrollableContent = progressiveHeaderRequested,
     )
     val topBarBackgroundModifier = if (useProgressiveHeaderBlur) {
         Modifier.fillMaxWidth()
@@ -925,11 +938,7 @@ fun CommonListScreen(
             val contentModifier = Modifier
                 .fillMaxSize()
                 .then(
-                    if (commonListChromeBackdrop != null) {
-                        Modifier.layerBackdrop(commonListChromeBackdrop)
-                    } else {
-                        Modifier
-                    }
+                    commonListChromeSource?.modifier ?: Modifier
                 )
                 .then(
                     if (localHazeState != null) {

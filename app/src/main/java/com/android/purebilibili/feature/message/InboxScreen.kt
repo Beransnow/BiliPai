@@ -73,6 +73,7 @@ fun InboxScreen(
     }
 
     AppScaffold(
+        blurContentReady = !uiState.isLoading,
         topBar = {
             AppTopBar(
                 title = "消息",

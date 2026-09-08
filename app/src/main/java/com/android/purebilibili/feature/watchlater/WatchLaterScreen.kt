@@ -119,8 +119,6 @@ import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.Search
 import com.android.purebilibili.core.util.FormatUtils
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 // 辅助函数：格式化时长
 private fun formatDuration(seconds: Int): String {
@@ -664,11 +662,12 @@ fun WatchLaterScreen(
     )
     val appThemeConfig = com.android.purebilibili.core.ui.LocalAppThemeConfig.current
     val hazeState = if (appThemeConfig.headerBlurEnabled) rememberRecoverableHazeState() else null
-    val watchLaterChromeBackdrop = if (appThemeConfig.progressiveTopBlurEnabled || appThemeConfig.liquidGlassEnabled) {
-        rememberLayerBackdrop()
+    val watchLaterChromeSource = if ((appThemeConfig.progressiveTopBlurEnabled || appThemeConfig.liquidGlassEnabled) && !state.isLoading) {
+        com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
     } else {
         null
     }
+    val watchLaterChromeBackdrop = watchLaterChromeSource?.takeIf { it.isReady }?.backdrop
     val progressiveChromeActive = shouldUseBiliPaiProgressiveTopBlur(
         enabled = appThemeConfig.progressiveTopBlurEnabled,
         hasBackdrop = watchLaterChromeBackdrop != null,
@@ -984,7 +983,7 @@ fun WatchLaterScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .then(if (watchLaterChromeBackdrop != null) Modifier.layerBackdrop(watchLaterChromeBackdrop) else Modifier)
+                .then(watchLaterChromeSource?.modifier ?: Modifier)
                 .then(
                     if (hazeState != null) {
                         Modifier.hazeSourceCompat(state = hazeState)

@@ -975,26 +975,25 @@ fun HomeScreen(
         null
     }
     val appThemeConfig = com.android.purebilibili.core.ui.LocalAppThemeConfig.current
+    val chromeCategoryStateFlow = remember(viewModel, currentCategory, popularSubCategory) {
+        if (currentCategory == HomeCategory.POPULAR) {
+            viewModel.getPopularCategoryState(popularSubCategory)
+        } else {
+            viewModel.getCategoryState(currentCategory)
+        }
+    }
+    val chromeCategoryState by chromeCategoryStateFlow.collectAsStateWithLifecycle()
+    val chromeContentReady = !(chromeCategoryState.isLoading &&
+        chromeCategoryState.videos.isEmpty() && chromeCategoryState.liveRooms.isEmpty())
     val shouldCaptureHomeChromeBackdrop = isLiquidGlassEnabled ||
         isHeaderBlurEnabled || isBottomBarBlurEnabled || appThemeConfig.progressiveTopBlurEnabled
-    val homeMiuixBackdropSource = if (shouldCaptureHomeChromeBackdrop) {
+    val homeMiuixBackdropSource = if (shouldCaptureHomeChromeBackdrop && chromeContentReady) {
         rememberChromeBackdropSource()
     } else {
         null
     }
     val homeMiuixBackdrop = homeMiuixBackdropSource?.backdrop
-    var homeMiuixBackdropReady by remember(homeMiuixBackdrop) { mutableStateOf(false) }
-    // The layer source records during draw. On a cold launch the header can otherwise consume
-    // the backdrop before that first recording exists and stay blank until a lifecycle redraw.
-    LaunchedEffect(homeMiuixBackdrop, shouldCaptureHomeChromeBackdrop) {
-        homeMiuixBackdropReady = false
-        if (homeMiuixBackdrop != null && shouldCaptureHomeChromeBackdrop) {
-            withFrameNanos { }
-            withFrameNanos { }
-            homeMiuixBackdropReady = true
-        }
-    }
-    val readyHomeMiuixBackdrop = homeMiuixBackdrop.takeIf { homeMiuixBackdropReady }
+    val readyHomeMiuixBackdrop = homeMiuixBackdropSource?.takeIf { it.isReady }?.backdrop
     val isDataSaverActive = homePerformanceConfig.isDataSaverActive
     val preloadAheadCount = homePerformanceConfig.preloadAheadCount
     val configuredHomeWallpaperUri by SettingsManager.getHomeWallpaperUri(context).collectAsStateWithLifecycle(initialValue = ""

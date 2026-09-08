@@ -113,6 +113,7 @@ fun ArticleDetailScreen(
     }
 
     AppScaffold(
+        blurContentReady = uiState !is ArticleDetailUiState.Loading,
         topBar = {
             AppTopBar(
                 title = screenTitle,

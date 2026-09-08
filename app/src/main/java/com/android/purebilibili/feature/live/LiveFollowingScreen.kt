@@ -109,6 +109,7 @@ fun LiveFollowingScreen(
     }
 
     AppScaffold(
+        blurContentReady = !isLoading,
         modifier = Modifier.fillMaxSize(),
         topBar = {
             AppTopBar(
