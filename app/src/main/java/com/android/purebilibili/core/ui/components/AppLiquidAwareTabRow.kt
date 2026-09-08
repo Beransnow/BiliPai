@@ -143,16 +143,6 @@ fun <T> AppLiquidAwareTabRow(
         }
         return
     }
-    if (uiStyle == AppUiStyle.MIUIX && options.size <= 2 && compactMiuixWhenTwoOptions) {
-        AppNativeSegmentedControl(
-            options = options,
-            selectedValue = selectedValue,
-            onSelectionChange = onSelectionChange,
-            modifier = modifier,
-            enabled = enabled,
-        )
-        return
-    }
     val selectedIndex = options.indexOfFirst { it.value == selectedValue }.coerceAtLeast(0)
     // All enabled liquid docks support direct dragging, including scrollable rails.
     val resolvedDragSelectionEnabled = enabled && options.size > 1

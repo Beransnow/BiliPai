@@ -1840,10 +1840,7 @@ private fun VideoContentTabBar(
     val danmakuActionLayoutPolicy = remember(configuration.screenWidthDp) {
         resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp = configuration.screenWidthDp)
     }
-    // Miuix uses its native tab row on this surface; keep the liquid dock opt-in to the
-    // MD3 presentation so it cannot center over the danmaku actions.
-    val liquidGlassEnabledForTabBar =
-        homeSettings.androidNativeLiquidGlassEnabled && LocalAppUiStyle.current != AppUiStyle.MIUIX
+    val liquidGlassEnabledForTabBar = homeSettings.androidNativeLiquidGlassEnabled
     val liquidChromeSpec = remember(
         liquidGlassEnabledForTabBar,
         LocalAppUiStyle.current,
