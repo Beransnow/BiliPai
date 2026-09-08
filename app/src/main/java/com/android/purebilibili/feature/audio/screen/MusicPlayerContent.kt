@@ -63,8 +63,6 @@ import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
-import com.android.purebilibili.core.ui.components.AppSlider
-import com.android.purebilibili.core.ui.components.AppSliderDefaults
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -1077,19 +1075,32 @@ private fun MusicArtwork(
 private fun MusicProgress(state: MusicPlayerUiState, onSeek: (Long) -> Unit) {
     val duration = state.durationMs.coerceAtLeast(1L)
     var draggedPosition by remember { mutableStateOf<Float?>(null) }
-    AppSlider(
-        value = draggedPosition ?: state.positionMs.coerceIn(0L, duration).toFloat(),
+    val context = LocalContext.current
+    val reduceMotion = remember(context) {
+        android.provider.Settings.Global.getFloat(
+            context.contentResolver,
+            android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f
+        ) == 0f
+    }
+    val sliderValue = draggedPosition ?: state.positionMs.coerceIn(0L, duration).toFloat()
+    val wavy = shouldAnimateMusicWavyProgress(
+        isPlaying = state.isPlaying,
+        isDragging = draggedPosition != null,
+        reduceMotion = reduceMotion
+    )
+    MusicWavySlider(
+        value = sliderValue,
         onValueChange = { draggedPosition = it },
         onValueChangeFinished = {
             draggedPosition?.let { onSeek(it.toLong()) }
             draggedPosition = null
         },
         valueRange = 0f..duration.toFloat(),
-        colors = AppSliderDefaults.colors(
-            thumbColor = MusicAccentColor,
-            activeTrackColor = MusicAccentColor,
-            inactiveTrackColor = MusicContentColor.copy(alpha = 0.28f)
-        )
+        wavy = wavy,
+        activeColor = MusicAccentColor,
+        inactiveColor = MusicContentColor.copy(alpha = 0.28f),
+        thumbColor = MusicAccentColor
     )
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         AppText(formatMusicTime(state.positionMs), color = MusicContentColor.copy(alpha = 0.78f), fontSize = 12.sp)

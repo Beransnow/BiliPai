@@ -60,6 +60,8 @@ class MusicPlayerContentStructureTest {
         assertTrue(source.contains("Icons.AutoMirrored.Outlined.Comment"))
         assertTrue(source.contains("Icons.Outlined.QueueMusic"))
         assertTrue(source.contains("AppFilledIconButton("))
+        assertTrue(source.contains("MusicWavySlider("))
+        assertTrue(source.contains("shouldAnimateMusicWavyProgress("))
         assertTrue(source.contains("resolveMusicPlayerChromeSpec("))
         assertTrue(source.contains("onShuffleEnabledChange"))
         assertTrue(source.contains("usePaletteImmersiveBackdrop"))
