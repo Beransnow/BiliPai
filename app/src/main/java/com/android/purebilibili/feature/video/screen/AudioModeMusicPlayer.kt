@@ -23,6 +23,7 @@ import androidx.media3.common.Player
 import com.android.purebilibili.core.player.PlayerVolumeController
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.Page
+import com.android.purebilibili.feature.audio.player.AudioNowPlayingSession
 import com.android.purebilibili.feature.audio.player.MusicPlayerUiState
 import com.android.purebilibili.feature.audio.player.MusicLyricCandidateUi
 import com.android.purebilibili.feature.audio.player.MusicQueueItemUi
@@ -121,6 +122,7 @@ internal fun AudioModeMusicPlayer(
     val playlist by PlaylistManager.playlist.collectAsStateWithLifecycle()
     val playlistIndex by PlaylistManager.currentIndex.collectAsStateWithLifecycle()
     val playMode by PlaylistManager.playMode.collectAsStateWithLifecycle()
+    val shuffleEnabled by PlaylistManager.shuffleEnabled.collectAsStateWithLifecycle()
     val playback = rememberAudioPlaybackSnapshot(player)
     val lyricsViewModel = androidx.lifecycle.viewmodel.compose.viewModel<MusicViewModel>(
         key = "audio_mode_lyrics"
@@ -208,7 +210,8 @@ internal fun AudioModeMusicPlayer(
             isLyricsSearching = lyricsState.isLyricsSearching,
             queue = queue,
             currentQueueIndex = currentIndex,
-            playMode = playMode
+            playMode = playMode,
+            shuffleEnabled = shuffleEnabled
         ),
         onBack = onBack,
         onPlayPause = { player?.handleAudioModePlayPause() },
@@ -228,11 +231,15 @@ internal fun AudioModeMusicPlayer(
             }
         },
         onPlayModeChange = PlaylistManager::setPlayMode,
+        onShuffleEnabledChange = PlaylistManager::setShuffleEnabled,
         onLyricsOffsetChange = lyricsViewModel::adjustLyricsOffset,
         onLyricsRetry = lyricsViewModel::retryLyrics,
         onLyricsSearch = lyricsViewModel::searchLyrics,
         onLyricsCandidateSelected = lyricsViewModel::selectLyricsCandidate,
-        onVideoModeClick = { onVideoModeClick(info.bvid, info.cid) },
+        onVideoModeClick = {
+            AudioNowPlayingSession.dismiss()
+            onVideoModeClick(info.bvid, info.cid)
+        },
         onCollectionClick = when {
             info.pages.size > 1 -> ({ showPageSelector = true })
             info.ugc_season != null -> ({ showCollectionSheet = true })

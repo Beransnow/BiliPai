@@ -161,6 +161,11 @@ import com.android.purebilibili.feature.video.handoff.PlaybackHandoffPayload
 import com.android.purebilibili.feature.video.handoff.PlaybackHandoffRegistry
 import com.android.purebilibili.feature.video.player.buildPipPlaybackRemoteActions
 import com.android.purebilibili.feature.video.ui.overlay.FullscreenPlayerOverlay
+import com.android.purebilibili.feature.audio.player.AudioNowPlayingSession
+import com.android.purebilibili.feature.audio.screen.AudioNowPlayingBar
+import com.android.purebilibili.feature.audio.screen.AudioNowPlayingBarState
+import com.android.purebilibili.feature.audio.screen.resolveAudioNowPlayingVisible
+import com.android.purebilibili.feature.video.player.PlaylistManager
 import com.android.purebilibili.feature.video.ui.overlay.MiniPlayerOverlay
 import com.android.purebilibili.navigation.AppNavigation
 import com.android.purebilibili.navigation.ScreenRoutes
@@ -432,10 +437,11 @@ internal data class MainActivityPlaybackOverlayState(
 
 internal fun resolveMainActivityPlaybackOverlayState(
     isInPipMode: Boolean,
-    isMiniMode: Boolean
+    isMiniMode: Boolean,
+    showAudioNowPlaying: Boolean = false
 ): MainActivityPlaybackOverlayState {
     return MainActivityPlaybackOverlayState(
-        showMiniPlayerOverlay = !isInPipMode,
+        showMiniPlayerOverlay = !isInPipMode && !showAudioNowPlaying,
         // 从首页小窗进入系统 PiP 时，原详情页已销毁，需要独立渲染面承接同一个 Player。
         showDedicatedPipPlayer = isInPipMode && isMiniMode
     )
@@ -1616,10 +1622,25 @@ open class MainActivity : AppCompatActivity() {
                     }
                     //  小窗全屏状态
                     var showFullscreen by remember { mutableStateOf(false) }
-                    val playbackOverlayState = remember(isInPipMode, miniPlayerManager.isMiniMode) {
+                    val audioNowPlayingActive by AudioNowPlayingSession.active.collectAsStateWithLifecycle()
+                    val audioPlaylist by PlaylistManager.playlist.collectAsStateWithLifecycle()
+                    val audioPlaylistIndex by PlaylistManager.currentIndex.collectAsStateWithLifecycle()
+                    val audioNowPlayingItem = audioPlaylist.getOrNull(audioPlaylistIndex)
+                    val showAudioNowPlaying = resolveAudioNowPlayingVisible(
+                        sessionActive = audioNowPlayingActive,
+                        isOnAudioModeScreen = isInAudioModeRoute,
+                        isInPipMode = isInPipMode,
+                        hasCurrentItem = audioNowPlayingItem != null
+                    )
+                    val playbackOverlayState = remember(
+                        isInPipMode,
+                        miniPlayerManager.isMiniMode,
+                        showAudioNowPlaying
+                    ) {
                         resolveMainActivityPlaybackOverlayState(
                             isInPipMode = isInPipMode,
-                            isMiniMode = miniPlayerManager.isMiniMode
+                            isMiniMode = miniPlayerManager.isMiniMode,
+                            showAudioNowPlaying = showAudioNowPlaying
                         )
                     }
                     if (playbackOverlayState.showDedicatedPipPlayer) {
@@ -1639,6 +1660,32 @@ open class MainActivity : AppCompatActivity() {
                                     .background(Color.Black)
                             )
                         }
+                    }
+                    if (showAudioNowPlaying && audioNowPlayingItem != null) {
+                        AudioNowPlayingBar(
+                            state = AudioNowPlayingBarState(
+                                title = audioNowPlayingItem.title,
+                                artist = audioNowPlayingItem.owner,
+                                coverUrl = audioNowPlayingItem.cover,
+                                isPlaying = miniPlayerManager.isPlaying
+                            ),
+                            onExpand = {
+                                pendingNavigationRoute = ScreenRoutes.AudioMode.createRoute(
+                                    bvid = audioNowPlayingItem.bvid,
+                                    cid = audioNowPlayingItem.cid
+                                )
+                            },
+                            onPlayPause = { miniPlayerManager.togglePlayPause() },
+                            onSkipNext = { miniPlayerManager.playNext() },
+                            onSkipPrevious = { miniPlayerManager.playPrevious() },
+                            onDismiss = {
+                                if (miniPlayerManager.isPlaying) {
+                                    miniPlayerManager.togglePlayPause()
+                                }
+                                AudioNowPlayingSession.dismiss()
+                            },
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        )
                     }
                     //  小窗播放器覆盖层 (非 PiP 模式下显示)
                     if (playbackOverlayState.showMiniPlayerOverlay) {

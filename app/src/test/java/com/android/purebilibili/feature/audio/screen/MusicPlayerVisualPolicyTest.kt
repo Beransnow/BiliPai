@@ -66,6 +66,12 @@ class MusicPlayerVisualPolicyTest {
         assertEquals(PlayMode.REPEAT_ALL, resolvePlayModeAfterRepeatToggle(PlayMode.REPEAT_ONE))
         assertEquals(PlayMode.SEQUENTIAL, resolvePlayModeAfterRepeatToggle(PlayMode.REPEAT_ALL))
         assertEquals(PlayMode.REPEAT_ONE, resolvePlayModeAfterRepeatToggle(PlayMode.SHUFFLE))
+        assertEquals(
+            MusicSecondaryTransportState(shuffleEnabled = true, repeatGlyph = MusicRepeatGlyph.ONE),
+            resolveMusicSecondaryTransport(PlayMode.REPEAT_ONE, shuffleEnabled = true)
+        )
+        assertEquals(PlayMode.SEQUENTIAL, resolveRepeatModeAfterToggle(PlayMode.REPEAT_ALL))
+        assertEquals(PlayMode.REPEAT_ONE, resolveRepeatModeAfterToggle(PlayMode.SHUFFLE))
     }
 
     @Test

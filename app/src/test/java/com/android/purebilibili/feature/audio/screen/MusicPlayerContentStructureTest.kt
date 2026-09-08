@@ -61,6 +61,7 @@ class MusicPlayerContentStructureTest {
         assertTrue(source.contains("Icons.Outlined.QueueMusic"))
         assertTrue(source.contains("AppFilledIconButton("))
         assertTrue(source.contains("resolveMusicPlayerChromeSpec("))
+        assertTrue(source.contains("onShuffleEnabledChange"))
         assertTrue(source.contains("usePaletteImmersiveBackdrop"))
         assertTrue(source.contains("showActions"))
         assertTrue(source.contains("播放器操作"))

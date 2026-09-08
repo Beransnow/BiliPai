@@ -213,6 +213,7 @@ internal fun MusicPlayerContent(
     onNext: (() -> Unit)? = null,
     onQueueItemSelected: (Int) -> Unit = {},
     onPlayModeChange: (PlayMode) -> Unit = {},
+    onShuffleEnabledChange: (Boolean) -> Unit = {},
     onLyricsOffsetChange: (Long) -> Unit = {},
     onLyricsRetry: () -> Unit = {},
     onLyricsSearch: (String) -> Unit = {},
@@ -380,6 +381,7 @@ internal fun MusicPlayerContent(
                                 onPrevious = onPrevious,
                                 onNext = onNext,
                                 onPlayModeChange = onPlayModeChange,
+                                onShuffleEnabledChange = onShuffleEnabledChange,
                                 isLiked = isLiked,
                                 onLikeClick = onLikeClick,
                                 onCommentsClick = onCommentsClick,
@@ -477,6 +479,7 @@ internal fun MusicPlayerContent(
                     onPrevious = onPrevious,
                     onNext = onNext,
                     onPlayModeChange = onPlayModeChange,
+                    onShuffleEnabledChange = onShuffleEnabledChange,
                     isLiked = isLiked,
                     onLikeClick = onLikeClick,
                     onCommentsClick = onCommentsClick,
@@ -819,6 +822,7 @@ private fun PlayerPage(
     onPrevious: (() -> Unit)?,
     onNext: (() -> Unit)?,
     onPlayModeChange: (PlayMode) -> Unit,
+    onShuffleEnabledChange: (Boolean) -> Unit,
     isLiked: Boolean,
     onLikeClick: (() -> Unit)?,
     onCommentsClick: (() -> Unit)?,
@@ -913,8 +917,10 @@ private fun PlayerPage(
         Spacer(Modifier.height(12.dp))
         MusicSecondaryControls(
             mode = state.playMode,
+            shuffleEnabled = state.shuffleEnabled,
             showQueue = state.queueControls.showQueue,
             onPlayModeChange = onPlayModeChange,
+            onShuffleEnabledChange = onShuffleEnabledChange,
             onCommentsClick = onCommentsClick,
             onQueueClick = onQueueClick
         )
@@ -963,12 +969,14 @@ private fun MusicAudioQualityControl(
 @Composable
 private fun MusicSecondaryControls(
     mode: PlayMode,
+    shuffleEnabled: Boolean,
     showQueue: Boolean,
     onPlayModeChange: (PlayMode) -> Unit,
+    onShuffleEnabledChange: (Boolean) -> Unit,
     onCommentsClick: (() -> Unit)?,
     onQueueClick: () -> Unit
 ) {
-    val transport = resolveMusicSecondaryTransport(mode)
+    val transport = resolveMusicSecondaryTransport(mode, shuffleEnabled)
     val active = MusicAccentColor
     val inactive = MusicContentColor.copy(alpha = 0.62f)
     Row(
@@ -977,7 +985,7 @@ private fun MusicSecondaryControls(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AppIconButton(
-            onClick = { onPlayModeChange(resolvePlayModeAfterShuffleToggle(mode)) },
+            onClick = { onShuffleEnabledChange(!transport.shuffleEnabled) },
             modifier = Modifier.size(48.dp)
         ) {
             AppIcon(
@@ -987,7 +995,7 @@ private fun MusicSecondaryControls(
             )
         }
         AppIconButton(
-            onClick = { onPlayModeChange(resolvePlayModeAfterRepeatToggle(mode)) },
+            onClick = { onPlayModeChange(resolveRepeatModeAfterToggle(mode)) },
             modifier = Modifier.size(48.dp)
         ) {
             AppIcon(
