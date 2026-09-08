@@ -37,6 +37,19 @@ import top.yukonga.miuix.kmp.basic.TabRowDefaults
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.resolveAppSegmentedLabelFontSizeSp
+
 @Composable
 internal fun <T> AppMiuixSegmentedControl(
     options: List<AppSegmentOption<T>>,
@@ -48,67 +61,76 @@ internal fun <T> AppMiuixSegmentedControl(
     modifier: Modifier,
     onSelectionChange: (T) -> Unit,
 ) {
-    if (isMiuixNonGlassEnabled()) {
-        AppMiuixNonGlassTabs(
-            options = options,
-            selectedValue = selectedValue,
-            enabled = enabled,
-            compact = true,
-            scrollable = false,
-            minTabWidth = 0.dp,
-            colors = colors,
-            preferredCornerRadius = preferredCornerRadius,
-            height = height,
-            modifier = modifier,
-            onSelectionChange = onSelectionChange,
-        )
-        return
+    val longestLabelLength = remember(options) {
+        options.maxOfOrNull { it.label.length } ?: 0
     }
-    val selectedIndex = resolveAppSegmentedSelectionIndex(options, selectedValue)
-    val tabColors = resolveAppMiuixSegmentedColors(colors)
+    val labelFontSize = remember(options.size, longestLabelLength) {
+        resolveAppSegmentedLabelFontSizeSp(options.size, longestLabelLength).sp
+    }
+    val targetHeight = height ?: 36.dp
     val itemGeometry = resolveRoundedControlVisualGeometry(
         preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = height ?: AppChromeSizeTokens.MinimumTouchTarget,
+        nativeMinimumHeight = targetHeight,
     )
-    val outerGeometry = resolveRoundedControlVisualGeometry(
-        preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = itemGeometry.height + 8.dp,
-    )
-    Box(
+    val cornerRadius = itemGeometry.cornerRadius
+
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .adaptiveSquircleBackground(
-                color = colors.outerContainerColor,
-                cornerRadius = outerGeometry.cornerRadius,
-            )
-            .padding(AppSpacingTokens.ExtraSmall),
+            .then(if (!enabled) Modifier.semantics { disabled() } else Modifier),
+        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        MiuixTheme(
-            colors = MiuixTheme.colorScheme.copy(
-                outline = Color.Transparent,
-            )
-        ) {
-            TabRow(
-                tabs = options.map { it.label },
-                selectedTabIndex = selectedIndex,
-                onTabSelected = { index ->
-                    if (enabled) options.getOrNull(index)?.let { onSelectionChange(it.value) }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = TabRowDefaults.tabRowColors(
-                    backgroundColor = tabColors.backgroundColor,
-                    contentColor = tabColors.contentColor,
-                    selectedBackgroundColor = tabColors.selectedBackgroundColor,
-                    selectedContentColor = tabColors.selectedContentColor,
-                ),
-                height = itemGeometry.height,
-                cornerRadius = itemGeometry.cornerRadius,
-                itemSpacing = AppSpacingTokens.ExtraSmall,
-                // 与 AppMiuixTabRow 一致：交给 Miuix 按容器宽度均分，避免默认 minWidth=76dp
-                // 在选项较多时压缩文字。
-                minWidth = 0.dp,
-                maxWidth = Dp.Infinity,
-            )
+        options.forEach { option ->
+            val selected = option.value == selectedValue
+            val itemBackground = if (selected) {
+                colors.activeContainerColor
+            } else {
+                Color.Transparent
+            }
+            val contentColor = if (selected) {
+                colors.activeContentColor
+            } else {
+                colors.inactiveContentColor
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = targetHeight)
+                    .adaptiveSquircleBackground(
+                        color = itemBackground,
+                        cornerRadius = cornerRadius,
+                    )
+                    .then(
+                        if (!selected) {
+                            Modifier.border(
+                                border = BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.35f)),
+                                shape = RoundedCornerShape(cornerRadius),
+                            )
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .squircleClip(cornerRadius)
+                    .clickable(
+                        enabled = enabled,
+                        role = Role.RadioButton,
+                        onClick = { onSelectionChange(option.value) },
+                    )
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                AppText(
+                    text = option.label,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    fontSize = labelFontSize,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    color = contentColor,
+                )
+            }
         }
     }
 }
@@ -271,11 +293,6 @@ private fun <T> AppMiuixNonGlassTabs(
     BoxWithConstraints(
         modifier = modifier
             .heightIn(min = AppChromeSizeTokens.MinimumTouchTarget)
-            .adaptiveSquircleBackground(
-                color = colors.outerContainerColor,
-                cornerRadius = outerGeometry.cornerRadius,
-            )
-            .padding(AppSpacingTokens.ExtraSmall)
             .then(if (!enabled) Modifier.semantics { disabled() } else Modifier),
         contentAlignment = Alignment.CenterStart,
     ) {

@@ -118,18 +118,38 @@ fun <T> AppLiquidAwareTabRow(
         liquidGlassEnabled = liquidGlassEnabled,
     )
     if (!liquidGlassEnabled) {
-        AppNativeTabRow(
+        if (uiStyle == AppUiStyle.MIUIX && options.size <= 2 && compactMiuixWhenTwoOptions) {
+            AppNativeSegmentedControl(
+                options = options,
+                selectedValue = selectedValue,
+                onSelectionChange = onSelectionChange,
+                modifier = modifier,
+                enabled = enabled,
+            )
+        } else {
+            AppNativeTabRow(
+                options = options,
+                selectedValue = selectedValue,
+                onSelectionChange = onSelectionChange,
+                modifier = modifier,
+                enabled = enabled,
+                scrollable = scrollable,
+                minTabWidth = resolvedMinTabWidth,
+                compactMiuixWhenTwoOptions = compactMiuixWhenTwoOptions,
+                height = height,
+                allowLabelOverflow = true,
+                indicatorPositionProvider = indicatorPositionProvider,
+            )
+        }
+        return
+    }
+    if (uiStyle == AppUiStyle.MIUIX && options.size <= 2 && compactMiuixWhenTwoOptions) {
+        AppNativeSegmentedControl(
             options = options,
             selectedValue = selectedValue,
             onSelectionChange = onSelectionChange,
             modifier = modifier,
             enabled = enabled,
-            scrollable = scrollable,
-            minTabWidth = resolvedMinTabWidth,
-            compactMiuixWhenTwoOptions = compactMiuixWhenTwoOptions,
-            height = height,
-            allowLabelOverflow = true,
-            indicatorPositionProvider = indicatorPositionProvider,
         )
         return
     }
