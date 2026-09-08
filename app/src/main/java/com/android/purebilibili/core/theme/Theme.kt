@@ -333,9 +333,19 @@ internal fun resolveNativeMiuixColors(
     amoledDarkTheme: Boolean = false,
     customRolesEnabled: Boolean = false,
 ): top.yukonga.miuix.kmp.theme.Colors {
-    val accent = resolveMiuixColorsFromMaterialBridge(createMiuixMaterialBridge(scheme), darkTheme)
-    if (customRolesEnabled) return accent
+    if (customRolesEnabled) {
+        return resolveMiuixColorsFromMaterialBridge(createMiuixMaterialBridge(scheme), darkTheme)
+    }
     val base = if (darkTheme) miuixDarkColorScheme() else miuixLightColorScheme()
+    val accentContainer = opaqueCompositeOver(scheme.primary.copy(alpha = 0.2f), base.surface)
+    val accentScheme = scheme.copy(
+        surface = base.surface,
+        primaryFixed = accentContainer,
+        onPrimaryFixed = scheme.primary,
+        primaryContainer = scheme.primary,
+        onPrimaryContainer = scheme.onPrimary,
+    )
+    val accent = resolveMiuixColorsFromMaterialBridge(createMiuixMaterialBridge(accentScheme), darkTheme)
     return base.copy(
         primary = accent.primary,
         onPrimary = accent.onPrimary,
@@ -348,6 +358,11 @@ internal fun resolveNativeMiuixColors(
         disabledPrimaryButton = accent.disabledPrimaryButton,
         disabledOnPrimaryButton = accent.disabledOnPrimaryButton,
         disabledPrimarySlider = accent.disabledPrimarySlider,
+        tertiaryContainer = accentContainer,
+        onTertiaryContainer = scheme.primary,
+        onBackgroundVariant = scheme.primary,
+        sliderKeyPoint = scheme.primary.copy(alpha = base.sliderKeyPoint.alpha),
+        sliderKeyPointForeground = scheme.primary,
         background = if (darkTheme && amoledDarkTheme) Color.Black else base.background,
     )
 }
@@ -357,6 +372,14 @@ internal fun alignMaterialSurfacesWithMiuix(
     scheme: ColorScheme,
     colors: top.yukonga.miuix.kmp.theme.Colors,
 ): ColorScheme = scheme.copy(
+    primary = colors.primary,
+    onPrimary = colors.onPrimary,
+    primaryFixed = colors.primaryVariant,
+    onPrimaryFixed = colors.onPrimaryVariant,
+    primaryContainer = colors.primaryContainer,
+    onPrimaryContainer = colors.onPrimaryContainer,
+    tertiaryContainer = colors.tertiaryContainer,
+    onTertiaryContainer = colors.onTertiaryContainer,
     background = colors.background,
     onBackground = colors.onBackground,
     surface = colors.surface,

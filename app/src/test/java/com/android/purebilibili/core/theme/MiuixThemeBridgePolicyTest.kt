@@ -10,6 +10,22 @@ import kotlin.test.assertTrue
 class MiuixThemeBridgePolicyTest {
 
     @Test
+    fun `native miuix custom accent reaches sliders and auxiliary controls`() {
+        val primary = Color(0xFFB3261E)
+        listOf(false, true).forEach { dark ->
+            val scheme = if (dark) darkColorScheme(primary = primary) else lightColorScheme(primary = primary)
+            val colors = resolveNativeMiuixColors(scheme, dark)
+            assertEquals(primary, colors.onPrimaryVariant)
+            assertEquals(primary, colors.onTertiaryContainer)
+            assertEquals(primary, colors.sliderKeyPointForeground)
+            assertEquals(primary, colors.onBackgroundVariant)
+            val material = alignMaterialSurfacesWithMiuix(scheme, colors)
+            assertEquals(colors.primaryContainer, material.primaryContainer)
+            assertEquals(colors.tertiaryContainer, material.tertiaryContainer)
+        }
+    }
+
+    @Test
     fun `native miuix preserves upstream neutral and disabled control roles in both themes`() {
         listOf(false, true).forEach { dark ->
             val scheme = if (dark) darkColorScheme() else lightColorScheme()
