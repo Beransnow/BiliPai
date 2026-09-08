@@ -849,6 +849,76 @@ private fun rememberSystemWallpaperRefreshToken(
 
 private const val SYSTEM_WALLPAPER_PALETTE_SETTLE_DELAY_MS = 200L
 
+internal fun createMiuixAlignedColorScheme(
+    primaryColor: Color,
+    darkTheme: Boolean,
+    amoledDarkTheme: Boolean
+): ColorScheme {
+    return if (darkTheme) {
+        if (amoledDarkTheme) {
+            darkColorScheme(
+                primary = primaryColor,
+                onPrimary = White,
+                primaryContainer = primaryColor.copy(alpha = 0.32f),
+                onPrimaryContainer = primaryColor,
+                secondary = primaryColor.copy(alpha = 0.9f),
+                secondaryContainer = primaryColor.copy(alpha = 0.22f),
+                onSecondaryContainer = primaryColor,
+                background = Black,
+                surface = Black,
+                onSurface = Color(0xFFF2F2F2),
+                surfaceVariant = Color(0xFF121212),
+                onSurfaceVariant = Color(0xFF98989D),
+                surfaceContainer = Color(0xFF0D0D0D),
+                surfaceContainerHigh = Color(0xFF1A1A1A),
+                surfaceContainerHighest = Color(0xFF242424),
+                outline = Color(0xFF48484A),
+                outlineVariant = Color(0xFF262626)
+            )
+        } else {
+            darkColorScheme(
+                primary = primaryColor,
+                onPrimary = White,
+                primaryContainer = primaryColor.copy(alpha = 0.3f),
+                onPrimaryContainer = primaryColor,
+                secondary = primaryColor.copy(alpha = 0.85f),
+                secondaryContainer = primaryColor.copy(alpha = 0.2f),
+                onSecondaryContainer = primaryColor,
+                background = Color(0xFF0D0D0D),
+                surface = Color(0xFF121212),
+                onSurface = Color(0xFFF2F2F2),
+                surfaceVariant = Color(0xFF242424),
+                onSurfaceVariant = Color(0xFF98989D),
+                surfaceContainer = Color(0xFF242424),
+                surfaceContainerHigh = Color(0xFF2C2C2E),
+                surfaceContainerHighest = Color(0xFF383838),
+                outline = Color(0xFF48484A),
+                outlineVariant = Color(0xFF3A3A3C)
+            )
+        }
+    } else {
+        lightColorScheme(
+            primary = primaryColor,
+            onPrimary = White,
+            primaryContainer = primaryColor.copy(alpha = 0.15f),
+            onPrimaryContainer = primaryColor,
+            secondary = primaryColor.copy(alpha = 0.8f),
+            secondaryContainer = primaryColor.copy(alpha = 0.1f),
+            onSecondaryContainer = primaryColor,
+            background = Color(0xFFF7F7F7),
+            surface = White,
+            onSurface = Color(0xFF111111),
+            surfaceVariant = Color(0xFFF0F0F0),
+            onSurfaceVariant = Color(0xFF6C6C70),
+            surfaceContainer = Color(0xFFF2F2F7),
+            surfaceContainerHigh = Color(0xFFE8E8E8),
+            surfaceContainerHighest = Color(0xFFE5E5EA),
+            outline = Color(0xFFD1D1D6),
+            outlineVariant = Color(0xFFE5E5EA)
+        )
+    }
+}
+
 @Composable
 private fun rememberBiliPaiStyleColorScheme(
     seedColor: Color,
@@ -856,6 +926,7 @@ private fun rememberBiliPaiStyleColorScheme(
     amoledDarkTheme: Boolean,
     paletteStyle: PaletteStyle,
     colorSpec: ColorSpec.SpecVersion,
+    uiStyle: AppUiStyle = AppUiStyle.MATERIAL3,
     dynamicBaseScheme: ColorScheme? = null
 ): ColorScheme = remember(
     seedColor,
@@ -863,6 +934,7 @@ private fun rememberBiliPaiStyleColorScheme(
     amoledDarkTheme,
     paletteStyle,
     colorSpec,
+    uiStyle,
     dynamicBaseScheme,
 ) {
     createBiliPaiStyleColorScheme(
@@ -871,6 +943,7 @@ private fun rememberBiliPaiStyleColorScheme(
         amoledDarkTheme = amoledDarkTheme,
         paletteStyle = paletteStyle,
         colorSpec = colorSpec,
+        uiStyle = uiStyle,
         dynamicBaseScheme = dynamicBaseScheme,
     )
 }
@@ -881,11 +954,20 @@ internal fun createBiliPaiStyleColorScheme(
     amoledDarkTheme: Boolean,
     paletteStyle: PaletteStyle,
     colorSpec: ColorSpec.SpecVersion,
+    uiStyle: AppUiStyle = AppUiStyle.MATERIAL3,
     dynamicBaseScheme: ColorScheme? = null,
 ): ColorScheme {
     // AndroidX already returns the user's final wallpaper-derived light/dark scheme.
     // Re-generating it from resolved roles changes the palette selected in system settings.
     if (dynamicBaseScheme != null) return dynamicBaseScheme
+
+    if (uiStyle == AppUiStyle.MIUIX) {
+        return createMiuixAlignedColorScheme(
+            primaryColor = seedColor,
+            darkTheme = darkTheme,
+            amoledDarkTheme = amoledDarkTheme
+        )
+    }
 
     val scheme = dynamicColorScheme(
         seedColor = seedColor,
@@ -986,6 +1068,7 @@ fun PureBiliBiliTheme(
         amoledDarkTheme = false,
         paletteStyle = colorStyle,
         colorSpec = colorSpec,
+        uiStyle = uiStyle,
         dynamicBaseScheme = dynamicLightBaseScheme
     )
     val darkMaterialScheme = rememberBiliPaiStyleColorScheme(
@@ -994,6 +1077,7 @@ fun PureBiliBiliTheme(
         amoledDarkTheme = amoledDarkTheme,
         paletteStyle = colorStyle,
         colorSpec = colorSpec,
+        uiStyle = uiStyle,
         dynamicBaseScheme = dynamicDarkBaseScheme
     )
 
