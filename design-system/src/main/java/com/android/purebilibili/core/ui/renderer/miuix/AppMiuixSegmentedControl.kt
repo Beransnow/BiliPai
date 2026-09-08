@@ -67,12 +67,8 @@ internal fun <T> AppMiuixSegmentedControl(
     val labelFontSize = remember(options.size, longestLabelLength) {
         resolveAppSegmentedLabelFontSizeSp(options.size, longestLabelLength).sp
     }
-    val targetHeight = height ?: 36.dp
-    val itemGeometry = resolveRoundedControlVisualGeometry(
-        preferredCornerRadius = preferredCornerRadius,
-        nativeMinimumHeight = targetHeight,
-    )
-    val cornerRadius = itemGeometry.cornerRadius
+    val targetHeight = height ?: 34.dp
+    val cornerRadius = 8.dp
 
     Row(
         modifier = modifier
