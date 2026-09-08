@@ -222,7 +222,8 @@ fun PlainMiuixFloatingBottomBar(
         Box(
             modifier = indicatorPositionModifier
                 .width(itemWidth)
-                .fillMaxHeight(),
+                .fillMaxHeight()
+                .background(MiuixTheme.colorScheme.secondaryContainer, shape),
         )
         CompositionLocalProvider(
             LocalFloatingBottomBarContentColor provides colors.contentColor,
@@ -1111,12 +1112,14 @@ fun FloatingBottomBar(
                             },
                             onDrawSurface = {
                                 val progress = dampedDragAnimation.pressProgress
-                                if (indicatorIdleSurfaceColorOverride != null) {
-                                    drawRect(
-                                        color = indicatorIdleSurfaceColorOverride,
-                                        alpha = 1f - progress,
-                                    )
-                                }
+                                drawRect(
+                                    color = indicatorIdleSurfaceColorOverride ?: if (!isInDark) {
+                                        Color.Black.copy(alpha = 0.1f)
+                                    } else {
+                                        Color.White.copy(alpha = 0.1f)
+                                    },
+                                    alpha = 1f - progress,
+                                )
                                 drawRect(Color.Black.copy(alpha = 0.03f * progress))
                             },
                         )
@@ -1151,13 +1154,7 @@ fun FloatingBottomBar(
                             }
                         }
                         .clip(pillShape)
-                        .then(
-                            if (indicatorIdleSurfaceColorOverride != null) {
-                                Modifier.background(indicatorIdleSurfaceColorOverride, pillShape)
-                            } else {
-                                Modifier
-                            }
-                        )
+                        .background(indicatorIdleSurfaceColorOverride ?: colors.indicatorColor.copy(alpha = 0.15f), pillShape)
                         .height(fittedIndicatorHeight)
                         .width(fittedIndicatorWidth),
                     contentAlignment = Alignment.CenterStart
