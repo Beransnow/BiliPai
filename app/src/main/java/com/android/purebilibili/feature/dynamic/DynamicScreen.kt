@@ -355,8 +355,12 @@ fun DynamicScreen(
     }
 
     val appThemeConfig = com.android.purebilibili.core.ui.LocalAppThemeConfig.current
-    // Dock 只采集内容用于折射，顶部 tuning 将 blur 半径固定为 0。
-    val dynamicDockBackdrop = if (appThemeConfig.liquidGlassEnabled) rememberLayerBackdrop() else null
+    // Dock 采集内容用于折射与渐进模糊。
+    val dynamicDockBackdrop = if (appThemeConfig.headerBlurEnabled || appThemeConfig.liquidGlassEnabled) {
+        rememberLayerBackdrop()
+    } else {
+        null
+    }
     // 顶部高斯模糊使用独立 Haze 源；液态玻璃的 Backdrop 渐进模糊仍单独由
     // DynamicTopBarWithTabs 根据安卓原生液态玻璃开关控制。
     val dynamicTopBarHazeState = if (

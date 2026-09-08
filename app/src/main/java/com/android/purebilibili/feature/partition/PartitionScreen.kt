@@ -149,6 +149,7 @@ import com.android.purebilibili.feature.home.components.shouldShowTopTabIcon
 import com.android.purebilibili.feature.home.components.shouldShowTopTabText
 import com.android.purebilibili.feature.home.components.HomeSelectionIndicatorStyle
 import com.android.purebilibili.feature.home.components.resolveHomeSelectionIndicatorStyle
+import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import dev.chrisbanes.haze.HazeState
@@ -420,7 +421,12 @@ fun PartitionScreen(
     onVideoClick: (String, Long, String) -> Unit = { _, _, _ -> },
     onBangumiClick: (Int) -> Unit = {}
 ) {
-    val hazeState = com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val headerBlurEnabled by com.android.purebilibili.core.store.SettingsManager
+        .getHeaderBlurEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
+    val hazeState = if (headerBlurEnabled) com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState() else null
+    val partitionBackdrop = if (headerBlurEnabled) rememberLayerBackdrop() else null
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     AppScaffold(
@@ -437,14 +443,28 @@ fun PartitionScreen(
                     containerColor = Color.Transparent,
                     scrolledContainerColor = Color.Transparent
                 ),
-                modifier = Modifier.unifiedBlur(
-                    hazeState = hazeState,
-                    surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,
+                modifier = Modifier.then(
+                    if (headerBlurEnabled && partitionBackdrop != null) {
+                        Modifier.biliPaiProgressiveTopBlur(
+                            backdrop = partitionBackdrop,
+                            enabled = true,
+                        )
+                    } else if (headerBlurEnabled && hazeState != null) {
+                        Modifier.unifiedBlur(
+                            hazeState = hazeState,
+                            surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,
+                        )
+                    } else {
+                        Modifier
+                    }
                 )
             )
         }
     ) { paddingValues ->
         PartitionContent(
+            modifier = Modifier.then(
+                if (partitionBackdrop != null) Modifier.layerBackdrop(partitionBackdrop) else Modifier
+            ),
             contentPadding = PaddingValues(
                 top = paddingValues.calculateTopPadding() + 8.dp,
                 bottom = paddingValues.calculateBottomPadding() + 16.dp,

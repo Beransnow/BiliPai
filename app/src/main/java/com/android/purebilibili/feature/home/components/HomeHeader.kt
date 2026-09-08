@@ -2051,8 +2051,9 @@ fun HomeHeader(
         // 连续背景始终覆盖顶部 Dock；独立轨道只负责自身材质与前景可读性。
         includeTabInBlur = true,
     )
+    val isProgressiveBlurRequested = isTopChromeBlurEnabled || isGlassEnabled
     val progressiveBlurBottomExtension = resolveProgressiveTopBlurBottomExtension(
-        enabled = homeSettings?.androidNativeLiquidGlassEnabled == true &&
+        enabled = isProgressiveBlurRequested &&
             liquidGlassTuning.progressiveBlurRadius > 0.001f,
         endFraction = liquidGlassTuning.progressiveBlurEndFraction,
     )
@@ -2214,7 +2215,7 @@ fun HomeHeader(
                         isScrolling = topChromeMotionPolicy.isScrolling,
                         isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                         forceLowBlurBudget = forceLowBlurBudget,
-                        useProgressiveTopBlur = homeSettings?.androidNativeLiquidGlassEnabled == true,
+                        useProgressiveTopBlur = isProgressiveBlurRequested,
                 )
             )
         }

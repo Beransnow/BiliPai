@@ -113,6 +113,7 @@ import com.android.purebilibili.core.ui.isMiuixNonGlassEnabled
 import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
+import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
@@ -1014,7 +1015,7 @@ fun SearchScreen(
                 .globalWallpaperAwareBackground()
                 .padding(padding)
         ) {
-            val searchChromeBackdrop = if (effectiveLiquidGlassEnabled) {
+            val searchChromeBackdrop = if (headerBlurEnabled || effectiveLiquidGlassEnabled) {
                 rememberLayerBackdrop()
             } else {
                 null
@@ -2064,7 +2065,12 @@ fun SearchScreen(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .then(
-                        if (shouldUseSearchTopBarBlur) {
+                        if (headerBlurEnabled && searchChromeBackdrop != null) {
+                            Modifier.biliPaiProgressiveTopBlur(
+                                backdrop = searchChromeBackdrop,
+                                enabled = true,
+                            )
+                        } else if (shouldUseSearchTopBarBlur) {
                             Modifier.unifiedBlur(
                                 hazeState = hazeState,
                                 surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,

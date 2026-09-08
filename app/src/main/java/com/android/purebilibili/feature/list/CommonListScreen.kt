@@ -790,7 +790,7 @@ fun CommonListScreen(
     } else {
         null
     }
-    val commonListChromeBackdrop = if (liquidGlassEnabled) rememberLayerBackdrop() else null
+    val commonListChromeBackdrop = if (isHeaderBlurEnabled || liquidGlassEnabled) rememberLayerBackdrop() else null
     val videoCardAppearance = remember(homeSettings, liquidGlassEnabled) {
         resolveCommonListVideoCardAppearance(
             homeSettings = homeSettings,
@@ -835,7 +835,7 @@ fun CommonListScreen(
 
     // 决定顶栏背景 (使用私有的 localHazeState)
     val useProgressiveHeaderBlur = shouldUseBiliPaiProgressiveTopBlur(
-        enabled = liquidGlassEnabled,
+        enabled = isHeaderBlurEnabled || liquidGlassEnabled,
         hasBackdrop = commonListChromeBackdrop != null,
     )
     val topBarBackgroundModifier = if (useProgressiveHeaderBlur && commonListChromeBackdrop != null) {
