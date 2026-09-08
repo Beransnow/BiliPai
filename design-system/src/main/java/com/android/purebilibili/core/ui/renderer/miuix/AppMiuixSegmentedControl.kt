@@ -34,6 +34,7 @@ import com.android.purebilibili.core.ui.resolveMiuixNonGlassControlGeometry
 import com.android.purebilibili.core.ui.isMiuixNonGlassEnabled
 import top.yukonga.miuix.kmp.basic.TabRow
 import top.yukonga.miuix.kmp.basic.TabRowDefaults
+import top.yukonga.miuix.kmp.squircle.squircleBorder
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -69,69 +70,68 @@ internal fun <T> AppMiuixSegmentedControl(
     val labelFontSize = remember(options.size, longestLabelLength) {
         resolveAppSegmentedLabelFontSizeSp(options.size, longestLabelLength).sp
     }
-    val targetHeight = height ?: 34.dp
-    val cornerRadius = 8.dp
-    val trackColor = colors.outerContainerColor
+    val targetHeight = height ?: 36.dp
+    val cornerRadius = preferredCornerRadius.coerceAtLeast(8.dp)
     val activeCardColor = colors.activeContainerColor
     val activeTextColor = colors.activeContentColor
     val inactiveTextColor = colors.inactiveContentColor
+    val outlineColor = MiuixTheme.colorScheme.outline
 
-    Box(
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (!enabled) Modifier.semantics { disabled() } else Modifier)
-            .adaptiveSquircleBackground(
-                color = trackColor,
-                cornerRadius = cornerRadius,
-            )
-            .squircleClip(cornerRadius)
-            .padding(2.dp),
+            .then(if (!enabled) Modifier.semantics { disabled() } else Modifier),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            options.forEach { option ->
-                val selected = option.value == selectedValue
-                val itemBackground = if (selected) activeCardColor else Color.Transparent
-                val contentColor = if (selected) activeTextColor else inactiveTextColor
+        options.forEach { option ->
+            val selected = option.value == selectedValue
+            val itemBackground = if (selected) activeCardColor else Color.Transparent
+            val contentColor = if (selected) activeTextColor else inactiveTextColor
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .heightIn(min = (targetHeight - 4.dp).coerceAtLeast(28.dp))
-                        .then(
-                            if (selected && !isDark) {
-                                Modifier.dropShadow(
-                                    shape = RoundedCornerShape((cornerRadius - 2.dp).coerceAtLeast(4.dp)),
-                                    shadow = Shadow(radius = 3.dp, color = Color.Black, alpha = 0.08f)
-                                )
-                            } else Modifier
-                        )
-                        .adaptiveSquircleBackground(
-                            color = itemBackground,
-                            cornerRadius = (cornerRadius - 2.dp).coerceAtLeast(4.dp),
-                        )
-                        .squircleClip((cornerRadius - 2.dp).coerceAtLeast(4.dp))
-                        .clickable(
-                            enabled = enabled,
-                            role = Role.RadioButton,
-                            onClick = { onSelectionChange(option.value) },
-                        )
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    AppText(
-                        text = option.label,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center,
-                        fontSize = labelFontSize,
-                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                        color = contentColor,
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .heightIn(min = targetHeight.coerceAtLeast(28.dp))
+                    .then(
+                        if (selected && !isDark) {
+                            Modifier.dropShadow(
+                                shape = RoundedCornerShape(cornerRadius),
+                                shadow = Shadow(radius = 3.dp, color = Color.Black, alpha = 0.08f)
+                            )
+                        } else Modifier
                     )
-                }
+                    .then(
+                        if (!selected) {
+                            Modifier.squircleBorder(
+                                width = 1.dp,
+                                color = outlineColor,
+                                cornerRadius = cornerRadius,
+                            )
+                        } else Modifier
+                    )
+                    .adaptiveSquircleBackground(
+                        color = itemBackground,
+                        cornerRadius = cornerRadius,
+                    )
+                    .squircleClip(cornerRadius)
+                    .clickable(
+                        enabled = enabled,
+                        role = Role.RadioButton,
+                        onClick = { onSelectionChange(option.value) },
+                    )
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                AppText(
+                    text = option.label,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
+                    fontSize = labelFontSize,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    color = contentColor,
+                )
             }
         }
     }
@@ -174,38 +174,32 @@ internal fun <T> AppMiuixTabRow(
         preferredCornerRadius = preferredCornerRadius,
         nativeMinimumHeight = height ?: AppChromeSizeTokens.MinimumTouchTarget,
     )
-    MiuixTheme(
-        colors = MiuixTheme.colorScheme.copy(
-            outline = Color.Transparent,
-        )
-    ) {
-        TabRow(
-            tabs = options.map { it.label },
-            selectedTabIndex = selectedIndex,
-            onTabSelected = { index ->
-                if (enabled) options.getOrNull(index)?.let { onSelectionChange(it.value) }
-            },
-            // Respect the caller's measured width so compact two-option controls do not
-            // expand to the full parent and consume the adjacent action area.
-            // Upstream paints a rectangular track and only rounds the selected item.
-            // Clip the stationary viewport as well, including during horizontal scrolling.
-            modifier = modifier.squircleClip(geometry.cornerRadius),
-            colors = TabRowDefaults.tabRowColors(
-                backgroundColor = tabColors.backgroundColor,
-                contentColor = tabColors.contentColor,
-                selectedBackgroundColor = tabColors.selectedBackgroundColor,
-                selectedContentColor = tabColors.selectedContentColor,
-            ),
-            // 非 scrollable（如频道/状态切换）：交给 Miuix 按容器宽度均分，与 Material TabRow
-            // 一致；scrollable（如时间表/分类）：minTabWidth 兜底保证可读。
-            minWidth = if (scrollable) minTabWidth else 0.dp,
-            maxWidth = Dp.Infinity,
-            height = geometry.height,
-            cornerRadius = geometry.cornerRadius,
-            itemSpacing = AppSpacingTokens.Small,
-            listState = if (scrollable) scrollState else null,
-        )
-    }
+    TabRow(
+        tabs = options.map { it.label },
+        selectedTabIndex = selectedIndex,
+        onTabSelected = { index ->
+            if (enabled) options.getOrNull(index)?.let { onSelectionChange(it.value) }
+        },
+        // Respect the caller's measured width so compact two-option controls do not
+        // expand to the full parent and consume the adjacent action area.
+        // Upstream paints a rectangular track and only rounds the selected item.
+        // Clip the stationary viewport as well, including during horizontal scrolling.
+        modifier = modifier.squircleClip(geometry.cornerRadius),
+        colors = TabRowDefaults.tabRowColors(
+            backgroundColor = tabColors.backgroundColor,
+            contentColor = tabColors.contentColor,
+            selectedBackgroundColor = tabColors.selectedBackgroundColor,
+            selectedContentColor = tabColors.selectedContentColor,
+        ),
+        // 非 scrollable（如频道/状态切换）：交给 Miuix 按容器宽度均分，与 Material TabRow
+        // 一致；scrollable（如时间表/分类）：minTabWidth 兜底保证可读。
+        minWidth = if (scrollable) minTabWidth else 0.dp,
+        maxWidth = Dp.Infinity,
+        height = geometry.height,
+        cornerRadius = geometry.cornerRadius,
+        itemSpacing = AppSpacingTokens.Small,
+        listState = if (scrollable) scrollState else null,
+    )
     // Upstream centers every selected item, including the first and last. At a non-zero parent
     // x-position that places the boundary item outside LazyRow's viewport and desynchronizes the
     // selected squircle from its label. Let the upstream positioning settle, then pin boundaries.
@@ -293,34 +287,28 @@ private fun <T> AppMiuixNonGlassTabs(
             .then(if (!enabled) Modifier.semantics { disabled() } else Modifier),
         contentAlignment = Alignment.CenterStart,
     ) {
-        MiuixTheme(
-            colors = MiuixTheme.colorScheme.copy(
-                outline = Color.Transparent,
-            )
-        ) {
-            TabRow(
-                tabs = labels,
-                selectedTabIndex = selectedIndex,
-                onTabSelected = { index ->
-                    if (enabled) options.getOrNull(index)?.let { onSelectionChange(it.value) }
-                },
-                modifier = Modifier.squircleClip(geometry.cornerRadius),
-                colors = TabRowDefaults.tabRowColors(
-                    backgroundColor = tabColors.backgroundColor,
-                    contentColor = tabColors.contentColor,
-                    selectedBackgroundColor = tabColors.selectedBackgroundColor,
-                    selectedContentColor = tabColors.selectedContentColor,
-                ),
-                minWidth = readableWidth,
-                maxWidth = Dp.Infinity,
-                // Miuix 0.9.4 attaches selectable to the full TabRow height and does not expose a
-                // separate hit slop API. Use the accessibility minimum as the actual native row
-                // height; an outer 48dp wrapper alone leaves the selectable area at 36/42dp.
-                height = interactiveHeight,
-                cornerRadius = geometry.cornerRadius,
-                itemSpacing = AppSpacingTokens.ExtraSmall,
-                listState = scrollState,
-            )
-        }
+        TabRow(
+            tabs = labels,
+            selectedTabIndex = selectedIndex,
+            onTabSelected = { index ->
+                if (enabled) options.getOrNull(index)?.let { onSelectionChange(it.value) }
+            },
+            modifier = Modifier.squircleClip(geometry.cornerRadius),
+            colors = TabRowDefaults.tabRowColors(
+                backgroundColor = tabColors.backgroundColor,
+                contentColor = tabColors.contentColor,
+                selectedBackgroundColor = tabColors.selectedBackgroundColor,
+                selectedContentColor = tabColors.selectedContentColor,
+            ),
+            minWidth = readableWidth,
+            maxWidth = Dp.Infinity,
+            // Miuix 0.9.4 attaches selectable to the full TabRow height and does not expose a
+            // separate hit slop API. Use the accessibility minimum as the actual native row
+            // height; an outer 48dp wrapper alone leaves the selectable area at 36/42dp.
+            height = interactiveHeight,
+            cornerRadius = geometry.cornerRadius,
+            itemSpacing = AppSpacingTokens.ExtraSmall,
+            listState = scrollState,
+        )
     }
 }
