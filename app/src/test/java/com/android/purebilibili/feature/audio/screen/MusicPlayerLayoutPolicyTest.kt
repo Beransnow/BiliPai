@@ -30,6 +30,12 @@ class MusicPlayerLayoutPolicyTest {
     }
 
     @Test
+    fun `compact pager tabs stay on cover and lyrics`() {
+        assertEquals(listOf("封面", "歌词"), resolveMusicPlayerPageTabs())
+        assertEquals(70, MUSIC_PLAYER_COMPACT_DOCK_BOTTOM_PADDING_DP)
+    }
+
+    @Test
     fun `compact artwork respects available height`() {
         assertEquals(
             320,

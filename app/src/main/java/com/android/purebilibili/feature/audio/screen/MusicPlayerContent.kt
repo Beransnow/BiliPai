@@ -351,7 +351,7 @@ internal fun MusicPlayerContent(
                                     { showAudioQuality = true }
                                 },
                                 glassTintColor = backgroundColor,
-                                modifier = Modifier.padding(bottom = 70.dp)
+                                modifier = Modifier.padding(bottom = MUSIC_PLAYER_COMPACT_DOCK_BOTTOM_PADDING_DP.dp)
                             )
                         } else {
                             LyricsPage(
@@ -374,46 +374,39 @@ internal fun MusicPlayerContent(
                                 miuixBackdrop = musicBackdrop,
                                 progressSeekRevision = progressSeekRevision,
                                 controlsVisible = lyricsControlsVisible,
-                                onControlsVisibleChange = { lyricsControlsVisible = it }
+                                onControlsVisibleChange = { lyricsControlsVisible = it },
+                                modifier = Modifier.padding(bottom = MUSIC_PLAYER_COMPACT_DOCK_BOTTOM_PADDING_DP.dp)
                             )
                         }
                     }
-                    AnimatedVisibility(
-                        // 歌词页沉浸显示：底部只留浮动控制面板，隐藏「播放/歌词」切换器，
-                        // 避免切换器 + 面板 + 手势条三层叠加；切回播放页用横滑手势。
-                        visible = pagerState.currentPage != 1,
-                        modifier = Modifier.align(Alignment.BottomCenter),
-                        enter = if (effectiveReduceMotion) EnterTransition.None else fadeIn() + slideInVertically { it / 2 },
-                        exit = if (effectiveReduceMotion) ExitTransition.None else fadeOut() + slideOutVertically { it / 2 }
-                    ) {
-                        BottomBarLiquidSegmentedControl(
-                            items = listOf("播放", "歌词"),
-                            selectedIndex = pagerState.currentPage,
-                            onSelected = { page ->
-                                pagerScope.launch { pagerState.animateScrollToPage(page) }
-                            },
-                            itemWidth = 84.dp,
-                            modifier = Modifier
-                                .navigationBarsPadding()
-                                .padding(vertical = 8.dp)
-                                .wrapContentWidth(Alignment.CenterHorizontally),
-                            height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
-                            indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
-                            liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
-                            preferInlineContentStyle = false,
-                            miuixBackdrop = musicBackdrop,
-                            dragSelectionEnabled = true,
-                            tapPressRefractionEnabled = true,
-                            isScrollInProgressProvider = { pagerState.isScrollInProgress },
-                            indicatorPositionProvider = {
-                                resolveMusicPagerIndicatorPosition(
-                                    currentPage = pagerState.currentPage,
-                                    currentPageOffsetFraction = pagerState.currentPageOffsetFraction
-                                )
-                            },
-                            externalPagerMotionEffectsEnabled = true,
-                        )
-                    }
+                    BottomBarLiquidSegmentedControl(
+                        items = resolveMusicPlayerPageTabs(),
+                        selectedIndex = pagerState.currentPage,
+                        onSelected = { page ->
+                            pagerScope.launch { pagerState.animateScrollToPage(page) }
+                        },
+                        itemWidth = 84.dp,
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            .padding(vertical = 8.dp)
+                            .wrapContentWidth(Alignment.CenterHorizontally),
+                        height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
+                        indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+                        liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
+                        preferInlineContentStyle = false,
+                        miuixBackdrop = musicBackdrop,
+                        dragSelectionEnabled = true,
+                        tapPressRefractionEnabled = true,
+                        isScrollInProgressProvider = { pagerState.isScrollInProgress },
+                        indicatorPositionProvider = {
+                            resolveMusicPagerIndicatorPosition(
+                                currentPage = pagerState.currentPage,
+                                currentPageOffsetFraction = pagerState.currentPageOffsetFraction
+                            )
+                        },
+                        externalPagerMotionEffectsEnabled = true,
+                    )
                 }
             }
 
