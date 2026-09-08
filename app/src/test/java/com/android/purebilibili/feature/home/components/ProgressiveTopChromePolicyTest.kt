@@ -53,6 +53,8 @@ class ProgressiveTopChromePolicyTest {
         val bangumiDetail = loadSource("feature/bangumi/BangumiDetailScreen.kt")
         val bangumiReview = loadSource("feature/bangumi/BangumiReviewScreen.kt")
         assertTrue(bangumiHub.contains("ImmersiveAppScaffold as AppScaffold"))
+        assertTrue(bangumiHub.contains("listTopPadding = listTopPadding"))
+        assertTrue(bangumiHub.contains("onGloballyPositioned"))
         assertTrue(bangumiDetail.contains("ImmersiveAppScaffold as AppScaffold"))
         assertTrue(bangumiReview.contains("ImmersiveAppScaffold as AppScaffold"))
         val profile = loadSource("feature/profile/ProfileScreen.kt")

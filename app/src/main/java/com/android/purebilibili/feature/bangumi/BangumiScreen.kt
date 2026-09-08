@@ -17,6 +17,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -24,7 +25,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -127,6 +130,14 @@ fun BangumiScreen(
         },
     ) { contentPadding ->
         val channelBackdrop = rememberLayerBackdrop()
+        val density = LocalDensity.current
+        var channelTabHeightPx by remember { mutableIntStateOf(0) }
+        val chromeTop = contentPadding.calculateTopPadding()
+        val listTopPadding = chromeTop + if (state.page == BangumiHubPage.SEARCH) {
+            0.dp
+        } else {
+            with(density) { channelTabHeightPx.toDp() }
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -137,33 +148,8 @@ fun BangumiScreen(
                     .fillMaxSize()
                     .layerBackdrop(channelBackdrop)
                     .background(MaterialTheme.colorScheme.background),
-            )
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = contentPadding.calculateTopPadding()),
             ) {
-                if (state.page != BangumiHubPage.SEARCH) {
-                    AppLiquidAwareTabRow(
-                        options = BangumiChannel.entries.map { AppSegmentOption(it, it.label) },
-                        selectedValue = state.channel,
-                        enabled = !selectionActive,
-                        onSelectionChange = viewModel::selectChannel,
-                        dragSelectionEnabled = true,
-                        tapPressRefractionEnabled = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        miuixBackdrop = channelBackdrop,
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                ) {
-                    BangumiHubContent(
+                BangumiHubContent(
                 state = state,
                 onBangumiClick = onBangumiClick,
                 onEpisodeClick = onBangumiEpisodeClick,
@@ -197,9 +183,32 @@ fun BangumiScreen(
                         snackbarHostState.showSnackbar(if (saved) "封面已保存" else "保存封面失败")
                     }
                 },
+                listTopPadding = listTopPadding,
                 // The backdrop source is a sibling behind the content tree. Reusing it
                 // keeps every nested dock correctly tinted without a self-sampling cycle.
                 tabBackdrop = channelBackdrop,
+                    )
+            }
+            if (state.page != BangumiHubPage.SEARCH) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = chromeTop)
+                        .onGloballyPositioned { coordinates ->
+                            channelTabHeightPx = coordinates.size.height
+                        },
+                ) {
+                    AppLiquidAwareTabRow(
+                        options = BangumiChannel.entries.map { AppSegmentOption(it, it.label) },
+                        selectedValue = state.channel,
+                        enabled = !selectionActive,
+                        onSelectionChange = viewModel::selectChannel,
+                        dragSelectionEnabled = true,
+                        tapPressRefractionEnabled = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        miuixBackdrop = channelBackdrop,
                     )
                 }
             }

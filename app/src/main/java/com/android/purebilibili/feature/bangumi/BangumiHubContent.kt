@@ -125,6 +125,7 @@ internal fun BangumiHubContent(
     onHomeScrollChanged: (firstVisibleIndex: Int, scrollOffset: Int) -> Unit = { _, _ -> },
     scrollToTopRequestId: Int = 0,
     listBottomPadding: Dp = 24.dp,
+    listTopPadding: Dp = 0.dp,
     tabBackdrop: Backdrop? = null,
 ) {
     val homeGridStates = remember { mutableMapOf<BangumiChannel, LazyGridState>() }
@@ -170,6 +171,7 @@ internal fun BangumiHubContent(
             onOpenFollow = onOpenFollow,
             onSaveCover = onSaveCover,
             listBottomPadding = listBottomPadding,
+            listTopPadding = listTopPadding,
             tabBackdrop = tabBackdrop,
         )
 
@@ -187,6 +189,7 @@ internal fun BangumiHubContent(
             onBangumiClick = onBangumiClick,
             onSaveCover = onSaveCover,
             listBottomPadding = listBottomPadding,
+            listTopPadding = listTopPadding,
             tabBackdrop = tabBackdrop,
         )
 
@@ -206,6 +209,7 @@ internal fun BangumiHubContent(
             onMoveSingle = onMoveSingleFollow,
             onUnfollowSingle = onUnfollowSingle,
             listBottomPadding = listBottomPadding,
+            listTopPadding = listTopPadding,
             tabBackdrop = tabBackdrop,
         )
 
@@ -218,6 +222,7 @@ internal fun BangumiHubContent(
             onLoadMore = onLoadMoreSearch,
             onSaveCover = onSaveCover,
             listBottomPadding = listBottomPadding,
+            listTopPadding = listTopPadding,
             tabBackdrop = tabBackdrop,
         )
     }
@@ -241,6 +246,7 @@ private fun BangumiHomeContent(
     onOpenFollow: () -> Unit,
     onSaveCover: (String, String) -> Unit,
     listBottomPadding: Dp,
+    listTopPadding: Dp,
     tabBackdrop: Backdrop?,
 ) {
     val isRefreshing = state.recommendations.isRefreshing ||
@@ -253,7 +259,7 @@ private fun BangumiHomeContent(
         LazyVerticalGrid(
             columns = GridCells.Adaptive(112.dp),
             state = gridState,
-            contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = listBottomPadding),
+            contentPadding = PaddingValues(start = 12.dp, top = listTopPadding + 8.dp, end = 12.dp, bottom = listBottomPadding),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
@@ -452,6 +458,7 @@ private fun BangumiIndexContent(
     onBangumiClick: (Long) -> Unit,
     onSaveCover: (String, String) -> Unit,
     listBottomPadding: Dp,
+    listTopPadding: Dp,
     tabBackdrop: Backdrop?,
 ) {
     val scope = rememberCoroutineScope()
@@ -464,7 +471,7 @@ private fun BangumiIndexContent(
         LazyVerticalGrid(
             columns = GridCells.Adaptive(112.dp),
             state = gridState,
-            contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = listBottomPadding),
+            contentPadding = PaddingValues(start = 12.dp, top = listTopPadding + 8.dp, end = 12.dp, bottom = listBottomPadding),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
@@ -614,12 +621,13 @@ private fun BangumiFollowContent(
     onMoveSingle: (Long, BangumiFollowStatus) -> Unit,
     onUnfollowSingle: (Long) -> Unit,
     listBottomPadding: Dp,
+    listTopPadding: Dp,
     tabBackdrop: Backdrop?,
 ) {
     val selectionMode = state.selectedIds.isNotEmpty()
     var menuItem by remember { mutableStateOf<FollowBangumiItem?>(null) }
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().padding(top = listTopPadding)) {
             AppLiquidAwareTabRow(
                 options = BangumiFollowStatus.entries.map { AppSegmentOption(it, it.label) },
                 selectedValue = status,
@@ -812,10 +820,11 @@ private fun BangumiSearchContent(
     onLoadMore: () -> Unit,
     onSaveCover: (String, String) -> Unit,
     listBottomPadding: Dp,
+    listTopPadding: Dp,
     tabBackdrop: Backdrop?,
 ) {
     val results = state.results
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().padding(top = listTopPadding)) {
         val categories = resolveBangumiSearchCategories(channel)
         AppThemeAdaptiveTabRow(
             options = categories.map { category -> AppSegmentOption(category, category.label) },

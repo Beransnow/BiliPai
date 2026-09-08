@@ -511,11 +511,7 @@ fun ProfileScreen(
             )
             
             
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .profileProgressiveBackdrop(profileProgressiveChrome.backdrop),
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 ProfileBackground(
                     user = guestUser,
                     viewModel = viewModel,
@@ -728,7 +724,13 @@ fun ProfileScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .profileProgressiveBackdrop(profileProgressiveChrome.backdrop),
+                        .then(
+                            if (windowSizeClass.shouldUseSplitLayout) {
+                                Modifier.profileProgressiveBackdrop(profileProgressiveChrome.backdrop)
+                            } else {
+                                Modifier
+                            }
+                        ),
                 ) {
                     // [Refactor] Lift background to root
                     ProfileBackground(
@@ -1229,7 +1231,9 @@ private fun ProfileSpaceContent(
         } else {
             LazyColumn(
                 state = mobileListState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .profileProgressiveBackdrop(progressiveTopChrome.backdrop),
                 contentPadding = PaddingValues(bottom = paddingValues.calculateBottomPadding() + 120.dp)
             ) {
                 item {
@@ -2936,8 +2940,11 @@ private fun rememberProfileProgressiveTopChrome(): ProfileProgressiveTopChrome {
         enabled = config.progressiveTopBlurEnabled && !config.headerBlurEnabled,
         hasBackdrop = true,
     ) && !isLowBlurBudgetForced()
-    val backdrop = if (enabled) rememberLayerBackdrop() else null
-    return ProfileProgressiveTopChrome(backdrop = backdrop, enabled = enabled)
+    val backdrop = rememberLayerBackdrop()
+    return ProfileProgressiveTopChrome(
+        backdrop = if (enabled) backdrop else null,
+        enabled = enabled,
+    )
 }
 
 private fun Modifier.profileProgressiveBackdrop(backdrop: LayerBackdrop?): Modifier {
@@ -3245,6 +3252,7 @@ private fun MobileProfileContent(
                 state = guestListState,
                 modifier = Modifier
                     .fillMaxSize()
+                    .profileProgressiveBackdrop(progressiveTopChrome.backdrop)
                     .then(if (hazeState != null) Modifier.hazeSourceCompat(hazeState) else Modifier),
                 contentPadding = PaddingValues(
                     // [Modified] 顶部留白，适配居中顶部栏（64dp + Status Bar ~ 30-40dp）
