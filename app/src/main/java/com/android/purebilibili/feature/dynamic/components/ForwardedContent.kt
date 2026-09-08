@@ -179,6 +179,12 @@ fun ForwardedContent(
                     onBlankTap = openOrigDynamic.takeIf {
                         onDynamicDetailClick != null && origDynamicId.isNotEmpty()
                     },
+                    onVideoClick = onVideoClick,
+                    onDynamicDetailClick = onDynamicDetailClick,
+                    onBangumiClick = onBangumiClick,
+                    onArticleClick = onArticleClick,
+                    onLiveClick = onLiveClick,
+                    onMusicClick = onMusicClick,
                     extraEmoteUrlMap = forwardedEmoteMap,
                 )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Small))

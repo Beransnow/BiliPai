@@ -102,6 +102,7 @@ fun DynamicDetailScreen(
     onMusicClick: ((Long) -> Unit)? = null,
     onCollectionClick: ((Long, Long, String, String) -> Unit)? = null,
     onCourseClick: ((String, String) -> Unit)? = null,
+    onDynamicDetailClick: (String) -> Unit = {},
     onShareToMessageClick: ((DynamicItem) -> Unit)? = null,
 ) {
     val interactionViewModel: DynamicViewModel = viewModel()
@@ -256,6 +257,7 @@ fun DynamicDetailScreen(
                             onMusicClick = onMusicClick,
                             onCollectionClick = onCollectionClick,
                             onCourseClick = onCourseClick,
+                            onDynamicDetailClick = onDynamicDetailClick,
                             isDetail = true,
                             gifImageLoader = gifImageLoader,
                             onCommentClick = {
