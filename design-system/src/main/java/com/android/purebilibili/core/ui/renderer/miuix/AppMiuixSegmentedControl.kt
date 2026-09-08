@@ -259,7 +259,6 @@ private fun <T> AppMiuixNonGlassTabs(
         maxOf(
             AppChromeSizeTokens.MinimumTouchTarget,
             minTabWidth,
-            labelWidth + 24.dp,
         )
     }
     val scrollState = rememberLazyListState()

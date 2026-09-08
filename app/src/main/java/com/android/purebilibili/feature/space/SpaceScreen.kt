@@ -2686,7 +2686,7 @@ private fun SpaceSecondarySwitchRow(
                 onSelectionChange = onSelect,
                 modifier = Modifier.fillMaxWidth(),
                 scrollable = useScrollableRail,
-                minTabWidth = itemWidth,
+                minTabWidth = 64.dp,
                 compactMiuixWhenTwoOptions = false,
                 allowLabelOverflow = true,
             )

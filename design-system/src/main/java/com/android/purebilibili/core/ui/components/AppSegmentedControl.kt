@@ -278,7 +278,7 @@ fun <T> AppNativeTabRow(
             selectedValue = selectedValue,
             enabled = enabled,
             scrollable = effectiveScrollable,
-            minTabWidth = readableMinTabWidth,
+            minTabWidth = minTabWidth,
             allowLabelOverflow = allowLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
             modifier = viewportBoundedModifier,
@@ -289,13 +289,13 @@ fun <T> AppNativeTabRow(
             selectedValue = selectedValue,
             enabled = enabled,
             scrollable = effectiveScrollable,
-            minTabWidth = readableMinTabWidth,
+            minTabWidth = minTabWidth,
             colors = colors,
             preferredCornerRadius = policy.preferredCornerRadius,
             height = height,
             modifier = if (!com.android.purebilibili.core.ui.isMiuixNonGlassEnabled() &&
                 !effectiveScrollable && options.size == 2) {
-                viewportBoundedModifier.requiredWidth(readableMinTabWidth * options.size)
+                viewportBoundedModifier.requiredWidth(minTabWidth * options.size)
             } else {
                 viewportBoundedModifier
             },
