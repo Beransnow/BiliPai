@@ -272,13 +272,14 @@ fun <T> AppNativeTabRow(
         miuixSurfaceContainerHigh = AppSurfaceTokens.surfaceContainerHigh(),
         miuixOnSurfaceVariantSummary = AppSurfaceTokens.onSurfaceVariantSummary(),
     )
+    val targetTabWidth = if (effectiveScrollable) readableMinTabWidth else minTabWidth
     when (if (forceMaterial3) AppSegmentedRenderer.MATERIAL3 else resolveAppSegmentedRenderer(policy.usesNativeTabRow)) {
         AppSegmentedRenderer.MATERIAL3 -> AppMaterial3TabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
             scrollable = effectiveScrollable,
-            minTabWidth = minTabWidth,
+            minTabWidth = targetTabWidth,
             allowLabelOverflow = allowLabelOverflow,
             indicatorPositionProvider = indicatorPositionProvider,
             modifier = viewportBoundedModifier,
@@ -289,7 +290,7 @@ fun <T> AppNativeTabRow(
             selectedValue = selectedValue,
             enabled = enabled,
             scrollable = effectiveScrollable,
-            minTabWidth = minTabWidth,
+            minTabWidth = targetTabWidth,
             colors = colors,
             preferredCornerRadius = policy.preferredCornerRadius,
             height = height,

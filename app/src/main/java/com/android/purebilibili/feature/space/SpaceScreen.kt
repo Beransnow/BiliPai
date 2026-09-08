@@ -2610,7 +2610,7 @@ private fun SpaceSecondarySwitchRow(
             itemWidthDp = preferredItemWidthDp,
             viewportWidthDp = maxWidth.value.roundToInt(),
             containerHorizontalPaddingDp = containerHorizontalPaddingDp
-        )
+        ) || items.size > 3 || items.any { it.title.length > 4 }
         // Keep three slots visible in the viewport even when later library entries
         // make the rail scrollable; long contribution titles then use the same
         // compact width as the legacy three-tab dock.
