@@ -70,12 +70,12 @@ internal fun <T> AppMiuixSegmentedControl(
     val labelFontSize = remember(options.size, longestLabelLength) {
         resolveAppSegmentedLabelFontSizeSp(options.size, longestLabelLength).sp
     }
-    val targetHeight = height ?: 36.dp
-    val cornerRadius = preferredCornerRadius.coerceAtLeast(8.dp)
-    val activeCardColor = colors.activeContainerColor
-    val activeTextColor = colors.activeContentColor
-    val inactiveTextColor = colors.inactiveContentColor
-    val outlineColor = MiuixTheme.colorScheme.outline
+    val targetHeight = height ?: 34.dp
+    val cornerRadius = 8.dp
+    val activeCardColor = if (isDark) Color(0xFF2C2C2E) else Color(0xFFE5E5EA)
+    val activeTextColor = if (isDark) Color.White else Color(0xFF111111)
+    val inactiveTextColor = if (isDark) Color(0xFF98989D) else Color(0xFF6C6C70)
+    val outlineColor = if (isDark) Color(0xFF48484A) else Color(0xFFD1D1D6)
 
     Row(
         modifier = modifier
