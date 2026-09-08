@@ -326,6 +326,52 @@ internal fun resolveMaterialColorSchemeFromMiuixBridge(
     }
 }
 
+/** Keep upstream neutral/control roles; only the user's accent is adapted from Material. */
+internal fun resolveNativeMiuixColors(
+    scheme: ColorScheme,
+    darkTheme: Boolean,
+    amoledDarkTheme: Boolean = false,
+    customRolesEnabled: Boolean = false,
+): top.yukonga.miuix.kmp.theme.Colors {
+    val accent = resolveMiuixColorsFromMaterialBridge(createMiuixMaterialBridge(scheme), darkTheme)
+    if (customRolesEnabled) return accent
+    val base = if (darkTheme) miuixDarkColorScheme() else miuixLightColorScheme()
+    return base.copy(
+        primary = accent.primary,
+        onPrimary = accent.onPrimary,
+        primaryVariant = accent.primaryVariant,
+        onPrimaryVariant = accent.onPrimaryVariant,
+        primaryContainer = accent.primaryContainer,
+        onPrimaryContainer = accent.onPrimaryContainer,
+        disabledPrimary = accent.disabledPrimary,
+        disabledOnPrimary = accent.disabledOnPrimary,
+        disabledPrimaryButton = accent.disabledPrimaryButton,
+        disabledOnPrimaryButton = accent.disabledOnPrimaryButton,
+        disabledPrimarySlider = accent.disabledPrimarySlider,
+        background = if (darkTheme && amoledDarkTheme) Color.Black else base.background,
+    )
+}
+
+/** Material-backed content shares the same surfaces as native Miuix components. */
+internal fun alignMaterialSurfacesWithMiuix(
+    scheme: ColorScheme,
+    colors: top.yukonga.miuix.kmp.theme.Colors,
+): ColorScheme = scheme.copy(
+    background = colors.background,
+    onBackground = colors.onBackground,
+    surface = colors.surface,
+    onSurface = colors.onSurface,
+    surfaceVariant = colors.surfaceVariant,
+    onSurfaceVariant = colors.onSurfaceVariantSummary,
+    surfaceContainerLowest = colors.surface,
+    surfaceContainerLow = colors.surfaceContainer,
+    surfaceContainer = colors.surfaceContainer,
+    surfaceContainerHigh = colors.surfaceContainerHigh,
+    surfaceContainerHighest = colors.surfaceContainerHighest,
+    outline = colors.outline,
+    outlineVariant = colors.dividerLine,
+)
+
 internal fun resolveMiuixColorsFromMaterialBridge(
     bridge: MiuixMaterialBridge,
     darkTheme: Boolean
@@ -1097,17 +1143,31 @@ fun PureBiliBiliTheme(
         )
     }
     val staticMaterialScheme = if (darkTheme) resolvedDarkMaterialScheme else resolvedLightMaterialScheme
-    val miuixLightColors = remember(resolvedLightMaterialScheme) {
-        resolveMiuixColorsFromMaterialBridge(
-            bridge = createMiuixMaterialBridge(resolvedLightMaterialScheme),
-            darkTheme = false
-        )
+    val useNativeMiuix = uiStyle == AppUiStyle.MIUIX && !liquidGlassEnabled
+    val miuixLightColors = remember(resolvedLightMaterialScheme, useNativeMiuix, effectiveThemeRoleOverrides) {
+        if (useNativeMiuix) {
+            resolveNativeMiuixColors(
+                resolvedLightMaterialScheme,
+                darkTheme = false,
+                customRolesEnabled = effectiveThemeRoleOverrides.enabled,
+            )
+        } else {
+            resolveMiuixColorsFromMaterialBridge(createMiuixMaterialBridge(resolvedLightMaterialScheme), false)
+        }
     }
-    val miuixDarkColors = remember(resolvedDarkMaterialScheme) {
-        resolveMiuixColorsFromMaterialBridge(
-            bridge = createMiuixMaterialBridge(resolvedDarkMaterialScheme),
-            darkTheme = true
-        )
+    val miuixDarkColors = remember(
+        resolvedDarkMaterialScheme, useNativeMiuix, amoledDarkTheme, effectiveThemeRoleOverrides,
+    ) {
+        if (useNativeMiuix) {
+            resolveNativeMiuixColors(
+                resolvedDarkMaterialScheme,
+                darkTheme = true,
+                amoledDarkTheme = amoledDarkTheme,
+                customRolesEnabled = effectiveThemeRoleOverrides.enabled,
+            )
+        } else {
+            resolveMiuixColorsFromMaterialBridge(createMiuixMaterialBridge(resolvedDarkMaterialScheme), true)
+        }
     }
     val controller = remember(
         themeMode,
@@ -1132,7 +1192,11 @@ fun PureBiliBiliTheme(
             isDark = darkTheme
         )
     }
-    val materialColorScheme = staticMaterialScheme
+    val activeMiuixColors = if (darkTheme) miuixDarkColors else miuixLightColors
+    val materialColorScheme = remember(staticMaterialScheme, useNativeMiuix, activeMiuixColors) {
+        if (useNativeMiuix) alignMaterialSurfacesWithMiuix(staticMaterialScheme, activeMiuixColors)
+        else staticMaterialScheme
+    }
 
     //  [新增] 动态设置状态栏图标颜色
     val view = LocalView.current
