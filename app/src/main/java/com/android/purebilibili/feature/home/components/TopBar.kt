@@ -177,17 +177,10 @@ internal fun resolveTopTabDockEndInsetDp(
 /**
  * 顶部 Tab 的视觉背景保持 30dp 高；36dp 行高留出上下各 3dp 的呼吸空间。
  */
-internal fun resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface: Boolean): Float = 3f
-
 internal fun resolveTopTabIndicatorShape(
     showIcon: Boolean,
     showText: Boolean,
-): Shape =
-    if (showIcon && showText) {
-        RoundedCornerShape(12.dp)
-    } else {
-        resolveSharedBottomBarCapsuleShape()
-    }
+): Shape = RoundedCornerShape(12.dp)
 
 internal fun resolveTopTabDockIndicatorWidthDp(
     itemWidthDp: Float,
