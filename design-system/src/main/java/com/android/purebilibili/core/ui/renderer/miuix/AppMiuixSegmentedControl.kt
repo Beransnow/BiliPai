@@ -37,8 +37,9 @@ import top.yukonga.miuix.kmp.basic.TabRowDefaults
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -61,6 +62,7 @@ internal fun <T> AppMiuixSegmentedControl(
     modifier: Modifier,
     onSelectionChange: (T) -> Unit,
 ) {
+    val isDark = isSystemInDarkTheme()
     val longestLabelLength = remember(options) {
         options.maxOfOrNull { it.label.length } ?: 0
     }
@@ -69,63 +71,67 @@ internal fun <T> AppMiuixSegmentedControl(
     }
     val targetHeight = height ?: 34.dp
     val cornerRadius = 8.dp
+    val trackColor = colors.outerContainerColor
+    val activeCardColor = colors.activeContainerColor
+    val activeTextColor = colors.activeContentColor
+    val inactiveTextColor = colors.inactiveContentColor
 
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .then(if (!enabled) Modifier.semantics { disabled() } else Modifier),
-        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-        verticalAlignment = Alignment.CenterVertically,
+            .then(if (!enabled) Modifier.semantics { disabled() } else Modifier)
+            .adaptiveSquircleBackground(
+                color = trackColor,
+                cornerRadius = cornerRadius,
+            )
+            .squircleClip(cornerRadius)
+            .padding(2.dp),
     ) {
-        options.forEach { option ->
-            val selected = option.value == selectedValue
-            val itemBackground = if (selected) {
-                colors.activeContainerColor
-            } else {
-                Color.Transparent
-            }
-            val contentColor = if (selected) {
-                colors.activeContentColor
-            } else {
-                colors.inactiveContentColor
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            options.forEach { option ->
+                val selected = option.value == selectedValue
+                val itemBackground = if (selected) activeCardColor else Color.Transparent
+                val contentColor = if (selected) activeTextColor else inactiveTextColor
 
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = targetHeight)
-                    .adaptiveSquircleBackground(
-                        color = itemBackground,
-                        cornerRadius = cornerRadius,
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .heightIn(min = (targetHeight - 4.dp).coerceAtLeast(28.dp))
+                        .then(
+                            if (selected && !isDark) {
+                                Modifier.dropShadow(
+                                    shape = RoundedCornerShape((cornerRadius - 2.dp).coerceAtLeast(4.dp)),
+                                    shadow = Shadow(radius = 3.dp, color = Color.Black, alpha = 0.08f)
+                                )
+                            } else Modifier
+                        )
+                        .adaptiveSquircleBackground(
+                            color = itemBackground,
+                            cornerRadius = (cornerRadius - 2.dp).coerceAtLeast(4.dp),
+                        )
+                        .squircleClip((cornerRadius - 2.dp).coerceAtLeast(4.dp))
+                        .clickable(
+                            enabled = enabled,
+                            role = Role.RadioButton,
+                            onClick = { onSelectionChange(option.value) },
+                        )
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    AppText(
+                        text = option.label,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center,
+                        fontSize = labelFontSize,
+                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                        color = contentColor,
                     )
-                    .then(
-                        if (!selected) {
-                            Modifier.border(
-                                border = BorderStroke(1.dp, MiuixTheme.colorScheme.outline.copy(alpha = 0.35f)),
-                                shape = RoundedCornerShape(cornerRadius),
-                            )
-                        } else {
-                            Modifier
-                        }
-                    )
-                    .squircleClip(cornerRadius)
-                    .clickable(
-                        enabled = enabled,
-                        role = Role.RadioButton,
-                        onClick = { onSelectionChange(option.value) },
-                    )
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                AppText(
-                    text = option.label,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.Center,
-                    fontSize = labelFontSize,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                    color = contentColor,
-                )
+                }
             }
         }
     }

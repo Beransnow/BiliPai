@@ -1,5 +1,6 @@
 package com.android.purebilibili.core.ui.components
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.requiredWidth
@@ -195,16 +196,21 @@ fun <T> AppNativeSegmentedControl(
     if (options.isEmpty()) return
     val policy = rememberAppSegmentedControlPolicy()
     val materialColors = MaterialTheme.colorScheme
+    val isDark = isSystemInDarkTheme()
+    val trackColor = if (isDark) Color(0xFF242424) else Color(0xFFF2F2F2)
+    val activeCardColor = if (isDark) Color(0xFF383838) else Color.White
+    val activeTextColor = if (isDark) Color(0xFFEEEEEE) else Color(0xFF111111)
+    val inactiveTextColor = if (isDark) Color(0xFF8E8E93) else Color(0xFF666666)
     val colors = resolveAppSegmentedControlColors(
         usesMaterialColorTokens = policy.usesMaterialColorTokens,
         materialPrimaryContainer = materialColors.primaryContainer,
         materialOnPrimaryContainer = materialColors.onPrimaryContainer,
         materialSurfaceContainerHigh = materialColors.surfaceContainerHigh,
         materialOnSurfaceVariant = materialColors.onSurfaceVariant,
-        miuixSecondaryContainer = AppSurfaceTokens.surfaceContainerHighest(),
-        miuixOnSecondaryContainer = AppSurfaceTokens.onSurface(),
-        miuixSurfaceContainerHigh = AppSurfaceTokens.surfaceContainerHigh(),
-        miuixOnSurfaceVariantSummary = AppSurfaceTokens.onSurfaceVariantSummary(),
+        miuixSecondaryContainer = activeCardColor,
+        miuixOnSecondaryContainer = activeTextColor,
+        miuixSurfaceContainerHigh = trackColor,
+        miuixOnSurfaceVariantSummary = inactiveTextColor,
     )
     when (resolveAppSegmentedRenderer(policy.usesNativeTabRow)) {
         AppSegmentedRenderer.MATERIAL3 -> AppMaterial3SegmentedControl(
@@ -261,16 +267,21 @@ fun <T> AppNativeTabRow(
     )
     val policy = rememberAppSegmentedControlPolicy()
     val materialColors = MaterialTheme.colorScheme
+    val isDark = isSystemInDarkTheme()
+    val trackColor = if (isDark) Color(0xFF242424) else Color(0xFFF2F2F2)
+    val activeCardColor = if (isDark) Color(0xFF383838) else Color.White
+    val activeTextColor = if (isDark) Color(0xFFEEEEEE) else Color(0xFF111111)
+    val inactiveTextColor = if (isDark) Color(0xFF8E8E93) else Color(0xFF666666)
     val colors = resolveAppSegmentedControlColors(
         usesMaterialColorTokens = policy.usesMaterialColorTokens,
         materialPrimaryContainer = materialColors.primaryContainer,
         materialOnPrimaryContainer = materialColors.onPrimaryContainer,
         materialSurfaceContainerHigh = materialColors.surfaceContainerHigh,
         materialOnSurfaceVariant = materialColors.onSurfaceVariant,
-        miuixSecondaryContainer = AppSurfaceTokens.surfaceContainerHighest(),
-        miuixOnSecondaryContainer = AppSurfaceTokens.onSurface(),
-        miuixSurfaceContainerHigh = AppSurfaceTokens.surfaceContainerHigh(),
-        miuixOnSurfaceVariantSummary = AppSurfaceTokens.onSurfaceVariantSummary(),
+        miuixSecondaryContainer = activeCardColor,
+        miuixOnSecondaryContainer = activeTextColor,
+        miuixSurfaceContainerHigh = trackColor,
+        miuixOnSurfaceVariantSummary = inactiveTextColor,
     )
     val targetTabWidth = if (effectiveScrollable) readableMinTabWidth else minTabWidth
     when (if (forceMaterial3) AppSegmentedRenderer.MATERIAL3 else resolveAppSegmentedRenderer(policy.usesNativeTabRow)) {
