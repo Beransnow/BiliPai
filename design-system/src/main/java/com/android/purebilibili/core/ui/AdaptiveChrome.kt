@@ -306,11 +306,8 @@ fun AdaptiveTopAppBar(
                     navigationIcon = navigationContent,
                     actions = actionsContent,
                     scrollBehavior = collapseBehavior?.miuixScrollBehavior,
-                    // Miuix 标题可用宽度 = (总宽 - 导航 - actions) × 0.9 - titlePadding×2；
-                    // 默认 26dp×2 + 多 actions 会把标题挤到省略号。压紧 padding 把空间还给标题。
-                    titlePadding = 0.dp,
-                    navigationIconPadding = 0.dp,
-                    actionIconPadding = 0.dp,
+                    // Large titles share titlePadding with the collapsed title. Keep upstream
+                    // insets so the expanded heading does not touch the window edge.
                 )
             }
 
