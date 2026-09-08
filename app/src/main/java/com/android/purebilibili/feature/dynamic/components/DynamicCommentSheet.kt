@@ -17,14 +17,19 @@ import com.android.purebilibili.core.ui.skeleton.CommentListColumnSkeleton
 import com.android.purebilibili.core.ui.skeleton.CommentListSkeleton
 
 import android.content.Context
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
+import android.graphics.RenderEffect as AndroidRenderEffect
+import android.graphics.Shader
+import android.os.Build
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.graphics.asComposeRenderEffect
+import com.android.purebilibili.core.ui.transition.resolvePredictiveBackBlurFrame
+import com.android.purebilibili.feature.video.ui.components.resolveCommentThreadCoveredBlurProgress
+import com.android.purebilibili.feature.video.ui.components.resolveCommentThreadPredictiveBackOffsetY
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -363,50 +368,37 @@ fun DynamicCommentSheet(
                     .layerBackdrop(commentChromeBackdrop)
                     .background(AppSurfaceTokens.background())
             )
-            AnimatedContent(
-                targetState = hostContent,
+            Column(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+            val coveredBlurProgress = if (
+                hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL
+            ) {
+                resolveCommentThreadCoveredBlurProgress(threadBackProgress)
+            } else {
+                0f
+            }
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
-                        if (hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL) {
-                            translationX = threadBackProgress * size.width
+                        if (coveredBlurProgress > 0f &&
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                        ) {
+                            val blurFrame = resolvePredictiveBackBlurFrame(
+                                progress = coveredBlurProgress,
+                            )
+                            renderEffect = if (blurFrame.blurRadiusPx > 0.5f) {
+                                AndroidRenderEffect.createBlurEffect(
+                                    blurFrame.blurRadiusPx,
+                                    blurFrame.blurRadiusPx,
+                                    Shader.TileMode.CLAMP,
+                                ).asComposeRenderEffect()
+                            } else {
+                                null
+                            }
                         }
                     },
-                transitionSpec = {
-                    val opensThreadDetail =
-                        initialState == DynamicCommentSheetHostContent.MAIN_LIST &&
-                            targetState == DynamicCommentSheetHostContent.THREAD_DETAIL
-                    val closesThreadDetail =
-                        initialState == DynamicCommentSheetHostContent.THREAD_DETAIL &&
-                            targetState == DynamicCommentSheetHostContent.MAIN_LIST
-                    val direction = when {
-                        opensThreadDetail -> 1
-                        closesThreadDetail -> -1
-                        else -> 0
-                    }
-                    val enter = fadeIn(animationSpec = tween(220)) +
-                        slideInHorizontally(animationSpec = tween(260)) { width ->
-                            when {
-                                direction > 0 -> width / 2
-                                direction < 0 -> -width / 2
-                                else -> 0
-                            }
-                        }
-                    val exit = fadeOut(animationSpec = tween(200)) +
-                        slideOutHorizontally(animationSpec = tween(240)) { width ->
-                            when {
-                                direction > 0 -> -width / 3
-                                direction < 0 -> width / 3
-                                else -> 0
-                            }
-                        }
-                    enter togetherWith exit using SizeTransform(clip = false)
-                },
-                label = "dynamic_comment_host_content",
-            ) { targetContent ->
-            Column(modifier = Modifier.fillMaxSize()) {
-            when (targetContent) {
-                DynamicCommentSheetHostContent.MAIN_LIST -> {
+            ) {
             // 标题、数量和排序保持在同一视觉层级，关闭按钮保留 48dp 触控区。
             Row(
                 modifier = Modifier
@@ -547,11 +539,28 @@ fun DynamicCommentSheet(
                     }
                 }
             }
-                }
-
-                DynamicCommentSheetHostContent.THREAD_DETAIL -> {
-                    val rootReply = subReplyState.rootReply
-                    if (rootReply != null) {
+            }
+            AnimatedVisibility(
+                visible = hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL &&
+                    subReplyState.rootReply != null,
+                enter = fadeIn(animationSpec = tween(220)) +
+                    slideInVertically(animationSpec = tween(260)) { height -> height },
+                exit = fadeOut(animationSpec = tween(200)) +
+                    slideOutVertically(animationSpec = tween(240)) { height -> height },
+            ) {
+                val rootReply = subReplyState.rootReply
+                if (rootReply != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(AppSurfaceTokens.background())
+                            .graphicsLayer {
+                                translationY = resolveCommentThreadPredictiveBackOffsetY(
+                                    progress = threadBackProgress,
+                                    heightPx = size.height,
+                                )
+                            },
+                    ) {
                         SubReplyDetailContent(
                             rootReply = rootReply,
                             subReplies = subReplyState.items,
@@ -581,14 +590,11 @@ fun DynamicCommentSheet(
                             likedComments = likedThreadComments,
                             onAvatarClick = { mid -> mid.toLongOrNull()?.let(onUserClick) },
                             targetReplyId = subReplyState.targetReplyId,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
+                            modifier = Modifier.fillMaxSize(),
                         )
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
+            }
             }
 
             DynamicCommentComposer(
@@ -612,7 +618,6 @@ fun DynamicCommentSheet(
                         vertical = AppSpacingTokens.Medium,
                     ),
             )
-            }
             }
         }
     }

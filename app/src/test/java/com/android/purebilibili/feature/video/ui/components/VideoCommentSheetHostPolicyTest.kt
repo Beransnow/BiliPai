@@ -60,6 +60,9 @@ class VideoCommentSheetHostPolicyTest {
         )
         assertEquals(0.4f, resolveVideoCommentPredictiveBackProgress(inProgress = true, progress = 0.4f))
         assertEquals(0f, resolveVideoCommentPredictiveBackProgress(inProgress = false, progress = 0.4f))
+        assertEquals(40f, resolveCommentThreadPredictiveBackOffsetY(progress = 0.4f, heightPx = 100f))
+        assertEquals(1f, resolveCommentThreadCoveredBlurProgress(threadBackProgress = 0f))
+        assertEquals(0f, resolveCommentThreadCoveredBlurProgress(threadBackProgress = 1f))
     }
 
     @Test

@@ -1049,7 +1049,31 @@ fun SearchScreen(
                             ),
                         ) {
                             Column {
-                            Spacer(modifier = Modifier.height(contentTopPadding + 8.dp))
+                            SearchTopBar(
+                                query = state.query,
+                                onBack = handleSearchBack,
+                                onQueryChange = { viewModel.onQueryChange(it) },
+                                onSearch = {
+                                    autoFocusConsumed = true
+                                    viewModel.search(it)
+                                    dismissSearchKeyboardAndFocus()
+                                },
+                                onClearQuery = { viewModel.onQueryChange("") },
+                                onFocusChanged = { focused ->
+                                    searchFieldFocused = focused
+                                    if (focused) {
+                                        autoFocusConsumed = true
+                                    }
+                                },
+                                focusRequester = searchFocusRequester,
+                                placeholder = state.defaultSearchHint.ifBlank { resolveSearchDefaultPlaceholder() },
+                                suggestedKeyword = state.defaultSearchHint,
+                                autoFocusEnabled = false,
+                                reducedMotionBudget = effectiveSearchMotionBudget == SearchMotionBudget.REDUCED,
+                                isScrollInProgressProvider = { isSearchResultsScrolling },
+                                liquidGlassEnabled = effectiveLiquidGlassEnabled,
+                                miuixBackdrop = searchChromeBackdrop,
+                            )
                             //  搜索彩蛋消息横幅
                             val easterEggMsg = state.easterEggMessage
                             if (easterEggMsg != null) {
@@ -2040,7 +2064,9 @@ fun SearchScreen(
                 )
             }
 
-            // ---  顶部搜索栏 (常驻顶部) ---
+            // Landing keeps an overlay search bar; results pin it in the scaffold chrome
+            // so the type dock stays below it instead of sliding underneath.
+            if (!state.showResults) {
             BiliPaiImmersiveTopBar(
                 backdrop = searchChromeBackdrop,
                 enabled = immersiveSearchChrome,
@@ -2101,6 +2127,7 @@ fun SearchScreen(
                     .background(if (immersiveSearchChrome) Color.Transparent else searchTopBarHeaderColor)
             )
 
+            }
             }
 
             AppBackToTopButton(
@@ -2317,22 +2344,23 @@ fun SearchTopBar(
         Column {
             Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
 
+            val dockShape = resolveSharedBottomBarCapsuleShape()
             Row(
                 modifier = Modifier
                     .responsiveContentWidth()
-                    .heightIn(min = topBarRowMinHeightDp.dp)
                     .padding(horizontal = 12.dp, vertical = 8.dp)
                     .padding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues())
-                    .then(entryMotionModifier),
+                    .then(entryMotionModifier)
+                    .heightIn(min = topBarRowMinHeightDp.dp)
+                    .searchTopChromeGlass(dockShape)
+                    .padding(horizontal = 6.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val inputShape = resolveSearchInputShape(topChromePolicy)
                 val actionShape = AppShapes.container(chromeSpec.actionShapeLevel)
                 SearchTopBarIconButton(
                     onClick = onBack,
-                    modifier = Modifier
-                        .size(chromeSpec.clearActionSizeDp.dp)
-                        .searchTopChromeGlass(actionShape)
+                    modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
                 ) {
                     AppIcon(
                         backIcon,
@@ -2372,7 +2400,6 @@ fun SearchTopBar(
                         .weight(1f)
                         .fillMaxWidth()
                         .height(chromeSpec.inputHeightDp.dp)
-                        .searchTopChromeGlass(inputShape)
                         .onFocusChanged { onFocusChanged(it.isFocused) }
                 )
 
@@ -2383,7 +2410,6 @@ fun SearchTopBar(
                     enabled = canSubmit,
                     modifier = Modifier
                         .size(chromeSpec.submitActionSizeDp.dp)
-                        .searchTopChromeGlass(actionShape)
                         .then(
                             if (glassActive) {
                                 Modifier
@@ -2415,9 +2441,7 @@ fun SearchTopBar(
                 SearchTopBarIconButton(
                     onClick = onClearQuery,
                     enabled = query.isNotEmpty(),
-                    modifier = Modifier
-                        .size(chromeSpec.clearActionSizeDp.dp)
-                        .searchTopChromeGlass(actionShape)
+                    modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
                 ) {
                     AppIcon(
                         clearIcon,

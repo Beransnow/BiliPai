@@ -486,8 +486,8 @@ class SearchScreenPolicyTest {
         assertTrue(topBar.contains("TextFieldValue("))
         assertTrue(topBar.contains("resolveSearchInputShape(topChromePolicy)"))
         assertFalse(topBar.contains("RoundedCornerShape("))
-        assertTrue(topBar.contains("searchTopChromeGlass(inputShape)"))
-        assertTrue(topBar.contains("searchTopChromeGlass(actionShape)"))
+        assertTrue(topBar.contains("searchTopChromeGlass(dockShape)"))
+        assertTrue(topBar.contains("resolveSharedBottomBarCapsuleShape()"))
         assertTrue(topBar.contains("liquidGlassEnabled"))
         assertTrue(topBar.contains("homeTopChromeSurface("))
     }

@@ -17,6 +17,10 @@ class CommentOverlayNavigationBackHandlerStructureTest {
         assertTrue(source.contains("isBackEnabled = hostVisible"))
         assertTrue(source.contains("resolveVideoCommentPredictiveBackTarget("))
         assertTrue(source.contains("threadBackProgress"))
+        assertTrue(source.contains("translationY = resolveCommentThreadPredictiveBackOffsetY("))
+        assertTrue(source.contains("slideInVertically("))
+        assertTrue(source.contains("resolvePredictiveBackBlurFrame("))
+        assertFalse(source.contains("translationX = threadBackProgress"))
         assertFalse(source.contains("import androidx.activity.compose.BackHandler"))
     }
 
@@ -33,6 +37,8 @@ class CommentOverlayNavigationBackHandlerStructureTest {
         assertTrue(mainSheetSource.contains("NavigationBackHandler("))
         assertTrue(mainSheetSource.contains("resolveVideoCommentPredictiveBackTarget("))
         assertTrue(mainSheetSource.contains("threadBackProgress"))
+        assertTrue(mainSheetSource.contains("translationY = resolveCommentThreadPredictiveBackOffsetY("))
+        assertTrue(mainSheetSource.contains("slideInVertically("))
         assertTrue(mainSheetSource.contains("SubReplyDetailContent("))
         assertTrue(subReplySource.contains("WindowNavigationEventBridge()"))
         assertTrue(subReplySource.contains("LocalNavigationBackHandler("))
