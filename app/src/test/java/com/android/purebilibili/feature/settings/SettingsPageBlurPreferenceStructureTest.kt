@@ -7,14 +7,17 @@ import kotlin.test.assertTrue
 
 class SettingsPageBlurPreferenceStructureTest {
     @Test
-    fun settingsPageChromeUsesHomeProgressiveBlurWithoutReadabilityScrim() {
+    fun settingsPageChromeKeepsFrostedAndProgressivePreferencesSeparate() {
         val source = locate(
             "src/main/java/com/android/purebilibili/feature/settings/ui/SettingsPageScaffold.kt"
         ).readText()
 
         assertTrue(source.contains("topBarBlurEnabled: Boolean? = null"))
-        assertTrue(source.contains("val effectiveTopBarBlurEnabled = topBarBlurEnabled ?: globalProgressiveBlurEnabled"))
-        assertTrue(source.contains("enabled = effectiveTopBarBlurEnabled"))
+        assertTrue(source.contains("val headerBlurEnabled = topBarBlurEnabled ?: appThemeConfig.headerBlurEnabled"))
+        assertTrue(source.contains("appThemeConfig.progressiveTopBlurEnabled && !headerBlurEnabled"))
+        assertTrue(source.contains(".unifiedBlur("))
+        assertTrue(source.contains("Modifier.hazeSourceCompat(hazeState)"))
+        assertTrue(source.contains("surfaceType = BlurSurfaceType.HEADER"))
         assertTrue(source.contains(".biliPaiProgressiveTopBlur("))
         assertTrue(source.contains("Modifier.layerBackdrop(backdrop)"))
         assertFalse(source.contains("TopReadabilityChrome"))
@@ -35,7 +38,7 @@ class SettingsPageBlurPreferenceStructureTest {
         assertTrue(scaffold.contains("topBarStyle: AppTopBarStyle = AppTopBarStyle.CENTERED"))
         assertTrue(scaffold.contains("rememberAppTopBarCollapseBehavior()"))
         assertTrue(scaffold.contains("modifier.appTopBarNestedScroll(collapseBehavior)"))
-        assertTrue(scaffold.contains("!progressiveBlurEnabled"))
+        assertTrue(scaffold.contains("!topBarBlurActive"))
         assertTrue(settings.contains("destination == SettingsNavDestination.Home"))
         assertTrue(settings.contains("AppTopBarStyle.LARGE"))
     }
