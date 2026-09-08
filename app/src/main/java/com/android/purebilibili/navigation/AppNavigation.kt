@@ -229,6 +229,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.foundation.layout.Box // 确保 Box 被导入
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize // 确保 fillMaxSize 被导入
 import androidx.compose.foundation.layout.padding
@@ -3870,6 +3871,29 @@ fun AppNavigation(
             } // End of Content Box
             } // End of navigation content row
 
+            val audioNowPlayingBarEnabled by SettingsManager
+                .getAudioNowPlayingBarEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
+            val audioNowPlayingActive by AudioNowPlayingSession.active.collectAsStateWithLifecycle()
+            val audioPlaylist by PlaylistManager.playlist.collectAsStateWithLifecycle()
+            val audioPlaylistIndex by PlaylistManager.currentIndex.collectAsStateWithLifecycle()
+            val audioNowPlayingItem = audioPlaylist.getOrNull(audioPlaylistIndex)
+            val showAudioNowPlayingInDock = resolveAudioNowPlayingVisible(
+                sessionActive = audioNowPlayingActive,
+                isOnAudioModeScreen = currentNavigation3Key is BiliPaiNavKey.AudioMode,
+                isInPipMode = isInPipMode,
+                hasCurrentItem = audioNowPlayingItem != null,
+                barEnabled = audioNowPlayingBarEnabled
+            )
+            val showAudioNowPlayingIndependent = resolveAudioNowPlayingVisible(
+                sessionActive = audioNowPlayingActive,
+                isOnAudioModeScreen = currentNavigation3Key is BiliPaiNavKey.AudioMode,
+                isInPipMode = isInPipMode,
+                hasCurrentItem = audioNowPlayingItem != null,
+                barEnabled = audioNowPlayingBarEnabled,
+                isVideoDetailDestination = isVideoDetailDestination
+            )
+
             if (bottomBarCanMount) {
                 val bottomBarModifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -3896,6 +3920,44 @@ fun AppNavigation(
                         enterFadeDurationMillis = navMotionSpec.slowFadeDurationMillis,
                         exitFadeDurationMillis = navMotionSpec.fastFadeDurationMillis
                     ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                        if (showAudioNowPlayingInDock && audioNowPlayingItem != null) {
+                            val playbackManager = miniPlayerManager ?: MiniPlayerManager.getInstance(context)
+                            AudioNowPlayingBar(
+                                state = AudioNowPlayingBarState(
+                                    title = audioNowPlayingItem.title,
+                                    artist = audioNowPlayingItem.owner,
+                                    coverUrl = audioNowPlayingItem.cover,
+                                    isPlaying = playbackManager.isPlaying,
+                                    playbackSpeed = playbackManager.player?.playbackParameters?.speed ?: 1f
+                                ),
+                                onExpand = {
+                                    pushNavigation3Route(
+                                        ScreenRoutes.AudioMode.createRoute(
+                                            bvid = audioNowPlayingItem.bvid,
+                                            cid = audioNowPlayingItem.cid
+                                        )
+                                    )
+                                },
+                                onPlayPause = { playbackManager.togglePlayPause() },
+                                onSkipNext = { playbackManager.playNext() },
+                                onSkipPrevious = { playbackManager.playPrevious() },
+                                onDismiss = {
+                                    if (playbackManager.isPlaying) {
+                                        playbackManager.togglePlayPause()
+                                    }
+                                    AudioNowPlayingSession.dismiss()
+                                },
+                                glassEnabled = effectiveHomeSettings.androidNativeLiquidGlassEnabled,
+                                miuixBackdrop = bottomBarBackdrop,
+                                liquidGlassTuning = liquidGlassRenderConfig.tuning,
+                                liftAboveBottomBar = false,
+                                consumeNavigationBarsPadding = false
+                            )
+                        }
                         if (isBottomBarFloating) {
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
@@ -3989,27 +4051,10 @@ fun AppNavigation(
                                 }
                             )
                         }
+                        }
                     }
                 }
-            }
-
-            val audioNowPlayingBarEnabled by SettingsManager
-                .getAudioNowPlayingBarEnabled(context)
-                .collectAsStateWithLifecycle(initialValue = true)
-            val audioNowPlayingActive by AudioNowPlayingSession.active.collectAsStateWithLifecycle()
-            val audioPlaylist by PlaylistManager.playlist.collectAsStateWithLifecycle()
-            val audioPlaylistIndex by PlaylistManager.currentIndex.collectAsStateWithLifecycle()
-            val audioNowPlayingItem = audioPlaylist.getOrNull(audioPlaylistIndex)
-            val showAudioNowPlaying = resolveAudioNowPlayingVisible(
-                sessionActive = audioNowPlayingActive,
-                isOnAudioModeScreen = currentNavigation3Key is BiliPaiNavKey.AudioMode,
-                isInPipMode = isInPipMode,
-                hasCurrentItem = audioNowPlayingItem != null,
-                barEnabled = audioNowPlayingBarEnabled,
-                isVideoDetailDestination = isVideoDetailDestination,
-                isChromeTransitionRunning = driveBottomBarByProgress
-            )
-            if (showAudioNowPlaying && audioNowPlayingItem != null) {
+            } else if (showAudioNowPlayingIndependent && audioNowPlayingItem != null) {
                 val playbackManager = miniPlayerManager ?: MiniPlayerManager.getInstance(context)
                 AudioNowPlayingBar(
                     state = AudioNowPlayingBarState(
@@ -4039,7 +4084,8 @@ fun AppNavigation(
                     glassEnabled = effectiveHomeSettings.androidNativeLiquidGlassEnabled,
                     miuixBackdrop = bottomBarBackdrop,
                     liquidGlassTuning = liquidGlassRenderConfig.tuning,
-                    liftAboveBottomBar = bottomBarCanMount,
+                    liftAboveBottomBar = false,
+                    consumeNavigationBarsPadding = true,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .zIndex(2f)

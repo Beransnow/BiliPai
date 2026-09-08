@@ -6,14 +6,12 @@ internal fun resolveAudioNowPlayingVisible(
     isInPipMode: Boolean,
     hasCurrentItem: Boolean,
     barEnabled: Boolean,
-    isVideoDetailDestination: Boolean = false,
-    isChromeTransitionRunning: Boolean = false
+    isVideoDetailDestination: Boolean = false
 ): Boolean {
     return barEnabled &&
         sessionActive &&
         !isOnAudioModeScreen &&
         !isInPipMode &&
         hasCurrentItem &&
-        !isVideoDetailDestination &&
-        !isChromeTransitionRunning
+        !isVideoDetailDestination
 }

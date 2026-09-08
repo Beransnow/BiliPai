@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.audio.screen
 
+import com.android.purebilibili.core.theme.AppUiStyle
+
 internal const val MUSIC_WAVY_AMPLITUDE_DP = 6
 internal const val MUSIC_WAVY_WAVELENGTH_DP = 22
 internal const val MUSIC_WAVY_STROKE_DP = 3
@@ -11,16 +13,23 @@ internal fun shouldAnimateMusicWavyProgress(
     reduceMotion: Boolean
 ): Boolean = isPlaying && !isDragging && !reduceMotion
 
+internal fun shouldUseNativeThemeMusicProgress(
+    glassEnabled: Boolean,
+    uiStyle: AppUiStyle
+): Boolean = !glassEnabled || uiStyle == AppUiStyle.MIUIX
+
 internal fun shouldUseMusicWavyProgress(
     glassEnabled: Boolean,
+    uiStyle: AppUiStyle,
     isPlaying: Boolean,
     isDragging: Boolean,
     reduceMotion: Boolean
-): Boolean = glassEnabled && shouldAnimateMusicWavyProgress(
-    isPlaying = isPlaying,
-    isDragging = isDragging,
-    reduceMotion = reduceMotion
-)
+): Boolean = !shouldUseNativeThemeMusicProgress(glassEnabled, uiStyle) &&
+    shouldAnimateMusicWavyProgress(
+        isPlaying = isPlaying,
+        isDragging = isDragging,
+        reduceMotion = reduceMotion
+    )
 
 internal fun resolveMusicProgressFraction(
     value: Float,

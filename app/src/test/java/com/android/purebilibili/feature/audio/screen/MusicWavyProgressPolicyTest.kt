@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.audio.screen
 
+import com.android.purebilibili.core.theme.AppUiStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -20,6 +21,7 @@ class MusicWavyProgressPolicyTest {
         assertTrue(
             shouldUseMusicWavyProgress(
                 glassEnabled = true,
+                uiStyle = AppUiStyle.MATERIAL3,
                 isPlaying = true,
                 isDragging = false,
                 reduceMotion = false
@@ -28,6 +30,38 @@ class MusicWavyProgressPolicyTest {
         assertFalse(
             shouldUseMusicWavyProgress(
                 glassEnabled = false,
+                uiStyle = AppUiStyle.MATERIAL3,
+                isPlaying = true,
+                isDragging = false,
+                reduceMotion = false
+            )
+        )
+    }
+
+    @Test
+    fun miuixUsesNativeSliderEvenWhenGlassIsOn() {
+        assertTrue(
+            shouldUseNativeThemeMusicProgress(
+                glassEnabled = true,
+                uiStyle = AppUiStyle.MIUIX
+            )
+        )
+        assertTrue(
+            shouldUseNativeThemeMusicProgress(
+                glassEnabled = false,
+                uiStyle = AppUiStyle.MIUIX
+            )
+        )
+        assertFalse(
+            shouldUseNativeThemeMusicProgress(
+                glassEnabled = true,
+                uiStyle = AppUiStyle.MATERIAL3
+            )
+        )
+        assertFalse(
+            shouldUseMusicWavyProgress(
+                glassEnabled = true,
+                uiStyle = AppUiStyle.MIUIX,
                 isPlaying = true,
                 isDragging = false,
                 reduceMotion = false

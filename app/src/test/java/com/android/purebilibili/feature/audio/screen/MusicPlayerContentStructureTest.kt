@@ -65,6 +65,7 @@ class MusicPlayerContentStructureTest {
         assertTrue(source.contains("AppFilledIconButton("))
         assertTrue(source.contains("MusicWavySlider("))
         assertTrue(source.contains("AppSlider("))
+        assertTrue(source.contains("shouldUseNativeThemeMusicProgress("))
         assertTrue(source.contains("shouldUseMusicWavyProgress("))
         assertTrue(source.contains("resolveMusicPlayerChromeSpec("))
         assertTrue(source.contains("onShuffleEnabledChange"))

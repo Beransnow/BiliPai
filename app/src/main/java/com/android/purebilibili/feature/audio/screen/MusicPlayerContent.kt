@@ -1110,14 +1110,23 @@ private fun MusicProgress(
         draggedPosition?.let { onSeek(it.toLong()) }
         draggedPosition = null
     }
-    if (glassEnabled) {
+    val uiStyle = LocalAppUiStyle.current
+    if (shouldUseNativeThemeMusicProgress(glassEnabled = glassEnabled, uiStyle = uiStyle)) {
+        AppSlider(
+            value = sliderValue,
+            onValueChange = onSliderChange,
+            onValueChangeFinished = onSliderChangeFinished,
+            valueRange = 0f..duration.toFloat()
+        )
+    } else {
         MusicWavySlider(
             value = sliderValue,
             onValueChange = onSliderChange,
             onValueChangeFinished = onSliderChangeFinished,
             valueRange = 0f..duration.toFloat(),
             wavy = shouldUseMusicWavyProgress(
-                glassEnabled = true,
+                glassEnabled = glassEnabled,
+                uiStyle = uiStyle,
                 isPlaying = state.isPlaying,
                 isDragging = draggedPosition != null,
                 reduceMotion = reduceMotion
@@ -1125,13 +1134,6 @@ private fun MusicProgress(
             activeColor = MusicAccentColor,
             inactiveColor = MusicContentColor.copy(alpha = 0.28f),
             thumbColor = MusicAccentColor
-        )
-    } else {
-        AppSlider(
-            value = sliderValue,
-            onValueChange = onSliderChange,
-            onValueChangeFinished = onSliderChangeFinished,
-            valueRange = 0f..duration.toFloat()
         )
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

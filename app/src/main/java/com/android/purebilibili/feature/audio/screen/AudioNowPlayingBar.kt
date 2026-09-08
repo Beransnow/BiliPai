@@ -68,6 +68,7 @@ internal fun AudioNowPlayingBar(
     miuixBackdrop: MiuixBackdrop? = null,
     liquidGlassTuning: LiquidGlassTuning = LocalLiquidGlassRenderConfig.current.tuning,
     liftAboveBottomBar: Boolean = true,
+    consumeNavigationBarsPadding: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val chrome = resolveMusicPlayerChromeSpec(
@@ -89,7 +90,7 @@ internal fun AudioNowPlayingBar(
     AppSurface(
         modifier = modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
+            .then(if (consumeNavigationBarsPadding) Modifier.navigationBarsPadding() else Modifier)
             .padding(
                 start = chrome.horizontalPaddingDp.dp,
                 end = chrome.horizontalPaddingDp.dp,

@@ -20,6 +20,7 @@ class AudioNowPlayingBarStructureTest {
         assertTrue(source.contains("rememberMusicArtworkRotationDegrees("))
         assertTrue(source.contains("shouldRotateMusicArtwork("))
         assertTrue(source.contains("playbackSpeed = state.playbackSpeed"))
+        assertTrue(source.contains("consumeNavigationBarsPadding"))
         assertFalse(source.contains("enabled = false"))
         assertFalse(source.contains("backdrop = null"))
         assertFalse(source.contains("ContainerLevel.Card"))
@@ -38,9 +39,12 @@ class AudioNowPlayingBarStructureTest {
         assertTrue(overlay.contains("miuixBackdrop = bottomBarBackdrop"))
         assertTrue(overlay.contains("glassEnabled = effectiveHomeSettings.androidNativeLiquidGlassEnabled"))
         assertTrue(source.contains("getAudioNowPlayingBarEnabled(context)"))
-        assertTrue(overlay.contains("isVideoDetailDestination = isVideoDetailDestination"))
-        assertTrue(overlay.contains("isChromeTransitionRunning = driveBottomBarByProgress"))
+        assertTrue(overlay.contains("BottomBarMatchedDockVisibility("))
+        assertTrue(overlay.contains("videoCardTransitionChromeReveal("))
+        assertTrue(overlay.contains("showAudioNowPlayingInDock"))
+        assertTrue(overlay.contains("consumeNavigationBarsPadding = false"))
         assertTrue(overlay.contains("playbackSpeed = playbackManager.player?.playbackParameters?.speed ?: 1f"))
+        assertFalse(overlay.contains("isChromeTransitionRunning"))
         assertFalse(overlay.contains("miuixBackdrop = null"))
     }
 
