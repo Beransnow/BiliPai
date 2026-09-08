@@ -2687,6 +2687,8 @@ private fun SpaceSecondarySwitchRow(
                 modifier = Modifier.fillMaxWidth(),
                 scrollable = useScrollableRail,
                 minTabWidth = itemWidth,
+                compactMiuixWhenTwoOptions = false,
+                allowLabelOverflow = true,
             )
         }
     }

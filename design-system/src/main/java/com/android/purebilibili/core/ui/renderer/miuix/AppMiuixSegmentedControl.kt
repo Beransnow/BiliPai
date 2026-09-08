@@ -150,8 +150,8 @@ internal fun <T> AppMiuixTabRow(
             options = options,
             selectedValue = selectedValue,
             enabled = enabled,
-            compact = !scrollable || options.size <= 2,
-            scrollable = scrollable && options.size > 2,
+            compact = !scrollable && options.size <= 2,
+            scrollable = scrollable,
             minTabWidth = minTabWidth,
             colors = colors,
             preferredCornerRadius = preferredCornerRadius,
@@ -253,7 +253,7 @@ private fun <T> AppMiuixNonGlassTabs(
         preferredCornerRadius = preferredCornerRadius,
         nativeMinimumHeight = interactiveHeight + 8.dp,
     )
-    val readableWidth = if (compact || !scrollable || options.size <= 2) {
+    val readableWidth = if (compact && !scrollable) {
         0.dp
     } else {
         maxOf(
@@ -263,7 +263,7 @@ private fun <T> AppMiuixNonGlassTabs(
         )
     }
     val scrollState = rememberLazyListState()
-    val shouldPinScroll = !scrollable || options.size <= 2
+    val shouldPinScroll = !scrollable
     LaunchedEffect(scrollState, shouldPinScroll) {
         if (shouldPinScroll) {
             snapshotFlow { scrollState.firstVisibleItemIndex to scrollState.firstVisibleItemScrollOffset }

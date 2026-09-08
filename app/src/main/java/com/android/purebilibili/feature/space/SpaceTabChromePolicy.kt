@@ -166,7 +166,7 @@ internal fun shouldScrollSpaceSecondarySwitch(
     containerHorizontalPaddingDp: Int
 ): Boolean {
     val contentWidthDp = itemCount * itemWidthDp + containerHorizontalPaddingDp * 2
-    return itemCount > 2 && contentWidthDp > viewportWidthDp
+    return contentWidthDp > viewportWidthDp
 }
 
 internal fun resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
