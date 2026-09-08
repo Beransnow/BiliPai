@@ -4137,6 +4137,9 @@ private fun SpaceHeaderRelationActions(
     onFollowClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val actionBorderShape = AppShapes.borderedContainer(ContainerLevel.Card)
+    val actionShape = AppShapes.container(ContainerLevel.Card)
+
     // Same-row chips with the name/level line; fixed height for vertical center alignment.
     Row(
         modifier = modifier,
@@ -4144,7 +4147,7 @@ private fun SpaceHeaderRelationActions(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         AppSurface(
-            shape = CircleShape,
+            shape = actionBorderShape,
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f),
             border = BorderStroke(
                 1.dp,
@@ -4164,19 +4167,18 @@ private fun SpaceHeaderRelationActions(
             }
         }
 
-        AppButton(
+        AppSurface(
             onClick = onFollowClick,
+            shape = actionShape,
+            color = followButtonColors.backgroundColor,
             modifier = Modifier
                 .widthIn(min = 80.dp, max = 100.dp)
-                .height(32.dp),
-            shape = AppShapes.container(ContainerLevel.Pill),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = followButtonColors.backgroundColor,
-                contentColor = followButtonColors.textColor
-            ),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
+                .height(32.dp)
         ) {
             Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
@@ -4184,6 +4186,7 @@ private fun SpaceHeaderRelationActions(
                     AppIcon(
                         imageVector = Icons.Outlined.Menu,
                         contentDescription = null,
+                        tint = followButtonColors.textColor,
                         modifier = Modifier.size(13.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
@@ -4192,6 +4195,7 @@ private fun SpaceHeaderRelationActions(
                     text = followLabel,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
+                    color = followButtonColors.textColor,
                     maxLines = 1,
                     softWrap = false
                 )
