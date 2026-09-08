@@ -66,7 +66,21 @@ class ProgressiveTopChromePolicyTest {
         val space = loadSource("feature/space/SpaceScreen.kt")
         val settingsTablet = loadSource("feature/settings/screen/SettingsTabletShell.kt")
         assertTrue(space.contains("BiliPaiImmersiveTopBar("))
-        assertTrue(space.contains("Modifier.layerBackdrop(spaceChromeBackdrop)"))
+        assertTrue(space.contains("Modifier.layerBackdrop(chromeBackdrop)"))
+        assertTrue(space.contains("globalWallpaperAwareBackground(MaterialTheme.colorScheme.surface)"))
+        assertTrue(space.contains("chromeTopInset + pinnedTabHeight"))
+        assertTrue(space.contains("onPinnedChromeHeightChanged"))
+        assertFalse(space.contains("val tabPinned = gridState.firstVisibleItemIndex > 0"))
+        assertTrue(profile.contains("captureBackground()"))
+        assertTrue(profile.contains("profileProgressiveBackdrop(progressiveTopChrome.backdrop)"))
+        assertTrue(profile.contains("globalWallpaperAwareBackground(colorScheme.surface)"))
+        assertTrue(bangumiHub.contains(".layerBackdrop(channelBackdrop)"))
+        assertTrue(bangumiHub.contains(".background(MaterialTheme.colorScheme.background),"))
+        assertTrue(
+            bangumiHub.contains(
+                ".background(MaterialTheme.colorScheme.background),\n            )\n            BangumiHubContent("
+            )
+        )
         assertTrue(settingsTablet.contains("BiliPaiImmersiveTopBar("))
     }
 
@@ -119,7 +133,15 @@ class ProgressiveTopChromePolicyTest {
         assertTrue(search.contains("searchTopChromeGlass(dockShape)"))
         assertTrue(search.contains("if (immersiveSearchChrome) Color.Transparent else searchTopBarHeaderColor"))
         assertTrue(watchLater.contains("Modifier.layerBackdrop(watchLaterChromeBackdrop)"))
+        assertTrue(watchLater.contains("globalWallpaperAwareBackground(AppSurfaceTokens.groupedListContainer())"))
         assertFalse(watchLater.contains(".matchParentSize()"))
+        val immersiveScaffold = loadSource("core/ui/ImmersiveAppScaffold.kt")
+        assertTrue(immersiveScaffold.contains(".globalWallpaperAwareBackground(containerColor)"))
+        val topicDetail = loadSource("feature/search/TopicDetailScreen.kt")
+        val topicBackdropIndex = topicDetail.indexOf("Modifier.layerBackdrop(topicBackdrop)")
+        val topicFillIndex = topicDetail.indexOf(".globalWallpaperAwareBackground()")
+        assertTrue(topicBackdropIndex >= 0)
+        assertTrue(topicFillIndex > topicBackdropIndex)
     }
 
     private fun loadSource(relativePath: String): String {

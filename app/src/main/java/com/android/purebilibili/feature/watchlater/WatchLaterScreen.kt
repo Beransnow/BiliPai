@@ -69,6 +69,7 @@ import com.android.purebilibili.core.ui.videoCardTitleMaxLines
 import com.android.purebilibili.core.ui.videoCardTitleOverflow
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppWindowAction
 import com.android.purebilibili.core.ui.components.AppWindowActionMenu
@@ -991,6 +992,7 @@ fun WatchLaterScreen(
                         Modifier
                     }
                 )
+                .globalWallpaperAwareBackground(AppSurfaceTokens.groupedListContainer())
         ) {
             when {
                 state.isLoading -> {

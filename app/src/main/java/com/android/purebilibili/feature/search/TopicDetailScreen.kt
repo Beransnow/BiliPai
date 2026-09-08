@@ -141,8 +141,8 @@ fun TopicDetailScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .globalWallpaperAwareBackground()
                 .then(if (topicBackdrop != null) Modifier.layerBackdrop(topicBackdrop) else Modifier)
+                .globalWallpaperAwareBackground()
         ) {
             when {
                 showInitialSkeleton -> {

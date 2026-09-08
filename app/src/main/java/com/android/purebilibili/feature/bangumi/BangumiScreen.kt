@@ -143,13 +143,15 @@ fun BangumiScreen(
                 .fillMaxSize()
                 .responsiveContentWidth(),
         ) {
+            // Empty sibling source: nested docks consume channelBackdrop and must not
+            // live inside this capture, or Xiaomi's renderer self-samples and crashes.
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .layerBackdrop(channelBackdrop)
                     .background(MaterialTheme.colorScheme.background),
-            ) {
-                BangumiHubContent(
+            )
+            BangumiHubContent(
                 state = state,
                 onBangumiClick = onBangumiClick,
                 onEpisodeClick = onBangumiEpisodeClick,
@@ -184,11 +186,8 @@ fun BangumiScreen(
                     }
                 },
                 listTopPadding = listTopPadding,
-                // The backdrop source is a sibling behind the content tree. Reusing it
-                // keeps every nested dock correctly tinted without a self-sampling cycle.
                 tabBackdrop = channelBackdrop,
-                    )
-            }
+            )
             if (state.page != BangumiHubPage.SEARCH) {
                 Column(
                     modifier = Modifier

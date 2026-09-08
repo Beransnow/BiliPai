@@ -33,12 +33,12 @@ class HomeEmbeddedTopTabPageStructureTest {
     @Test
     fun bangumiHomePageCollapsesCategoryTabsOnScroll() {
         val source = File("src/main/java/com/android/purebilibili/feature/bangumi/HomeBangumiTabPage.kt").readText()
-        assertTrue(source.contains("AnimatedVisibility("))
         assertTrue(source.contains("onHomeScrollChanged"))
-        assertTrue(source.contains("categoryTabsVisible"))
         assertTrue(source.contains("scrollToTopRequestId"))
         assertTrue(source.contains("listBottomPadding = contentPadding.calculateBottomPadding()"))
         assertTrue(!source.contains(".padding(contentPadding)"))
+        assertTrue(!source.contains("categoryTabsVisible"))
+        assertTrue(!source.contains("AnimatedVisibility("))
     }
 
     @Test

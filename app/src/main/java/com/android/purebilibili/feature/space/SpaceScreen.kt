@@ -74,6 +74,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -102,6 +103,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.sp
@@ -117,10 +119,12 @@ import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.MediaContrastPalette
@@ -192,6 +196,7 @@ import com.android.purebilibili.feature.dynamic.components.RepostDialog
 import com.android.purebilibili.feature.list.VideoProgressDisplayState
 import com.android.purebilibili.feature.video.controller.PlaybackProgressManager
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
+import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -247,6 +252,7 @@ fun SpaceScreen(
     var repostDynamicId by remember { mutableStateOf<String?>(null) }
     val hazeState = rememberRecoverableHazeState()
     val gridState = rememberLazyGridState()
+    var spacePinnedTabHeightPx by remember { mutableIntStateOf(0) }
     val isSpaceScrolling by remember {
         derivedStateOf { gridState.isScrollInProgress }
     }
@@ -515,7 +521,8 @@ fun SpaceScreen(
         val density = LocalDensity.current
         val searchBarRevealScrollOffsetPx = with(density) {
             resolveSpaceSearchBarRevealScrollOffsetPx(
-                topBarHeightPx = scaffoldPadding.calculateTopPadding().roundToPx(),
+                topBarHeightPx = scaffoldPadding.calculateTopPadding().roundToPx() +
+                    spacePinnedTabHeightPx,
                 extraVisibleMarginPx = 8.dp.roundToPx()
             )
         }
@@ -539,21 +546,15 @@ fun SpaceScreen(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (spaceChromeBackdrop != null) {
-                            Modifier.layerBackdrop(spaceChromeBackdrop)
-                        } else {
-                            Modifier
-                        }
-                    )
-                    .hazeSourceCompat(state = hazeState)
-            ) {
                 when (val state = uiState) {
                     SpaceUiState.Loading -> {
-                        SpaceLoadingSkeleton(modifier = Modifier.fillMaxSize())
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .globalWallpaperAwareBackground(MaterialTheme.colorScheme.surface),
+                        ) {
+                            SpaceLoadingSkeleton(modifier = Modifier.fillMaxSize())
+                        }
                     }
 
                     is SpaceUiState.Error -> {
@@ -652,7 +653,15 @@ fun SpaceScreen(
                                 }
                             },
                             sharedTransitionScope = sharedTransitionScope,
-                            animatedVisibilityScope = animatedVisibilityScope
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            chromeBackdrop = spaceChromeBackdrop,
+                            chromeTopInset = scaffoldPadding.calculateTopPadding(),
+                            hazeState = hazeState,
+                            onPinnedChromeHeightChanged = { heightPx ->
+                                if (spacePinnedTabHeightPx != heightPx) {
+                                    spacePinnedTabHeightPx = heightPx
+                                }
+                            },
                         )
 
                         DynamicCommentOverlayHost(
@@ -663,7 +672,6 @@ fun SpaceScreen(
                         )
                     }
                 }
-            }
 
             SpacePlayedVideoLocatePrompt(
                 visible = shouldPromptToLocatePlayedVideo,
@@ -970,6 +978,10 @@ private fun SpaceContent(
     onSpaceDynamicDeleteClick: (DynamicDeleteAction) -> Unit,
     sharedTransitionScope: SharedTransitionScope?,
     animatedVisibilityScope: AnimatedVisibilityScope?,
+    chromeBackdrop: LayerBackdrop? = null,
+    chromeTopInset: Dp = 0.dp,
+    hazeState: HazeState? = null,
+    onPinnedChromeHeightChanged: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -1124,8 +1136,7 @@ private fun SpaceContent(
         if (selectedMainTab != SpaceMainTab.CONTRIBUTION) {
             0
         } else {
-            2 +
-                (if (shouldShowSpaceSecondarySwitch(selectedMainTab) && secondarySwitchItems.isNotEmpty()) 1 else 0) +
+            1 +
                 (if (shouldShowSpaceSearchEntry(currentSearchScope, state.isSearchMode)) 1 else 0) +
                 (if (state.isSearchMode && currentSearchScope == SpaceSearchScope.VIDEO) 1 else 0)
         }
@@ -1188,10 +1199,12 @@ private fun SpaceContent(
             .responsiveContentWidth(maxWidth = SPACE_CONTENT_MAX_WIDTH_DP.dp)
             .then(modifier)
     ) {
-        // [重构] 折叠进度：header 是 index 0，滚动偏移驱动 header 内容上移淡出（视差折叠）；
-        // 完全滚出后主 tab overlay 吸顶显示
+        var pinnedTabHeightPx by remember { mutableIntStateOf(0) }
+        val density = LocalDensity.current
+        val pinnedTabHeight = with(density) { pinnedTabHeightPx.toDp() }
+        // [重构] 折叠进度：header 是 index 0，滚动偏移驱动 header 内容上移淡出（视差折叠）。
         // 折叠范围用 dp 换算，避免固定像素在不同 density 下曲线不一致
-        val headerCollapseRangePx = with(LocalDensity.current) { 320.dp.toPx() }
+        val headerCollapseRangePx = with(density) { 320.dp.toPx() }
         val headerCollapseFraction = remember(headerCollapseRangePx) {
             derivedStateOf {
                 if (gridState.firstVisibleItemIndex > 0) {
@@ -1226,6 +1239,19 @@ private fun SpaceContent(
             widthSizeClass = com.android.purebilibili.core.util.LocalWindowSizeClass.current.widthSizeClass,
         )
         val spaceFeedCoverAspectRatio = spaceFeedCardLayout.coverAspectRatio
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(
+                    if (chromeBackdrop != null) {
+                        Modifier.layerBackdrop(chromeBackdrop)
+                    } else {
+                        Modifier
+                    }
+                )
+                .then(if (hazeState != null) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
+                .globalWallpaperAwareBackground(MaterialTheme.colorScheme.surface),
+        ) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(gridColumns),
             state = gridState,
@@ -1233,6 +1259,7 @@ private fun SpaceContent(
             contentPadding = PaddingValues(
                 start = maxOf(16, spaceFeedCardLayout.outerPaddingDp).dp,
                 end = maxOf(16, spaceFeedCardLayout.outerPaddingDp).dp,
+                top = chromeTopInset + pinnedTabHeight,
                 bottom = bottomInset + 24.dp
             ),
             horizontalArrangement = Arrangement.spacedBy(spaceFeedCardLayout.itemSpacingDp.dp),
@@ -1254,22 +1281,6 @@ private fun SpaceContent(
                     sharedTransitionScope = lazyGridSharedTransitionScope,
                     animatedVisibilityScope = lazyGridAnimatedVisibilityScope
                 )
-            }
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                SpaceMainTabRow(
-                    tabs = displayedMainTabs,
-                    selectedTab = resolveSpacePrimaryTab(selectedMainTab),
-                    onSelect = onMainTabSelected,
-                )
-            }
-            if (shouldShowSpaceSecondarySwitch(selectedMainTab) && secondarySwitchItems.isNotEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    SpaceSecondarySwitchRow(
-                        items = secondarySwitchItems,
-                        selectedId = selectedSecondarySwitchId,
-                        onSelect = onSecondarySwitchSelected,
-                    )
-                }
             }
 
         when (selectedMainTab) {
@@ -2195,32 +2206,33 @@ private fun SpaceContent(
                 }
             }
         }
-    }
+        }
+        }
 
-        // [重构] 吸顶主 tab overlay：header 完全滚出后淡入显示，覆盖在内容上方
-        // （BiliPai TabBar pinned 语义；grid 无跨列 stickyHeader，故用浮层实现）
-        val tabPinned = gridState.firstVisibleItemIndex > 0
-        AnimatedVisibility(
-            visible = tabPinned,
-            enter = fadeIn(animationSpec = tween(160)),
-            exit = fadeOut(animationSpec = tween(120)),
+        Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
+                .padding(top = chromeTopInset)
+                .onGloballyPositioned { coordinates ->
+                    val heightPx = coordinates.size.height
+                    if (pinnedTabHeightPx != heightPx) {
+                        pinnedTabHeightPx = heightPx
+                    }
+                    onPinnedChromeHeightChanged(heightPx)
+                },
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                SpaceMainTabRow(
-                    tabs = displayedMainTabs,
-                    selectedTab = resolveSpacePrimaryTab(selectedMainTab),
-                    onSelect = onMainTabSelected,
+            SpaceMainTabRow(
+                tabs = displayedMainTabs,
+                selectedTab = resolveSpacePrimaryTab(selectedMainTab),
+                onSelect = onMainTabSelected,
+            )
+            if (shouldShowSpaceSecondarySwitch(selectedMainTab) && secondarySwitchItems.isNotEmpty()) {
+                SpaceSecondarySwitchRow(
+                    items = secondarySwitchItems,
+                    selectedId = selectedSecondarySwitchId,
+                    onSelect = onSecondarySwitchSelected,
                 )
-                if (shouldShowSpaceSecondarySwitch(selectedMainTab) && secondarySwitchItems.isNotEmpty()) {
-                    SpaceSecondarySwitchRow(
-                        items = secondarySwitchItems,
-                        selectedId = selectedSecondarySwitchId,
-                        onSelect = onSecondarySwitchSelected,
-                    )
-                }
             }
         }
     }

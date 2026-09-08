@@ -39,6 +39,11 @@ class BangumiLiquidGlassStructureTest {
         assertTrue(contentSource.contains("AppThemeAdaptiveTabRow("))
         assertTrue(contentSource.contains("miuixBackdrop = tabBackdrop"))
         assertTrue(screenSource.contains("tabBackdrop = channelBackdrop"))
+        assertTrue(
+            screenSource.contains(
+                ".background(MaterialTheme.colorScheme.background),\n            )\n            BangumiHubContent("
+            )
+        )
         assertTrue(homeTabSource.contains("tabBackdrop = channelBackdrop"))
         assertTrue(contentSource.contains("modifier = Modifier.width(56.dp)"))
         assertTrue(contentSource.contains("modifier = Modifier.weight(1f)"))

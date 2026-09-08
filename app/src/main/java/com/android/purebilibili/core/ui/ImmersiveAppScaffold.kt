@@ -55,9 +55,10 @@ internal fun ImmersiveAppScaffold(
         contentWindowInsets = contentWindowInsets,
     ) { padding ->
         Box(
-            modifier = Modifier.fillMaxSize().then(
-                if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier
-            ),
+            modifier = Modifier
+                .fillMaxSize()
+                .then(if (backdrop != null) Modifier.layerBackdrop(backdrop) else Modifier)
+                .globalWallpaperAwareBackground(containerColor),
         ) {
             content(padding)
         }

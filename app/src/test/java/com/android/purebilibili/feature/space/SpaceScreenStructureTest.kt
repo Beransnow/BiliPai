@@ -13,6 +13,10 @@ class SpaceScreenStructureTest {
 
         assertTrue(source.contains("AppNativeTabRow("))
         assertTrue(source.contains("BiliPaiImmersiveTopBar("))
+        assertTrue(source.contains("Modifier.layerBackdrop(chromeBackdrop)"))
+        assertTrue(source.contains("chromeTopInset + pinnedTabHeight"))
+        assertTrue(source.contains("onPinnedChromeHeightChanged"))
+        assertFalse(source.contains("val tabPinned = gridState.firstVisibleItemIndex > 0"))
         assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(source.contains("AppThemeAdaptiveTabRow("))
         assertTrue(source.contains("scrollable = spec.scrollable"))
