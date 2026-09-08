@@ -24,8 +24,14 @@ class SettingsPageBlurPreferenceStructureTest {
         assertTrue(source.contains("top = padding.calculateTopPadding()"))
         assertTrue(source.contains("if (progressiveBlurEnabled) rememberLayerBackdrop()"))
         assertTrue(source.contains("Column(modifier = scrollModifier)"))
+        assertTrue(source.contains("fun settingsScrollContentPadding("))
         assertFalse(source.contains("scrollModifier.padding(padding)"))
         assertFalse(source.contains(".fillMaxSize()\n                .hazeSourceCompat(state = hazeState)"))
+        val plugins = locate(
+            "src/main/java/com/android/purebilibili/feature/settings/screen/PluginsScreen.kt"
+        ).readText()
+        assertTrue(plugins.contains("settingsScrollContentPadding("))
+        assertTrue(plugins.contains("SettingsPageScaffold("))
     }
 
     @Test

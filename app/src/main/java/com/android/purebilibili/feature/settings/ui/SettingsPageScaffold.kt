@@ -61,6 +61,19 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 internal val LocalSettingsTopContentPadding = staticCompositionLocalOf { 0.dp }
 
 @Composable
+internal fun settingsScrollContentPadding(
+    extraTop: androidx.compose.ui.unit.Dp = 0.dp,
+    extraBottom: androidx.compose.ui.unit.Dp = 0.dp,
+    extraHorizontal: androidx.compose.ui.unit.Dp = 0.dp,
+    extraVertical: androidx.compose.ui.unit.Dp = 0.dp,
+): PaddingValues = PaddingValues(
+    start = extraHorizontal,
+    end = extraHorizontal,
+    top = LocalSettingsTopContentPadding.current + extraTop + extraVertical,
+    bottom = extraBottom + extraVertical,
+)
+
+@Composable
 internal fun SettingsBottomBarScrollEffect(listState: LazyListState) {
     val setBottomBarVisible = LocalSetBottomBarVisible.current
     val density = LocalDensity.current
@@ -231,25 +244,24 @@ internal fun SettingsPageScaffold(
                 }
 
                 SettingsPageScrollHost.External -> {
+                    val chromeTop = padding.calculateTopPadding()
                     CompositionLocalProvider(
-                        LocalSettingsTopContentPadding provides padding.calculateTopPadding(),
+                        LocalSettingsTopContentPadding provides if (header != null) {
+                            0.dp
+                        } else {
+                            chromeTop
+                        },
                     ) {
                         Column(modifier = scrollModifier) {
-                            header?.invoke()
+                            if (header != null) {
+                                Box(modifier = Modifier.padding(top = chromeTop)) {
+                                    header()
+                                }
+                            }
                             Box(
                                 modifier = Modifier
                                     .weight(1f, fill = true)
-                                    .fillMaxSize()
-                                    .then(
-                                        if (externalContentHandlesTopPadding) {
-                                            Modifier
-                                        } else {
-                                            Modifier.padding(
-                                                top = padding.calculateTopPadding(),
-                                                bottom = padding.calculateBottomPadding(),
-                                            )
-                                        }
-                                    ),
+                                    .fillMaxSize(),
                             ) {
                                 content()
                             }

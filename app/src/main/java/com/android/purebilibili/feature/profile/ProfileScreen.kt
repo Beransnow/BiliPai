@@ -116,7 +116,7 @@ import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppTopBarStyle
 import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
-import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AppSplitLayout
@@ -2925,7 +2925,7 @@ private fun ProfileEditAccountDialog(
 }
 
 private data class ProfileProgressiveTopChrome(
-    val backdrop: Backdrop?,
+    val backdrop: LayerBackdrop?,
     val enabled: Boolean,
 )
 
@@ -2940,7 +2940,7 @@ private fun rememberProfileProgressiveTopChrome(): ProfileProgressiveTopChrome {
     return ProfileProgressiveTopChrome(backdrop = backdrop, enabled = enabled)
 }
 
-private fun Modifier.profileProgressiveBackdrop(backdrop: Backdrop?): Modifier {
+private fun Modifier.profileProgressiveBackdrop(backdrop: LayerBackdrop?): Modifier {
     return if (backdrop != null) then(Modifier.layerBackdrop(backdrop)) else this
 }
 
@@ -3070,7 +3070,7 @@ fun TabletProfileContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MobileProfileContent(
+internal fun MobileProfileContent(
     viewModel: ProfileViewModel = viewModel(),
     user: UserState,
     onLogout: () -> Unit,
