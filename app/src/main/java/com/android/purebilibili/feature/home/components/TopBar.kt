@@ -192,7 +192,12 @@ internal fun resolveTopTabDockEndInsetDp(
 internal fun resolveTopTabIndicatorShape(
     showIcon: Boolean,
     showText: Boolean,
-): Shape = RoundedCornerShape(12.dp)
+): Shape =
+    if (showIcon && showText) {
+        RoundedCornerShape(12.dp)
+    } else {
+        resolveSharedBottomBarCapsuleShape()
+    }
 
 internal fun resolveTopTabDockIndicatorWidthDp(
     itemWidthDp: Float,

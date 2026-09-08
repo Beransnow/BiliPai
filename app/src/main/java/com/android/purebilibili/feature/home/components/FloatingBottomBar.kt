@@ -164,8 +164,7 @@ fun PlainMiuixFloatingBottomBar(
 ) {
     val safeCount = tabsCount.coerceAtLeast(1)
     val maxIndex = safeCount - 1
-    val containerShape = remember { RoundedCornerShape(24.dp) }
-    val indicatorShape = remember { RoundedCornerShape(12.dp) }
+    val shape = remember { resolveSharedBottomBarCapsuleShape() }
     val density = LocalDensity.current
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val animationScope = rememberCoroutineScope()
@@ -175,10 +174,10 @@ fun PlainMiuixFloatingBottomBar(
     BoxWithConstraints(
         modifier = modifier
             .dropShadow(
-                shape = containerShape,
+                shape = shape,
                 shadow = Shadow(radius = 10.dp, color = Color.Black, alpha = 0.12f),
             )
-            .background(colors.containerColor, containerShape)
+            .background(colors.containerColor, shape)
             .padding(4.dp),
     ) {
         val itemWidth = maxWidth / safeCount
@@ -224,7 +223,7 @@ fun PlainMiuixFloatingBottomBar(
             modifier = indicatorPositionModifier
                 .width(itemWidth)
                 .fillMaxHeight()
-                .background(MiuixTheme.colorScheme.secondaryContainer, indicatorShape),
+                .background(MiuixTheme.colorScheme.secondaryContainer, shape),
         )
         CompositionLocalProvider(
             LocalFloatingBottomBarContentColor provides colors.contentColor,
