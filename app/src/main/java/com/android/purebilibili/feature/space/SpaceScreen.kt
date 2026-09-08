@@ -112,7 +112,13 @@ import coil3.request.ImageRequest
 import coil3.size.Scale
 import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
+import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -332,15 +338,31 @@ fun SpaceScreen(
     val blockUserLabel = stringResource(R.string.space_block_user)
     val unblockUserLabel = stringResource(R.string.space_unblock_user)
 
+    val spaceThemeConfig = LocalAppThemeConfig.current
+    val spaceProgressiveBlur = shouldUseBiliPaiProgressiveTopBlur(
+        enabled = spaceThemeConfig.progressiveTopBlurEnabled && !spaceThemeConfig.headerBlurEnabled,
+        hasBackdrop = true,
+    ) && !isLowBlurBudgetForced()
+    val spaceChromeBackdrop = if (spaceProgressiveBlur) rememberLayerBackdrop() else null
     AppScaffold(
         topBar = {
+            BiliPaiImmersiveTopBar(
+                backdrop = spaceChromeBackdrop,
+                enabled = spaceProgressiveBlur,
+            ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .unifiedBlur(
-                        hazeState = hazeState,
-                        surfaceType = BlurSurfaceType.HEADER,
-                        isScrolling = isSpaceScrolling
+                    .then(
+                        if (spaceProgressiveBlur) {
+                            Modifier
+                        } else {
+                            Modifier.unifiedBlur(
+                                hazeState = hazeState,
+                                surfaceType = BlurSurfaceType.HEADER,
+                                isScrolling = isSpaceScrolling
+                            )
+                        }
                     )
             ) {
                 AppTopBar(
@@ -486,6 +508,7 @@ fun SpaceScreen(
                     }
                 )
             }
+            }
         },
         containerColor = MaterialTheme.colorScheme.surface
     ) { scaffoldPadding ->
@@ -519,6 +542,13 @@ fun SpaceScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .then(
+                        if (spaceChromeBackdrop != null) {
+                            Modifier.layerBackdrop(spaceChromeBackdrop)
+                        } else {
+                            Modifier
+                        }
+                    )
                     .hazeSourceCompat(state = hazeState)
             ) {
                 when (val state = uiState) {

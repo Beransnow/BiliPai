@@ -23,6 +23,8 @@ class SettingsPageBlurPreferenceStructureTest {
         assertFalse(source.contains("TopReadabilityChrome"))
         assertTrue(source.contains("top = padding.calculateTopPadding()"))
         assertTrue(source.contains("if (progressiveBlurEnabled) rememberLayerBackdrop()"))
+        assertTrue(source.contains("Column(modifier = scrollModifier)"))
+        assertFalse(source.contains("scrollModifier.padding(padding)"))
         assertFalse(source.contains(".fillMaxSize()\n                .hazeSourceCompat(state = hazeState)"))
     }
 

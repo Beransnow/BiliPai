@@ -17,6 +17,14 @@ import com.android.purebilibili.core.ui.skeleton.CommentListColumnSkeleton
 import com.android.purebilibili.core.ui.skeleton.CommentListSkeleton
 
 import android.content.Context
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -37,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,8 +64,10 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicCommentEmptyLabel
 import com.android.purebilibili.feature.dynamic.resolveDynamicCommentLocationLabel
 import com.android.purebilibili.feature.dynamic.resolveDynamicCommentImeSubmission
 import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalCount
+import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetHostContent
 import com.android.purebilibili.feature.dynamic.resolveDynamicSubReplyCount
 import com.android.purebilibili.feature.dynamic.shouldOpenDynamicCommentThreadOnTap
+import com.android.purebilibili.feature.dynamic.DynamicCommentSheetHostContent
 import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import com.android.purebilibili.feature.home.components.resolveFloatingDockGeometryScale
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
@@ -73,8 +84,17 @@ import com.android.purebilibili.feature.video.ui.components.resolveReplyItemLayo
 import com.android.purebilibili.feature.video.ui.components.resolveReplyPreviewTextContent
 import com.android.purebilibili.feature.video.ui.components.resolveVisibleSubReplies
 import com.android.purebilibili.feature.video.ui.components.shouldShowInlineSubReplyToggle
+import com.android.purebilibili.feature.video.ui.components.SubReplyDetailContent
+import com.android.purebilibili.feature.video.ui.components.resolveVideoCommentPredictiveBackProgress
+import com.android.purebilibili.feature.video.ui.components.resolveVideoCommentPredictiveBackTarget
+import com.android.purebilibili.feature.video.ui.components.VideoCommentPredictiveBackTarget
 import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
+import com.android.purebilibili.feature.video.viewmodel.SubReplySortMode
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.NavigationEventTransitionState
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -89,7 +109,6 @@ import com.android.purebilibili.core.store.TokenManager
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Reply
 import com.android.purebilibili.core.ui.AppModalBottomSheet
-import com.android.purebilibili.core.ui.LocalNavigationBackHandler
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
@@ -150,13 +169,7 @@ fun DynamicCommentOverlayHost(
                     }
                 }
             },
-            onViewReplies = { reply ->
-                if (subReplyState.rootReply?.rpid == reply.rpid && subReplyState.visible) {
-                    viewModel.loadMoreSubReplies()
-                } else {
-                    viewModel.openSubReply(reply)
-                }
-            },
+            onViewReplies = { reply -> viewModel.openSubReply(reply) },
             onReply = { reply -> viewModel.startCommentReply(reply) },
             onLike = { reply -> viewModel.likeComment(reply.rpid) },
             dynamicAuthorMid = dynamicItem?.modules?.module_author?.mid ?: 0L,
@@ -182,16 +195,31 @@ fun DynamicCommentOverlayHost(
             onUserClick = onUserClick,
             subReplyState = subReplyState,
             onCloseSubReply = { viewModel.closeSubReply() },
+            onLoadMoreSubReplies = { viewModel.loadMoreSubReplies() },
+            onSubReplySortModeChange = { viewModel.setSubReplySortMode(it) },
+            onThreadCommentLike = { rpid -> viewModel.likeComment(rpid) },
+            onThreadCommentDelete = { rpid ->
+                viewModel.deleteDynamicComment(rpid) { _, message ->
+                    if (!inspectionMode) {
+                        android.widget.Toast.makeText(toastContext, message, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            onThreadCommentReport = { rpid, reason ->
+                viewModel.reportDynamicComment(rpid, reason) { _, message ->
+                    if (!inspectionMode) {
+                        android.widget.Toast.makeText(toastContext, message, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
         )
     }
-
-    // 回复详情已嵌入主评论卡片；不再额外弹出独立回复面板。
 }
 
 /**
  *  动态评论底部弹窗
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.animation.ExperimentalAnimationApi::class)
 @Composable
 fun DynamicCommentSheet(
     comments: List<ReplyItem>,
@@ -216,6 +244,11 @@ fun DynamicCommentSheet(
     onUserClick: (Long) -> Unit,
     subReplyState: SubReplyUiState = SubReplyUiState(),
     onCloseSubReply: () -> Unit = {},
+    onLoadMoreSubReplies: () -> Unit = {},
+    onSubReplySortModeChange: (SubReplySortMode) -> Unit = {},
+    onThreadCommentLike: (Long) -> Unit = {},
+    onThreadCommentDelete: (Long) -> Unit = {},
+    onThreadCommentReport: (Long, Int) -> Unit = { _, _ -> },
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var commentText by remember { mutableStateOf("") }
@@ -267,6 +300,22 @@ fun DynamicCommentSheet(
                 if (canLoadMore) onLoadMore()
             }
     }
+    val emoteCatalogSessionKey = DynamicEmoteCatalog.currentSessionKey()
+    var emoteMap by remember(emoteCatalogSessionKey) {
+        mutableStateOf(DynamicEmoteCatalog.snapshot())
+    }
+    LaunchedEffect(emoteCatalogSessionKey) {
+        emoteMap = DynamicEmoteCatalog.ensureLoaded()
+    }
+    val hostContent = resolveDynamicCommentSheetHostContent(subReplyState.visible)
+    val likedThreadComments = remember(subReplyState) {
+        buildSet {
+            subReplyState.rootReply?.takeIf { isDynamicCommentLiked(it) }?.let { add(it.rpid) }
+            subReplyState.items.forEach { reply ->
+                if (isDynamicCommentLiked(reply)) add(reply.rpid)
+            }
+        }
+    }
     
     AppModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -277,15 +326,30 @@ fun DynamicCommentSheet(
         // system-back stream into the MIUIX Navigation entry dispatcher before registering
         // the local sheet handler below.
         WindowNavigationEventBridge()
-        LocalNavigationBackHandler(
-            enabled = true,
+        val commentBackState = rememberNavigationEventState(NavigationEventInfo.None)
+        NavigationBackHandler(
+            state = commentBackState,
+            isBackEnabled = true,
             onBackCompleted = {
-                if (subReplyState.visible) {
-                    onCloseSubReply()
-                } else {
-                    onDismiss()
+                when (
+                    resolveVideoCommentPredictiveBackTarget(
+                        subReplyVisible = subReplyState.visible,
+                        conversationActive = subReplyState.conversationAnchor != null,
+                    )
+                ) {
+                    VideoCommentPredictiveBackTarget.CLOSE_CONVERSATION -> onCloseSubReply()
+                    VideoCommentPredictiveBackTarget.CLOSE_THREAD -> onCloseSubReply()
+                    VideoCommentPredictiveBackTarget.DISMISS_SHEET -> onDismiss()
                 }
             },
+        )
+        val threadBackProgress = resolveVideoCommentPredictiveBackProgress(
+            inProgress = commentBackState.transitionState is NavigationEventTransitionState.InProgress &&
+                hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL,
+            progress = (commentBackState.transitionState as? NavigationEventTransitionState.InProgress)
+                ?.latestEvent
+                ?.progress
+                ?: 0f,
         )
         val commentChromeBackdrop = rememberLayerBackdrop()
         Box(
@@ -299,7 +363,50 @@ fun DynamicCommentSheet(
                     .layerBackdrop(commentChromeBackdrop)
                     .background(AppSurfaceTokens.background())
             )
+            AnimatedContent(
+                targetState = hostContent,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        if (hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL) {
+                            translationX = threadBackProgress * size.width
+                        }
+                    },
+                transitionSpec = {
+                    val opensThreadDetail =
+                        initialState == DynamicCommentSheetHostContent.MAIN_LIST &&
+                            targetState == DynamicCommentSheetHostContent.THREAD_DETAIL
+                    val closesThreadDetail =
+                        initialState == DynamicCommentSheetHostContent.THREAD_DETAIL &&
+                            targetState == DynamicCommentSheetHostContent.MAIN_LIST
+                    val direction = when {
+                        opensThreadDetail -> 1
+                        closesThreadDetail -> -1
+                        else -> 0
+                    }
+                    val enter = fadeIn(animationSpec = tween(220)) +
+                        slideInHorizontally(animationSpec = tween(260)) { width ->
+                            when {
+                                direction > 0 -> width / 2
+                                direction < 0 -> -width / 2
+                                else -> 0
+                            }
+                        }
+                    val exit = fadeOut(animationSpec = tween(200)) +
+                        slideOutHorizontally(animationSpec = tween(240)) { width ->
+                            when {
+                                direction > 0 -> -width / 3
+                                direction < 0 -> width / 3
+                                else -> 0
+                            }
+                        }
+                    enter togetherWith exit using SizeTransform(clip = false)
+                },
+                label = "dynamic_comment_host_content",
+            ) { targetContent ->
             Column(modifier = Modifier.fillMaxSize()) {
+            when (targetContent) {
+                DynamicCommentSheetHostContent.MAIN_LIST -> {
             // 标题、数量和排序保持在同一视觉层级，关闭按钮保留 48dp 触控区。
             Row(
                 modifier = Modifier
@@ -405,15 +512,8 @@ fun DynamicCommentSheet(
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
                 ) {
                     items(comments, key = { it.rpid }) { reply ->
-                        val embeddedReplies = if (
-                            subReplyState.visible && subReplyState.rootReply?.rpid == reply.rpid
-                        ) {
-                            subReplyState.items
-                        } else {
-                            reply.replies
-                        }
                         ReplyItemView(
-                            item = reply.copy(replies = embeddedReplies),
+                            item = reply,
                             onClick = { onViewReplies(reply) },
                             onSubClick = { root, _ -> onViewReplies(root) },
                             onReplyClick = { onReply(reply) },
@@ -447,6 +547,49 @@ fun DynamicCommentSheet(
                     }
                 }
             }
+                }
+
+                DynamicCommentSheetHostContent.THREAD_DETAIL -> {
+                    val rootReply = subReplyState.rootReply
+                    if (rootReply != null) {
+                        SubReplyDetailContent(
+                            rootReply = rootReply,
+                            subReplies = subReplyState.items,
+                            sortMode = subReplyState.sortMode,
+                            error = subReplyState.error,
+                            onSortModeChange = onSubReplySortModeChange,
+                            remoteReplyCount = subReplyState.totalCount,
+                            isLoading = subReplyState.isLoading,
+                            isEnd = subReplyState.isEnd,
+                            emoteMap = emoteMap,
+                            onLoadMore = onLoadMoreSubReplies,
+                            onDismiss = onCloseSubReply,
+                            applyStatusBarPadding = false,
+                            onImagePreview = { images, index, rect, textContent ->
+                                previewImages = images
+                                previewInitialIndex = index
+                                previewSourceRect = rect
+                                previewTextContent = textContent
+                                showImagePreview = true
+                            },
+                            onReplyClick = { reply -> onReply(reply) },
+                            dissolvingIds = subReplyState.dissolvingIds,
+                            currentMid = currentUserMid ?: 0L,
+                            onDeleteComment = onThreadCommentDelete,
+                            onCommentLike = onThreadCommentLike,
+                            onReportComment = onThreadCommentReport,
+                            likedComments = likedThreadComments,
+                            onAvatarClick = { mid -> mid.toLongOrNull()?.let(onUserClick) },
+                            targetReplyId = subReplyState.targetReplyId,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
 
             DynamicCommentComposer(
                 value = commentText,
@@ -469,6 +612,7 @@ fun DynamicCommentSheet(
                         vertical = AppSpacingTokens.Medium,
                     ),
             )
+            }
             }
         }
     }

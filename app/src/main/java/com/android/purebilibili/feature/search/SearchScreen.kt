@@ -114,7 +114,12 @@ import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
 import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
+import com.android.purebilibili.feature.home.components.HomeTopChromeRenderMode
+import com.android.purebilibili.feature.home.components.LocalLiquidGlassRenderConfig
+import com.android.purebilibili.feature.home.components.homeTopChromeSurface
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
+import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
@@ -2038,7 +2043,7 @@ fun SearchScreen(
             // ---  顶部搜索栏 (常驻顶部) ---
             BiliPaiImmersiveTopBar(
                 backdrop = searchChromeBackdrop,
-                enabled = immersiveSearchChrome && !state.showResults,
+                enabled = immersiveSearchChrome,
                 modifier = Modifier.align(Alignment.TopCenter),
             ) {
             SearchTopBar(
@@ -2078,6 +2083,8 @@ fun SearchScreen(
                     }
                 },
                 isScrollInProgressProvider = { isSearchResultsScrolling },
+                liquidGlassEnabled = effectiveLiquidGlassEnabled,
+                miuixBackdrop = searchChromeBackdrop,
                 modifier = Modifier
                     .then(
                         if (!immersiveSearchChrome && shouldUseSearchTopBarBlur) {
@@ -2157,6 +2164,8 @@ fun SearchTopBar(
     exitMotionKey: Int = 0,
     onExitMotionFinished: (Int) -> Unit = {},
     isScrollInProgressProvider: () -> Boolean = { false },
+    liquidGlassEnabled: Boolean = false,
+    miuixBackdrop: MiuixBackdrop? = null,
     modifier: Modifier = Modifier
 ) {
     val topChromePolicy = rememberAppTopChromePolicy()
@@ -2191,6 +2200,31 @@ fun SearchTopBar(
         )
     }
     val canSubmit = resolvedSubmitKeyword.isNotBlank()
+    val liquidGlassRenderConfig = LocalLiquidGlassRenderConfig.current
+    val glassActive = liquidGlassEnabled && miuixBackdrop != null && !isLowBlurBudgetForced()
+    val glassRenderMode = if (glassActive) {
+        HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP
+    } else {
+        HomeTopChromeRenderMode.PLAIN
+    }
+    fun Modifier.searchTopChromeGlass(shape: androidx.compose.ui.graphics.Shape): Modifier {
+        if (!glassActive) return this
+        return homeTopChromeSurface(
+            renderMode = glassRenderMode,
+            shape = shape,
+            surfaceColor = Color.Transparent,
+            hazeState = null,
+            miuixBackdrop = miuixBackdrop,
+            liquidStyle = com.android.purebilibili.core.store.LiquidGlassStyle.CLASSIC,
+            liquidGlassTuning = liquidGlassRenderConfig.tuning,
+            liquidGlassPreset = liquidGlassRenderConfig.preset,
+            motionTier = MotionTier.Normal,
+            isScrolling = isScrollInProgressProvider(),
+            isTransitionRunning = false,
+            forceLowBlurBudget = false,
+            useProgressiveTopBlur = false,
+        )
+    }
 
     // Preserve caret/selection while typing; only resync when external text changes
     // (clear, keyword click, initial keyword). Using TextFieldValue avoids String-field
@@ -2292,9 +2326,13 @@ fun SearchTopBar(
                     .then(entryMotionModifier),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val inputShape = resolveSearchInputShape(topChromePolicy)
+                val actionShape = AppShapes.container(chromeSpec.actionShapeLevel)
                 SearchTopBarIconButton(
                     onClick = onBack,
-                    modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
+                    modifier = Modifier
+                        .size(chromeSpec.clearActionSizeDp.dp)
+                        .searchTopChromeGlass(actionShape)
                 ) {
                     AppIcon(
                         backIcon,
@@ -2306,9 +2344,9 @@ fun SearchTopBar(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                val inputShape = resolveSearchInputShape(topChromePolicy)
-                val actionShape = AppShapes.container(chromeSpec.actionShapeLevel)
-                val containerColor = if (chromeSpec.useFilledSearchAction) {
+                val containerColor = if (glassActive) {
+                    Color.Transparent
+                } else if (chromeSpec.useFilledSearchAction) {
                     AppSurfaceTokens.surfaceContainerHigh()
                 } else {
                     MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
@@ -2334,6 +2372,7 @@ fun SearchTopBar(
                         .weight(1f)
                         .fillMaxWidth()
                         .height(chromeSpec.inputHeightDp.dp)
+                        .searchTopChromeGlass(inputShape)
                         .onFocusChanged { onFocusChanged(it.isFocused) }
                 )
 
@@ -2344,12 +2383,20 @@ fun SearchTopBar(
                     enabled = canSubmit,
                     modifier = Modifier
                         .size(chromeSpec.submitActionSizeDp.dp)
-                        .clip(actionShape)
-                        .background(
-                            if (canSubmit) {
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                        .searchTopChromeGlass(actionShape)
+                        .then(
+                            if (glassActive) {
+                                Modifier
                             } else {
-                                Color.Transparent
+                                Modifier
+                                    .clip(actionShape)
+                                    .background(
+                                        if (canSubmit) {
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+                                        } else {
+                                            Color.Transparent
+                                        }
+                                    )
                             }
                         )
                 ) {
@@ -2368,7 +2415,9 @@ fun SearchTopBar(
                 SearchTopBarIconButton(
                     onClick = onClearQuery,
                     enabled = query.isNotEmpty(),
-                    modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
+                    modifier = Modifier
+                        .size(chromeSpec.clearActionSizeDp.dp)
+                        .searchTopChromeGlass(actionShape)
                 ) {
                     AppIcon(
                         clearIcon,
@@ -2432,8 +2481,15 @@ private fun SearchTopBarInputField(
         onValueChange = onValueChange,
         modifier = modifier
             .focusRequester(focusRequester)
-            .clip(fieldShape)
-            .background(containerColor, fieldShape)
+            .then(
+                if (containerColor.alpha > 0.001f) {
+                    Modifier
+                        .clip(fieldShape)
+                        .background(containerColor, fieldShape)
+                } else {
+                    Modifier
+                }
+            )
             .then(
                 if (isFocused) {
                     Modifier.border(

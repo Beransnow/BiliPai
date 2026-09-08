@@ -30,7 +30,10 @@ class CommentOverlayNavigationBackHandlerStructureTest {
         ).readText()
 
         assertTrue(mainSheetSource.contains("WindowNavigationEventBridge()"))
-        assertTrue(mainSheetSource.contains("LocalNavigationBackHandler("))
+        assertTrue(mainSheetSource.contains("NavigationBackHandler("))
+        assertTrue(mainSheetSource.contains("resolveVideoCommentPredictiveBackTarget("))
+        assertTrue(mainSheetSource.contains("threadBackProgress"))
+        assertTrue(mainSheetSource.contains("SubReplyDetailContent("))
         assertTrue(subReplySource.contains("WindowNavigationEventBridge()"))
         assertTrue(subReplySource.contains("LocalNavigationBackHandler("))
     }

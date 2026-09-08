@@ -12,6 +12,7 @@ class SpaceScreenStructureTest {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 
         assertTrue(source.contains("AppNativeTabRow("))
+        assertTrue(source.contains("BiliPaiImmersiveTopBar("))
         assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(source.contains("AppThemeAdaptiveTabRow("))
         assertTrue(source.contains("scrollable = spec.scrollable"))

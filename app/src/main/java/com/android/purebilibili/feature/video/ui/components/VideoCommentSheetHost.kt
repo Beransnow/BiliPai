@@ -711,11 +711,13 @@ fun VideoCommentSheetHost(
                 ) {
                     AnimatedContent(
                         targetState = hostContent,
-                        modifier = Modifier.graphicsLayer {
-                            if (hostContent == VideoCommentSheetHostContent.THREAD_DETAIL) {
-                                translationX = threadBackProgress * size.width
-                            }
-                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                if (hostContent == VideoCommentSheetHostContent.THREAD_DETAIL) {
+                                    translationX = threadBackProgress * size.width
+                                }
+                            },
                         transitionSpec = {
                             val opensThreadDetail =
                                 initialState == VideoCommentSheetHostContent.MAIN_LIST &&
@@ -746,7 +748,6 @@ fun VideoCommentSheetHost(
                                 }
                             enter togetherWith exit using SizeTransform(clip = false)
                         },
-                        modifier = Modifier.fillMaxSize(),
                         label = "video_comment_host_content"
                     ) { targetContent ->
                         when (targetContent) {

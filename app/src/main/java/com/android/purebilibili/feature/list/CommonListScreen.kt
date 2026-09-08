@@ -841,6 +841,11 @@ fun CommonListScreen(
         enabled = isProgressiveTopBlurEnabled,
         hasBackdrop = commonListChromeBackdrop != null,
     ) && !com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced()
+    val commonListScrollUnderHeader = shouldScrollCommonListUnderHeader(
+        isHistoryPage = historyViewModel != null,
+        headerCollapseEnabled = commonListHeaderCollapseEnabled,
+        captureScrollableContent = useProgressiveHeaderBlur,
+    )
     val topBarBackgroundModifier = if (useProgressiveHeaderBlur) {
         Modifier.fillMaxWidth()
     } else if (historyUsesFloatingLiquidDocks) {
@@ -951,7 +956,7 @@ fun CommonListScreen(
                         isFavoritePersonalList = true,
                         spacing = spacing.medium,
                         padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
-                        scrollUnderHeader = commonListHeaderCollapseEnabled,
+                        scrollUnderHeader = commonListScrollUnderHeader,
                         cardAnimationEnabled = homeSettings.cardAnimationEnabled,
                         cardTransitionEnabled = homeSettings.cardTransitionEnabled,
                         cardMotionTier = cardMotionTier,
@@ -1055,7 +1060,7 @@ fun CommonListScreen(
                                 onFavoriteLongPress = enterFavoriteBatchMode,
                                 spacing = spacing.medium,
                                 padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
-                                scrollUnderHeader = commonListHeaderCollapseEnabled,
+                                scrollUnderHeader = commonListScrollUnderHeader,
                                 cardAnimationEnabled = homeSettings.cardAnimationEnabled,
                                 cardTransitionEnabled = homeSettings.cardTransitionEnabled,
                                 cardMotionTier = cardMotionTier,
@@ -1099,7 +1104,7 @@ fun CommonListScreen(
                             onFavoriteLongPress = enterFavoriteBatchMode,
                             spacing = spacing.medium,
                             padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
-                            scrollUnderHeader = commonListHeaderCollapseEnabled,
+                            scrollUnderHeader = commonListScrollUnderHeader,
                             cardAnimationEnabled = homeSettings.cardAnimationEnabled,
                             cardTransitionEnabled = homeSettings.cardTransitionEnabled,
                             cardMotionTier = cardMotionTier,
@@ -1138,10 +1143,7 @@ fun CommonListScreen(
                         onFavoriteLongPress = if (favoriteViewModel != null) enterFavoriteBatchMode else null,
                         spacing = spacing.medium,
                         padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
-                        scrollUnderHeader = shouldScrollCommonListUnderHeader(
-                            isHistoryPage = historyViewModel != null,
-                            headerCollapseEnabled = commonListHeaderCollapseEnabled,
-                        ),
+                        scrollUnderHeader = commonListScrollUnderHeader,
                         cardAnimationEnabled = homeSettings.cardAnimationEnabled,
                         cardTransitionEnabled = homeSettings.cardTransitionEnabled,
                         cardMotionTier = cardMotionTier,

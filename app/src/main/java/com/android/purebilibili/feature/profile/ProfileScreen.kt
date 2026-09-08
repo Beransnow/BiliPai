@@ -110,8 +110,15 @@ import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppTopBarStyle
+import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
+import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
+import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.ui.TopReadabilityChrome
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
@@ -479,6 +486,7 @@ fun ProfileScreen(
 
     //  未登录状态使用沉浸式全屏布局，已登录使用正常 Scaffold
     val currentUiState = state
+    val profileProgressiveChrome = rememberProfileProgressiveTopChrome()
     when (currentUiState) {
         is ProfileUiState.Loading -> {
             ProfileLoadingSkeleton()
@@ -503,7 +511,11 @@ fun ProfileScreen(
             )
             
             
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .profileProgressiveBackdrop(profileProgressiveChrome.backdrop),
+            ) {
                 ProfileBackground(
                     user = guestUser,
                     viewModel = viewModel,
@@ -514,6 +526,7 @@ fun ProfileScreen(
                 )
                 
                 MobileProfileContent(
+                    progressiveTopChrome = profileProgressiveChrome,
                     user = guestUser,
                     onLogout = onGoToLogin, // "退出登录" 变为 "登录"
                     onAccountManageClick = { showAccountSwitchDialog = true },
@@ -546,12 +559,18 @@ fun ProfileScreen(
             AppScaffold(
                 containerColor = MaterialTheme.colorScheme.background,
                 topBar = {
+                    BiliPaiImmersiveTopBar(
+                        backdrop = profileProgressiveChrome.backdrop,
+                        enabled = profileProgressiveChrome.enabled,
+                    ) {
                     Box {
+                        if (!profileProgressiveChrome.enabled) {
                         TopReadabilityChrome(
                             height = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 64.dp,
                             surfaceColor = MaterialTheme.colorScheme.background,
                             surfaceAlpha = 0.86f
                         )
+                        }
                         AppTopBar(
                             title = "我的",
                             style = AppTopBarStyle.CENTERED,
@@ -571,11 +590,13 @@ fun ProfileScreen(
                             )
                         )
                     }
+                    }
                 }
             ) { padding ->
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .profileProgressiveBackdrop(profileProgressiveChrome.backdrop)
                         .padding(padding)
                         .padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -654,10 +675,15 @@ fun ProfileScreen(
                 // [Immersive] Mobile hides default TopBar, Tablet keeps it
                 topBar = {
                     if (windowSizeClass.shouldUseSplitLayout) {
+                        BiliPaiImmersiveTopBar(
+                            backdrop = profileProgressiveChrome.backdrop,
+                            enabled = profileProgressiveChrome.enabled,
+                        ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
+                            if (!profileProgressiveChrome.enabled) {
                             TopReadabilityChrome(
                                 height = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 104.dp,
                                 surfaceColor = MaterialTheme.colorScheme.background,
@@ -665,6 +691,7 @@ fun ProfileScreen(
                                 hazeState = hazeState,
                                 hazeEnabled = headerBlurEnabled
                             )
+                            }
                             AppTopBar(
                                 title = "我的",
                                 largeTitle = "我的",
@@ -693,11 +720,16 @@ fun ProfileScreen(
                                 )
                             )
                         }
+                        }
                     }
                 },
                 contentWindowInsets = if (!windowSizeClass.shouldUseSplitLayout) WindowInsets(0.dp) else ScaffoldDefaults.contentWindowInsets
             ) { padding ->
-                Box(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .profileProgressiveBackdrop(profileProgressiveChrome.backdrop),
+                ) {
                     // [Refactor] Lift background to root
                     ProfileBackground(
                         user = decoratedUser,
@@ -749,7 +781,8 @@ fun ProfileScreen(
                         hazeState = hazeState,
                         paddingValues = padding,
                         isTablet = windowSizeClass.shouldUseSplitLayout,
-                        scrollToTopRequestId = profileScrollToTopRequestId
+                        scrollToTopRequestId = profileScrollToTopRequestId,
+                        progressiveTopChrome = profileProgressiveChrome,
                     )
                 }
             }
@@ -1006,7 +1039,8 @@ private fun ProfileSpaceContent(
     hazeState: HazeState?,
     paddingValues: PaddingValues,
     isTablet: Boolean,
-    scrollToTopRequestId: Int = 0
+    scrollToTopRequestId: Int = 0,
+    progressiveTopChrome: ProfileProgressiveTopChrome = ProfileProgressiveTopChrome(null, false),
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showAdjustmentSheet by remember { mutableStateOf(false) }
@@ -1254,13 +1288,19 @@ private fun ProfileSpaceContent(
                     }
                 }
             }
+            BiliPaiImmersiveTopBar(
+                backdrop = progressiveTopChrome.backdrop,
+                enabled = progressiveTopChrome.enabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+            ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = statusBarTopPadding)
                     .height(56.dp)
-                    .padding(horizontal = 8.dp)
-                    .align(Alignment.TopCenter),
+                    .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppIconButton(onClick = onBack) {
@@ -1279,6 +1319,7 @@ private fun ProfileSpaceContent(
                     onWallpaperClick = { showWallpaperActionSheet = true },
                     tint = topBarIconColor,
                 )
+            }
             }
         }
     }
@@ -2883,6 +2924,26 @@ private fun ProfileEditAccountDialog(
     )
 }
 
+private data class ProfileProgressiveTopChrome(
+    val backdrop: Backdrop?,
+    val enabled: Boolean,
+)
+
+@Composable
+private fun rememberProfileProgressiveTopChrome(): ProfileProgressiveTopChrome {
+    val config = LocalAppThemeConfig.current
+    val enabled = shouldUseBiliPaiProgressiveTopBlur(
+        enabled = config.progressiveTopBlurEnabled && !config.headerBlurEnabled,
+        hasBackdrop = true,
+    ) && !isLowBlurBudgetForced()
+    val backdrop = if (enabled) rememberLayerBackdrop() else null
+    return ProfileProgressiveTopChrome(backdrop = backdrop, enabled = enabled)
+}
+
+private fun Modifier.profileProgressiveBackdrop(backdrop: Backdrop?): Modifier {
+    return if (backdrop != null) then(Modifier.layerBackdrop(backdrop)) else this
+}
+
 @Composable
 private fun ProfileReadonlyAccountField(label: String, value: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -3031,7 +3092,8 @@ fun MobileProfileContent(
     hazeState: HazeState? = null,
     onHeaderClick: () -> Unit = {}, // [New] Support header click for guest login
     paddingValues: PaddingValues = PaddingValues(0.dp),
-    scrollToTopRequestId: Int = 0
+    scrollToTopRequestId: Int = 0,
+    progressiveTopChrome: ProfileProgressiveTopChrome = ProfileProgressiveTopChrome(null, false),
 ) {
     val windowSizeClass = LocalWindowSizeClass.current
     
@@ -3255,6 +3317,11 @@ fun MobileProfileContent(
             // item { Spacer(...) } // Removed
         }
         
+        BiliPaiImmersiveTopBar(
+            backdrop = progressiveTopChrome.backdrop,
+            enabled = progressiveTopChrome.enabled,
+            modifier = Modifier.align(Alignment.TopCenter).fillMaxWidth(),
+        ) {
         AppTopBar(
             title = "我的",
             style = AppTopBarStyle.CENTERED,
@@ -3279,6 +3346,7 @@ fun MobileProfileContent(
                 navigationIconContentColor = contentColor
             )
         )
+        }
     }
 }
 

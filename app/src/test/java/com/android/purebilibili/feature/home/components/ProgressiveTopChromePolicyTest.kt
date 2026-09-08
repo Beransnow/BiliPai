@@ -55,6 +55,17 @@ class ProgressiveTopChromePolicyTest {
         assertTrue(bangumiHub.contains("ImmersiveAppScaffold as AppScaffold"))
         assertTrue(bangumiDetail.contains("ImmersiveAppScaffold as AppScaffold"))
         assertTrue(bangumiReview.contains("ImmersiveAppScaffold as AppScaffold"))
+        val profile = loadSource("feature/profile/ProfileScreen.kt")
+        val favoriteCategory = loadSource("feature/list/FavoriteCategoryScreen.kt")
+        assertTrue(profile.contains("BiliPaiImmersiveTopBar("))
+        assertTrue(profile.contains("rememberProfileProgressiveTopChrome()"))
+        assertTrue(commonList.contains("captureScrollableContent = useProgressiveHeaderBlur"))
+        assertTrue(favoriteCategory.contains("topPadding = stickyChromeReserve"))
+        val space = loadSource("feature/space/SpaceScreen.kt")
+        val settingsTablet = loadSource("feature/settings/screen/SettingsTabletShell.kt")
+        assertTrue(space.contains("BiliPaiImmersiveTopBar("))
+        assertTrue(space.contains("Modifier.layerBackdrop(spaceChromeBackdrop)"))
+        assertTrue(settingsTablet.contains("BiliPaiImmersiveTopBar("))
     }
 
     @Test

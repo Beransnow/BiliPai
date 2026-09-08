@@ -232,18 +232,24 @@ internal fun SettingsPageScaffold(
 
                 SettingsPageScrollHost.External -> {
                     CompositionLocalProvider(
-                        LocalSettingsTopContentPadding provides if (externalContentHandlesTopPadding) {
-                            padding.calculateTopPadding()
-                        } else 0.dp,
+                        LocalSettingsTopContentPadding provides padding.calculateTopPadding(),
                     ) {
-                        Column(
-                            modifier = if (externalContentHandlesTopPadding) scrollModifier else scrollModifier.padding(padding),
-                        ) {
+                        Column(modifier = scrollModifier) {
                             header?.invoke()
                             Box(
                                 modifier = Modifier
                                     .weight(1f, fill = true)
-                                    .fillMaxSize(),
+                                    .fillMaxSize()
+                                    .then(
+                                        if (externalContentHandlesTopPadding) {
+                                            Modifier
+                                        } else {
+                                            Modifier.padding(
+                                                top = padding.calculateTopPadding(),
+                                                bottom = padding.calculateBottomPadding(),
+                                            )
+                                        }
+                                    ),
                             ) {
                                 content()
                             }
