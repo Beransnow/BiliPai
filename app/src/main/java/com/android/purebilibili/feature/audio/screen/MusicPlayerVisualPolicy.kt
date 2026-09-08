@@ -27,6 +27,45 @@ internal fun resolveMusicPlayMode(index: Int): PlayMode = when (index) {
     else -> PlayMode.SEQUENTIAL
 }
 
+internal enum class MusicRepeatGlyph {
+    OFF,
+    ONE,
+    ALL
+}
+
+internal data class MusicSecondaryTransportState(
+    val shuffleEnabled: Boolean,
+    val repeatGlyph: MusicRepeatGlyph
+)
+
+internal fun resolveMusicSecondaryTransport(mode: PlayMode): MusicSecondaryTransportState = when (mode) {
+    PlayMode.SHUFFLE -> MusicSecondaryTransportState(
+        shuffleEnabled = true,
+        repeatGlyph = MusicRepeatGlyph.ALL
+    )
+    PlayMode.REPEAT_ONE -> MusicSecondaryTransportState(
+        shuffleEnabled = false,
+        repeatGlyph = MusicRepeatGlyph.ONE
+    )
+    PlayMode.REPEAT_ALL -> MusicSecondaryTransportState(
+        shuffleEnabled = false,
+        repeatGlyph = MusicRepeatGlyph.ALL
+    )
+    PlayMode.SEQUENTIAL -> MusicSecondaryTransportState(
+        shuffleEnabled = false,
+        repeatGlyph = MusicRepeatGlyph.OFF
+    )
+}
+
+internal fun resolvePlayModeAfterShuffleToggle(mode: PlayMode): PlayMode =
+    if (mode == PlayMode.SHUFFLE) PlayMode.SEQUENTIAL else PlayMode.SHUFFLE
+
+internal fun resolvePlayModeAfterRepeatToggle(mode: PlayMode): PlayMode = when (mode) {
+    PlayMode.SEQUENTIAL, PlayMode.SHUFFLE -> PlayMode.REPEAT_ONE
+    PlayMode.REPEAT_ONE -> PlayMode.REPEAT_ALL
+    PlayMode.REPEAT_ALL -> PlayMode.SEQUENTIAL
+}
+
 internal fun resolveMusicLyricsBlurEnabled(
     sdkInt: Int,
     effectsEnabled: Boolean,

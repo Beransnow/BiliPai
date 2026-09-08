@@ -301,7 +301,8 @@ fun AudioModeScreen(
         onToggleOrientation = {
             activity?.applyPlayerRequestedOrientation(resolveAudioModeRequestedOrientation(isLandscape))
         },
-        orientationActionLabel = orientationActionLabel
+        orientationActionLabel = orientationActionLabel,
+        engagementViewModel = engagementViewModel
     )
 }
 

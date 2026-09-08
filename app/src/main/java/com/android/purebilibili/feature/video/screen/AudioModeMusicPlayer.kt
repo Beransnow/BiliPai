@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.Player
 import com.android.purebilibili.core.player.PlayerVolumeController
 import com.android.purebilibili.core.util.FormatUtils
@@ -29,8 +30,15 @@ import com.android.purebilibili.feature.audio.screen.MusicPlayerContent
 import com.android.purebilibili.feature.audio.viewmodel.MusicViewModel
 import com.android.purebilibili.feature.video.player.PlaylistManager
 import com.android.purebilibili.feature.video.playback.audio.resolveAudioQualityControlPresentation
+import com.android.purebilibili.feature.video.share.VideoShareSheet
+import com.android.purebilibili.feature.video.share.buildVideoSharePayload
 import com.android.purebilibili.feature.video.ui.components.CollectionSheet
 import com.android.purebilibili.feature.video.ui.components.PagesSelector
+import com.android.purebilibili.feature.video.ui.components.PlaybackSpeed
+import com.android.purebilibili.feature.video.ui.components.SpeedSelectionMenuDialog
+import com.android.purebilibili.feature.video.ui.components.VideoCommentSheetHost
+import com.android.purebilibili.feature.video.viewmodel.VideoCommentViewModel
+import com.android.purebilibili.feature.video.viewmodel.VideoEngagementViewModel
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackViewModel
 import kotlinx.coroutines.delay
@@ -88,13 +96,14 @@ internal fun AudioModeMusicPlayer(
     titleOverride: String?,
     liquidGlassEffectsEnabled: Boolean,
     onToggleOrientation: (() -> Unit)? = null,
-    orientationActionLabel: String = "横屏"
+    orientationActionLabel: String = "横屏",
+    engagementViewModel: VideoEngagementViewModel = viewModel()
 ) {
     if (successState == null) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black),
+                .background(androidx.compose.material3.MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
             AdaptiveLoadingIndicator(color = Color.White)
@@ -120,6 +129,12 @@ internal fun AudioModeMusicPlayer(
     var showCollectionSheet by remember { mutableStateOf(false) }
     var showPageSelector by remember { mutableStateOf(false) }
     var showSleepTimerDialog by remember { mutableStateOf(false) }
+    var showComments by remember { mutableStateOf(false) }
+    var showSpeedMenu by remember { mutableStateOf(false) }
+    var showShare by remember { mutableStateOf(false) }
+    val engagementState by engagementViewModel.uiState.collectAsStateWithLifecycle()
+    val commentViewModel: VideoCommentViewModel = viewModel()
+    val currentSpeed = player?.playbackParameters?.speed ?: 1f
 
     val metadataDurationMs = info.pages
         .firstOrNull { it.cid == info.cid }
@@ -234,6 +249,15 @@ internal fun AudioModeMusicPlayer(
         onPipClick = if (showPipButton) onEnterPip else null,
         onToggleOrientation = onToggleOrientation,
         orientationActionLabel = orientationActionLabel,
+        isLiked = engagementState.isLiked,
+        onLikeClick = { engagementViewModel.toggleLike() },
+        onCommentsClick = { showComments = true },
+        isFavorited = engagementState.isFavorited,
+        onFavoriteClick = { engagementViewModel.toggleFavorite() },
+        onDownloadClick = { viewModel.downloadAudio(context) },
+        onShareClick = { showShare = true },
+        onSpeedClick = { showSpeedMenu = true },
+        speedLabel = PlaybackSpeed.formatSpeed(currentSpeed),
         isInPipMode = isInPipMode,
         liquidGlassEffectsEnabled = liquidGlassEffectsEnabled
     )
@@ -276,6 +300,50 @@ internal fun AudioModeMusicPlayer(
                 }
             )
         }
+    }
+
+    LaunchedEffect(showComments, info.aid, info.owner.mid) {
+        if (showComments) {
+            commentViewModel.init(
+                aid = info.aid,
+                upMid = info.owner.mid,
+                expectedReplyCount = info.stat.reply
+            )
+        }
+    }
+    if (showComments) {
+        VideoCommentSheetHost(
+            mainSheetVisible = true,
+            onDismiss = { showComments = false },
+            commentViewModel = commentViewModel,
+            aid = info.aid,
+            upMid = info.owner.mid,
+            expectedReplyCount = info.stat.reply,
+            onUserClick = {},
+            onTimestampClick = { timestampMs -> player?.seekTo(timestampMs) }
+        )
+    }
+
+    if (showSpeedMenu) {
+        SpeedSelectionMenuDialog(
+            currentSpeed = currentSpeed,
+            onSpeedSelected = { speed ->
+                viewModel.applyPlaybackSpeedFromUi(speed)
+                showSpeedMenu = false
+            },
+            onDismiss = { showSpeedMenu = false }
+        )
+    }
+
+    if (showShare) {
+        VideoShareSheet(
+            payload = buildVideoSharePayload(
+                title = displayTitle,
+                bvid = info.bvid,
+                coverUrl = coverUrl
+            ),
+            onDismiss = { showShare = false }
+        )
     }
 
     if (showSleepTimerDialog) {

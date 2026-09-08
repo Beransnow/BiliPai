@@ -46,18 +46,28 @@ class MusicPlayerContentStructureTest {
     }
 
     @Test
-    fun `player uses four mode liquid dock and moves secondary actions to sheet`() {
+    fun `player uses bbplayer secondary transport and keeps actions in sheet`() {
         val source = loadSource()
         val playerPage = source
             .substringAfter("private fun PlayerPage(")
             .substringBefore("private fun MusicArtwork(")
 
-        assertTrue(playerPage.contains("MusicPlayModeDock("))
-        assertTrue(source.contains("listOf(\"顺序播放\", \"随机播放\", \"单曲循环\", \"列表循环\")"))
-        assertTrue(source.contains("AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp"))
+        assertTrue(playerPage.contains("MusicSecondaryControls("))
+        assertTrue(playerPage.contains("CircleShape"))
+        assertTrue(playerPage.contains("onLikeClick"))
+        assertTrue(source.contains("Icons.Outlined.Shuffle"))
+        assertTrue(source.contains("Icons.Outlined.Repeat"))
+        assertTrue(source.contains("Icons.AutoMirrored.Outlined.Comment"))
+        assertTrue(source.contains("Icons.Outlined.QueueMusic"))
+        assertTrue(source.contains("AppFilledIconButton("))
+        assertTrue(source.contains("resolveMusicPlayerChromeSpec("))
+        assertTrue(source.contains("usePaletteImmersiveBackdrop"))
         assertTrue(source.contains("showActions"))
         assertTrue(source.contains("播放器操作"))
+        assertTrue(source.contains("缓存音频"))
         assertTrue(source.contains("onCollectionClick"))
+        assertTrue(!source.contains("MusicPlayModeDock("))
+        assertTrue(!source.contains("listOf(\"顺序播放\", \"随机播放\", \"单曲循环\", \"列表循环\")"))
     }
 
     @Test
