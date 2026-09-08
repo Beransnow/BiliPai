@@ -464,8 +464,8 @@ private fun SearchFilterSelectableChip(
             )
         },
         colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-            selectedLabelColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            selectedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            selectedLabelColor = MaterialTheme.colorScheme.onSurface,
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
             labelColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),

@@ -58,6 +58,8 @@ import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
+import com.android.purebilibili.core.util.BilibiliNavigationTarget
+import com.android.purebilibili.core.util.BilibiliNavigationTargetParser
 import com.android.purebilibili.core.ui.common.CopySelectionDialog
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
@@ -699,8 +701,8 @@ fun DynamicCardV2(
         item.modules.module_dispute?.let { dispute ->
             if (shouldShowDynamicDispute(dispute)) {
                 val disputeColors = resolveAccessibleContainerColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     backgroundColor = MaterialTheme.colorScheme.surface,
                     fallbackContentColors = listOf(
                         MaterialTheme.colorScheme.onSurface,
@@ -790,6 +792,12 @@ fun DynamicCardV2(
                     onUserClick = onUserClick,
                     onTopicClick = onTopicClick,
                     onVoteClick = { voteId -> pendingVoteId = voteId },
+                    onVideoClick = onVideoClick,
+                    onDynamicDetailClick = openDynamicDetail,
+                    onBangumiClick = onBangumiClick,
+                    onArticleClick = onArticleClick,
+                    onLiveClick = onLiveClick,
+                    onMusicClick = onMusicClick,
                     extraEmoteUrlMap = dynamicCardEmoteMap,
                 )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
@@ -938,6 +946,12 @@ fun DynamicCardV2(
                                         onUserClick = onUserClick,
                                         onTopicClick = onTopicClick,
                                         onVoteClick = { voteId -> pendingVoteId = voteId },
+                                        onVideoClick = onVideoClick,
+                                        onDynamicDetailClick = openDynamicDetail,
+                                        onBangumiClick = onBangumiClick,
+                                        onArticleClick = onArticleClick,
+                                        onLiveClick = onLiveClick,
+                                        onMusicClick = onMusicClick,
                                         extraEmoteUrlMap = dynamicCardEmoteMap,
                                     )
                                 }
@@ -977,13 +991,13 @@ fun DynamicCardV2(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(bottom = AppSpacingTokens.Medium),
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f),
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
                                 contentPadding = PaddingValues(AppSpacingTokens.Medium),
                             ) {
                                 AppText(
                                     text = block.text,
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = resolveOpusTextAlign(block.alignment),
                                     modifier = Modifier.fillMaxWidth(),
                                 )
@@ -1751,6 +1765,13 @@ fun RichTextContent(
     onTopicClick: (Long) -> Unit = {},
     onVoteClick: (Long) -> Unit = {},
     onBlankTap: (() -> Unit)? = null,
+    onVideoClick: ((String) -> Unit)? = null,
+    onDynamicDetailClick: ((String) -> Unit)? = null,
+    onBangumiClick: ((Long, Long) -> Unit)? = null,
+    onArticleClick: ((Long, String) -> Unit)? = null,
+    onLiveClick: ((Long, String, String) -> Unit)? = null,
+    onMusicClick: ((Long) -> Unit)? = null,
+    onLinkClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
     fontSize: TextUnit = MaterialTheme.typography.bodyMedium.fontSize,
     fontWeight: FontWeight? = null,
@@ -1827,6 +1848,13 @@ fun RichTextContent(
             onVoteClick,
             onTopicClick,
             onBlankTap,
+            onVideoClick,
+            onDynamicDetailClick,
+            onBangumiClick,
+            onArticleClick,
+            onLiveClick,
+            onMusicClick,
+            onLinkClick,
         ) {
             detectTapGestures(
                 onLongPress = {
@@ -1882,35 +1910,97 @@ fun RichTextContent(
                     ).firstOrNull()
 
                     if (urlAnnotation != null) {
+                        val rawUrl = urlAnnotation.item
                         scope.launch {
-                            when (resolveDynamicRichTextOpenMode(urlAnnotation.item)) {
-                                DynamicRichTextOpenMode.IN_APP -> {
-                                    val inAppIntent = android.content.Intent(
-                                        android.content.Intent.ACTION_VIEW,
-                                        android.net.Uri.parse(urlAnnotation.item)
-                                    ).setPackage(context.packageName)
-                                        .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    val launchedInApp = runCatching {
-                                        context.startActivity(inAppIntent)
-                                    }.isSuccess
-                                    if (!launchedInApp) {
+                            val target = BilibiliNavigationTargetParser.parse(rawUrl)
+                                ?: if (rawUrl.contains("b23.tv", ignoreCase = true)) {
+                                    BilibiliNavigationTargetParser.resolve(rawUrl)
+                                } else null
+                            if (target != null) {
+                                val handled = when (target) {
+                                    is BilibiliNavigationTarget.Dynamic -> {
+                                        if (onDynamicDetailClick != null) {
+                                            onDynamicDetailClick(target.dynamicId)
+                                            true
+                                        } else false
+                                    }
+                                    is BilibiliNavigationTarget.Video -> {
+                                        if (onVideoClick != null) {
+                                            onVideoClick(target.videoId)
+                                            true
+                                        } else false
+                                    }
+                                    is BilibiliNavigationTarget.Space -> {
+                                        if (target.mid > 0L) {
+                                            onUserClick(target.mid)
+                                            true
+                                        } else false
+                                    }
+                                    is BilibiliNavigationTarget.BangumiSeason -> {
+                                        if (onBangumiClick != null) {
+                                            onBangumiClick(target.seasonId, target.mediaId)
+                                            true
+                                        } else false
+                                    }
+                                    is BilibiliNavigationTarget.BangumiEpisode -> {
+                                        if (onBangumiClick != null) {
+                                            onBangumiClick(0L, target.epId)
+                                            true
+                                        } else false
+                                    }
+                                    is BilibiliNavigationTarget.Article -> {
+                                        if (onArticleClick != null) {
+                                            onArticleClick(target.articleId, "")
+                                            true
+                                        } else false
+                                    }
+                                    is BilibiliNavigationTarget.Live -> {
+                                        if (onLiveClick != null) {
+                                            onLiveClick(target.roomId, "", "")
+                                            true
+                                        } else false
+                                    }
+                                    is BilibiliNavigationTarget.Music -> {
+                                        val auSid = target.musicId.removePrefix("au").removePrefix("AU").toLongOrNull()
+                                        if (auSid != null && onMusicClick != null) {
+                                            onMusicClick(auSid)
+                                            true
+                                        } else false
+                                    }
+                                    is BilibiliNavigationTarget.Search -> false
+                                }
+                                if (handled) return@launch
+                            }
+                            if (onLinkClick != null) {
+                                onLinkClick(rawUrl)
+                            } else {
+                                when (resolveDynamicRichTextOpenMode(rawUrl)) {
+                                    DynamicRichTextOpenMode.IN_APP -> {
+                                        val inAppIntent = android.content.Intent(
+                                            android.content.Intent.ACTION_VIEW,
+                                            android.net.Uri.parse(rawUrl)
+                                        ).setPackage(context.packageName)
+                                            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        val launchedInApp = runCatching {
+                                            context.startActivity(inAppIntent)
+                                        }.isSuccess
+                                        if (!launchedInApp) {
+                                            openDynamicRichTextLinkExternally(
+                                                context,
+                                                rawUrl,
+                                                uriHandler
+                                            )
+                                        }
+                                    }
+                                    DynamicRichTextOpenMode.EXTERNAL -> {
                                         openDynamicRichTextLinkExternally(
                                             context,
-                                            urlAnnotation.item,
+                                            rawUrl,
                                             uriHandler
                                         )
                                     }
+                                    null -> Unit
                                 }
-
-                                DynamicRichTextOpenMode.EXTERNAL -> {
-                                    openDynamicRichTextLinkExternally(
-                                        context,
-                                        urlAnnotation.item,
-                                        uriHandler
-                                    )
-                                }
-
-                                null -> Unit
                             }
                         }
                         return@detectTapGestures
