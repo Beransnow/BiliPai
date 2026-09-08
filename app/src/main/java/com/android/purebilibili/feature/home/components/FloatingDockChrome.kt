@@ -386,14 +386,6 @@ internal fun BoxScope.BiliPaiFloatingDockIndicator(
                             },
                             onDrawSurface = {
                                 val progress = pressProgress
-                                drawRect(
-                                    color = if (!isDark) {
-                                        Color.Black.copy(alpha = 0.1f)
-                                    } else {
-                                        Color.White.copy(alpha = 0.1f)
-                                    },
-                                    alpha = 1f - progress,
-                                )
                                 drawRect(Color.Black.copy(alpha = 0.03f * progress))
                             },
                         )
@@ -405,10 +397,7 @@ internal fun BoxScope.BiliPaiFloatingDockIndicator(
                             )
                         }
                 } else {
-                    Modifier.background(
-                        if (!isDark) Color.Black.copy(alpha = 0.1f) else Color.White.copy(alpha = 0.1f),
-                        shape,
-                    )
+                    Modifier
                 }
             )
     )
