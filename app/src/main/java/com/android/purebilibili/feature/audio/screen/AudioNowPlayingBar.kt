@@ -51,6 +51,7 @@ import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 internal data class AudioNowPlayingBarState(
     val title: String,
     val artist: String,
+    val artistAvatarUrl: String = "",
     val coverUrl: String,
     val isPlaying: Boolean,
     val playbackSpeed: Float = 1f
@@ -94,7 +95,11 @@ internal fun AudioNowPlayingBar(
             .padding(
                 start = chrome.horizontalPaddingDp.dp,
                 end = chrome.horizontalPaddingDp.dp,
-                bottom = if (liftAboveBottomBar) 72.dp else 8.dp
+                bottom = when {
+                    liftAboveBottomBar -> 72.dp
+                    !glassActive && chrome.uiStyle == com.android.purebilibili.core.theme.AppUiStyle.MATERIAL3 -> 16.dp
+                    else -> 8.dp
+                }
             )
             .biliPaiFloatingDockShell(
                 backdrop = miuixBackdrop,
@@ -142,13 +147,28 @@ internal fun AudioNowPlayingBar(
                     fontWeight = FontWeight.SemiBold,
                     style = MaterialTheme.typography.bodyMedium
                 )
-                AppText(
-                    text = state.artist,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    if (state.artistAvatarUrl.isNotBlank()) {
+                        AsyncImage(
+                            model = state.artistAvatarUrl,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    AppText(
+                        text = state.artist,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
             AppIconButton(onClick = onPlayPause, modifier = Modifier.size(44.dp)) {
                 AppIcon(

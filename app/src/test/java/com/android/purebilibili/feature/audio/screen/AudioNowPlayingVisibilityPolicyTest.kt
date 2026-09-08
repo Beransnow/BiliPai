@@ -79,6 +79,36 @@ class AudioNowPlayingVisibilityPolicyTest {
     }
 
     @Test
+    fun hiddenInLandscapeAndPlayerDestinations() {
+        assertFalse(
+            resolveAudioNowPlayingVisible(
+                sessionActive = true,
+                isOnAudioModeScreen = false,
+                isInPipMode = false,
+                hasCurrentItem = true,
+                barEnabled = true,
+                isLandscape = true
+            )
+        )
+        assertFalse(
+            resolveAudioNowPlayingVisible(
+                sessionActive = true,
+                isOnAudioModeScreen = false,
+                isInPipMode = false,
+                hasCurrentItem = true,
+                barEnabled = true,
+                isPlayerDestination = true
+            )
+        )
+        assertTrue(isAudioNowPlayingPlayerDestination("video/BV1xx?cid=1"))
+        assertTrue(isAudioNowPlayingPlayerDestination("bangumi/play/1/2"))
+        assertTrue(isAudioNowPlayingPlayerDestination("live/123"))
+        assertTrue(isAudioNowPlayingPlayerDestination("live"))
+        assertFalse(isAudioNowPlayingPlayerDestination("main_host"))
+        assertFalse(isAudioNowPlayingPlayerDestination("listen_video"))
+    }
+
+    @Test
     fun dockNowPlayingStaysVisibleDuringChromeTransition() {
         assertTrue(
             resolveAudioNowPlayingVisible(

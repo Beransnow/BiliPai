@@ -26,6 +26,7 @@ data class PlaylistItem(
     val title: String,
     val cover: String,
     val owner: String,
+    val ownerFace: String = "",
     val duration: Long = 0L,
     // 番剧专用
     val isBangumi: Boolean = false,
