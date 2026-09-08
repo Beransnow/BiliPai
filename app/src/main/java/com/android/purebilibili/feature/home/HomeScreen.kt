@@ -974,8 +974,9 @@ fun HomeScreen(
     } else {
         null
     }
+    val appThemeConfig = com.android.purebilibili.core.ui.LocalAppThemeConfig.current
     val shouldCaptureHomeChromeBackdrop = isLiquidGlassEnabled ||
-        isHeaderBlurEnabled || isBottomBarBlurEnabled
+        isHeaderBlurEnabled || isBottomBarBlurEnabled || appThemeConfig.progressiveTopBlurEnabled
     val homeMiuixBackdropSource = if (shouldCaptureHomeChromeBackdrop) {
         rememberChromeBackdropSource()
     } else {
@@ -2366,7 +2367,7 @@ fun HomeScreen(
             },
             onPartitionClick = onPartitionClick,
             // isScrollingUp = isHeaderVisible, // [Removed] logic moved to offset
-            hazeState = if (topChromeMaterialMode != com.android.purebilibili.feature.home.components.TopTabMaterialMode.PLAIN) {
+            hazeState = if (topChromeMaterialMode != com.android.purebilibili.feature.home.components.TopTabMaterialMode.PLAIN && !appThemeConfig.progressiveTopBlurEnabled) {
                 hazeState
             } else {
                 null

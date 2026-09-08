@@ -11,9 +11,9 @@ class ProgressiveTopChromePolicyTest {
     @Test
     fun sharedProgressiveBlurUsesTheSoftTopEdgePreset() {
         assertEquals(10f, BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP)
-        assertEquals(0.12f, BILIPAI_PROGRESSIVE_TOP_BLUR_START_FRACTION)
+        assertEquals(0f, BILIPAI_PROGRESSIVE_TOP_BLUR_START_FRACTION)
         assertEquals(1.25f, BILIPAI_PROGRESSIVE_TOP_BLUR_FALLOFF_CURVE)
-        assertEquals(0.12f, BILIPAI_PROGRESSIVE_TOP_BLUR_DEFAULT_GRADIENT.startFraction)
+        assertEquals(0f, BILIPAI_PROGRESSIVE_TOP_BLUR_DEFAULT_GRADIENT.startFraction)
         assertEquals(1.25f, BILIPAI_PROGRESSIVE_TOP_BLUR_DEFAULT_GRADIENT.curve)
         val source = loadSource("feature/home/components/ProgressiveTopChrome.kt")
         assertTrue(source.contains("gradient = ProgressiveBlur.Top"))
@@ -48,7 +48,7 @@ class ProgressiveTopChromePolicyTest {
         assertTrue(dynamicTopBar.contains("modifier.biliPaiProgressiveTopBlur("))
         assertTrue(dynamicTopBar.contains("enabled = isProgressiveBlurActive"))
         assertTrue(commonList.contains(".biliPaiProgressiveTopBlur("))
-        assertTrue(commonList.contains("enabled = isHeaderBlurEnabled || liquidGlassEnabled"))
+        assertTrue(commonList.contains("enabled = isProgressiveTopBlurEnabled"))
     }
 
     @Test

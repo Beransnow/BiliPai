@@ -745,7 +745,8 @@ fun SearchScreen(
     val effectiveLiquidGlassEnabled = rememberAppChromeLiquidGlassEnabled(
         androidNativeEnabled = androidNativeLiquidGlassEnabled,
     )
-    val headerBlurEnabled by SettingsManager.getHeaderBlurEnabled(context).collectAsStateWithLifecycle(initialValue = true)
+    val headerBlurEnabled by SettingsManager.getHeaderBlurEnabled(context).collectAsStateWithLifecycle(initialValue = false)
+    val progressiveTopBlurEnabled by SettingsManager.getProgressiveTopBlurEnabled(context).collectAsStateWithLifecycle(initialValue = true)
     val bottomBarBlurEnabled by SettingsManager.getBottomBarBlurEnabled(context).collectAsStateWithLifecycle(initialValue = false)
     val cardMotionTier = resolveEffectiveMotionTier(
         baseTier = deviceUiProfile.motionTier,
@@ -1015,7 +1016,7 @@ fun SearchScreen(
                 .globalWallpaperAwareBackground()
                 .padding(padding)
         ) {
-            val searchChromeBackdrop = if (headerBlurEnabled || effectiveLiquidGlassEnabled) {
+            val searchChromeBackdrop = if (progressiveTopBlurEnabled || effectiveLiquidGlassEnabled) {
                 rememberLayerBackdrop()
             } else {
                 null
@@ -2065,7 +2066,7 @@ fun SearchScreen(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .then(
-                        if (headerBlurEnabled && searchChromeBackdrop != null) {
+                        if (progressiveTopBlurEnabled && searchChromeBackdrop != null) {
                             Modifier.biliPaiProgressiveTopBlur(
                                 backdrop = searchChromeBackdrop,
                                 enabled = true,

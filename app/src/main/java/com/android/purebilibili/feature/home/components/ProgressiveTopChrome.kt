@@ -17,7 +17,7 @@ import top.yukonga.miuix.kmp.blur.ProgressiveBlur
 import top.yukonga.miuix.kmp.blur.progressiveTextureBlur
 
 internal const val BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP = 10f
-internal const val BILIPAI_PROGRESSIVE_TOP_BLUR_START_FRACTION = 0.12f
+internal const val BILIPAI_PROGRESSIVE_TOP_BLUR_START_FRACTION = 0f
 internal const val BILIPAI_PROGRESSIVE_TOP_BLUR_FALLOFF_CURVE = 1.25f
 private const val BILIPAI_PROGRESSIVE_TOP_BLUR_MIN_EXTENSION_DP = 20f
 private const val BILIPAI_PROGRESSIVE_TOP_BLUR_EXTRA_EXTENSION_DP = 28f
@@ -28,13 +28,12 @@ private val BiliPaiProgressiveTopBlurShape = RoundedCornerShape(
 
 /**
  * Shared progressive top blur gradient preset inspired by HyperIsland's top status bar design.
- * Maintains full blur strength across the top 12% status-bar band to ensure battery/clock
- * readability, then falls off with a 1.25 power curve toward the clear edge.
+ * Smooth continuous falloff from status-bar top edge (0f) toward the clear edge.
  *
  * Preserves gradient = ProgressiveBlur.Top contract for policy tests.
  */
 internal val BILIPAI_PROGRESSIVE_TOP_BLUR_DEFAULT_GRADIENT: ProgressiveBlur = ProgressiveBlur.Top.copy(
-    startFraction = BILIPAI_PROGRESSIVE_TOP_BLUR_START_FRACTION,
+    startFraction = 0f,
     endFraction = 1f,
     curve = BILIPAI_PROGRESSIVE_TOP_BLUR_FALLOFF_CURVE,
 )

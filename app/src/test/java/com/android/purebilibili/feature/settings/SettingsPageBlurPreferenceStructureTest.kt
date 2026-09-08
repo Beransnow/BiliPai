@@ -13,7 +13,7 @@ class SettingsPageBlurPreferenceStructureTest {
         ).readText()
 
         assertTrue(source.contains("topBarBlurEnabled: Boolean? = null"))
-        assertTrue(source.contains("val effectiveTopBarBlurEnabled = topBarBlurEnabled ?: globalTopBarBlurEnabled"))
+        assertTrue(source.contains("val effectiveTopBarBlurEnabled = topBarBlurEnabled ?: globalProgressiveBlurEnabled"))
         assertTrue(source.contains("enabled = effectiveTopBarBlurEnabled"))
         assertTrue(source.contains(".biliPaiProgressiveTopBlur("))
         assertTrue(source.contains("Modifier.layerBackdrop(backdrop)"))

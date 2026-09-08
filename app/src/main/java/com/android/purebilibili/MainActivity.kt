@@ -1306,6 +1306,8 @@ open class MainActivity : AppCompatActivity() {
                 .collectAsStateWithLifecycle(initialValue = true)
             val bottomBarBlurEnabled by SettingsManager.getBottomBarBlurEnabled(context)
                 .collectAsStateWithLifecycle(initialValue = false)
+            val progressiveTopBlurEnabled by SettingsManager.getProgressiveTopBlurEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
             val hapticFeedbackEnabled by SettingsManager.getHapticFeedbackEnabled(context)
                 .collectAsStateWithLifecycle(initialValue = true)
             val globalTextTapCopyEnabled by SettingsManager
@@ -1327,6 +1329,7 @@ open class MainActivity : AppCompatActivity() {
                 blurIntensity,
                 headerBlurEnabled,
                 bottomBarBlurEnabled,
+                progressiveTopBlurEnabled,
                 hapticFeedbackEnabled,
                 globalTextTapCopyEnabled,
                 uiEntranceAnimationEnabled,
@@ -1338,6 +1341,7 @@ open class MainActivity : AppCompatActivity() {
                     blurIntensity = blurIntensity,
                     headerBlurEnabled = headerBlurEnabled,
                     bottomBarBlurEnabled = bottomBarBlurEnabled,
+                    progressiveTopBlurEnabled = progressiveTopBlurEnabled,
                     hapticFeedbackEnabled = hapticFeedbackEnabled,
                     globalTextTapCopyEnabled = globalTextTapCopyEnabled,
                     uiEntranceAnimationEnabled = uiEntranceAnimationEnabled,

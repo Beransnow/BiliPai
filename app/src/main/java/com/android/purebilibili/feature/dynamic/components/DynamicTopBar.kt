@@ -141,15 +141,18 @@ fun DynamicTopBarWithTabs(
 
     val headerBlurEnabled by SettingsManager
         .getHeaderBlurEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
+    val progressiveTopBlurEnabled by SettingsManager
+        .getProgressiveTopBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
-    val isProgressiveBlurActive = headerBlurEnabled || liquidGlassEnabled
+    val isProgressiveBlurActive = progressiveTopBlurEnabled
 
     Column(
         modifier = modifier.biliPaiProgressiveTopBlur(
             backdrop = dockBackdrop,
             enabled = isProgressiveBlurActive,
         ).then(
-            if (!isProgressiveBlurActive && hazeState != null) {
+            if (!isProgressiveBlurActive && headerBlurEnabled && hazeState != null) {
                 Modifier.unifiedBlur(
                     hazeState = hazeState,
                     surfaceType = BlurSurfaceType.HEADER,

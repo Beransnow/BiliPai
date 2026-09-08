@@ -784,13 +784,16 @@ fun CommonListScreen(
             homeSettings = homeSettings,
         )
     }
+    val isProgressiveTopBlurEnabled by SettingsManager
+        .getProgressiveTopBlurEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     // 实色列表不创建背景采样；玻璃和普通顶栏模糊分别按需保留各自 source。
-    val localHazeState = if (isHeaderBlurEnabled) {
+    val localHazeState = if (isHeaderBlurEnabled && !isProgressiveTopBlurEnabled) {
         com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState()
     } else {
         null
     }
-    val commonListChromeBackdrop = if (isHeaderBlurEnabled || liquidGlassEnabled) rememberLayerBackdrop() else null
+    val commonListChromeBackdrop = if (isProgressiveTopBlurEnabled || liquidGlassEnabled) rememberLayerBackdrop() else null
     val videoCardAppearance = remember(homeSettings, liquidGlassEnabled) {
         resolveCommonListVideoCardAppearance(
             homeSettings = homeSettings,
@@ -835,7 +838,7 @@ fun CommonListScreen(
 
     // 决定顶栏背景 (使用私有的 localHazeState)
     val useProgressiveHeaderBlur = shouldUseBiliPaiProgressiveTopBlur(
-        enabled = isHeaderBlurEnabled || liquidGlassEnabled,
+        enabled = isProgressiveTopBlurEnabled,
         hasBackdrop = commonListChromeBackdrop != null,
     )
     val topBarBackgroundModifier = if (useProgressiveHeaderBlur && commonListChromeBackdrop != null) {

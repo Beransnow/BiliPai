@@ -1567,6 +1567,8 @@ object SettingsManager {
         floatPreferencesKey("liquid_glass_chromatic_aberration")
     private val KEY_LIQUID_GLASS_CONTENT_DISTORTION =
         floatPreferencesKey("liquid_glass_content_distortion")
+    private val KEY_PROGRESSIVE_TOP_BLUR_ENABLED =
+        booleanPreferencesKey("progressive_top_blur_enabled")
     //  [新增] 底栏自定义 - 顺序和可见性
     private val KEY_BOTTOM_BAR_ORDER = stringPreferencesKey("bottom_bar_order")  // 逗号分隔的项目顺序
     private val KEY_BOTTOM_BAR_VISIBLE_TABS = stringPreferencesKey("bottom_bar_visible_tabs")  // 逗号分隔的可见项目
@@ -3655,6 +3657,40 @@ object SettingsManager {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_HEADER_BLUR_ENABLED] = value
             preferences[KEY_HOME_HEADER_BLUR_MODE] = if (value) {
+                HomeHeaderBlurMode.FOLLOW_PRESET.value
+            } else {
+                HomeHeaderBlurMode.ALWAYS_OFF.value
+            }
+            if (value) {
+                preferences[KEY_PROGRESSIVE_TOP_BLUR_ENABLED] = false
+            }
+        }
+    }
+
+    fun getProgressiveTopBlurEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
+        .map { preferences ->
+            preferences[KEY_PROGRESSIVE_TOP_BLUR_ENABLED] ?: false
+        }
+
+    suspend fun setProgressiveTopBlurEnabled(context: Context, value: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_PROGRESSIVE_TOP_BLUR_ENABLED] = value
+            if (value) {
+                preferences[KEY_HEADER_BLUR_ENABLED] = false
+                preferences[KEY_HOME_HEADER_BLUR_MODE] = HomeHeaderBlurMode.ALWAYS_OFF.value
+            }
+        }
+    }
+
+    suspend fun setTopBarVisualEffects(
+        context: Context,
+        headerBlurEnabled: Boolean,
+        progressiveTopBlurEnabled: Boolean
+    ) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_HEADER_BLUR_ENABLED] = headerBlurEnabled
+            preferences[KEY_PROGRESSIVE_TOP_BLUR_ENABLED] = progressiveTopBlurEnabled
+            preferences[KEY_HOME_HEADER_BLUR_MODE] = if (headerBlurEnabled) {
                 HomeHeaderBlurMode.FOLLOW_PRESET.value
             } else {
                 HomeHeaderBlurMode.ALWAYS_OFF.value

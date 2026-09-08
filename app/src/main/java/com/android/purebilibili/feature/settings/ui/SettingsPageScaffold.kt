@@ -128,10 +128,10 @@ internal fun SettingsPageScaffold(
         LocalBottomBarContentPadding.current,
     )
     val context = LocalContext.current
-    val globalTopBarBlurEnabled by SettingsManager
-        .getHeaderBlurEnabled(context)
+    val globalProgressiveBlurEnabled by SettingsManager
+        .getProgressiveTopBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
-    val effectiveTopBarBlurEnabled = topBarBlurEnabled ?: globalTopBarBlurEnabled
+    val effectiveTopBarBlurEnabled = topBarBlurEnabled ?: globalProgressiveBlurEnabled
     val nonGlassMiuix = isMiuixNonGlassEnabled()
     val collapseBehavior = if (
         nonGlassMiuix &&
