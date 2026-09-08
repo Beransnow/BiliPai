@@ -356,7 +356,7 @@ fun DynamicScreen(
 
     val appThemeConfig = com.android.purebilibili.core.ui.LocalAppThemeConfig.current
     // Dock 采集内容用于折射与渐进模糊。
-    val dynamicDockBackdrop = if (appThemeConfig.headerBlurEnabled || appThemeConfig.liquidGlassEnabled) {
+    val dynamicDockBackdrop = if (appThemeConfig.progressiveTopBlurEnabled || appThemeConfig.headerBlurEnabled || appThemeConfig.liquidGlassEnabled) {
         rememberLayerBackdrop()
     } else {
         null

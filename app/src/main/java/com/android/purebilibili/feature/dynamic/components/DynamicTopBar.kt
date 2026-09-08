@@ -56,7 +56,7 @@ import com.android.purebilibili.feature.home.components.DynamicPublishSkinDecora
 import coil3.compose.AsyncImage
 import java.io.File
 import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
-import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
+import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
@@ -147,19 +147,16 @@ fun DynamicTopBarWithTabs(
         .collectAsStateWithLifecycle(initialValue = true)
     val isProgressiveBlurActive = progressiveTopBlurEnabled
 
-    Column(
-        modifier = modifier.biliPaiProgressiveTopBlur(
-            backdrop = dockBackdrop,
-            enabled = isProgressiveBlurActive,
-        ).then(
+    BiliPaiImmersiveTopBar(
+        backdrop = dockBackdrop,
+        enabled = isProgressiveBlurActive,
+        modifier = modifier.then(
             if (!isProgressiveBlurActive && headerBlurEnabled && hazeState != null) {
-                Modifier.unifiedBlur(
-                    hazeState = hazeState,
-                    surfaceType = BlurSurfaceType.HEADER,
-                )
+                Modifier.unifiedBlur(hazeState = hazeState, surfaceType = BlurSurfaceType.HEADER)
             } else Modifier
         ),
     ) {
+    Column {
         Spacer(modifier = Modifier.height(statusBarHeight))
 
         // 顶部不再铺设整块背景；两个悬浮 Dock 独立读取内容 Backdrop 和全局玻璃预设。
@@ -339,6 +336,8 @@ fun DynamicTopBarWithTabs(
             }
         }
     }
+}
+
 }
 
 internal fun resolveDynamicTabSelectedColor(primaryColor: Color): Color = primaryColor

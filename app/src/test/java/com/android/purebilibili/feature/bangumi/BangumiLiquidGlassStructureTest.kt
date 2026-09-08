@@ -19,6 +19,10 @@ class BangumiLiquidGlassStructureTest {
         ).readText()
         val homeTabSource = sourceOf("HomeBangumiTabPage.kt")
 
+        val reviewSource = sourceOf("BangumiReviewScreen.kt")
+        assertTrue(screenSource.contains("ImmersiveAppScaffold as AppScaffold"))
+        assertTrue(detailSource.contains("ImmersiveAppScaffold as AppScaffold"))
+        assertTrue(reviewSource.contains("ImmersiveAppScaffold as AppScaffold"))
         assertTrue(screenSource.contains("AppLiquidAwareTabRow("))
         assertTrue(contentSource.contains("AppLiquidAwareTabRow("))
         assertTrue(contentSource.contains("AdaptivePullToRefreshBox("))

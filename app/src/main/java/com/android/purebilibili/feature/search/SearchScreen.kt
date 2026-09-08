@@ -113,7 +113,8 @@ import com.android.purebilibili.core.ui.isMiuixNonGlassEnabled
 import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
-import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
+import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
+import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
@@ -1021,26 +1022,28 @@ fun SearchScreen(
             } else {
                 null
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .then(
-                        if (searchChromeBackdrop != null) {
-                            Modifier.layerBackdrop(searchChromeBackdrop)
-                        } else {
-                            Modifier
-                        }
-                    )
-                    .globalWallpaperAwareBackground(),
-            )
+            val immersiveSearchChrome = shouldUseBiliPaiProgressiveTopBlur(
+                enabled = progressiveTopBlurEnabled,
+                hasBackdrop = searchChromeBackdrop != null,
+            ) && !com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced()
             // --- 列表内容层 ---
             if (state.showResults) {
-                Column(
+                AppScaffold(
                     modifier = Modifier
                         .responsiveContentWidth(maxWidth = searchContentWidth)
                         .fillMaxSize()
-                        .graphicsLayer { alpha = exitContentAlpha }
-                ) {
+                        .graphicsLayer { alpha = exitContentAlpha },
+                    containerColor = Color.Transparent,
+                    contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                    topBar = {
+                        BiliPaiImmersiveTopBar(
+                            backdrop = searchChromeBackdrop,
+                            enabled = immersiveSearchChrome,
+                            modifier = Modifier.background(
+                                if (immersiveSearchChrome) Color.Transparent else searchTopBarHeaderColor
+                            ),
+                        ) {
+                            Column {
                             Spacer(modifier = Modifier.height(contentTopPadding + 8.dp))
                             //  搜索彩蛋消息横幅
                             val easterEggMsg = state.easterEggMessage
@@ -1149,11 +1152,17 @@ fun SearchScreen(
                                     )
                                 }
                             }
+                            }
+                        }
+                    },
+                ) { resultChromePadding ->
+                    val resultTopPadding = resultChromePadding.calculateTopPadding()
                         HorizontalPager(
                             state = searchPagerState,
                             userScrollEnabled = false,
                             modifier = Modifier
-                                .weight(1f)
+                                .fillMaxSize()
+                                .then(if (searchChromeBackdrop != null) Modifier.layerBackdrop(searchChromeBackdrop) else Modifier)
                                 .verticalPriorityHorizontalPagerSwipe(
                                     state = searchPagerState,
                                     enabled = true,
@@ -1272,7 +1281,7 @@ fun SearchScreen(
                                         columns = videoGridColumns,
                                         coverAspectRatio = cardLayout.coverAspectRatio,
                                         contentPadding = PaddingValues(
-                                            top = 0.dp,
+                                            top = resultTopPadding,
                                             bottom = resultBottomPadding,
                                             start = cardLayout.outerPaddingDp.dp,
                                             end = cardLayout.outerPaddingDp.dp,
@@ -1284,7 +1293,7 @@ fun SearchScreen(
                                 SearchType.UP, SearchType.LIVE_USER -> ContentMediaListSkeleton(
                                     useUserRow = true,
                                     contentPadding = PaddingValues(
-                                        top = 0.dp,
+                                        top = resultTopPadding,
                                         bottom = resultBottomPadding,
                                     ),
                                     modifier = Modifier
@@ -1294,7 +1303,7 @@ fun SearchScreen(
                                 else -> ContentMediaListSkeleton(
                                     useUserRow = false,
                                     contentPadding = PaddingValues(
-                                        top = 0.dp,
+                                        top = resultTopPadding,
                                         bottom = resultBottomPadding,
                                     ),
                                     modifier = Modifier
@@ -1368,7 +1377,7 @@ fun SearchScreen(
                                     columns = GridCells.Fixed(actualGridColumns),
                                     state = activePageGridState,
                                     contentPadding = PaddingValues(
-                                        top = 0.dp,
+                                        top = resultTopPadding,
                                         bottom = resultBottomPadding,
                                         start = cardLayout.outerPaddingDp.dp,
                                         end = cardLayout.outerPaddingDp.dp
@@ -1508,7 +1517,7 @@ fun SearchScreen(
                             com.android.purebilibili.data.model.response.SearchType.UP -> {
                                 //  UP主搜索结果
                                 LazyColumn(
-                                    contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
+                                    contentPadding = PaddingValues(top = resultTopPadding, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
@@ -1589,7 +1598,7 @@ fun SearchScreen(
                             com.android.purebilibili.data.model.response.SearchType.MEDIA_FT -> {
                                 //  番剧/影视搜索结果
                                 LazyColumn(
-                                    contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
+                                    contentPadding = PaddingValues(top = resultTopPadding, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
@@ -1673,7 +1682,7 @@ fun SearchScreen(
                             com.android.purebilibili.data.model.response.SearchType.LIVE -> {
                                 //  直播搜索结果
                                 LazyColumn(
-                                    contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
+                                    contentPadding = PaddingValues(top = resultTopPadding, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
@@ -1753,7 +1762,7 @@ fun SearchScreen(
                             }
                             com.android.purebilibili.data.model.response.SearchType.LIVE_USER -> {
                                 LazyColumn(
-                                    contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
+                                    contentPadding = PaddingValues(top = resultTopPadding, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
@@ -1808,7 +1817,7 @@ fun SearchScreen(
                             }
                             com.android.purebilibili.data.model.response.SearchType.ARTICLE -> {
                                 LazyColumn(
-                                    contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
+                                    contentPadding = PaddingValues(top = resultTopPadding, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
@@ -1886,7 +1895,7 @@ fun SearchScreen(
                             }
                             com.android.purebilibili.data.model.response.SearchType.TOPIC -> {
                                 LazyColumn(
-                                    contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
+                                    contentPadding = PaddingValues(top = resultTopPadding, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
@@ -1930,7 +1939,7 @@ fun SearchScreen(
                             }
                             com.android.purebilibili.data.model.response.SearchType.PHOTO -> {
                                 LazyColumn(
-                                    contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
+                                    contentPadding = PaddingValues(top = resultTopPadding, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
                                     state = activePageListState,
                                     modifier = Modifier
@@ -2018,6 +2027,7 @@ fun SearchScreen(
                     onClearHistory = viewModel::clearHistory,
                     onDeleteHistory = viewModel::deleteHistory,
                     modifier = Modifier
+                        .then(if (searchChromeBackdrop != null) Modifier.layerBackdrop(searchChromeBackdrop) else Modifier)
                         .graphicsLayer { alpha = exitContentAlpha }
                         .then(
                             if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier
@@ -2026,6 +2036,11 @@ fun SearchScreen(
             }
 
             // ---  顶部搜索栏 (常驻顶部) ---
+            BiliPaiImmersiveTopBar(
+                backdrop = searchChromeBackdrop,
+                enabled = immersiveSearchChrome && !state.showResults,
+                modifier = Modifier.align(Alignment.TopCenter),
+            ) {
             SearchTopBar(
                 query = state.query,
                 onBack = handleSearchBack,
@@ -2064,14 +2079,8 @@ fun SearchScreen(
                 },
                 isScrollInProgressProvider = { isSearchResultsScrolling },
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
                     .then(
-                        if (progressiveTopBlurEnabled && searchChromeBackdrop != null) {
-                            Modifier.biliPaiProgressiveTopBlur(
-                                backdrop = searchChromeBackdrop,
-                                enabled = true,
-                            )
-                        } else if (shouldUseSearchTopBarBlur) {
+                        if (!immersiveSearchChrome && shouldUseSearchTopBarBlur) {
                             Modifier.unifiedBlur(
                                 hazeState = hazeState,
                                 surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,
@@ -2082,8 +2091,10 @@ fun SearchScreen(
                             Modifier
                         }
                     )
-                    .background(searchTopBarHeaderColor)
+                    .background(if (immersiveSearchChrome) Color.Transparent else searchTopBarHeaderColor)
             )
+
+            }
 
             AppBackToTopButton(
                 visible = backToTopButtonEnabled && shouldShowBackToTop,
@@ -3588,7 +3599,6 @@ internal fun UpSearchResultCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    
                     UserLevelBadge(
                         level = cleanedItem.level,
                         isSeniorMember = cleanedItem.is_senior_member == 1
@@ -3695,9 +3705,7 @@ internal fun BangumiSearchResultCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                
                 Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
-                
                 // 类型 + 集数
                 Row {
                     if (item.seasonTypeName.isNotBlank()) {
@@ -3723,7 +3731,6 @@ internal fun BangumiSearchResultCard(
                         )
                     }
                 }
-                
                 // 评分
                 item.mediaScore?.let { score ->
                     if (score.score > 0) {
@@ -3745,7 +3752,6 @@ internal fun BangumiSearchResultCard(
                         }
                     }
                 }
-                
                 // 简介
                 if (item.desc.isNotBlank()) {
                     Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
@@ -3800,7 +3806,6 @@ internal fun LiveSearchResultCard(
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentScale = ContentScale.Crop
                 )
-                
                 // 直播状态标签
                 if (item.live_status == 1) {
                     AppSurface(
@@ -3822,7 +3827,6 @@ internal fun LiveSearchResultCard(
                         )
                     }
                 }
-                
                 // 在线人数
                 if (item.online > 0) {
                     AppSurface(
@@ -3859,9 +3863,7 @@ internal fun LiveSearchResultCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                
                 Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
-                
                 // 主播名
                 SearchResultText(
                     text = item.uname,
@@ -3871,13 +3873,11 @@ internal fun LiveSearchResultCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                
                 Spacer(
                     modifier = Modifier.height(
                         if (useMiuixNonGlassPresentation) AppSpacingTokens.ExtraSmall else 2.dp
                     )
                 )
-                
                 // 分区
                 if (item.area_v2_name.isNotBlank()) {
                     SearchResultText(

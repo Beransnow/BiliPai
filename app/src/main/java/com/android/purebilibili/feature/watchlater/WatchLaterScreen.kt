@@ -102,7 +102,8 @@ import com.android.purebilibili.feature.list.resolveHistoryFilterTabChromeSpec
 import com.android.purebilibili.feature.personal.PersonalMediaCardFrame
 import com.android.purebilibili.feature.personal.PersonalMediaCardSkeleton
 import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
-import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
+import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
+import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
 import com.android.purebilibili.core.util.CardPositionManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -667,6 +668,10 @@ fun WatchLaterScreen(
     } else {
         null
     }
+    val progressiveChromeActive = shouldUseBiliPaiProgressiveTopBlur(
+        enabled = appThemeConfig.progressiveTopBlurEnabled,
+        hasBackdrop = watchLaterChromeBackdrop != null,
+    ) && !com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced()
     val topChromePolicy = rememberAppTopChromePolicy()
     val watchLaterFilterChrome = remember(homeSettings, topChromePolicy) {
         resolveHistoryFilterTabChromeSpec(
@@ -717,37 +722,20 @@ fun WatchLaterScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             // 使用 Box 包裹实现毛玻璃背景
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(
-                        if (appThemeConfig.progressiveTopBlurEnabled && watchLaterChromeBackdrop != null) {
-                            Modifier.biliPaiProgressiveTopBlur(
-                                backdrop = watchLaterChromeBackdrop,
-                                enabled = true,
-                            )
-                        } else if (appThemeConfig.headerBlurEnabled && hazeState != null) {
-                            Modifier.unifiedBlur(
-                                hazeState = hazeState,
-                                surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,
-                            )
-                        } else {
-                            Modifier
-                        }
-                    )
+            BiliPaiImmersiveTopBar(
+                backdrop = watchLaterChromeBackdrop,
+                enabled = progressiveChromeActive,
+                modifier = Modifier.fillMaxWidth()
+                    .background(
+                        if (progressiveChromeActive || hazeState != null) Color.Transparent
+                        else AppSurfaceTokens.groupedListContainer()
+                    ).then(
+                    if (appThemeConfig.headerBlurEnabled && hazeState != null) Modifier.unifiedBlur(
+                        hazeState = hazeState,
+                        surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,
+                    ) else Modifier
+                ),
             ) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .then(
-                            if (watchLaterChromeBackdrop != null) {
-                                Modifier.layerBackdrop(watchLaterChromeBackdrop)
-                            } else {
-                                Modifier
-                            }
-                        )
-                        .background(AppSurfaceTokens.groupedListContainer()),
-                )
                 Column {
                 AppTopBar(
                     title = resolveWatchLaterTitle(
@@ -985,7 +973,6 @@ fun WatchLaterScreen(
                 )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                 }
-                
                 // 分割线 (仅在滚动时显示? 这里简化一直显示细线或跟随滚动)
                 // 暂时不加显式分割线，依靠毛玻璃效果
             }
@@ -996,6 +983,7 @@ fun WatchLaterScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .then(if (watchLaterChromeBackdrop != null) Modifier.layerBackdrop(watchLaterChromeBackdrop) else Modifier)
                 .then(
                     if (hazeState != null) {
                         Modifier.hazeSourceCompat(state = hazeState)

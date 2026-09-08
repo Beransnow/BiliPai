@@ -92,7 +92,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.CoroutineStart
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
-import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.ImmersiveAppScaffold as AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSemanticIconFamily
@@ -149,7 +149,6 @@ import com.android.purebilibili.feature.home.components.shouldShowTopTabIcon
 import com.android.purebilibili.feature.home.components.shouldShowTopTabText
 import com.android.purebilibili.feature.home.components.HomeSelectionIndicatorStyle
 import com.android.purebilibili.feature.home.components.resolveHomeSelectionIndicatorStyle
-import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import dev.chrisbanes.haze.HazeState
@@ -425,11 +424,7 @@ fun PartitionScreen(
     val headerBlurEnabled by com.android.purebilibili.core.store.SettingsManager
         .getHeaderBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
-    val progressiveTopBlurEnabled by com.android.purebilibili.core.store.SettingsManager
-        .getProgressiveTopBlurEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true)
     val hazeState = if (headerBlurEnabled) com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState() else null
-    val partitionBackdrop = if (progressiveTopBlurEnabled) rememberLayerBackdrop() else null
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     AppScaffold(
@@ -443,16 +438,11 @@ fun PartitionScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    scrolledContainerColor = Color.Transparent
+                    containerColor = if (headerBlurEnabled) Color.Transparent else MaterialTheme.colorScheme.background,
+                    scrolledContainerColor = if (headerBlurEnabled) Color.Transparent else MaterialTheme.colorScheme.background
                 ),
                 modifier = Modifier.then(
-                    if (progressiveTopBlurEnabled && partitionBackdrop != null) {
-                        Modifier.biliPaiProgressiveTopBlur(
-                            backdrop = partitionBackdrop,
-                            enabled = true,
-                        )
-                    } else if (headerBlurEnabled && hazeState != null) {
+                    if (headerBlurEnabled && hazeState != null) {
                         Modifier.unifiedBlur(
                             hazeState = hazeState,
                             surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,
@@ -465,9 +455,6 @@ fun PartitionScreen(
         }
     ) { paddingValues ->
         PartitionContent(
-            modifier = Modifier.then(
-                if (partitionBackdrop != null) Modifier.layerBackdrop(partitionBackdrop) else Modifier
-            ),
             contentPadding = PaddingValues(
                 top = paddingValues.calculateTopPadding() + 8.dp,
                 bottom = paddingValues.calculateBottomPadding() + 16.dp,

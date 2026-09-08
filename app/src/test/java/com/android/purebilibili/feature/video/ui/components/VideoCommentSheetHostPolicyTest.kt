@@ -36,6 +36,33 @@ class VideoCommentSheetHostPolicyTest {
     }
 
     @Test
+    fun `predictive back pops conversation then thread then the sheet`() {
+        assertEquals(
+            VideoCommentPredictiveBackTarget.CLOSE_CONVERSATION,
+            resolveVideoCommentPredictiveBackTarget(
+                subReplyVisible = true,
+                conversationActive = true
+            )
+        )
+        assertEquals(
+            VideoCommentPredictiveBackTarget.CLOSE_THREAD,
+            resolveVideoCommentPredictiveBackTarget(
+                subReplyVisible = true,
+                conversationActive = false
+            )
+        )
+        assertEquals(
+            VideoCommentPredictiveBackTarget.DISMISS_SHEET,
+            resolveVideoCommentPredictiveBackTarget(
+                subReplyVisible = false,
+                conversationActive = false
+            )
+        )
+        assertEquals(0.4f, resolveVideoCommentPredictiveBackProgress(inProgress = true, progress = 0.4f))
+        assertEquals(0f, resolveVideoCommentPredictiveBackProgress(inProgress = false, progress = 0.4f))
+    }
+
+    @Test
     fun `host should stay hidden when neither main sheet nor thread detail is visible`() {
         assertEquals(
             VideoCommentSheetHostContent.HIDDEN,

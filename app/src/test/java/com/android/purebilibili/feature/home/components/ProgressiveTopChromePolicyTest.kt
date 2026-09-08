@@ -45,10 +45,16 @@ class ProgressiveTopChromePolicyTest {
 
         assertTrue(homeHeader.contains("Modifier.biliPaiProgressiveTopBlur("))
         assertTrue(homeHeader.contains("useProgressiveTopBlur = isProgressiveBlurRequested"))
-        assertTrue(dynamicTopBar.contains("modifier.biliPaiProgressiveTopBlur("))
+        assertTrue(dynamicTopBar.contains("BiliPaiImmersiveTopBar("))
         assertTrue(dynamicTopBar.contains("enabled = isProgressiveBlurActive"))
-        assertTrue(commonList.contains(".biliPaiProgressiveTopBlur("))
+        assertTrue(commonList.contains("BiliPaiImmersiveTopBar("))
         assertTrue(commonList.contains("enabled = isProgressiveTopBlurEnabled"))
+        val bangumiHub = loadSource("feature/bangumi/BangumiScreen.kt")
+        val bangumiDetail = loadSource("feature/bangumi/BangumiDetailScreen.kt")
+        val bangumiReview = loadSource("feature/bangumi/BangumiReviewScreen.kt")
+        assertTrue(bangumiHub.contains("ImmersiveAppScaffold as AppScaffold"))
+        assertTrue(bangumiDetail.contains("ImmersiveAppScaffold as AppScaffold"))
+        assertTrue(bangumiReview.contains("ImmersiveAppScaffold as AppScaffold"))
     }
 
     @Test
@@ -79,6 +85,27 @@ class ProgressiveTopChromePolicyTest {
                 tabRowIncludedInBlur = false,
             )
         )
+    }
+
+    @Test
+    fun immersiveLayerExtendsItsDrawingWithoutIncreasingHeaderLayoutHeight() {
+        val source = loadSource("feature/home/components/ProgressiveTopChrome.kt")
+        assertTrue(source.contains(".matchParentSize()"))
+        assertTrue(source.contains("minHeight = constraints.minHeight + extension"))
+        assertTrue(source.contains("layout(placeable.width, placeable.height - extension)"))
+        assertTrue(source.contains("LocalImmersiveTopChromeActive provides active"))
+    }
+
+    @Test
+    fun searchAndWatchLaterCaptureScrollableContentInsteadOfAnEmptyHeader() {
+        val search = loadSource("feature/search/SearchScreen.kt")
+        val watchLater = loadSource("feature/watchlater/WatchLaterScreen.kt")
+        assertTrue(search.contains("val resultTopPadding = resultChromePadding.calculateTopPadding()"))
+        assertTrue(search.contains("top = resultTopPadding"))
+        assertTrue(search.indexOf("BiliPaiImmersiveTopBar(") < search.indexOf("Spacer(modifier = Modifier.height(contentTopPadding + 8.dp))"))
+        assertTrue(search.contains("if (immersiveSearchChrome) Color.Transparent else searchTopBarHeaderColor"))
+        assertTrue(watchLater.contains("Modifier.layerBackdrop(watchLaterChromeBackdrop)"))
+        assertFalse(watchLater.contains(".matchParentSize()"))
     }
 
     private fun loadSource(relativePath: String): String {

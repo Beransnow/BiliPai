@@ -159,7 +159,7 @@ import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
-import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
+import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
@@ -840,18 +840,9 @@ fun CommonListScreen(
     val useProgressiveHeaderBlur = shouldUseBiliPaiProgressiveTopBlur(
         enabled = isProgressiveTopBlurEnabled,
         hasBackdrop = commonListChromeBackdrop != null,
-    )
-    val topBarBackgroundModifier = if (useProgressiveHeaderBlur && commonListChromeBackdrop != null) {
-        Modifier
-            .fillMaxWidth()
-            .biliPaiProgressiveTopBlur(
-                backdrop = commonListChromeBackdrop,
-                enabled = true,
-            )
-            .then(
-                if (historyUsesFloatingLiquidDocks) Modifier
-                else Modifier.background(headerBackgroundColor)
-            )
+    ) && !com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced()
+    val topBarBackgroundModifier = if (useProgressiveHeaderBlur) {
+        Modifier.fillMaxWidth()
     } else if (historyUsesFloatingLiquidDocks) {
         // 悬浮 Dock 必须直接采样下方列表；整块顶栏背景会把动态折射退化成纯色壳。
         Modifier.fillMaxWidth()
@@ -1237,7 +1228,9 @@ fun CommonListScreen(
             }
 
             // 2. 顶层：悬浮顶栏 (使用 onGloballyPositioned 测量高度)
-            Box(
+            BiliPaiImmersiveTopBar(
+                backdrop = commonListChromeBackdrop,
+                enabled = useProgressiveHeaderBlur,
                 modifier = Modifier
                     .zIndex(1f)
                     .align(Alignment.TopCenter)

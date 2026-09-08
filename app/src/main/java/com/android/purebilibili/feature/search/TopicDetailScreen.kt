@@ -48,7 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import coil3.imageLoader
 import coil3.request.ImageRequest
-import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.ImmersiveAppScaffold as AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -143,7 +143,6 @@ fun TopicDetailScreen(
                 .fillMaxSize()
                 .globalWallpaperAwareBackground()
                 .then(if (topicBackdrop != null) Modifier.layerBackdrop(topicBackdrop) else Modifier)
-                .padding(padding)
         ) {
             when {
                 showInitialSkeleton -> {
@@ -162,7 +161,7 @@ fun TopicDetailScreen(
                         contentPadding = PaddingValues(
                             start = 12.dp,
                             end = 12.dp,
-                            top = 12.dp,
+                            top = padding.calculateTopPadding() + 12.dp,
                             bottom = resolveBottomSafeAreaPadding(
                                 navigationBarsBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
                                 extraBottomPadding = 16.dp

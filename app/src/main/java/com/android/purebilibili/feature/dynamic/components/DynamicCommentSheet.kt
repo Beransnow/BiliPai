@@ -181,6 +181,7 @@ fun DynamicCommentOverlayHost(
             onLoadMore = { viewModel.loadMoreComments() },
             onUserClick = onUserClick,
             subReplyState = subReplyState,
+            onCloseSubReply = { viewModel.closeSubReply() },
         )
     }
 
@@ -214,6 +215,7 @@ fun DynamicCommentSheet(
     onLoadMore: () -> Unit = {},
     onUserClick: (Long) -> Unit,
     subReplyState: SubReplyUiState = SubReplyUiState(),
+    onCloseSubReply: () -> Unit = {},
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var commentText by remember { mutableStateOf("") }
@@ -277,7 +279,13 @@ fun DynamicCommentSheet(
         WindowNavigationEventBridge()
         LocalNavigationBackHandler(
             enabled = true,
-            onBackCompleted = onDismiss,
+            onBackCompleted = {
+                if (subReplyState.visible) {
+                    onCloseSubReply()
+                } else {
+                    onDismiss()
+                }
+            },
         )
         val commentChromeBackdrop = rememberLayerBackdrop()
         Box(

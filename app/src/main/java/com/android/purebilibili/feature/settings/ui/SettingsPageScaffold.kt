@@ -24,8 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
+import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
@@ -166,24 +165,13 @@ internal fun SettingsPageScaffold(
         AppScaffold(
             modifier = modifier.appTopBarNestedScroll(collapseBehavior),
             topBar = {
-                Box {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .biliPaiProgressiveTopBlur(
-                                backdrop = backdrop,
-                                enabled = progressiveBlurEnabled,
-                                shape = RectangleShape,
-                            )
-                            .then(
-                                if (hazeState != null) Modifier.unifiedBlur(
-                                    hazeState = hazeState,
-                                    surfaceType = BlurSurfaceType.HEADER,
-                                ) else Modifier
-                            ),
-                    )
+                BiliPaiImmersiveTopBar(backdrop = backdrop, enabled = progressiveBlurEnabled) {
                     AppTopBar(
                         title = title,
+                        modifier = if (hazeState != null) Modifier.unifiedBlur(
+                            hazeState = hazeState,
+                            surfaceType = BlurSurfaceType.HEADER,
+                        ) else Modifier,
                         navigationIcon = {
                             AppIconButton(onClick = onBack) {
                                 AppIcon(

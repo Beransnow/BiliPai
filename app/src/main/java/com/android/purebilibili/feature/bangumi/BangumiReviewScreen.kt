@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.calculateTopPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -37,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
-import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.ImmersiveAppScaffold as AppScaffold
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.components.AppButton
@@ -163,9 +164,7 @@ fun BangumiReviewScreen(
         val reviewTypes = remember { BangumiReviewType.entries.toList() }
         val sortLabels = remember { listOf("默认", "最新") }
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
+            modifier = Modifier.fillMaxSize()
         ) {
             Box(
                 modifier = Modifier
@@ -177,7 +176,12 @@ fun BangumiReviewScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = AppSpacingTokens.Medium, vertical = AppSpacingTokens.Small),
+                    .padding(
+                        start = AppSpacingTokens.Medium,
+                        top = paddingValues.calculateTopPadding() + AppSpacingTokens.Small,
+                        end = AppSpacingTokens.Medium,
+                        bottom = AppSpacingTokens.Small,
+                    ),
                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

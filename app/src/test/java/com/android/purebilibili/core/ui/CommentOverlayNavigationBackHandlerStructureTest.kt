@@ -13,8 +13,10 @@ class CommentOverlayNavigationBackHandlerStructureTest {
             "src/main/java/com/android/purebilibili/feature/video/ui/components/VideoCommentSheetHost.kt"
         ).readText()
 
-        assertTrue(source.contains("LocalNavigationBackHandler("))
-        assertTrue(source.contains("enabled = hostVisible"))
+        assertTrue(source.contains("NavigationBackHandler("))
+        assertTrue(source.contains("isBackEnabled = hostVisible"))
+        assertTrue(source.contains("resolveVideoCommentPredictiveBackTarget("))
+        assertTrue(source.contains("threadBackProgress"))
         assertFalse(source.contains("import androidx.activity.compose.BackHandler"))
     }
 

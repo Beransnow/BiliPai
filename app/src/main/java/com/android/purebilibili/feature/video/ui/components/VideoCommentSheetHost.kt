@@ -73,7 +73,11 @@ import androidx.compose.ui.layout.onSizeChanged
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppBottomSheetMotion
-import com.android.purebilibili.core.ui.LocalNavigationBackHandler
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.NavigationEventTransitionState
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.android.purebilibili.core.ui.InteractiveOverlayProgressVisual
 import com.android.purebilibili.core.ui.InteractiveOverlaySurfaceType
 import com.android.purebilibili.core.ui.resolveInteractiveOverlayProgressVisual
@@ -176,6 +180,31 @@ internal fun shouldApplyVideoCommentThreadStatusBarPadding(
     topReservedPx: Int = 0
 ): Boolean {
     return !mainSheetVisible && topReservedPx <= 0
+}
+
+internal enum class VideoCommentPredictiveBackTarget {
+    CLOSE_CONVERSATION,
+    CLOSE_THREAD,
+    DISMISS_SHEET
+}
+
+internal fun resolveVideoCommentPredictiveBackTarget(
+    subReplyVisible: Boolean,
+    conversationActive: Boolean
+): VideoCommentPredictiveBackTarget {
+    return when {
+        subReplyVisible && conversationActive -> VideoCommentPredictiveBackTarget.CLOSE_CONVERSATION
+        subReplyVisible -> VideoCommentPredictiveBackTarget.CLOSE_THREAD
+        else -> VideoCommentPredictiveBackTarget.DISMISS_SHEET
+    }
+}
+
+internal fun resolveVideoCommentPredictiveBackProgress(
+    inProgress: Boolean,
+    progress: Float
+): Float {
+    if (!inProgress) return 0f
+    return progress.coerceIn(0f, 1f)
 }
 
 internal fun shouldInitializeVideoCommentSheetHost(
@@ -465,15 +494,32 @@ fun VideoCommentSheetHost(
         )
     }
 
-    LocalNavigationBackHandler(
-        enabled = hostVisible,
+    val commentBackState = rememberNavigationEventState(NavigationEventInfo.None)
+    NavigationBackHandler(
+        state = commentBackState,
+        isBackEnabled = hostVisible,
         onBackCompleted = {
-            if (subReplyState.visible) {
-                commentViewModel.closeSubReply()
-            } else {
-                onDismiss()
+            when (
+                resolveVideoCommentPredictiveBackTarget(
+                    subReplyVisible = subReplyState.visible,
+                    conversationActive = subReplyState.conversationAnchor != null
+                )
+            ) {
+                VideoCommentPredictiveBackTarget.CLOSE_CONVERSATION ->
+                    commentViewModel.closeSubReplyConversation()
+                VideoCommentPredictiveBackTarget.CLOSE_THREAD ->
+                    commentViewModel.closeSubReply()
+                VideoCommentPredictiveBackTarget.DISMISS_SHEET -> onDismiss()
             }
         },
+    )
+    val threadBackProgress = resolveVideoCommentPredictiveBackProgress(
+        inProgress = commentBackState.transitionState is NavigationEventTransitionState.InProgress &&
+            hostContent == VideoCommentSheetHostContent.THREAD_DETAIL,
+        progress = (commentBackState.transitionState as? NavigationEventTransitionState.InProgress)
+            ?.latestEvent
+            ?.progress
+            ?: 0f
     )
 
     LaunchedEffect(aid, mainSheetVisible, forceInitialize, preferredSortMode, upMid, expectedReplyCount) {
@@ -665,6 +711,11 @@ fun VideoCommentSheetHost(
                 ) {
                     AnimatedContent(
                         targetState = hostContent,
+                        modifier = Modifier.graphicsLayer {
+                            if (hostContent == VideoCommentSheetHostContent.THREAD_DETAIL) {
+                                translationX = threadBackProgress * size.width
+                            }
+                        },
                         transitionSpec = {
                             val opensThreadDetail =
                                 initialState == VideoCommentSheetHostContent.MAIN_LIST &&

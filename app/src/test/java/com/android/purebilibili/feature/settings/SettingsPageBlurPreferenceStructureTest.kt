@@ -18,7 +18,7 @@ class SettingsPageBlurPreferenceStructureTest {
         assertTrue(source.contains(".unifiedBlur("))
         assertTrue(source.contains("Modifier.hazeSourceCompat(hazeState)"))
         assertTrue(source.contains("surfaceType = BlurSurfaceType.HEADER"))
-        assertTrue(source.contains(".biliPaiProgressiveTopBlur("))
+        assertTrue(source.contains("BiliPaiImmersiveTopBar("))
         assertTrue(source.contains("Modifier.layerBackdrop(backdrop)"))
         assertFalse(source.contains("TopReadabilityChrome"))
         assertTrue(source.contains("top = padding.calculateTopPadding()"))

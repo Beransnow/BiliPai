@@ -5,6 +5,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
@@ -118,4 +119,47 @@ internal fun Modifier.biliPaiProgressiveTopBlur(
         gradient = gradient,
         colors = blurColors,
     )
+}
+
+/** Draws the shared gradient beyond the chrome without enlarging its layout or touch region. */
+@androidx.compose.runtime.Composable
+internal fun BiliPaiImmersiveTopBar(
+    backdrop: Backdrop?,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    content: @androidx.compose.runtime.Composable () -> Unit,
+) {
+    val active = shouldUseBiliPaiProgressiveTopBlur(enabled, backdrop != null) &&
+        !isLowBlurBudgetForced()
+    androidx.compose.foundation.layout.Box(modifier = modifier) {
+        if (active) {
+            androidx.compose.foundation.layout.Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .layout { measurable, constraints ->
+                        val extension = resolveProgressiveTopBlurBottomExtension(
+                            enabled = true,
+                            endFraction = BILIPAI_PROGRESSIVE_TOP_BLUR_DEFAULT_GRADIENT.endFraction,
+                        ).roundToPx()
+                        val extended = constraints.copy(
+                            minHeight = constraints.minHeight + extension,
+                            maxHeight = constraints.maxHeight + extension,
+                        )
+                        val placeable = measurable.measure(extended)
+                        layout(placeable.width, placeable.height - extension) {
+                            placeable.placeRelative(0, 0)
+                        }
+                    }
+                    .biliPaiProgressiveTopBlur(
+                        backdrop = backdrop,
+                        enabled = true,
+                        shape = androidx.compose.ui.graphics.RectangleShape,
+                    ),
+            )
+        }
+        androidx.compose.runtime.CompositionLocalProvider(
+            com.android.purebilibili.core.ui.LocalImmersiveTopChromeActive provides active,
+            content = content,
+        )
+    }
 }

@@ -91,6 +91,9 @@ data class AdaptiveTopAppBarChromeSpec(
 
 val LocalGlobalWallpaperBackdropVisible = compositionLocalOf { false }
 
+/** Set only around chrome whose background is drawn by the shared immersive blur layer. */
+val LocalImmersiveTopChromeActive = compositionLocalOf { false }
+
 fun resolveGlobalWallpaperProtectiveColor(
     baseColor: Color,
     lightAlpha: Float = 0.74f,
@@ -269,7 +272,12 @@ fun AdaptiveTopAppBar(
     } else {
         colors
     }
-    val topAppBarColors = effectiveColors
+    val topAppBarColors = if (LocalImmersiveTopChromeActive.current) {
+        effectiveColors.copy(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
+        )
+    } else effectiveColors
 
     if (rememberIsNativeMiuixEnabled()) {
         SideEffect {

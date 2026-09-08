@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.ImmersiveAppScaffold as AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.rememberAppBackIcon
@@ -164,7 +164,6 @@ fun ReplyMeScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
         ) {
             when {
                 uiState.isLoading -> com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton(
@@ -185,12 +184,12 @@ fun ReplyMeScreen(
                 else -> AdaptivePullToRefreshBox(
                     isRefreshing = uiState.isRefreshing,
                     onRefresh = viewModel::refresh,
-                    indicatorTopInset = 0.dp,
+                    indicatorTopInset = paddingValues.calculateTopPadding(),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = paddingValues.calculateTopPadding() + 12.dp, bottom = paddingValues.calculateBottomPadding() + 12.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         items(uiState.items, key = { it.id }) { item ->

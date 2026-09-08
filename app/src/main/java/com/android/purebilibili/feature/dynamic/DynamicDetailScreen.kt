@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.imageLoader
 import com.android.purebilibili.R
-import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.ImmersiveAppScaffold as AppScaffold
 import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.store.HomeSettings
@@ -405,7 +405,7 @@ fun DynamicDetailScreen(
                     AppSplitLayout(
                         primaryRatio = 0.5f,
                         modifier = Modifier
-                            .padding(paddingValues)
+                            .padding(bottom = paddingValues.calculateBottomPadding())
                             .consumeWindowInsets(paddingValues),
                         primaryContent = {
                             LazyColumn(
@@ -413,7 +413,7 @@ fun DynamicDetailScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .responsiveContentWidth(maxWidth = resolveDynamicFeedMaxWidth()),
-                                contentPadding = PaddingValues(bottom = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
+                                contentPadding = PaddingValues(top = paddingValues.calculateTopPadding(), bottom = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
                             ) {
                                 cardContent()
                             }
@@ -432,7 +432,7 @@ fun DynamicDetailScreen(
                                                     Modifier
                                                 }
                                             ),
-                                        contentPadding = PaddingValues(bottom = commentContentBottomPadding),
+                                        contentPadding = PaddingValues(top = paddingValues.calculateTopPadding(), bottom = commentContentBottomPadding),
                                     ) {
                                         commentContent()
                                     }
@@ -457,7 +457,7 @@ fun DynamicDetailScreen(
                                     LazyColumn(
                                         state = commentListState,
                                         modifier = Modifier.fillMaxSize(),
-                                        contentPadding = PaddingValues(bottom = commentContentBottomPadding),
+                                        contentPadding = PaddingValues(top = paddingValues.calculateTopPadding(), bottom = commentContentBottomPadding),
                                     ) {
                                         commentContent()
                                     }
@@ -487,7 +487,7 @@ fun DynamicDetailScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(paddingValues)
+                            .padding(bottom = paddingValues.calculateBottomPadding())
                             .consumeWindowInsets(paddingValues)
                             .responsiveContentWidth(maxWidth = resolveDynamicFeedMaxWidth())
                     ) {
@@ -502,7 +502,7 @@ fun DynamicDetailScreen(
                                         Modifier
                                     }
                                 ),
-                            contentPadding = PaddingValues(bottom = commentContentBottomPadding),
+                            contentPadding = PaddingValues(top = paddingValues.calculateTopPadding(), bottom = commentContentBottomPadding),
                         ) {
                             cardContent()
                             commentContent()

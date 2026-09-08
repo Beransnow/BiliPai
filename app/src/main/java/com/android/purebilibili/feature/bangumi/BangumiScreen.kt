@@ -1,6 +1,6 @@
 package com.android.purebilibili.feature.bangumi
 
-import androidx.activity.compose.BackHandler
+import com.android.purebilibili.core.ui.LocalNavigationBackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.calculateTopPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
@@ -30,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.ImmersiveAppScaffold as AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -80,7 +81,7 @@ fun BangumiScreen(
     val handleBack = {
         if (!viewModel.consumeBack()) onBack()
     }
-    BackHandler(onBack = handleBack)
+    LocalNavigationBackHandler(enabled = true, onBackCompleted = handleBack)
 
     AppScaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -130,7 +131,6 @@ fun BangumiScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(contentPadding)
                 .responsiveContentWidth(),
         ) {
             Box(
@@ -139,7 +139,11 @@ fun BangumiScreen(
                     .layerBackdrop(channelBackdrop)
                     .background(MaterialTheme.colorScheme.background),
             )
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = contentPadding.calculateTopPadding()),
+            ) {
                 if (state.page != BangumiHubPage.SEARCH) {
                     AppLiquidAwareTabRow(
                         options = BangumiChannel.entries.map { AppSegmentOption(it, it.label) },
