@@ -201,8 +201,8 @@ fun <T> AppNativeSegmentedControl(
         materialOnPrimaryContainer = materialColors.onPrimaryContainer,
         materialSurfaceContainerHigh = materialColors.surfaceContainerHigh,
         materialOnSurfaceVariant = materialColors.onSurfaceVariant,
-        miuixSecondaryContainer = AppSurfaceTokens.secondaryContainer(),
-        miuixOnSecondaryContainer = AppSurfaceTokens.onSecondaryContainer(),
+        miuixSecondaryContainer = AppSurfaceTokens.surfaceContainerHighest(),
+        miuixOnSecondaryContainer = AppSurfaceTokens.onSurface(),
         miuixSurfaceContainerHigh = AppSurfaceTokens.surfaceContainerHigh(),
         miuixOnSurfaceVariantSummary = AppSurfaceTokens.onSurfaceVariantSummary(),
     )
@@ -267,8 +267,8 @@ fun <T> AppNativeTabRow(
         materialOnPrimaryContainer = materialColors.onPrimaryContainer,
         materialSurfaceContainerHigh = materialColors.surfaceContainerHigh,
         materialOnSurfaceVariant = materialColors.onSurfaceVariant,
-        miuixSecondaryContainer = AppSurfaceTokens.secondaryContainer(),
-        miuixOnSecondaryContainer = AppSurfaceTokens.onSecondaryContainer(),
+        miuixSecondaryContainer = AppSurfaceTokens.surfaceContainerHighest(),
+        miuixOnSecondaryContainer = AppSurfaceTokens.onSurface(),
         miuixSurfaceContainerHigh = AppSurfaceTokens.surfaceContainerHigh(),
         miuixOnSurfaceVariantSummary = AppSurfaceTokens.onSurfaceVariantSummary(),
     )

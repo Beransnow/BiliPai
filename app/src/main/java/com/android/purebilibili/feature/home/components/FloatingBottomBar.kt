@@ -222,8 +222,7 @@ fun PlainMiuixFloatingBottomBar(
         Box(
             modifier = indicatorPositionModifier
                 .width(itemWidth)
-                .fillMaxHeight()
-                .background(MiuixTheme.colorScheme.secondaryContainer, shape),
+                .fillMaxHeight(),
         )
         CompositionLocalProvider(
             LocalFloatingBottomBarContentColor provides colors.contentColor,
@@ -1154,7 +1153,13 @@ fun FloatingBottomBar(
                             }
                         }
                         .clip(pillShape)
-                        .background(indicatorIdleSurfaceColorOverride ?: colors.indicatorColor.copy(alpha = 0.15f), pillShape)
+                        .then(
+                            if (indicatorIdleSurfaceColorOverride != null) {
+                                Modifier.background(indicatorIdleSurfaceColorOverride, pillShape)
+                            } else {
+                                Modifier
+                            }
+                        )
                         .height(fittedIndicatorHeight)
                         .width(fittedIndicatorWidth),
                     contentAlignment = Alignment.CenterStart
