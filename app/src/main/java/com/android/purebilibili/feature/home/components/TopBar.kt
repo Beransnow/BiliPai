@@ -165,6 +165,18 @@ internal fun resolveTopTabDockIndicatorHorizontalGapDp(
     }
 }
 
+internal fun resolveTopTabDockIndicatorVerticalGapDp(
+    hasOuterChromeSurface: Boolean,
+    isLiquidGlassReuseEnabled: Boolean = false
+): Float {
+    val standardGap = if (hasOuterChromeSurface) 3f else 3f
+    return if (isLiquidGlassReuseEnabled) {
+        (standardGap - 1f).coerceAtLeast(1f)
+    } else {
+        standardGap
+    }
+}
+
 /**
  * Same 4dp start/end inset as [FloatingBottomBar] so the first and last
  * selected capsules sit inside the stadium end-caps without empty glass caps.
