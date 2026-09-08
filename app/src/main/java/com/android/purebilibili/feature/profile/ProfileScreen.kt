@@ -3070,7 +3070,7 @@ fun TabletProfileContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-internal fun MobileProfileContent(
+private fun MobileProfileContent(
     viewModel: ProfileViewModel = viewModel(),
     user: UserState,
     onLogout: () -> Unit,
