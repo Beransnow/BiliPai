@@ -247,7 +247,6 @@ private fun <T> AppMiuixNonGlassTabs(
         labels.map { measurer.measure(AnnotatedString(it), style, maxLines = 1).size }
     }
     val textHeight = with(density) { (labelSizes.maxOfOrNull { it.height } ?: 0).toDp() }
-    val labelWidth = with(density) { (labelSizes.maxOfOrNull { it.width } ?: 0).toDp() }
     val geometry = resolveMiuixNonGlassControlGeometry(compact, textHeight)
     val targetHeight = height ?: geometry.height
     val interactiveHeight = if (height != null) {
@@ -262,11 +261,7 @@ private fun <T> AppMiuixNonGlassTabs(
     val readableWidth = if (compact && !scrollable) {
         0.dp
     } else {
-        maxOf(
-            AppChromeSizeTokens.MinimumTouchTarget,
-            minTabWidth,
-            if (scrollable) labelWidth + 24.dp else 0.dp,
-        )
+        if (scrollable) maxOf(AppChromeSizeTokens.MinimumTouchTarget, minTabWidth) else 0.dp
     }
     val scrollState = rememberLazyListState()
     val shouldPinScroll = !scrollable
