@@ -32,7 +32,7 @@ class SettingsPageBlurPreferenceStructureTest {
             "src/main/java/com/android/purebilibili/feature/settings/screen/SettingsScreen.kt"
         ).readText()
 
-        assertTrue(scaffold.contains("topBarStyle: AppTopBarStyle = AppTopBarStyle.SMALL"))
+        assertTrue(scaffold.contains("topBarStyle: AppTopBarStyle = AppTopBarStyle.CENTERED"))
         assertTrue(scaffold.contains("rememberAppTopBarCollapseBehavior()"))
         assertTrue(scaffold.contains("modifier.appTopBarNestedScroll(collapseBehavior)"))
         assertTrue(scaffold.contains("!progressiveBlurEnabled"))

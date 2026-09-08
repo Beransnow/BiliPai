@@ -114,7 +114,7 @@ internal fun SettingsPageScaffold(
     scrollHost: SettingsPageScrollHost = SettingsPageScrollHost.LazyColumn,
     topBarBlurEnabled: Boolean? = null,
     externalContentHandlesTopPadding: Boolean = false,
-    topBarStyle: AppTopBarStyle = AppTopBarStyle.SMALL,
+    topBarStyle: AppTopBarStyle = AppTopBarStyle.CENTERED,
     actions: @Composable RowScope.() -> Unit = {},
     header: (@Composable () -> Unit)? = null,
     lazyListContent: (LazyListScope.() -> Unit)? = null,

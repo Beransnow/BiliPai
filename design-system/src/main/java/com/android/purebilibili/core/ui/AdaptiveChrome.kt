@@ -311,7 +311,18 @@ fun AdaptiveTopAppBar(
                 )
             }
 
-            AdaptiveTopAppBarStyle.SMALL,
+            AdaptiveTopAppBarStyle.SMALL -> {
+                TopAppBar(
+                    modifier = modifier,
+                    title = { Text(displayTitle, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    navigationIcon = navigationContent,
+                    actions = actionsContent,
+                    colors = topAppBarColors,
+                    scrollBehavior = scrollBehavior,
+                    windowInsets = WindowInsets.statusBars
+                )
+            }
+
             AdaptiveTopAppBarStyle.CENTERED -> {
                 MiuixSmallTopAppBar(
                     title = displayTitle,
