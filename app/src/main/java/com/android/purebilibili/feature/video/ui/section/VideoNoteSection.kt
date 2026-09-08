@@ -338,7 +338,7 @@ fun VideoNoteEditorSheet(
                         .fillMaxWidth()
                         .height(220.dp)
                         .clip(VideoDetailShapes.field())
-                        .background(MiuixTheme.colorScheme.surfaceContainerLow)
+                        .background(MiuixTheme.colorScheme.surfaceContainer)
                         .padding(10.dp)
                 )
             } else {

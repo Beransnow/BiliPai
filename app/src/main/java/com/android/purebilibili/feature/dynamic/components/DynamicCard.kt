@@ -1420,6 +1420,9 @@ fun DynamicCardV2(
                 onUserClick = onUserClick,
                 onTopicClick = onTopicClick,
                 onDynamicDetailClick = openDynamicDetail,
+                onArticleClick = onArticleClick,
+                onLiveClick = onLiveClick,
+                onMusicClick = onMusicClick,
                 gifImageLoader = gifImageLoader,
                 defaultPreviewTextVisible = dynamicPreviewTextVisible
             )

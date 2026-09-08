@@ -72,6 +72,9 @@ fun ForwardedContent(
     onUserClick: (Long) -> Unit,
     onTopicClick: (Long) -> Unit = {},
     onDynamicDetailClick: ((String) -> Unit)? = null,
+    onArticleClick: ((Long, String) -> Unit)? = null,
+    onLiveClick: ((Long, String, String) -> Unit)? = null,
+    onMusicClick: ((Long) -> Unit)? = null,
     gifImageLoader: ImageLoader,
     defaultPreviewTextVisible: Boolean = true
 ) {
