@@ -1752,6 +1752,7 @@ fun HomeScreen(
                     ) {
                     HomeWallpaperBackdrop(
                         wallpaperUri = homeWallpaperUri,
+                        playbackEnabled = isTopLevelActive,
                         appearance = homeWallpaperBackdropAppearance,
                         baseColor = AppSurfaceTokens.chromeBackground(),
                         isDataSaverActive = isDataSaverActive
