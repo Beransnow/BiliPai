@@ -915,7 +915,7 @@ internal fun VideoDetailScreenStateHolder(
         isVisible,
         relatedParentWasCovered,
         relatedParentUiSnapshot,
-        videoCardDepthBackgroundState.phaseProvider(),
+        videoCardDepthBackgroundState,
         transitionEnterDurationMillis,
     ) {
         if (!hasCommittedRelatedVideoNavigation) return@LaunchedEffect
@@ -949,11 +949,13 @@ internal fun VideoDetailScreenStateHolder(
 
         // The parent can become the top key before Miuix has finished the return morph. Keep the
         // navigation-leave guards until the flying layer has completely parked.
-        if (videoCardDepthBackgroundState.phaseProvider() !=
-            VideoCardTransitionBackgroundPhase.IDLE
-        ) {
-            return@LaunchedEffect
-        }
+        snapshotFlow {
+            canReleaseRelatedVideoNavigation(
+                phase = videoCardDepthBackgroundState.phaseProvider(),
+                gestureInProgress = videoCardDepthBackgroundState.isReturnGestureInProgressProvider(),
+                gestureRestoreInProgress = videoCardDepthBackgroundState.isGestureRestoreInProgressProvider(),
+            )
+        }.first { it }
 
         // Let the already-restored parent produce one live frame before reactivating its player.
         withFrameNanos { }
