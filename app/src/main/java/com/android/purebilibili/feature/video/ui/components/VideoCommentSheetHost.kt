@@ -507,6 +507,28 @@ fun VideoCommentSheetHost(
     }
 
     val commentBackState = rememberNavigationEventState(NavigationEventInfo.None)
+    var threadBackCompleted by remember { mutableStateOf(false) }
+    val rawThreadBackProgress = resolveVideoCommentPredictiveBackProgress(
+        inProgress = commentBackState.transitionState is NavigationEventTransitionState.InProgress &&
+            hostContent == VideoCommentSheetHostContent.THREAD_DETAIL,
+        progress = (commentBackState.transitionState as? NavigationEventTransitionState.InProgress)
+            ?.latestEvent
+            ?.progress
+            ?: 0f
+    )
+
+    val threadBackProgress by androidx.compose.animation.core.animateFloatAsState(
+        targetValue = rawThreadBackProgress,
+        animationSpec = if (commentBackState.transitionState is NavigationEventTransitionState.InProgress) {
+            androidx.compose.animation.core.snap()
+        } else {
+            tween(180)
+        },
+        label = "comment_thread_predictive_back",
+    )
+    LaunchedEffect(subReplyState.visible) {
+        if (subReplyState.visible) threadBackCompleted = false
+    }
     NavigationBackHandler(
         state = commentBackState,
         isBackEnabled = hostVisible,
@@ -519,19 +541,18 @@ fun VideoCommentSheetHost(
             ) {
                 VideoCommentPredictiveBackTarget.CLOSE_CONVERSATION ->
                     commentViewModel.closeSubReplyConversation()
-                VideoCommentPredictiveBackTarget.CLOSE_THREAD ->
+                VideoCommentPredictiveBackTarget.CLOSE_THREAD -> {
+                    threadBackCompleted = rawThreadBackProgress > 0f
                     commentViewModel.closeSubReply()
+                }
                 VideoCommentPredictiveBackTarget.DISMISS_SHEET -> onDismiss()
             }
         },
     )
-    val threadBackProgress = resolveVideoCommentPredictiveBackProgress(
-        inProgress = commentBackState.transitionState is NavigationEventTransitionState.InProgress &&
-            hostContent == VideoCommentSheetHostContent.THREAD_DETAIL,
-        progress = (commentBackState.transitionState as? NavigationEventTransitionState.InProgress)
-            ?.latestEvent
-            ?.progress
-            ?: 0f
+    val threadDrag = rememberCommentThreadDrag(
+        visible = subReplyState.visible,
+        rootReplyId = subReplyState.rootReply?.rpid,
+        onDismiss = commentViewModel::closeSubReply,
     )
 
     LaunchedEffect(aid, mainSheetVisible, forceInitialize, preferredSortMode, upMid, expectedReplyCount) {
@@ -663,7 +684,7 @@ fun VideoCommentSheetHost(
                         }
                         .offset { IntOffset(x = 0, y = sheetDragOffsetPx.roundToInt()) }
                         .pointerInput(mainSheetVisible, hostContent, mainSheetMeasuredHeightPx) {
-                            if (hostContent == VideoCommentSheetHostContent.HIDDEN) {
+                            if (hostContent != VideoCommentSheetHostContent.MAIN_LIST) {
                                 return@pointerInput
                             }
                             detectVerticalDragGestures(
@@ -726,7 +747,7 @@ fun VideoCommentSheetHost(
                             val coveredBlurProgress = if (
                                 hostContent == VideoCommentSheetHostContent.THREAD_DETAIL
                             ) {
-                                resolveCommentThreadCoveredBlurProgress(threadBackProgress)
+                                resolveCommentThreadCoveredBlurProgress(maxOf(threadBackProgress, threadDrag.revealProgress))
                             } else {
                                 0f
                             }
@@ -734,6 +755,7 @@ fun VideoCommentSheetHost(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .graphicsLayer {
+                                        renderEffect = null
                                         if (coveredBlurProgress > 0f &&
                                             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                                         ) {
@@ -772,7 +794,7 @@ fun VideoCommentSheetHost(
                                 subReplyState.rootReply != null,
                             enter = fadeIn(animationSpec = tween(220)) +
                                 slideInVertically(animationSpec = tween(260)) { height -> height },
-                            exit = fadeOut(animationSpec = tween(200)) +
+                            exit = if (threadBackCompleted) androidx.compose.animation.ExitTransition.None else fadeOut(animationSpec = tween(200)) +
                                 slideOutVertically(animationSpec = tween(240)) { height -> height },
                         ) {
                             val rootReply = subReplyState.rootReply
@@ -780,15 +802,17 @@ fun VideoCommentSheetHost(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .background(appearance.panelColor)
+                                        .then(threadDrag.containerModifier)
                                         .graphicsLayer {
-                                            translationY = resolveCommentThreadPredictiveBackOffsetY(
+                                            translationY = threadDrag.offsetPx.value + resolveCommentThreadPredictiveBackOffsetY(
                                                 progress = threadBackProgress,
                                                 heightPx = size.height,
                                             )
-                                        },
+                                        }
+                                        .background(appearance.panelColor),
                                 ) {
                                     SubReplyDetailContent(
+                                        headerDragModifier = threadDrag.headerModifier,
                                         rootReply = rootReply,
                                         subReplies = subReplyState.items,
                                         sortMode = subReplyState.sortMode,

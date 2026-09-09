@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.asComposeRenderEffect
 import com.android.purebilibili.core.ui.transition.resolvePredictiveBackBlurFrame
 import com.android.purebilibili.feature.video.ui.components.resolveCommentThreadCoveredBlurProgress
 import com.android.purebilibili.feature.video.ui.components.resolveCommentThreadPredictiveBackOffsetY
+import com.android.purebilibili.feature.video.ui.components.rememberCommentThreadDrag
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -331,6 +332,27 @@ fun DynamicCommentSheet(
         // the local sheet handler below.
         WindowNavigationEventBridge()
         val commentBackState = rememberNavigationEventState(NavigationEventInfo.None)
+        var threadBackCompleted by remember { mutableStateOf(false) }
+        val rawThreadBackProgress = resolveVideoCommentPredictiveBackProgress(
+            inProgress = commentBackState.transitionState is NavigationEventTransitionState.InProgress &&
+                hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL,
+            progress = (commentBackState.transitionState as? NavigationEventTransitionState.InProgress)
+                ?.latestEvent
+                ?.progress
+                ?: 0f,
+        )
+        val threadBackProgress by androidx.compose.animation.core.animateFloatAsState(
+            targetValue = rawThreadBackProgress,
+            animationSpec = if (commentBackState.transitionState is NavigationEventTransitionState.InProgress) {
+                androidx.compose.animation.core.snap()
+            } else {
+                tween(180)
+            },
+            label = "comment_thread_predictive_back",
+        )
+        LaunchedEffect(subReplyState.visible) {
+            if (subReplyState.visible) threadBackCompleted = false
+        }
         NavigationBackHandler(
             state = commentBackState,
             isBackEnabled = true,
@@ -342,18 +364,18 @@ fun DynamicCommentSheet(
                     )
                 ) {
                     VideoCommentPredictiveBackTarget.CLOSE_CONVERSATION -> onCloseSubReply()
-                    VideoCommentPredictiveBackTarget.CLOSE_THREAD -> onCloseSubReply()
+                    VideoCommentPredictiveBackTarget.CLOSE_THREAD -> {
+                        threadBackCompleted = rawThreadBackProgress > 0f
+                        onCloseSubReply()
+                    }
                     VideoCommentPredictiveBackTarget.DISMISS_SHEET -> onDismiss()
                 }
             },
         )
-        val threadBackProgress = resolveVideoCommentPredictiveBackProgress(
-            inProgress = commentBackState.transitionState is NavigationEventTransitionState.InProgress &&
-                hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL,
-            progress = (commentBackState.transitionState as? NavigationEventTransitionState.InProgress)
-                ?.latestEvent
-                ?.progress
-                ?: 0f,
+        val threadDrag = rememberCommentThreadDrag(
+            visible = subReplyState.visible,
+            rootReplyId = subReplyState.rootReply?.rpid,
+            onDismiss = onCloseSubReply,
         )
         val commentChromeBackdrop = rememberLayerBackdrop()
         Box(
@@ -372,7 +394,7 @@ fun DynamicCommentSheet(
             val coveredBlurProgress = if (
                 hostContent == DynamicCommentSheetHostContent.THREAD_DETAIL
             ) {
-                resolveCommentThreadCoveredBlurProgress(threadBackProgress)
+                resolveCommentThreadCoveredBlurProgress(maxOf(threadBackProgress, threadDrag.revealProgress))
             } else {
                 0f
             }
@@ -380,6 +402,7 @@ fun DynamicCommentSheet(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer {
+                        renderEffect = null
                         if (coveredBlurProgress > 0f &&
                             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                         ) {
@@ -544,7 +567,7 @@ fun DynamicCommentSheet(
                     subReplyState.rootReply != null,
                 enter = fadeIn(animationSpec = tween(220)) +
                     slideInVertically(animationSpec = tween(260)) { height -> height },
-                exit = fadeOut(animationSpec = tween(200)) +
+                exit = if (threadBackCompleted) androidx.compose.animation.ExitTransition.None else fadeOut(animationSpec = tween(200)) +
                     slideOutVertically(animationSpec = tween(240)) { height -> height },
             ) {
                 val rootReply = subReplyState.rootReply
@@ -552,15 +575,17 @@ fun DynamicCommentSheet(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(AppSurfaceTokens.background())
+                            .then(threadDrag.containerModifier)
                             .graphicsLayer {
-                                translationY = resolveCommentThreadPredictiveBackOffsetY(
+                                translationY = threadDrag.offsetPx.value + resolveCommentThreadPredictiveBackOffsetY(
                                     progress = threadBackProgress,
                                     heightPx = size.height,
                                 )
-                            },
+                            }
+                            .background(AppSurfaceTokens.background()),
                     ) {
                         SubReplyDetailContent(
+                            headerDragModifier = threadDrag.headerModifier,
                             rootReply = rootReply,
                             subReplies = subReplyState.items,
                             sortMode = subReplyState.sortMode,
