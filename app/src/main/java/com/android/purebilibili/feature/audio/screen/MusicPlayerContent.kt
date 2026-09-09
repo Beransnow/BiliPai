@@ -148,8 +148,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
-import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
+import com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource
 
 private val MusicFallbackColor = Color(0xFF342B42)
 
@@ -262,7 +261,8 @@ internal fun MusicPlayerContent(
         ) == 0f
     }
     val effectiveReduceMotion = reduceMotion || systemReduceMotion
-    val musicBackdrop = rememberMiuixLayerBackdrop()
+    val musicBackdropSource = rememberChromeBackdropSource()
+    val musicBackdrop = musicBackdropSource.takeIf { it.isReady }?.backdrop
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
@@ -331,7 +331,8 @@ internal fun MusicPlayerContent(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .miuixLayerBackdrop(musicBackdrop)
+                    .then(musicBackdropSource.modifier)
+                    .background(pageBackground)
             ) {
                 MusicArtworkBackground(
                     coverUrl = state.coverUrl,
@@ -438,8 +439,6 @@ internal fun MusicPlayerContent(
                         containerVerticalPadding = 6.dp,
                         selectedTextColorOverride = MusicContentColor,
                         unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.65f),
-                        containerColorOverride = MusicContentColor.copy(alpha = 0.10f),
-                        indicatorIdleSurfaceColorOverride = MusicContentColor.copy(alpha = 0.20f),
                         liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
                         preferInlineContentStyle = false,
                         miuixBackdrop = musicBackdrop,

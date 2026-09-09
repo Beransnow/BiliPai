@@ -25,10 +25,17 @@ class MusicPlayerContentStructureTest {
         assertTrue(compactBranch.contains("MUSIC_PLAYER_COMPACT_DOCK_BOTTOM_PADDING_DP"))
         assertTrue(!compactBranch.contains("visible = pagerState.currentPage != 1"))
         assertTrue(!compactBranch.contains("forceLiquidChrome = true"))
-        assertTrue(compactBranch.contains("containerColorOverride = MusicContentColor"))
-        assertTrue(compactBranch.contains("indicatorIdleSurfaceColorOverride = MusicContentColor"))
+        assertTrue(!compactBranch.contains("containerColorOverride"))
+        assertTrue(!compactBranch.contains("indicatorIdleSurfaceColorOverride"))
         assertTrue(compactBranch.contains("selectedTextColorOverride = MusicContentColor"))
         assertTrue(compactBranch.contains("unselectedTextColorOverride = MusicContentColor"))
+    }
+
+    @Test
+    fun `music backdrop records opaque page background before glass samples it`() {
+        val source = loadSource()
+        assertTrue(source.contains("musicBackdropSource.takeIf { it.isReady }?.backdrop"))
+        assertTrue(source.contains(".then(musicBackdropSource.modifier)\n                    .background(pageBackground)"))
     }
 
     @Test
@@ -137,8 +144,8 @@ class MusicPlayerContentStructureTest {
         val topButtons = source.substringAfter("private fun GlassIconButton(")
 
         assertTrue(source.contains("MiuixBackdrop?"))
-        assertTrue(source.contains("rememberMiuixLayerBackdrop()"))
-        assertTrue(source.contains(".miuixLayerBackdrop(musicBackdrop)"))
+        assertTrue(source.contains("rememberChromeBackdropSource()"))
+        assertTrue(source.contains(".then(musicBackdropSource.modifier)"))
         assertTrue(topButtons.contains(".biliPaiFloatingDockShell("))
         assertTrue(topButtons.contains("backdrop = miuixBackdrop"))
         assertTrue(topButtons.contains("enabled = glassEnabled"))
