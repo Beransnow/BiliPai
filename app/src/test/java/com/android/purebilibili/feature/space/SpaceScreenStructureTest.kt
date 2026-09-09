@@ -8,14 +8,30 @@ import kotlin.test.assertTrue
 class SpaceScreenStructureTest {
 
     @Test
+    fun `title and tabs share one measured chrome while full viewport content supplies blur`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
+        val chrome = source.substringAfter("topBar = {").substringBefore(") { scaffoldPadding ->")
+        assertTrue(chrome.contains("SpacePinnedTabs("))
+        assertTrue(chrome.indexOf("AppTopBar(") < chrome.indexOf("SpacePinnedTabs("))
+        assertFalse(chrome.contains("spaceChromeSource?.modifier"))
+        val capture = source.indexOf(".then(spaceChromeSource?.modifier ?: Modifier)")
+        val content = source.indexOf("SpaceContent(")
+        assertTrue(capture >= 0 && capture < content)
+        assertTrue(source.substring(capture, content).contains("globalWallpaperAwareBackground"))
+        assertFalse(source.contains(".padding(top = chromeTopInset)"))
+        assertFalse(source.contains("pinnedTabHeight"))
+        assertTrue(source.contains("chromeTopInset = scaffoldPadding.calculateTopPadding()"))
+    }
+
+    @Test
     fun `space chrome uses liquid tab rows and piliplus actions`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 
         assertTrue(source.contains("AppNativeTabRow("))
         assertTrue(source.contains("BiliPaiImmersiveTopBar("))
-        assertTrue(source.contains("chromeCaptureModifier"))
-        assertTrue(source.contains("chromeTopInset + pinnedTabHeight"))
-        assertTrue(source.contains("onPinnedChromeHeightChanged"))
+        assertTrue(source.contains("spaceChromeSource?.modifier"))
+        assertTrue(source.contains("top = chromeTopInset"))
+        assertFalse(source.contains("onPinnedChromeHeightChanged"))
         assertFalse(source.contains("val tabPinned = gridState.firstVisibleItemIndex > 0"))
         assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(source.contains("AppThemeAdaptiveTabRow("))
