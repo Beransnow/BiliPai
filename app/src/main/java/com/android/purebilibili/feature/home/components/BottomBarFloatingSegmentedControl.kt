@@ -104,6 +104,13 @@ internal fun BottomBarFloatingSegmentedControl(
     val maxTabIndex = (itemCount - 1).coerceAtLeast(0)
     val safeSelectedIndex = selectedIndex.coerceIn(0, maxTabIndex)
     val selectedTextColor = selectedTextColorOverride ?: MaterialTheme.colorScheme.primary
+    // Match the selected navigation color instead of the neutral black/white glass fill.
+    val themedIndicatorSurface = indicatorIdleSurfaceColorOverride ?: if (
+        com.android.purebilibili.core.theme.LocalAppUiStyle.current ==
+            com.android.purebilibili.core.theme.AppUiStyle.MIUIX && liquidGlassEnabled
+    ) {
+        selectedTextColor.copy(alpha = if (isDarkTheme) 0.24f else 0.16f)
+    } else null
     val unselectedTextColor = unselectedTextColorOverride
         ?: resolveLiquidSegmentedControlUnselectedTextColor(
             onSurface = MaterialTheme.colorScheme.onSurface,
@@ -213,7 +220,7 @@ internal fun BottomBarFloatingSegmentedControl(
             contentHorizontalPadding = horizontalPadding,
             contentVerticalPadding = verticalPadding,
             tapPressRefractionEnabled = tapPressRefractionEnabled,
-            indicatorIdleSurfaceColorOverride = indicatorIdleSurfaceColorOverride,
+            indicatorIdleSurfaceColorOverride = themedIndicatorSurface,
             isScrollInProgressProvider = isScrollInProgressProvider,
             // No per-screen exceptions for the shared liquid dock gesture.
             dragSelectionEnabled = enabled && itemCount > 1,
