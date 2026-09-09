@@ -217,7 +217,7 @@ fun SearchVideoFilterBar(
                     tint = if (filterActive) {
                         MaterialTheme.colorScheme.primary
                     } else {
-                        MaterialTheme.colorScheme.outline
+                        MaterialTheme.colorScheme.onSurface
                     },
                     modifier = Modifier.size(20.dp)
                 )

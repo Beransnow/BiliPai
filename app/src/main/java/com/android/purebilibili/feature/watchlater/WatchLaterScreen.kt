@@ -738,9 +738,7 @@ fun WatchLaterScreen(
             ) {
                 Column {
                 AppTopBar(
-                    title = resolveWatchLaterTitle(
-                        state.totalCount.takeIf { it > 0 } ?: state.items.size
-                    ),
+                    title = "",
                     navigationIcon = {
                         AppIconButton(onClick = onBack) {
                             AppIcon(rememberAppBackIcon(), contentDescription = "返回")
