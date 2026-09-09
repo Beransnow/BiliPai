@@ -74,13 +74,10 @@ class ProgressiveTopChromePolicyTest {
         assertTrue(profile.contains("captureBackground()"))
         assertTrue(profile.contains("profileProgressiveBackdrop(progressiveTopChrome.backdrop)"))
         assertTrue(profile.contains("globalWallpaperAwareBackground(colorScheme.surface)"))
-        assertTrue(bangumiHub.contains(".layerBackdrop(channelBackdrop)"))
-        assertTrue(bangumiHub.contains(".background(MaterialTheme.colorScheme.background),"))
-        assertTrue(
-            bangumiHub.contains(
-                ".background(MaterialTheme.colorScheme.background),\n            )\n            BangumiHubContent("
-            )
-        )
+        assertTrue(bangumiHub.contains("BiliPaiImmersiveTopBar("))
+        assertTrue(bangumiHub.contains(".then(chromeSource?.modifier ?: Modifier)"))
+        assertTrue(bangumiHub.contains("globalWallpaperAwareBackground(MaterialTheme.colorScheme.background)"))
+        assertTrue(bangumiHub.contains("showFollowStatusTabs = false"))
         assertTrue(settingsTablet.contains("BiliPaiImmersiveTopBar("))
     }
 

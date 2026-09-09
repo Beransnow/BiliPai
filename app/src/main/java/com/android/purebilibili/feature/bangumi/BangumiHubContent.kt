@@ -127,6 +127,7 @@ internal fun BangumiHubContent(
     listBottomPadding: Dp = 24.dp,
     listTopPadding: Dp = 0.dp,
     tabBackdrop: Backdrop? = null,
+    showFollowStatusTabs: Boolean = true,
 ) {
     val homeGridStates = remember { mutableMapOf<BangumiChannel, LazyGridState>() }
     val indexGridStates = remember { mutableMapOf<BangumiIndexCategory, LazyGridState>() }
@@ -211,6 +212,7 @@ internal fun BangumiHubContent(
             listBottomPadding = listBottomPadding,
             listTopPadding = listTopPadding,
             tabBackdrop = tabBackdrop,
+            showStatusTabs = showFollowStatusTabs,
         )
 
         BangumiHubPage.SEARCH -> BangumiSearchContent(
@@ -623,30 +625,40 @@ private fun BangumiFollowContent(
     listBottomPadding: Dp,
     listTopPadding: Dp,
     tabBackdrop: Backdrop?,
+    showStatusTabs: Boolean,
 ) {
     val selectionMode = state.selectedIds.isNotEmpty()
     var menuItem by remember { mutableStateOf<FollowBangumiItem?>(null) }
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().padding(top = listTopPadding)) {
-            AppLiquidAwareTabRow(
-                options = BangumiFollowStatus.entries.map { AppSegmentOption(it, it.label) },
-                selectedValue = status,
-                enabled = !state.isMutating,
-                onSelectionChange = onStatusSelected,
-                dragSelectionEnabled = BangumiFollowStatus.entries.size > 1,
-                tapPressRefractionEnabled = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                miuixBackdrop = tabBackdrop,
-            )
+        Column(
+            modifier = Modifier.fillMaxSize().then(
+                if (showStatusTabs) Modifier.padding(top = listTopPadding) else Modifier
+            ),
+        ) {
+            if (showStatusTabs) {
+                AppLiquidAwareTabRow(
+                    options = BangumiFollowStatus.entries.map { AppSegmentOption(it, it.label) },
+                    selectedValue = status,
+                    enabled = !state.isMutating,
+                    onSelectionChange = onStatusSelected,
+                    dragSelectionEnabled = BangumiFollowStatus.entries.size > 1,
+                    tapPressRefractionEnabled = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    miuixBackdrop = tabBackdrop,
+                )
+            }
             AdaptivePullToRefreshBox(
                 isRefreshing = state.content.isRefreshing,
                 onRefresh = onRefresh,
+                indicatorTopInset = if (showStatusTabs) 0.dp else listTopPadding,
                 modifier = Modifier.fillMaxSize(),
             ) {
                 if (state.content.isLoading && state.content.items.isEmpty()) {
-                    BangumiFollowManagerSkeleton()
+                    Box(Modifier.padding(top = if (showStatusTabs) 0.dp else listTopPadding)) {
+                        BangumiFollowManagerSkeleton()
+                    }
                 } else if (state.content.error != null && state.content.items.isEmpty()) {
                     AppErrorState(
                         title = "加载失败",
@@ -664,7 +676,7 @@ private fun BangumiFollowContent(
                         state = gridState,
                         contentPadding = PaddingValues(
                             start = 12.dp,
-                            top = 4.dp,
+                            top = if (showStatusTabs) 4.dp else listTopPadding + 4.dp,
                             end = 12.dp,
                             bottom = if (selectionMode) {
                                 listBottomPadding + 88.dp

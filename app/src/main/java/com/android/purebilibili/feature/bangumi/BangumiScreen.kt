@@ -17,7 +17,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,15 +24,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.ui.ImmersiveAppScaffold as AppScaffold
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
+import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
+import com.android.purebilibili.core.ui.globalWallpaperAwareChromeColor
+import com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource
+import com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced
+import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
+import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
+import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -46,8 +51,6 @@ import com.android.purebilibili.core.ui.rememberAppSearchIcon
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.feature.download.DownloadManager
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 /** Navigation-compatible state holder for the Bangumi/Cinema hub. */
 @Composable
@@ -85,132 +88,151 @@ fun BangumiScreen(
     }
     LocalNavigationBackHandler(enabled = true, onBackCompleted = handleBack)
 
+    val themeConfig = LocalAppThemeConfig.current
+    val progressiveBlur = shouldUseBiliPaiProgressiveTopBlur(
+        enabled = themeConfig.progressiveTopBlurEnabled,
+        hasBackdrop = true,
+    ) && !isLowBlurBudgetForced()
+    val chromeSource = if (
+        (progressiveBlur || themeConfig.liquidGlassEnabled) && shouldCaptureBangumiHubChrome(state)
+    ) {
+        rememberChromeBackdropSource()
+    } else {
+        null
+    }
+    val chromeBackdrop = chromeSource?.takeIf { it.isReady }?.backdrop
+
     AppScaffold(
-        blurContentReady = shouldCaptureBangumiHubChrome(state),
         containerColor = MaterialTheme.colorScheme.background,
         contentWindowInsets = WindowInsets(0.dp),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            if (state.page == BangumiHubPage.SEARCH) {
-                BangumiSearchTopBar(
-                    query = searchQuery,
-                    focusRequester = focusRequester,
-                    category = state.search.category,
-                    onQueryChange = { searchQuery = it },
-                    onSearch = {
-                        viewModel.search(searchQuery)
-                        keyboard?.hide()
-                    },
-                    onBack = handleBack,
-                )
-            } else {
-                AppTopBar(
-                    title = when (state.page) {
-                        BangumiHubPage.HOME -> "番剧影视"
-                        BangumiHubPage.INDEX -> "索引"
-                        BangumiHubPage.FOLLOW -> if (state.channel == BangumiChannel.BANGUMI) "我的追番" else "我的追剧"
-                        BangumiHubPage.SEARCH -> "搜索"
-                    },
-                    navigationIcon = {
-                        AppIconButton(
-                            onClick = handleBack,
-                        ) {
-                            AppIcon(rememberAppBackIcon(), contentDescription = "返回")
-                        }
-                    },
-                    actions = {
-                        AppIconButton(
-                            onClick = viewModel::openSearch,
+            BiliPaiImmersiveTopBar(
+                backdrop = chromeBackdrop,
+                enabled = progressiveBlur,
+                modifier = Modifier.background(
+                    if (progressiveBlur && chromeBackdrop != null) Color.Transparent
+                    else globalWallpaperAwareChromeColor(MaterialTheme.colorScheme.background)
+                ),
+            ) {
+                Column {
+                    if (state.page == BangumiHubPage.SEARCH) {
+                        BangumiSearchTopBar(
+                            query = searchQuery,
+                            focusRequester = focusRequester,
+                            category = state.search.category,
+                            onQueryChange = { searchQuery = it },
+                            onSearch = {
+                                viewModel.search(searchQuery)
+                                keyboard?.hide()
+                            },
+                            onBack = handleBack,
+                        )
+                    } else {
+                        AppTopBar(
+                            title = when (state.page) {
+                                BangumiHubPage.HOME -> "番剧影视"
+                                BangumiHubPage.INDEX -> "索引"
+                                BangumiHubPage.FOLLOW -> if (state.channel == BangumiChannel.BANGUMI) "我的追番" else "我的追剧"
+                                BangumiHubPage.SEARCH -> "搜索"
+                            },
+                            navigationIcon = {
+                                AppIconButton(
+                                    onClick = handleBack,
+                                ) {
+                                    AppIcon(rememberAppBackIcon(), contentDescription = "返回")
+                                }
+                            },
+                            actions = {
+                                AppIconButton(
+                                    onClick = viewModel::openSearch,
+                                    enabled = !selectionActive,
+                                ) {
+                                    AppIcon(rememberAppSearchIcon(), contentDescription = "搜索")
+                                }
+                            },
+                        )
+                    }
+                    if (state.page != BangumiHubPage.SEARCH) {
+                        AppLiquidAwareTabRow(
+                            options = BangumiChannel.entries.map { AppSegmentOption(it, it.label) },
+                            selectedValue = state.channel,
                             enabled = !selectionActive,
-                        ) {
-                            AppIcon(rememberAppSearchIcon(), contentDescription = "搜索")
-                        }
-                    },
-                )
+                            onSelectionChange = viewModel::selectChannel,
+                            dragSelectionEnabled = true,
+                            tapPressRefractionEnabled = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .responsiveContentWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            miuixBackdrop = chromeBackdrop,
+                        )
+                    }
+                    if (state.page == BangumiHubPage.FOLLOW) {
+                        AppLiquidAwareTabRow(
+                            options = BangumiFollowStatus.entries.map { AppSegmentOption(it, it.label) },
+                            selectedValue = state.followStatus,
+                            enabled = state.followStates[state.channel to state.followStatus]?.isMutating != true,
+                            onSelectionChange = viewModel::selectFollowStatus,
+                            dragSelectionEnabled = true,
+                            tapPressRefractionEnabled = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .responsiveContentWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            miuixBackdrop = chromeBackdrop,
+                        )
+                    }
+                }
             }
         },
     ) { contentPadding ->
-        val channelBackdrop = rememberLayerBackdrop()
-        val density = LocalDensity.current
-        var channelTabHeightPx by remember { mutableIntStateOf(0) }
-        val chromeTop = contentPadding.calculateTopPadding()
-        val listTopPadding = chromeTop + if (state.page == BangumiHubPage.SEARCH) {
-            0.dp
-        } else {
-            with(density) { channelTabHeightPx.toDp() }
-        }
+        val listTopPadding = contentPadding.calculateTopPadding()
+        // Every consumer is in topBar; nested in-list controls keep their local backdrops.
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .responsiveContentWidth(),
+                .then(chromeSource?.modifier ?: Modifier)
+                .globalWallpaperAwareBackground(MaterialTheme.colorScheme.background),
         ) {
-            // Empty sibling source: nested docks consume channelBackdrop and must not
-            // live inside this capture, or Xiaomi's renderer self-samples and crashes.
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .layerBackdrop(channelBackdrop)
-                    .background(MaterialTheme.colorScheme.background),
-            )
-            BangumiHubContent(
-                state = state,
-                onBangumiClick = onBangumiClick,
-                onEpisodeClick = onBangumiEpisodeClick,
-                onRefreshHome = { viewModel.refreshHome() },
-                onLoadMoreHomeRecommendations = viewModel::loadMoreHomeRecommendations,
-                onLoadMoreHomeFollows = viewModel::loadMoreHomeFollows,
-                onRetryTimeline = viewModel::retryTimeline,
-                onTimelineRangeSelected = viewModel::selectTimelineRange,
-                onOpenIndex = viewModel::openIndex,
-                onOpenFollow = viewModel::openFollowManager,
-                onIndexCategorySelected = viewModel::selectIndexCategory,
-                onIndexFilterSelected = viewModel::selectIndexFilter,
-                onToggleFiltersExpanded = viewModel::toggleIndexFiltersExpanded,
-                onRetryIndexConditions = viewModel::retryIndexConditions,
-                onRetryIndexResults = viewModel::retryIndexResults,
-                onLoadMoreIndexResults = viewModel::loadMoreIndexResults,
-                onFollowStatusSelected = viewModel::selectFollowStatus,
-                onRefreshFollow = viewModel::refreshFollowManager,
-                onLoadMoreFollow = viewModel::loadMoreFollowManager,
-                onToggleFollowSelection = viewModel::toggleFollowSelection,
-                onSelectAllFollow = viewModel::selectAllFollowItems,
-                onClearFollowSelection = viewModel::clearFollowSelection,
-                onMoveSelectedFollow = viewModel::moveSelectedFollowItems,
-                onMoveSingleFollow = viewModel::updateSingleFollowItem,
-                onUnfollowSingle = viewModel::unfollowSingleItem,
-                onSearchCategorySelected = viewModel::selectSearchCategory,
-                onLoadMoreSearch = viewModel::loadMoreSearch,
-                onSaveCover = { url, title ->
-                    scope.launch {
-                        val saved = DownloadManager.saveImageToGallery(context, url, title)
-                        snackbarHostState.showSnackbar(if (saved) "封面已保存" else "保存封面失败")
-                    }
-                },
-                listTopPadding = listTopPadding,
-                tabBackdrop = channelBackdrop,
-            )
-            if (state.page != BangumiHubPage.SEARCH) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = chromeTop)
-                        .onGloballyPositioned { coordinates ->
-                            channelTabHeightPx = coordinates.size.height
-                        },
-                ) {
-                    AppLiquidAwareTabRow(
-                        options = BangumiChannel.entries.map { AppSegmentOption(it, it.label) },
-                        selectedValue = state.channel,
-                        enabled = !selectionActive,
-                        onSelectionChange = viewModel::selectChannel,
-                        dragSelectionEnabled = true,
-                        tapPressRefractionEnabled = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        miuixBackdrop = channelBackdrop,
-                    )
-                }
+            Box(modifier = Modifier.fillMaxSize().responsiveContentWidth()) {
+                BangumiHubContent(
+                    state = state,
+                    onBangumiClick = onBangumiClick,
+                    onEpisodeClick = onBangumiEpisodeClick,
+                    onRefreshHome = { viewModel.refreshHome() },
+                    onLoadMoreHomeRecommendations = viewModel::loadMoreHomeRecommendations,
+                    onLoadMoreHomeFollows = viewModel::loadMoreHomeFollows,
+                    onRetryTimeline = viewModel::retryTimeline,
+                    onTimelineRangeSelected = viewModel::selectTimelineRange,
+                    onOpenIndex = viewModel::openIndex,
+                    onOpenFollow = viewModel::openFollowManager,
+                    onIndexCategorySelected = viewModel::selectIndexCategory,
+                    onIndexFilterSelected = viewModel::selectIndexFilter,
+                    onToggleFiltersExpanded = viewModel::toggleIndexFiltersExpanded,
+                    onRetryIndexConditions = viewModel::retryIndexConditions,
+                    onRetryIndexResults = viewModel::retryIndexResults,
+                    onLoadMoreIndexResults = viewModel::loadMoreIndexResults,
+                    onFollowStatusSelected = viewModel::selectFollowStatus,
+                    onRefreshFollow = viewModel::refreshFollowManager,
+                    onLoadMoreFollow = viewModel::loadMoreFollowManager,
+                    onToggleFollowSelection = viewModel::toggleFollowSelection,
+                    onSelectAllFollow = viewModel::selectAllFollowItems,
+                    onClearFollowSelection = viewModel::clearFollowSelection,
+                    onMoveSelectedFollow = viewModel::moveSelectedFollowItems,
+                    onMoveSingleFollow = viewModel::updateSingleFollowItem,
+                    onUnfollowSingle = viewModel::unfollowSingleItem,
+                    onSearchCategorySelected = viewModel::selectSearchCategory,
+                    onLoadMoreSearch = viewModel::loadMoreSearch,
+                    onSaveCover = { url, title ->
+                        scope.launch {
+                            val saved = DownloadManager.saveImageToGallery(context, url, title)
+                            snackbarHostState.showSnackbar(if (saved) "封面已保存" else "保存封面失败")
+                        }
+                    },
+                    listTopPadding = listTopPadding,
+                    showFollowStatusTabs = false,
+                )
             }
         }
     }
