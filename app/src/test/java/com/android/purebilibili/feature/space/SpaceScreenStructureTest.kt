@@ -8,6 +8,17 @@ import kotlin.test.assertTrue
 class SpaceScreenStructureTest {
 
     @Test
+    fun contentShortcutsKeepTheirTabSelectionCallbacks() {
+        val source = File("src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt").readText()
+        val call = source.substringAfter("SpaceContent(").substringBefore("DynamicCommentOverlayHost(")
+        val declaration = source.substringAfter("private fun SpaceContent(").substringBefore(") {")
+        assertTrue(call.contains("onMainTabSelected = viewModel::selectMainTab"))
+        assertTrue(call.contains("onContributionTabSelected = viewModel::selectContributionTab"))
+        assertTrue(declaration.contains("onMainTabSelected: (SpaceMainTab) -> Unit"))
+        assertTrue(declaration.contains("onContributionTabSelected: (String) -> Unit"))
+    }
+
+    @Test
     fun `title and tabs share one measured chrome while full viewport content supplies blur`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
         val chrome = source.substringAfter("topBar = {").substringBefore(") { scaffoldPadding ->")
