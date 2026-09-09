@@ -2459,7 +2459,7 @@ private fun CommonListContent(
         .fillMaxSize()
         .padding(top = fixedHeaderInset)
     if (isLoading && items.isEmpty()) {
-        val historySkeletonBlockColor = if (isHistoryPersonalList) {
+        val historySkeletonBlockColor = if (isPersonalList) {
             com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonBlockColor(
                 com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse()
             )
@@ -2469,18 +2469,20 @@ private fun CommonListContent(
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             contentPadding = PaddingValues(
-                start = spacing,
-                end = spacing,
-                top = scrollableHeaderInset + spacing,
-                bottom = padding.calculateBottomPadding() + spacing
+                start = gridOuterPaddingDp.dp,
+                end = gridOuterPaddingDp.dp,
+                top = scrollableHeaderInset + gridOuterPaddingDp.dp,
+                bottom = padding.calculateBottomPadding() + gridOuterPaddingDp.dp
             ),
-            horizontalArrangement = Arrangement.spacedBy(spacing),
-            verticalArrangement = Arrangement.spacedBy(spacing),
+            horizontalArrangement = Arrangement.spacedBy(gridItemSpacingDp.dp),
+            verticalArrangement = Arrangement.spacedBy(gridItemSpacingDp.dp),
             modifier = viewportModifier
         ) {
             items(columns * 4, key = { it }) {
                 if (isHistoryPersonalList) {
                     HistoryPersonalCardSkeleton(blockColor = historySkeletonBlockColor)
+                } else if (isFavoritePersonalList) {
+                    FavoritePersonalCardSkeleton(stacked = columns > 1, blockColor = requireNotNull(historySkeletonBlockColor))
                 } else {
                     VideoGridItemSkeleton(coverAspectRatio = skeletonCoverAspectRatio)
                 }

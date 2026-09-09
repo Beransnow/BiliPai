@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -1489,6 +1490,11 @@ fun PrivacySection(
     onBlockedListClick: () -> Unit, // [New]
     onCommentFraudHistoryClick: () -> Unit // [New]
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val searchHintEnabled by remember(context) {
+        com.android.purebilibili.core.store.SearchHintSettingsStore.isEnabled(context)
+    }.collectAsStateWithLifecycle(initialValue = true)
     val siblingTints = remember { resolveSettingsSiblingIconTints(4, paletteOffset = 4) }
     val permissionVisual = rememberSettingsEntryVisual(SettingsSearchTarget.PERMISSION)
     val blockedListVisual = rememberSettingsEntryVisual(SettingsSearchTarget.BLOCKED_LIST)
@@ -1498,6 +1504,20 @@ fun PrivacySection(
     )
 
     SettingsCardGroup {
+        SettingSwitchItem(
+            icon = visibilityOffIcon,
+            title = "搜索框推荐词",
+            subtitle = "显示应用提供的默认搜索词；关闭后显示固定搜索提示",
+            checked = searchHintEnabled,
+            onCheckedChange = { enabled ->
+                scope.launch {
+                    com.android.purebilibili.core.store.SearchHintSettingsStore.setEnabled(context, enabled)
+                }
+            },
+            iconTint = siblingTints[0],
+        )
+        SettingsAdaptiveDivider()
+
         SettingSwitchItem(
             icon = visibilityOffIcon,
             title = "不记录历史",
