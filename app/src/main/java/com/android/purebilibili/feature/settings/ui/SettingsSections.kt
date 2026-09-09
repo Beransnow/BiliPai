@@ -220,6 +220,7 @@ internal data class SettingsRootCategoryActions(
     val onTipsClick: () -> Unit,
     val onOpenLinksClick: () -> Unit,
     val onPrivacyModeChange: (Boolean) -> Unit,
+    val onSearchSuggestionsChange: (Boolean) -> Unit,
     val onPrivacyContentAuthenticationChange: (Boolean) -> Unit,
     val onCrashTrackingChange: (Boolean) -> Unit,
     val onAnalyticsChange: (Boolean) -> Unit,
@@ -239,6 +240,7 @@ internal data class SettingsRootCategoryActions(
 
 internal data class SettingsRootCategoryState(
     val privacyModeEnabled: Boolean,
+    val searchSuggestionsEnabled: Boolean,
     val privacyContentAuthenticationEnabled: Boolean,
     val crashTrackingEnabled: Boolean,
     val analyticsEnabled: Boolean,
@@ -786,8 +788,10 @@ internal fun SettingsRootCategoryContent(
                     SettingsDetailGroup(title = "隐私与权限") {
                         PrivacySection(
                             privacyModeEnabled = state.privacyModeEnabled,
+                            searchSuggestionsEnabled = state.searchSuggestionsEnabled,
                             privacyContentAuthenticationEnabled = state.privacyContentAuthenticationEnabled,
                             onPrivacyModeChange = actions.onPrivacyModeChange,
+                            onSearchSuggestionsChange = actions.onSearchSuggestionsChange,
                             onPrivacyContentAuthenticationChange = actions.onPrivacyContentAuthenticationChange,
                             onPermissionClick = actions.onPermissionClick,
                             onBlockedListClick = actions.onBlockedListClick,
@@ -1010,8 +1014,10 @@ internal fun SettingsRootCategoryContent(
                     SettingsDetailGroup(title = "隐私与安全") {
                         PrivacySection(
                             privacyModeEnabled = state.privacyModeEnabled,
+                            searchSuggestionsEnabled = state.searchSuggestionsEnabled,
                             privacyContentAuthenticationEnabled = state.privacyContentAuthenticationEnabled,
                             onPrivacyModeChange = actions.onPrivacyModeChange,
+                            onSearchSuggestionsChange = actions.onSearchSuggestionsChange,
                             onPrivacyContentAuthenticationChange = actions.onPrivacyContentAuthenticationChange,
                             onPermissionClick = actions.onPermissionClick,
                             onBlockedListClick = actions.onBlockedListClick,
@@ -1483,8 +1489,10 @@ internal fun resolveHomeRefreshSliderSteps(): Int {
 @Composable
 fun PrivacySection(
     privacyModeEnabled: Boolean,
+    searchSuggestionsEnabled: Boolean,
     privacyContentAuthenticationEnabled: Boolean,
     onPrivacyModeChange: (Boolean) -> Unit,
+    onSearchSuggestionsChange: (Boolean) -> Unit,
     onPrivacyContentAuthenticationChange: (Boolean) -> Unit,
     onPermissionClick: () -> Unit,
     onBlockedListClick: () -> Unit, // [New]
@@ -1518,6 +1526,15 @@ fun PrivacySection(
         )
         SettingsAdaptiveDivider()
 
+        SettingSwitchItem(
+            icon = visibilityOffIcon,
+            title = "搜索推荐词",
+            subtitle = "在搜索页显示关注更新和推荐词（如关注 UP 主更新等），默认开启",
+            checked = searchSuggestionsEnabled,
+            onCheckedChange = onSearchSuggestionsChange,
+            iconTint = siblingTints[0],
+        )
+        SettingsAdaptiveDivider()
         SettingSwitchItem(
             icon = visibilityOffIcon,
             title = "不记录历史",

@@ -345,17 +345,6 @@ fun HomeScreen(
         globalScrollOffset.floatValue = 0f
     }
 
-    suspend fun withHomeHeaderRevealLock(block: suspend () -> Unit) {
-        homeHeaderRevealLock = true
-        revealHomeHeaderNow()
-        try {
-            block()
-        } finally {
-            revealHomeHeaderNow()
-            homeHeaderRevealLock = false
-        }
-    }
-
     fun animateHeaderOffsetTo(targetValue: Float) {
         val transition = resolveHomeHeaderSettleTransition(
             currentHeaderOffsetPx = headerOffsetHeightPx,
@@ -380,6 +369,20 @@ fun HomeScreen(
                     headerSettleAnimationJob = null
                 }
             }
+        }
+    }
+
+    suspend fun withHomeHeaderRevealLock(block: suspend () -> Unit) {
+        homeHeaderRevealLock = true
+        topTabsAutoCollapsedByScroll = false
+        globalScrollOffset.floatValue = 0f
+        animateHeaderOffsetTo(0f)
+        try {
+            block()
+        } finally {
+            headerSettleAnimationJob?.join()
+            setHeaderOffsetImmediate(0f)
+            homeHeaderRevealLock = false
         }
     }
 
@@ -1282,10 +1285,14 @@ fun HomeScreen(
                             viewModel.refresh()
                         } else {
                             val listState = requireNotNull(gridState)
-                            if (listState.firstVisibleItemIndex > 12) {
-                                listState.scrollToItem(12)
+                            val currentIndex = listState.firstVisibleItemIndex
+                            val plan = resolveScrollToTopPlan(currentIndex)
+                            plan.preJumpIndex?.let { preJump ->
+                                if (currentIndex > preJump) {
+                                    listState.scrollToItem(preJump)
+                                }
                             }
-                            listState.animateScrollToItem(0)
+                            listState.animateScrollToItem(plan.animateTargetIndex)
                         }
                     }
                 }
@@ -1554,6 +1561,9 @@ fun HomeScreen(
     ) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (homeHeaderRevealLock) {
+                    return Offset.Zero
+                }
                 if (!shouldHandleHomeVerticalPreScroll(deltaX = available.x, deltaY = available.y)) {
                     return Offset.Zero
                 }
