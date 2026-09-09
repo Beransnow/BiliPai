@@ -1719,6 +1719,8 @@ fun HomeScreen(
         Modifier
     }
     val scaffoldLayout: @Composable () -> Unit = {
+        // Composite header and feed before applying depth; separate blur layers form a seam.
+        Box(modifier = Modifier.fillMaxSize().then(homeFeedSnapshotModifier)) {
         AppScaffold(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1736,8 +1738,8 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            // 快照在 haze/backdrop 内侧：顶栏 overlay 才能采到退后页，而不是空层。
-                            .then(homeFeedSnapshotModifier)
+                            // Header samples the untransformed feed; the enclosing snapshot
+                            // then transforms their completed composition exactly once.
                             .then(homeMiuixBackdropSource?.modifier ?: Modifier)
                             // 首页使用 Pager + Lazy 子层，source 挂在外层容器更稳定。
                             .then(
@@ -2258,7 +2260,8 @@ fun HomeScreen(
         val headerOffsetProvider = remember { { headerOffsetHeightPx } }
         val videoCardClock = LocalVideoCardTransitionClock.current
         val videoCardSettleState = videoCardClock?.settleState
-        val homeHeaderChromeVisible = shouldShowHomeOverlayChromeDuringVideoCardTransition(
+        val homeHeaderChromeVisible = homeFeedOwnsVideoCardSnapshot ||
+            shouldShowHomeOverlayChromeDuringVideoCardTransition(
             exposure = resolveVideoCardTransitionExposure(
                 phase = videoCardClock?.phase ?: VideoCardTransitionBackgroundPhase.IDLE,
                 predictiveBackInProgress = videoCardSettleState ==
@@ -2279,7 +2282,7 @@ fun HomeScreen(
         homeHeaderVisibilityState.targetState = homeHeaderChromeVisible
         val headerDepthDensity = LocalDensity.current
         val activeHeaderDepthClock = videoCardClock?.takeIf {
-            it.phase != VideoCardTransitionBackgroundPhase.IDLE &&
+            !homeFeedOwnsVideoCardSnapshot && it.phase != VideoCardTransitionBackgroundPhase.IDLE &&
                 (homeHeaderVisibilityState.currentState || homeHeaderVisibilityState.targetState)
         }
         // Keep the RenderEffect layer full-screen even though only the header paints into it.
@@ -2587,6 +2590,7 @@ fun HomeScreen(
             )
             }
         }
+        } // Unified header/feed depth snapshot
     }
 
     val scaffoldContent: @Composable () -> Unit = {
