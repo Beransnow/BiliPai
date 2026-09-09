@@ -104,13 +104,8 @@ internal fun BottomBarFloatingSegmentedControl(
     val maxTabIndex = (itemCount - 1).coerceAtLeast(0)
     val safeSelectedIndex = selectedIndex.coerceIn(0, maxTabIndex)
     val selectedTextColor = selectedTextColorOverride ?: MaterialTheme.colorScheme.primary
-    // Match the selected navigation color instead of the neutral black/white glass fill.
-    val themedIndicatorSurface = indicatorIdleSurfaceColorOverride ?: if (
-        com.android.purebilibili.core.theme.LocalAppUiStyle.current ==
-            com.android.purebilibili.core.theme.AppUiStyle.MIUIX && liquidGlassEnabled
-    ) {
-        selectedTextColor.copy(alpha = if (isDarkTheme) 0.24f else 0.16f)
-    } else null
+    // 液态玻璃模式下与首页底栏保持一致，使用纯净中性玻璃材质，不走主题色
+    val themedIndicatorSurface = indicatorIdleSurfaceColorOverride
     val unselectedTextColor = unselectedTextColorOverride
         ?: resolveLiquidSegmentedControlUnselectedTextColor(
             onSurface = MaterialTheme.colorScheme.onSurface,

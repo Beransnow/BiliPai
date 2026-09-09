@@ -223,11 +223,7 @@ internal fun HomeTopTabFloatingDock(
         longPressDragSelectionEnabled = false,
         miuixBackdrop = miuixBackdrop,
         containerColorOverride = shellColor,
-        selectedTextColorOverride = if (LocalAppUiStyle.current == AppUiStyle.MIUIX) {
-            MaterialTheme.colorScheme.onSurface
-        } else {
-            MaterialTheme.colorScheme.primary
-        },
+        selectedTextColorOverride = MaterialTheme.colorScheme.primary,
         unselectedTextColorOverride = MaterialTheme.colorScheme.onSurfaceVariant,
         indicatorPositionProvider = indicatorPositionProvider,
         isScrollInProgressProvider = isScrollInProgressProvider,

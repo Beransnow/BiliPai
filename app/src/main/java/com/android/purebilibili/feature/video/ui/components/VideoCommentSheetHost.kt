@@ -738,12 +738,16 @@ fun VideoCommentSheetHost(
                             indication = null,
                             onClick = {}
                         ),
-                    color = appearance.panelColor.copy(
-                        alpha = appearance.panelColor.alpha * overlayVisual.surfaceAlphaMultiplier
-                    )
+                    color = if (mainSheetVisible) {
+                        appearance.panelColor.copy(
+                            alpha = appearance.panelColor.alpha * overlayVisual.surfaceAlphaMultiplier
+                        )
+                    } else {
+                        Color.Transparent
+                    }
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
-                        if (hostContent != VideoCommentSheetHostContent.HIDDEN) {
+                        if (mainSheetVisible && hostContent != VideoCommentSheetHostContent.HIDDEN) {
                             val coveredBlurProgress = if (
                                 hostContent == VideoCommentSheetHostContent.THREAD_DETAIL
                             ) {

@@ -46,7 +46,8 @@ fun SubReplySheet(
     hatedComments: Set<Long> = emptySet(),
     onUrlClick: ((String) -> Unit)? = null,
     showIdentityDecorations: Boolean = true,
-    onAvatarClick: ((String) -> Unit)? = null
+    onAvatarClick: ((String) -> Unit)? = null,
+    onCoveredBlurProgressChange: ((Float) -> Unit)? = null,
 ) {
     if (state.visible && state.rootReply != null) {
         val rootReply = state.rootReply
@@ -62,6 +63,17 @@ fun SubReplySheet(
             rootReplyId = rootReply.rpid,
             onDismiss = onDismiss,
         )
+        val coveredBlurProgress = resolveCommentThreadCoveredBlurProgress(
+            maxOf(backProgress, threadDrag.revealProgress)
+        )
+        SideEffect {
+            onCoveredBlurProgressChange?.invoke(coveredBlurProgress)
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                onCoveredBlurProgressChange?.invoke(0f)
+            }
+        }
         com.android.purebilibili.core.ui.AppModalBottomSheet(
             onDismissRequest = onDismiss,
             dismissOnBackPress = false,

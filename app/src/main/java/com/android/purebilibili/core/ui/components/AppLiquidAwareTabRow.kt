@@ -202,6 +202,7 @@ fun <T> AppLiquidAwareTabRow(
                 preferInlineContentStyle = preferInlineContentStyle,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = isScrollInProgressProvider,
+                externalPagerMotionEffectsEnabled = indicatorPositionProvider != null,
             )
         }
     } else {
@@ -234,6 +235,7 @@ fun <T> AppLiquidAwareTabRow(
             preferInlineContentStyle = preferInlineContentStyle,
             indicatorPositionProvider = indicatorPositionProvider,
             isScrollInProgressProvider = isScrollInProgressProvider,
+            externalPagerMotionEffectsEnabled = indicatorPositionProvider != null,
         )
     }
 }

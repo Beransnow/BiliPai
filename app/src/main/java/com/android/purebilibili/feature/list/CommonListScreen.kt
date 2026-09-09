@@ -238,6 +238,7 @@ fun CommonListScreen(
     val primaryGridState = rememberLazyGridState()
     val subscribedFolderListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val favoritePagerGridStates = remember { mutableStateMapOf<Int, androidx.compose.foundation.lazy.grid.LazyGridState>() }
+    val historyPagerGridStates = remember { mutableStateMapOf<Int, androidx.compose.foundation.lazy.grid.LazyGridState>() }
 
     // 📱 响应式布局参数
     // Fix: 手机端(Compact)使用较小的最小宽度以保证2列显示 (360dp / 170dp = 2.1 -> 2列)
@@ -481,21 +482,44 @@ fun CommonListScreen(
         if (favoriteViewModel != null && foldersState.size > 1) foldersState.size else 0
     }
 
+    // 历史分类滑动 Pager：支持在屏幕中央左右手势滑动切换分类
+    val historyFilters = remember { HistoryContentFilter.entries }
+    val historyPagerState = rememberPagerState(
+        initialPage = historyFilters.indexOf(historyContentFilter).coerceAtLeast(0)
+    ) {
+        historyFilters.size
+    }
+
+    LaunchedEffect(historyPagerState.currentPage) {
+        val targetFilter = historyFilters.getOrNull(historyPagerState.currentPage) ?: HistoryContentFilter.ALL
+        if (historyContentFilter != targetFilter) {
+            historyContentFilter = targetFilter
+            selectedHistoryKeys = emptySet()
+        }
+    }
+
     val commonListBottomPadding = LocalBottomBarContentPadding.current
     val activeCommonListScrollState = remember(
         favoriteViewModel,
         favoriteContentMode,
         isSubscribedBrowse,
         pagerState.currentPage,
+        historyViewModel,
+        historyPagerState.currentPage,
         primaryGridState,
         subscribedFolderListState,
-        favoritePagerGridStates.size
+        favoritePagerGridStates.size,
+        historyPagerGridStates.size
     ) {
         {
             when {
                 isSubscribedBrowse -> CommonListScrollState.List(subscribedFolderListState)
                 favoriteViewModel != null && favoriteContentMode == FavoriteContentMode.PAGER -> {
                     favoritePagerGridStates[pagerState.currentPage]?.let(CommonListScrollState::Grid)
+                        ?: CommonListScrollState.Grid(primaryGridState)
+                }
+                historyViewModel != null -> {
+                    historyPagerGridStates[historyPagerState.currentPage]?.let(CommonListScrollState::Grid)
                         ?: CommonListScrollState.Grid(primaryGridState)
                 }
                 else -> CommonListScrollState.Grid(primaryGridState)
@@ -690,9 +714,14 @@ fun CommonListScreen(
         headerHeightPx,
         supportsCollapsibleCommonListHeader,
         favoriteContentMode,
-        pagerState.isScrollInProgress
+        pagerState.isScrollInProgress,
+        historyViewModel,
+        historyPagerState.isScrollInProgress
     ) {
         if (favoriteContentMode == FavoriteContentMode.PAGER && pagerState.isScrollInProgress) {
+            return@LaunchedEffect
+        }
+        if (historyViewModel != null && historyPagerState.isScrollInProgress) {
             return@LaunchedEffect
         }
         if (
@@ -1135,106 +1164,152 @@ fun CommonListScreen(
                         )
                     }
 
-                    FavoriteContentMode.BASE_LIST -> CommonListContent(
-                        items = if (historyViewModel != null) visibleHistoryItems else state.items,
-                        isLoading = state.isLoading,
-                        error = state.error,
-                        searchQuery = searchQuery,
-                        columns = if (historyViewModel != null || favoriteViewModel != null) {
-                            personalListColumns
-                        } else {
-                            columns
-                        },
-                        isFavoritePersonalList = favoriteViewModel != null,
-                        favoriteBatchMode = favoriteViewModel != null && isFavoriteBatchMode,
-                        favoriteSelectedResourceIds = selectedFavoriteResourceIds,
-                        onFavoriteToggleSelect = if (favoriteViewModel != null) toggleFavoriteResourceSelection else null,
-                        onFavoriteLongPress = if (favoriteViewModel != null) enterFavoriteBatchMode else null,
-                        spacing = spacing.medium,
-                        padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
-                        scrollUnderHeader = commonListScrollUnderHeader,
-                        cardAnimationEnabled = homeSettings.cardAnimationEnabled,
-                        cardTransitionEnabled = homeSettings.cardTransitionEnabled,
-                        cardMotionTier = cardMotionTier,
-                        showOnlineCount = showOnlineCount,
-                        videoCardAppearance = videoCardAppearance,
-                        homeDurationStyle = homeSettings.homeDurationStyle,
-                        onVideoClick = { bvid, cid, coverUrl, isVertical ->
-                            if (shouldUseFavoritePlaybackQueue) {
-                                playFavoriteVideo(state.items, bvid, cid, coverUrl, null, false)
-                            } else {
-                                onVideoClick(bvid, cid, coverUrl, isVertical)
-                            }
-                        },
-                        onCollectionClick = onCollectionClick,
-                        onRetry = favoriteViewModel?.let { favoriteVm ->
-                            { favoriteVm.loadData() }
-                        },
-                        onLoadMore = {
-                            when (loadMoreOwner) {
-                                CommonListLoadMoreOwner.FAVORITE -> favoriteViewModel?.loadMore()
-                                CommonListLoadMoreOwner.HISTORY -> historyViewModel?.loadMore()
-                                CommonListLoadMoreOwner.SEASON_SERIES_DETAIL -> seasonSeriesDetailViewModel?.loadMore()
-                                CommonListLoadMoreOwner.NONE -> Unit
-                            }
-                        },
-                        onUnfavorite = if (favoriteViewModel != null) {
-                            { favoriteViewModel.removeVideo(it) }
-                        } else null,
-                        onUpClick = if (!isHistoryBatchMode) {
-                            onUpClick
-                        } else {
-                            null
-                        },
-                        searchPaginationFallbackEnabled = historyViewModel != null,
-                        hasMoreSearchResults = historyHasMore,
-                        isLoadingMoreSearchResults = historyIsLoadingMore,
-                        historyDeleteSession = historyDeleteSession,
-                        historyBatchMode = historyViewModel != null && isHistoryBatchMode,
-                        historySelectedKeys = selectedHistoryKeys,
-                        resolveHistoryItemKey = if (historyViewModel != null) {
-                            { video -> historyViewModel.resolveHistoryRenderKey(video) }
-                        } else {
-                            { video -> video.bvid.ifBlank { video.id.toString() } }
-                        },
-                        resolveHistoryLookupKey = historyViewModel?.let { vm ->
-                            { video -> vm.resolveHistoryLookupKey(video) }
-                        },
-                        resolveHistoryItem = historyViewModel?.let { vm ->
-                            { video -> vm.getHistoryItem(vm.resolveHistoryLookupKey(video)) }
-                        },
-                        onHistoryLongDelete = if (historyViewModel != null) {
-                            { key ->
-                                if (!isHistoryBatchMode) {
-                                    isHistoryBatchMode = true
-                                    selectedHistoryKeys = key.takeIf { it.isNotBlank() }
-                                        ?.let(::setOf)
-                                        .orEmpty()
-                                }
-                            }
-                        } else null,
-                        onHistoryDelete = if (historyViewModel != null) {
-                            { key -> pendingHistorySingleDeleteKey = key.takeIf { it.isNotBlank() } }
-                        } else null,
-                        onHistoryAddToWatchLater = historyViewModel?.let { vm ->
-                            { item -> vm.addToWatchLater(item) }
-                        },
-                        onHistoryDissolveComplete = if (historyViewModel != null) {
-                            { key -> historyViewModel.completeVideoDissolve(key) }
-                        } else null,
-                        onHistoryToggleSelect = if (historyViewModel != null) {
-                            { key ->
-                                if (key.isNotBlank()) {
-                                    selectedHistoryKeys = if (key in selectedHistoryKeys) {
-                                        selectedHistoryKeys - key
-                                    } else {
-                                        selectedHistoryKeys + key
+                    FavoriteContentMode.BASE_LIST -> if (historyViewModel != null) {
+                        HorizontalPager(
+                            state = historyPagerState,
+                            userScrollEnabled = !isHistoryBatchMode,
+                            modifier = Modifier.fillMaxSize(),
+                            beyondViewportPageCount = 0,
+                        ) { pageIndex ->
+                            val pageFilter = historyFilters.getOrElse(pageIndex) { HistoryContentFilter.ALL }
+                            val pageItems = remember(state.items, pageFilter, historyViewModel) {
+                                filterHistoryItemsByContent(
+                                    items = state.items,
+                                    filter = pageFilter,
+                                    resolveHistoryItem = { video ->
+                                        historyViewModel.getHistoryItem(historyViewModel.resolveHistoryLookupKey(video))
                                     }
-                                }
+                                )
                             }
-                        } else null,
-                        gridState = primaryGridState
-                    )
+                            val pageGridState = historyPagerGridStates.getOrPut(pageIndex) {
+                                androidx.compose.foundation.lazy.grid.LazyGridState()
+                            }
+
+                            CommonListContent(
+                                items = pageItems,
+                                isLoading = state.isLoading,
+                                error = state.error,
+                                searchQuery = searchQuery,
+                                columns = personalListColumns,
+                                isFavoritePersonalList = false,
+                                favoriteBatchMode = false,
+                                favoriteSelectedResourceIds = emptySet(),
+                                onFavoriteToggleSelect = null,
+                                onFavoriteLongPress = null,
+                                spacing = spacing.medium,
+                                padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
+                                scrollUnderHeader = commonListScrollUnderHeader,
+                                cardAnimationEnabled = homeSettings.cardAnimationEnabled,
+                                cardTransitionEnabled = homeSettings.cardTransitionEnabled,
+                                cardMotionTier = cardMotionTier,
+                                showOnlineCount = showOnlineCount,
+                                videoCardAppearance = videoCardAppearance,
+                                homeDurationStyle = homeSettings.homeDurationStyle,
+                                onVideoClick = { bvid, cid, coverUrl, isVertical ->
+                                    onVideoClick(bvid, cid, coverUrl, isVertical)
+                                },
+                                onCollectionClick = onCollectionClick,
+                                onRetry = null,
+                                onLoadMore = {
+                                    historyViewModel.loadMore()
+                                },
+                                onUnfavorite = null,
+                                onUpClick = if (!isHistoryBatchMode) onUpClick else null,
+                                searchPaginationFallbackEnabled = true,
+                                hasMoreSearchResults = historyHasMore,
+                                isLoadingMoreSearchResults = historyIsLoadingMore,
+                                historyDeleteSession = historyDeleteSession,
+                                historyBatchMode = isHistoryBatchMode,
+                                historySelectedKeys = selectedHistoryKeys,
+                                resolveHistoryItemKey = { video -> historyViewModel.resolveHistoryRenderKey(video) },
+                                resolveHistoryLookupKey = { video -> historyViewModel.resolveHistoryLookupKey(video) },
+                                resolveHistoryItem = { video -> historyViewModel.getHistoryItem(historyViewModel.resolveHistoryLookupKey(video)) },
+                                onHistoryLongDelete = { key ->
+                                    if (!isHistoryBatchMode) {
+                                        isHistoryBatchMode = true
+                                        selectedHistoryKeys = key.takeIf { it.isNotBlank() }?.let(::setOf).orEmpty()
+                                    }
+                                },
+                                onHistoryDelete = { key -> pendingHistorySingleDeleteKey = key.takeIf { it.isNotBlank() } },
+                                onHistoryAddToWatchLater = { item -> historyViewModel.addToWatchLater(item) },
+                                onHistoryDissolveComplete = { key -> historyViewModel.completeVideoDissolve(key) },
+                                onHistoryToggleSelect = { key ->
+                                    if (key.isNotBlank()) {
+                                        selectedHistoryKeys = if (key in selectedHistoryKeys) {
+                                            selectedHistoryKeys - key
+                                        } else {
+                                            selectedHistoryKeys + key
+                                        }
+                                    }
+                                },
+                                gridState = pageGridState
+                            )
+                        }
+                    } else {
+                        CommonListContent(
+                            items = state.items,
+                            isLoading = state.isLoading,
+                            error = state.error,
+                            searchQuery = searchQuery,
+                            columns = if (favoriteViewModel != null) personalListColumns else columns,
+                            isFavoritePersonalList = favoriteViewModel != null,
+                            favoriteBatchMode = favoriteViewModel != null && isFavoriteBatchMode,
+                            favoriteSelectedResourceIds = selectedFavoriteResourceIds,
+                            onFavoriteToggleSelect = if (favoriteViewModel != null) toggleFavoriteResourceSelection else null,
+                            onFavoriteLongPress = if (favoriteViewModel != null) enterFavoriteBatchMode else null,
+                            spacing = spacing.medium,
+                            padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
+                            scrollUnderHeader = commonListScrollUnderHeader,
+                            cardAnimationEnabled = homeSettings.cardAnimationEnabled,
+                            cardTransitionEnabled = homeSettings.cardTransitionEnabled,
+                            cardMotionTier = cardMotionTier,
+                            showOnlineCount = showOnlineCount,
+                            videoCardAppearance = videoCardAppearance,
+                            homeDurationStyle = homeSettings.homeDurationStyle,
+                            onVideoClick = { bvid, cid, coverUrl, isVertical ->
+                                if (shouldUseFavoritePlaybackQueue) {
+                                    playFavoriteVideo(state.items, bvid, cid, coverUrl, null, false)
+                                } else {
+                                    onVideoClick(bvid, cid, coverUrl, isVertical)
+                                }
+                            },
+                            onCollectionClick = onCollectionClick,
+                            onRetry = favoriteViewModel?.let { favoriteVm ->
+                                { favoriteVm.loadData() }
+                            },
+                            onLoadMore = {
+                                when (loadMoreOwner) {
+                                    CommonListLoadMoreOwner.FAVORITE -> favoriteViewModel?.loadMore()
+                                    CommonListLoadMoreOwner.HISTORY -> historyViewModel?.loadMore()
+                                    CommonListLoadMoreOwner.SEASON_SERIES_DETAIL -> seasonSeriesDetailViewModel?.loadMore()
+                                    CommonListLoadMoreOwner.NONE -> Unit
+                                }
+                            },
+                            onUnfavorite = if (favoriteViewModel != null) {
+                                { favoriteViewModel.removeVideo(it) }
+                            } else null,
+                            onUpClick = if (!isHistoryBatchMode) {
+                                onUpClick
+                            } else {
+                                null
+                            },
+                            searchPaginationFallbackEnabled = false,
+                            hasMoreSearchResults = false,
+                            isLoadingMoreSearchResults = false,
+                            historyDeleteSession = null,
+                            historyBatchMode = false,
+                            historySelectedKeys = emptySet(),
+                            resolveHistoryItemKey = { video -> video.bvid.ifBlank { video.id.toString() } },
+                            resolveHistoryLookupKey = null,
+                            resolveHistoryItem = null,
+                            onHistoryLongDelete = null,
+                            onHistoryDelete = null,
+                            onHistoryAddToWatchLater = null,
+                            onHistoryDissolveComplete = null,
+                            onHistoryToggleSelect = null,
+                            gridState = primaryGridState
+                        )
+                    }
                 }
             }
 
@@ -1686,8 +1761,12 @@ fun CommonListScreen(
                             if (filter != historyContentFilter) {
                                 historyContentFilter = filter
                                 selectedHistoryKeys = emptySet()
+                                val targetPage = historyFilters.indexOf(filter).coerceAtLeast(0)
                                 scope.launch {
-                                    primaryGridState.scrollToItem(0)
+                                    if (historyPagerState.currentPage != targetPage) {
+                                        historyPagerState.animateScrollToPage(targetPage)
+                                    }
+                                    historyPagerGridStates[targetPage]?.scrollToItem(0)
                                 }
                             }
                         }
@@ -1709,6 +1788,10 @@ fun CommonListScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = historyFilterChrome.horizontalPaddingDp.dp),
                             miuixBackdrop = commonListChromeBackdrop,
+                            indicatorPositionProvider = {
+                                historyPagerState.currentPage + historyPagerState.currentPageOffsetFraction
+                            },
+                            isScrollInProgressProvider = { historyPagerState.isScrollInProgress },
                         )
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                     }
