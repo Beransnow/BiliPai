@@ -3622,7 +3622,7 @@ private fun SpaceArchiveListItemRow(
     var coverBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     val coverWidth = HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP.dp
     val cardCornerDp = AppShapes.containerCornerDp(ContainerLevel.Card)
-    val coverShape = remember(cardCornerDp) { AppShapes.startRounded(cardCornerDp) }
+    val coverShape = AppShapes.mediaCover()
     val cardCornerRadiusDp = cardCornerDp.value.roundToInt()
     val sharedTransitionReady = sharedTransitionKey != null &&
         sharedTransitionScope != null &&

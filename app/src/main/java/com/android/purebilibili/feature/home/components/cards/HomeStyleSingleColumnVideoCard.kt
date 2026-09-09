@@ -139,9 +139,7 @@ internal fun HomeStyleSingleColumnVideoCard(
     val nativeCardSnapshot = rememberNativeVideoCardSnapshotController(video.bvid)
     val cardShape = AppShapes.container(ContainerLevel.Card)
     val cardCornerDp = AppShapes.containerCornerDp(ContainerLevel.Card)
-    val coverShape = remember(cardCornerDp) {
-        AppShapes.startRounded(cardCornerDp)
-    }
+    val coverShape = AppShapes.mediaCover()
     val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
         sourceRoute = sourceRoute,
         transitionEnabled = sharedReady,

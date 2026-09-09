@@ -107,8 +107,7 @@ internal fun PersonalMediaCardFrame(
                     }
                 }
             } else {
-                val cardCornerDp = AppShapes.containerCornerDp(ContainerLevel.Card)
-                val coverShape = AppShapes.startRounded(cardCornerDp)
+                val coverShape = AppShapes.mediaCover()
 
                 Row(
                     modifier = Modifier
@@ -191,7 +190,7 @@ internal fun PersonalMediaCardSkeleton(
     val coverHeight = PERSONAL_LIST_BASE_MIN_HEIGHT_DP.dp
     val coverWidth = coverHeight * PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO
     val cardShape = AppShapes.container(ContainerLevel.Card)
-    val coverShape = AppShapes.startRounded(AppShapes.containerCornerDp(ContainerLevel.Card))
+    val coverShape = AppShapes.mediaCover()
 
     AppSurface(
         modifier = modifier

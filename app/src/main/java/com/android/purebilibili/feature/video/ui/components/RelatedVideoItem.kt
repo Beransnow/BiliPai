@@ -281,7 +281,7 @@ fun RelatedVideoItem(
         onClick()
         Unit
     }
-    val coverShape = AppShapes.startRounded(cardCornerRadiusDp.dp)
+    val coverShape = AppShapes.mediaCover()
     val coverWidth = HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP.dp
     val coverHeight = coverWidth / coverAspectRatio
     // 排版对齐首页单列卡片:标题用 feed 紧凑级,统计用 labelSmall。
