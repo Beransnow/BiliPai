@@ -15,6 +15,9 @@ class MusicPlayerContentStructureTest {
 
         assertTrue(compactBranch.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(compactBranch.contains("resolveMusicPlayerPageTabs()"))
+        assertTrue(compactBranch.contains("height = 48.dp"))
+        assertTrue(compactBranch.contains("indicatorHeight = 36.dp"))
+        assertTrue(compactBranch.contains("containerVerticalPadding = 6.dp"))
         assertTrue(compactBranch.contains("indicatorPositionProvider"))
         assertTrue(compactBranch.contains("animateScrollToPage"))
         assertTrue(compactBranch.contains("navigationBarsPadding()"))
@@ -22,10 +25,10 @@ class MusicPlayerContentStructureTest {
         assertTrue(compactBranch.contains("MUSIC_PLAYER_COMPACT_DOCK_BOTTOM_PADDING_DP"))
         assertTrue(!compactBranch.contains("visible = pagerState.currentPage != 1"))
         assertTrue(!compactBranch.contains("forceLiquidChrome = true"))
-        assertTrue(!compactBranch.contains("containerColorOverride"))
-        assertTrue(!compactBranch.contains("indicatorIdleSurfaceColorOverride"))
-        assertTrue(!compactBranch.contains("selectedTextColorOverride"))
-        assertTrue(!compactBranch.contains("unselectedTextColorOverride"))
+        assertTrue(compactBranch.contains("containerColorOverride = MusicContentColor"))
+        assertTrue(compactBranch.contains("indicatorIdleSurfaceColorOverride = MusicContentColor"))
+        assertTrue(compactBranch.contains("selectedTextColorOverride = MusicContentColor"))
+        assertTrue(compactBranch.contains("unselectedTextColorOverride = MusicContentColor"))
     }
 
     @Test

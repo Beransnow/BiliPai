@@ -115,7 +115,6 @@ import com.android.purebilibili.feature.audio.lyrics.LyricLine
 import com.android.purebilibili.feature.audio.lyrics.resolveActiveLyricIndex
 import com.android.purebilibili.feature.audio.lyrics.resolveLyricFocusScrollOffsetPx
 import com.android.purebilibili.feature.audio.player.MusicPlayerUiState
-import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.home.components.LiquidGlassTuning
 import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
@@ -434,8 +433,13 @@ internal fun MusicPlayerContent(
                             .navigationBarsPadding()
                             .padding(vertical = 8.dp)
                             .wrapContentWidth(Alignment.CenterHorizontally),
-                        height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
-                        indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+                        height = 48.dp,
+                        indicatorHeight = 36.dp,
+                        containerVerticalPadding = 6.dp,
+                        selectedTextColorOverride = MusicContentColor,
+                        unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.65f),
+                        containerColorOverride = MusicContentColor.copy(alpha = 0.10f),
+                        indicatorIdleSurfaceColorOverride = MusicContentColor.copy(alpha = 0.20f),
                         liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
                         preferInlineContentStyle = false,
                         miuixBackdrop = musicBackdrop,

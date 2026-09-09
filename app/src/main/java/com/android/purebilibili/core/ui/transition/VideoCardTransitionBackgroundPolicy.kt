@@ -175,6 +175,7 @@ internal data class VideoCardTransitionBackgroundFrame(
 internal data class VideoCardTransitionBackgroundState(
     val progressProvider: () -> Float = { 0f },
     val sourceRouteProvider: () -> String? = { null },
+    val sourceKeyProvider: () -> String? = { null },
     val phaseProvider: () -> VideoCardTransitionBackgroundPhase = {
         VideoCardTransitionBackgroundPhase.IDLE
     },
