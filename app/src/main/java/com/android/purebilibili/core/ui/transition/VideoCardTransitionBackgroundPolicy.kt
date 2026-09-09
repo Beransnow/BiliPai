@@ -47,8 +47,8 @@ private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_DP = 12f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = VideoHeroMotionTokens.OPEN_BLUR_QUANTUM_PX
 /** 返回消糊段更粗量化，降低 BlurEffect 每帧更新次数。 */
 internal const val VIDEO_CARD_TRANSITION_RETURN_BLUR_QUANTUM_PX = VideoHeroMotionTokens.RETURN_BLUR_QUANTUM_PX
-// 整页围绕屏幕中心后退至 95%，由已有边缘填充承接露出的空间。
-internal const val VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION = 0.05f
+// 背景始终铺满视口；只有前景视频卡片缩放，背景用模糊和遮罩区分层次。
+internal const val VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION = 0f
 private const val VIDEO_CARD_TRANSITION_RELATED_SCALE_REDUCTION =
     VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION
 private const val VIDEO_CARD_TRANSITION_PARTITION_SCALE_REDUCTION =
@@ -424,12 +424,8 @@ internal fun resolveVideoCardTransitionBackgroundFrame(
             scaleReduction = scaleReduction,
         ),
         useLightScrimTint = isLightBackground,
-        cornerRadiusPx = resolveVideoCardTransitionBackgroundCornerRadiusPx(
-            depthProgress = if (phase == VideoCardTransitionBackgroundPhase.IDLE) 0f else depthProgress,
-            motionTier = motionTier,
-            density = density,
-            deviceCornerRadiusPx = deviceCornerRadiusPx,
-        ),
+        // Full-viewport background must not expose rounded gaps at the screen edges.
+        cornerRadiusPx = 0f,
     )
 }
 
