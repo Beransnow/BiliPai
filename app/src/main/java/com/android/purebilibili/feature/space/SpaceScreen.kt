@@ -516,16 +516,7 @@ fun SpaceScreen(
                         }
                     }
                 )
-                currentSuccessState?.let { success ->
-                    SpacePinnedTabs(
-                        state = success,
-                        onMainTabSelected = viewModel::selectMainTab,
-                        onContributionTabSelected = viewModel::selectContributionTab,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .responsiveContentWidth(maxWidth = SPACE_CONTENT_MAX_WIDTH_DP.dp),
-                    )
-                }
+
             }
             }
         },
@@ -1240,6 +1231,40 @@ private fun SpaceContent(
                 )
             }
 
+            val showSearch = selectedMainTab == SpaceMainTab.DYNAMIC ||
+                (selectedMainTab == SpaceMainTab.CONTRIBUTION &&
+                    selectedContributionTab.subTab in setOf(SpaceSubTab.VIDEO, SpaceSubTab.CHARGING_VIDEO))
+            if (showSearch) {
+                item(key = "space_search", span = { GridItemSpan(maxLineSpan) }) {
+                    if (state.isSearchMode) {
+                        LaunchedEffect(state.isSearchMode, currentSearchScope) {
+                            searchFocusRequester.requestFocus()
+                        }
+                        AppLiquidAwareSearchField(
+                            query = state.searchQuery,
+                            onQueryChange = onSearchQueryChange,
+                            placeholder = resolveSpaceSearchPlaceholder(currentSearchScope),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                                .focusRequester(searchFocusRequester),
+                        )
+                    } else if (shouldShowSpaceSearchEntry(currentSearchScope, state.isSearchMode)) {
+                        SpaceSearchEntryChip(
+                            label = resolveSpaceSearchEntryLabel(currentSearchScope),
+                            onClick = onSearchEntryClick,
+                        )
+                    }
+                }
+            }
+            item(key = "space_tabs", span = { GridItemSpan(maxLineSpan) }) {
+                SpaceContentTabs(
+                    state = state,
+                    onMainTabSelected = onMainTabSelected,
+                    onContributionTabSelected = onContributionTabSelected,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+
         when (selectedMainTab) {
             SpaceMainTab.HOME -> {
                 state.topVideo?.let { topVideo ->
@@ -1517,30 +1542,6 @@ private fun SpaceContent(
             }
 
             SpaceMainTab.DYNAMIC -> {
-                if (shouldShowSpaceSearchEntry(currentSearchScope, state.isSearchMode)) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        SpaceSearchEntryChip(
-                            label = resolveSpaceSearchEntryLabel(currentSearchScope),
-                            onClick = onSearchEntryClick
-                        )
-                    }
-                }
-                if (state.isSearchMode && currentSearchScope == SpaceSearchScope.DYNAMIC) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        LaunchedEffect(state.isSearchMode, currentSearchScope) {
-                            searchFocusRequester.requestFocus()
-                        }
-                        AppLiquidAwareSearchField(
-                            query = state.searchQuery,
-                            onQueryChange = onSearchQueryChange,
-                            placeholder = resolveSpaceSearchPlaceholder(currentSearchScope),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .focusRequester(searchFocusRequester)
-                        )
-                    }
-                }
-
                 val presentationState = resolveSpaceDynamicPresentationState(
                     itemCount = state.dynamics.size,
                     isLoading = state.isLoadingDynamics,
@@ -1633,38 +1634,6 @@ private fun SpaceContent(
             }
 
             SpaceMainTab.CONTRIBUTION -> {
-                if (
-                    shouldShowSpaceSearchEntry(currentSearchScope, state.isSearchMode) &&
-                    selectedContributionTab.subTab in setOf(SpaceSubTab.VIDEO, SpaceSubTab.CHARGING_VIDEO)
-                ) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        SpaceSearchEntryChip(
-                            label = resolveSpaceSearchEntryLabel(currentSearchScope),
-                            onClick = onSearchEntryClick
-                        )
-                    }
-                }
-
-                if (
-                    state.isSearchMode &&
-                    currentSearchScope == SpaceSearchScope.VIDEO &&
-                    selectedContributionTab.subTab in setOf(SpaceSubTab.VIDEO, SpaceSubTab.CHARGING_VIDEO)
-                ) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        LaunchedEffect(state.isSearchMode, currentSearchScope) {
-                            searchFocusRequester.requestFocus()
-                        }
-                        AppLiquidAwareSearchField(
-                            query = state.searchQuery,
-                            onQueryChange = onSearchQueryChange,
-                            placeholder = resolveSpaceSearchPlaceholder(currentSearchScope),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 4.dp)
-                                .focusRequester(searchFocusRequester)
-                        )
-                    }
-                }
-
                 when (selectedContributionTab.subTab) {
                     SpaceSubTab.VIDEO, SpaceSubTab.CHARGING_VIDEO -> {
                         if (state.videos.isEmpty() && !state.isLoadingMore) {
@@ -2552,7 +2521,7 @@ private fun SpaceSearchEntryChip(
 }
 
 @Composable
-private fun SpacePinnedTabs(
+private fun SpaceContentTabs(
     state: SpaceUiState.Success,
     onMainTabSelected: (SpaceMainTab) -> Unit,
     onContributionTabSelected: (String) -> Unit,
