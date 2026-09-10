@@ -106,7 +106,7 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation"))
         assertTrue(body.contains("DampedDragAnimation("))
         assertTrue(body.contains("pressedScale = pressedScale"))
-        assertTrue(body.contains("FloatingBottomBarDockPressedScale"))
+        assertTrue(body.contains("val pressedScale = matchedGeometry.pressedScale"))
         assertTrue(body.contains("floatingDockScaleOverflow("))
         assertTrue(body.contains("overflow = scaleOverflowDp"))
         assertTrue(body.contains("shellHeight = shellHeight"))

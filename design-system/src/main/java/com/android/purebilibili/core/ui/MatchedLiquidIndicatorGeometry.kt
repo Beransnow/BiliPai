@@ -39,11 +39,9 @@ fun resolveMatchedLiquidIndicatorPressedScale(
     indicatorHeightDp: Float,
 ): Float {
     if (dockHeightDp <= 0f || indicatorHeightDp <= 0f) return 1f
-    // Keep HyperIsland's 64/56/78 geometry even when a text-heavy or narrow global control
-    // has to fit a shorter resting pill: the pressed pill must still reach 78/64 of its dock.
-    val pressedHeight = dockHeightDp *
-        (BottomBarReferencePressedHeightDp / BottomBarReferenceShellHeightDp)
-    return (pressedHeight / indicatorHeightDp).coerceAtLeast(1f)
+    // HyperIsland's interaction target is an actual 78dp glass body, not merely a ratio of a
+    // compact dock. This keeps top/bottom dispersion visibly outside 40dp global controls too.
+    return (BottomBarReferencePressedHeightDp / indicatorHeightDp).coerceAtLeast(1f)
 }
 
 fun resolveMatchedLiquidIndicatorGeometry(

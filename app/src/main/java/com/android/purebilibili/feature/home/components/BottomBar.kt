@@ -576,7 +576,7 @@ internal fun resolveBiliPaiBottomBarDockHeight(
 }
 
 internal fun resolveBiliPaiBottomBarIndicatorHeight(dockHeight: Dp): Dp {
-    return (dockHeight - 4.dp).coerceAtLeast(1.dp)
+    return minOf(dockHeight, FloatingBottomBarIndicatorHeight).coerceAtLeast(1.dp)
 }
 
 internal fun resolveBiliPaiBottomBarSearchHeight(searchExpanded: Boolean): Dp {

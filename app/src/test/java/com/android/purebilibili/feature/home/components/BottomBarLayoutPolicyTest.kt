@@ -290,8 +290,8 @@ class BottomBarLayoutPolicyTest {
             )
         )
         assertEquals(resolveBiliPaiBottomBarSearchCircleSize(), resolveBiliPaiBottomBarDockHeight(searchExpanded = true))
-        assertEquals(52.dp, resolveBiliPaiBottomBarIndicatorHeight(56.dp))
-        assertEquals(60.dp, resolveBiliPaiBottomBarIndicatorHeight(64.dp))
+        assertEquals(56.dp, resolveBiliPaiBottomBarIndicatorHeight(56.dp))
+        assertEquals(56.dp, resolveBiliPaiBottomBarIndicatorHeight(64.dp))
         assertEquals(56.dp, resolveBiliPaiBottomBarSearchHeight(searchExpanded = false))
         assertEquals(56.dp, resolveBiliPaiBottomBarSearchHeight(searchExpanded = true))
     }

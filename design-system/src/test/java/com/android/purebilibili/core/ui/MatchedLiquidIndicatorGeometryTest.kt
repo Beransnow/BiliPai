@@ -24,7 +24,7 @@ class MatchedLiquidIndicatorGeometryTest {
 
         assertEquals(35f, geometry.indicatorHeightDp, 0.0001f)
         assertEquals(BottomBarReferencePressedScale, geometry.pressedScale, 0.0001f)
-        assertEquals(35f * 78f / 56f, geometry.pressedHeightDp, 0.0001f)
+        assertEquals(78f, geometry.pressedHeightDp, 0.0001f)
         assertEquals(35, roundMatchedLiquidIndicatorHeightDp(40f))
     }
 
@@ -35,7 +35,7 @@ class MatchedLiquidIndicatorGeometryTest {
             indicatorHeightDp = 27f,
         )
 
-        assertEquals(40f * 78f / 64f / 27f, geometry.pressedScale, 0.0001f)
+        assertEquals(78f / 27f, geometry.pressedScale, 0.0001f)
         assertTrue(geometry.pressedHeightDp > geometry.dockHeightDp)
     }
 
@@ -46,8 +46,8 @@ class MatchedLiquidIndicatorGeometryTest {
             indicatorHeightDp = 56f,
         )
 
-        assertEquals(58f * 78f / 64f / 56f, geometry.pressedScale, 0.0001f)
-        assertEquals(58f * 78f / 64f, geometry.pressedHeightDp, 0.0001f)
+        assertEquals(78f / 56f, geometry.pressedScale, 0.0001f)
+        assertEquals(78f, geometry.pressedHeightDp, 0.0001f)
         assertEquals(51, roundMatchedLiquidIndicatorHeightDp(58f))
     }
 }

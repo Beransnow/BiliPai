@@ -122,7 +122,6 @@ import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.home.components.BottomBarIndicatorLayerTransform
 import com.android.purebilibili.feature.home.components.BottomBarLiquidOrientation
 import com.android.purebilibili.feature.home.components.BottomBarMatchedLiquidIndicator
-import com.android.purebilibili.feature.home.components.FloatingBottomBarPressedScale
 import com.android.purebilibili.feature.home.components.LiquidGlassTuning
 import com.android.purebilibili.feature.home.components.bottomBarMatchedCaptureOverflow
 import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation
@@ -652,7 +651,7 @@ private fun PartitionSideRail(
             valueRange = 0f..maxTabIndex.toFloat(),
             visibilityThreshold = 0.001f,
             initialScale = 1f,
-            pressedScale = FloatingBottomBarPressedScale,
+            pressedScale = indicatorGeometry.pressedScale,
             canDrag = { offset ->
                 val animation = holder.instance ?: return@DampedDragAnimation true
                 if (holder.itemSlotHeightPx <= 0f) return@DampedDragAnimation false
@@ -673,7 +672,7 @@ private fun PartitionSideRail(
                 currentIndex = targetIndex
                 animateToValue(targetIndex.toFloat(), animatePress = false)
                 animationScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                    offsetAnimation.snapTo(0f)
+                    offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
                 }
             },
             onDrag = { _, dragAmount ->
@@ -821,7 +820,7 @@ private fun PartitionSideRail(
             itemSlotHeightPx = itemSlotHeightPx,
             itemHeightPx = itemHeightPx,
             indicatorHeight = PartitionSideRailIndicatorHeight,
-            dragScaleTarget = FloatingBottomBarPressedScale,
+            dragScaleTarget = indicatorGeometry.pressedScale,
             indicatorOffsetPxProvider = currentIndicatorOffsetPxProvider,
             indicatorWidth = indicatorWidth,
             liquidGlassIndicatorEnabled = liquidGlassIndicatorEnabled,

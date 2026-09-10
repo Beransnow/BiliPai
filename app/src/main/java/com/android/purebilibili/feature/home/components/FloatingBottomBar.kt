@@ -260,9 +260,6 @@ val FloatingBottomBarDefaultShellHeight: Dp = 56.dp
 const val FloatingBottomBarPressedScale: Float =
     com.android.purebilibili.core.ui.BottomBarReferencePressedScale
 
-/** HyperIsland liquid indicator press bloom: 56dp -> 78dp. */
-internal const val FloatingBottomBarDockPressedScale: Float = 78f / 56f
-
 internal const val EXTERNAL_PAGER_INDICATOR_CATCH_UP_EPSILON = 0.05f
 
 /**
@@ -560,11 +557,7 @@ fun FloatingBottomBar(
             indicatorHeightDp = fittedIndicatorHeight.value,
         )
     }
-    val pressedScale = if (geometryMode == FloatingBottomBarGeometryMode.Dock) {
-        FloatingBottomBarDockPressedScale
-    } else {
-        matchedGeometry.pressedScale
-    }
+    val pressedScale = matchedGeometry.pressedScale
     val scaleOverflowDp = remember(shellHeight, fittedIndicatorHeight, pressedScale) {
         ((fittedIndicatorHeight.value * pressedScale - shellHeight.value) / 2f)
             .coerceAtLeast(0f)
