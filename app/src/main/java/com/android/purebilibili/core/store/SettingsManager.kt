@@ -759,6 +759,7 @@ enum class BottomBarSearchLayoutMode(val value: Int, val label: String) {
 }
 
 enum class LargeScreenFloatingDockPlacement(val value: Int, val label: String) {
+    AUTO(3, "智能"),
     BOTTOM(0, "底部"),
     LEFT(1, "左侧"),
     RIGHT(2, "右侧");

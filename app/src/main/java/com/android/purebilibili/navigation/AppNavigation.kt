@@ -37,6 +37,10 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.feature.article.ArticleDetailScreen
@@ -717,13 +721,23 @@ fun AppNavigation(
             tabletUseSidebar = tabletUseSidebar,
             foldPosture = appWindowAdaptiveInfo.posture,
         )
+        var lastContentInteractionXPx by remember { mutableStateOf<Float?>(null) }
+        val hingeBounds = appWindowAdaptiveInfo.foldingFeature.hingeBounds
+        val resolvedLargeScreenFloatingDockPlacement = resolveLargeScreenFloatingDockPlacement(
+            requested = effectiveHomeSettings.largeScreenFloatingDockPlacement,
+            foldPosture = appWindowAdaptiveInfo.posture,
+            hingeOrientation = appWindowAdaptiveInfo.foldingFeature.hingeOrientation,
+            hingeCenterXPx = hingeBounds?.let { (it.left + it.right) / 2f },
+            lastInteractionXPx = lastContentInteractionXPx,
+            isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr,
+        )
         val useLargeScreenFloatingSideDock = shouldUseLargeScreenFloatingSideDock(
             isLargeScreen = windowSizeClass.isTablet,
             isBottomBarFloating = isBottomBarFloating,
             liquidGlassEnabled = effectiveHomeSettings.androidNativeLiquidGlassEnabled &&
                 effectiveHomeSettings.isBottomBarLiquidGlassEnabled,
             useSideNavigation = useSideNavigation,
-            placement = effectiveHomeSettings.largeScreenFloatingDockPlacement,
+            placement = resolvedLargeScreenFloatingDockPlacement,
         )
         // 由所有入口共用的底栏内部显隐状态。进视频前先置为隐藏，避免返回到主入口后再补一次隐藏动画。
         var isBottomBarVisible by remember(launchToPortraitFeedOnStartupAtInit) {
@@ -1842,7 +1856,22 @@ fun AppNavigation(
                     },
                 )
             }
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(appWindowAdaptiveInfo.posture) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent(PointerEventPass.Initial)
+                                event.changes.firstOrNull {
+                                    it.pressed && !it.previousPressed
+                                }?.let { change ->
+                                    lastContentInteractionXPx = change.position.x
+                                }
+                            }
+                        }
+                    }
+            ) {
             Row(modifier = Modifier.fillMaxSize()) {
                 // Remove the whole slot on video detail so an exit animation cannot reserve width.
                 if (windowSizeClass.shouldUseSideNavigation && sideBarMountGate) {
@@ -3948,12 +3977,13 @@ fun AppNavigation(
             if (bottomBarCanMount) {
                 val bottomBarModifier = Modifier
                     .align(
-                        when (effectiveHomeSettings.largeScreenFloatingDockPlacement) {
+                        when (resolvedLargeScreenFloatingDockPlacement) {
                             LargeScreenFloatingDockPlacement.LEFT ->
                                 if (useLargeScreenFloatingSideDock) Alignment.CenterStart else Alignment.BottomCenter
                             LargeScreenFloatingDockPlacement.RIGHT ->
                                 if (useLargeScreenFloatingSideDock) Alignment.CenterEnd else Alignment.BottomCenter
                             LargeScreenFloatingDockPlacement.BOTTOM -> Alignment.BottomCenter
+                            LargeScreenFloatingDockPlacement.AUTO -> Alignment.BottomCenter
                         }
                     )
                     .zIndex(1f)

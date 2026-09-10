@@ -354,7 +354,7 @@ fun BottomBarSettingsContent(
                             iconTint = com.android.purebilibili.core.theme.iOSPurple,
                         )
                         if (
-                            isTabletDevice &&
+                            windowSizeClass.isTablet &&
                             androidLiquidGlassEnabled &&
                             bottomBarLiquidGlassEnabled &&
                             isBottomBarFloating
@@ -362,7 +362,7 @@ fun BottomBarSettingsContent(
                             AppPreferenceDivider()
                             SettingsSingleChoicePreference(
                                 title = "大屏悬浮 Dock 位置",
-                                subtitle = "在大屏或展开态折叠屏上，将液态玻璃导航悬浮在底部、左侧或右侧",
+                                subtitle = "智能模式会在书本态跟随最近操作的左/右屏，并自动避开水平铰链",
                                 options = LargeScreenFloatingDockPlacement.entries.map { placement ->
                                     AppSegmentOption(placement, placement.label)
                                 },
