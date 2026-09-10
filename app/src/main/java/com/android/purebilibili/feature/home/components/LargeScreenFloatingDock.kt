@@ -1,9 +1,7 @@
 package com.android.purebilibili.feature.home.components
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,15 +17,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
@@ -43,11 +36,14 @@ import dev.chrisbanes.haze.HazeState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.CoroutineStart
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
+import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation
+import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
 
 private val LargeScreenDockWidth = 64.dp
 private val LargeScreenDockItemSize = 56.dp
@@ -87,9 +83,6 @@ fun LargeScreenFloatingDock(
     val onItemClickLatest by rememberUpdatedState(onItemClick)
     val itemsLatest by rememberUpdatedState(dockItems)
     val slotPx = with(density) { (LargeScreenDockItemSize + LargeScreenDockGap).toPx() }
-    val indicatorOffset = remember { Animatable(selectedIndex.toFloat()) }
-    var directDragPosition by remember { mutableStateOf<Float?>(null) }
-    val indicatorPosition = directDragPosition ?: indicatorOffset.value
     val motionSpec = remember { resolveSegmentedControlMotionSpec() }
     val tuning = remember(
         homeSettings.liquidGlassProgress,
@@ -105,12 +98,41 @@ fun LargeScreenFloatingDock(
     val shellShape = resolveSharedBottomBarCapsuleShape()
     val shellColor = AppSurfaceTokens.chromeBackground().copy(alpha = tuning.surfaceAlpha)
     val lastIndex = dockItems.lastIndex
-
-    LaunchedEffect(selectedIndex) {
-        indicatorOffset.animateTo(
-            selectedIndex.toFloat(),
-            animationSpec = motionSpec.drag.selectionSpring.toSpringSpec(),
+    val fallbackPageBackdrop = rememberLayerBackdrop()
+    val pageBackdrop = miuixBackdrop ?: fallbackPageBackdrop
+    val dockContentBackdrop = rememberLayerBackdrop()
+    val combinedBackdrop = rememberCombinedBackdrop(pageBackdrop, dockContentBackdrop)
+    val dragAnimation = remember(scope, dockItems.size, slotPx) {
+        DampedDragAnimation(
+            animationScope = scope,
+            initialValue = selectedIndex.toFloat(),
+            valueRange = 0f..lastIndex.toFloat(),
+            visibilityThreshold = 0.001f,
+            initialScale = 1f,
+            pressedScale = FloatingBottomBarPressedScale,
+            trackingMode = DampedDragTrackingMode.DIRECT,
+            onDragStarted = { haptic(HapticType.LIGHT) },
+            onDragStopped = {
+                val target = targetValue.roundToInt().coerceIn(0, lastIndex)
+                animateToValue(target.toFloat(), animatePress = false)
+                itemsLatest.getOrNull(target)?.let {
+                    haptic(HapticType.MEDIUM)
+                    onItemClickLatest(it)
+                }
+            },
+            onDrag = { _, amount ->
+                updateValue(
+                    (targetValue + amount.y / slotPx).coerceIn(0f, lastIndex.toFloat())
+                )
+            },
         )
+    }
+    val indicatorPosition = dragAnimation.value
+
+    LaunchedEffect(selectedIndex, dragAnimation) {
+        if (!dragAnimation.isDragging) {
+            dragAnimation.animateToValue(selectedIndex.toFloat())
+        }
     }
 
     Box(
@@ -133,73 +155,12 @@ fun LargeScreenFloatingDock(
                 liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
                 liquidGlassTuning = tuning,
             )
-            .clip(shellShape)
-            .padding(LargeScreenDockPadding)
-            .pointerInput(dockItems) {
-                var dragStart = indicatorOffset.value
-                detectDragGestures(
-                    onDragStart = {
-                        dragStart = indicatorPosition
-                        directDragPosition = indicatorPosition
-                        haptic(HapticType.LIGHT)
-                    },
-                    onDrag = { change, amount ->
-                        change.consume()
-                        directDragPosition = (
-                            (directDragPosition ?: indicatorOffset.value) + amount.y / slotPx
-                            ).coerceIn(0f, lastIndex.toFloat())
-                    },
-                    onDragEnd = {
-                        val releasePosition = indicatorPosition
-                        val target = releasePosition.roundToInt().coerceIn(0, lastIndex)
-                        scope.launch(start = CoroutineStart.UNDISPATCHED) {
-                            indicatorOffset.snapTo(releasePosition)
-                            directDragPosition = null
-                            indicatorOffset.animateTo(
-                                target.toFloat(),
-                                animationSpec = motionSpec.drag.selectionSpring.toSpringSpec(),
-                            )
-                        }
-                        itemsLatest.getOrNull(target)?.let {
-                            haptic(HapticType.MEDIUM)
-                            onItemClickLatest(it)
-                        }
-                    },
-                    onDragCancel = {
-                        val cancelPosition = indicatorPosition
-                        scope.launch(start = CoroutineStart.UNDISPATCHED) {
-                            indicatorOffset.snapTo(cancelPosition)
-                            directDragPosition = null
-                            indicatorOffset.animateTo(
-                                dragStart,
-                                animationSpec = motionSpec.drag.selectionSpring.toSpringSpec(),
-                            )
-                        }
-                    },
-                )
-            },
+            .padding(LargeScreenDockPadding),
     ) {
-        Box(
-            modifier = Modifier
-                .graphicsLayer { translationY = indicatorPosition * slotPx }
-                .size(LargeScreenDockItemSize)
-                .biliPaiMiuixFloatingDockSurface(
-                    shape = shellShape,
-                    backdrop = miuixBackdrop,
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f),
-                    blurEnabled = false,
-                    glassEnabled = true,
-                    blurRadius = tuning.backdropBlurRadius.dp,
-                    hazeState = null,
-                    motionTier = MotionTier.Normal,
-                    isTransitionRunning = false,
-                    forceLowBlurBudget = false,
-                    liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-                    liquidGlassTuning = tuning,
-                ),
-        )
-
-        Column(verticalArrangement = Arrangement.spacedBy(LargeScreenDockGap)) {
+        Column(
+            modifier = Modifier.layerBackdrop(dockContentBackdrop),
+            verticalArrangement = Arrangement.spacedBy(LargeScreenDockGap),
+        ) {
             dockItems.forEachIndexed { index, item ->
                 val selectionProgress = (1f - abs(index - indicatorPosition)).coerceIn(0f, 1f)
                 val visuallySelected = selectionProgress > 0.5f
@@ -257,5 +218,50 @@ fun LargeScreenFloatingDock(
                 }
             }
         }
+
+        val pressProgress = dragAnimation.pressProgress
+        val refractionMotion = resolveBottomBarRefractionMotionProfile(
+            position = dragAnimation.value,
+            velocity = dragAnimation.velocity,
+            isDragging = dragAnimation.isDragging,
+            motionSpec = motionSpec,
+        )
+        val motionProgress = resolveSegmentedControlMotionProgress(
+            pressProgress = pressProgress,
+            refractionProgress = refractionMotion.progress,
+            tapPressRefractionEnabled = true,
+        )
+        val dragScaleProgress = rememberBottomBarIndicatorDragScaleProgress(
+            isDragging = dragAnimation.isDragging
+        )
+        val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
+        BottomBarMatchedLiquidIndicator(
+            visible = true,
+            dockContentAlpha = 1f,
+            indicatorTranslationXPx = 0f,
+            indicatorTranslationYPx = indicatorPosition * slotPx,
+            indicatorPanelOffsetPx = 0f,
+            indicatorWidth = LargeScreenDockItemSize,
+            indicatorHeight = LargeScreenDockItemSize,
+            shellShape = shellShape,
+            liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            contentBackdrop = combinedBackdrop,
+            backdrop = pageBackdrop,
+            indicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(pressProgress),
+            liquidGlassTuning = tuning,
+            effectivePressProgress = pressProgress,
+            indicatorIdleSurfaceColor = resolveAndroidNativeIdleIndicatorSurfaceColor(isDarkTheme),
+            glassEnabled = true,
+            motionProgress = motionProgress,
+            velocityItemsPerSecond = dragAnimation.velocity,
+            isDragging = dragAnimation.isDragging,
+            indicatorLayerScaleProgress = maxOf(dragScaleProgress, pressProgress),
+            dragScaleTarget = FloatingBottomBarPressedScale,
+            bottomBarMotionSpec = motionSpec,
+            isDarkTheme = isDarkTheme,
+            orientation = BottomBarLiquidOrientation.VERTICAL,
+            indicatorAlignment = Alignment.TopStart,
+            interactionModifier = dragAnimation.modifier,
+        )
     }
 }
