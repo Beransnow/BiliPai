@@ -29,14 +29,14 @@ class MatchedLiquidIndicatorGeometryTest {
     }
 
     @Test
-    fun `custom rest indicators retain HyperIsland press ratio`() {
+    fun `undersized rest indicators raise scale so bloom still overflows the dock`() {
         val geometry = resolveMatchedLiquidIndicatorGeometry(
             dockHeightDp = 40f,
             indicatorHeightDp = 27f,
         )
 
-        assertEquals(78f / 56f, geometry.pressedScale, 0.0001f)
-        assertEquals(27f * 78f / 56f, geometry.pressedHeightDp, 0.0001f)
+        assertEquals(40f * 78f / 64f / 27f, geometry.pressedScale, 0.0001f)
+        assertTrue(geometry.pressedHeightDp > geometry.dockHeightDp)
     }
 
     @Test
@@ -46,8 +46,8 @@ class MatchedLiquidIndicatorGeometryTest {
             indicatorHeightDp = 56f,
         )
 
-        assertEquals(78f / 56f, geometry.pressedScale, 0.0001f)
-        assertEquals(78f, geometry.pressedHeightDp, 0.0001f)
+        assertEquals(58f * 78f / 64f / 56f, geometry.pressedScale, 0.0001f)
+        assertEquals(58f * 78f / 64f, geometry.pressedHeightDp, 0.0001f)
         assertEquals(51, roundMatchedLiquidIndicatorHeightDp(58f))
     }
 }

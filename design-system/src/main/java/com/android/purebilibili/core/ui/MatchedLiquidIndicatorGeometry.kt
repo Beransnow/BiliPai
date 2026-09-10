@@ -35,12 +35,15 @@ fun roundMatchedLiquidIndicatorHeightDp(dockHeightDp: Float): Int {
 }
 
 fun resolveMatchedLiquidIndicatorPressedScale(
-    @Suppress("UNUSED_PARAMETER")
     dockHeightDp: Float,
-    @Suppress("UNUSED_PARAMETER")
     indicatorHeightDp: Float,
 ): Float {
-    return BottomBarReferencePressedScale
+    if (dockHeightDp <= 0f || indicatorHeightDp <= 0f) return 1f
+    // Keep HyperIsland's 64/56/78 geometry even when a text-heavy or narrow global control
+    // has to fit a shorter resting pill: the pressed pill must still reach 78/64 of its dock.
+    val pressedHeight = dockHeightDp *
+        (BottomBarReferencePressedHeightDp / BottomBarReferenceShellHeightDp)
+    return (pressedHeight / indicatorHeightDp).coerceAtLeast(1f)
 }
 
 fun resolveMatchedLiquidIndicatorGeometry(
