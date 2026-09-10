@@ -128,7 +128,7 @@ import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimatio
 import com.android.purebilibili.feature.home.components.miuix.InteractiveHighlight
 import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import com.android.purebilibili.feature.home.components.resolveAndroidNativeExportTintColor
-import com.android.purebilibili.feature.home.components.resolveAndroidNativeIndicatorColor
+import com.android.purebilibili.feature.home.components.resolveAndroidNativeIdleIndicatorSurfaceColor
 import com.android.purebilibili.feature.home.components.resolveSharedLiquidExportMonochromeColor
 import com.android.purebilibili.feature.home.components.resolveBottomBarBackdropPresetIndicatorLens
 import com.android.purebilibili.feature.home.components.resolveBottomBarCaptureSafeInsetDp
@@ -808,7 +808,6 @@ private fun PartitionSideRail(
                     showIcon = showIcon,
                     showText = showText,
                     iconFamily = iconFamily,
-                    forceUnselectedColor = liquidGlassIndicatorEnabled,
                     onClick = { onPartitionSelected(partition) }
                 )
             }
@@ -962,8 +961,7 @@ private fun PartitionSideRailMovingIndicator(
                 indicatorLensSpec = indicatorLensSpec,
                 liquidGlassTuning = liquidGlassTuning,
                 effectivePressProgress = pressProgress,
-                indicatorIdleSurfaceColor = resolveAndroidNativeIndicatorColor(
-                    themeColor = MaterialTheme.colorScheme.primary,
+                indicatorIdleSurfaceColor = resolveAndroidNativeIdleIndicatorSurfaceColor(
                     darkTheme = isDarkTheme,
                 ),
                 glassEnabled = liquidGlassIndicatorEnabled,
@@ -992,7 +990,6 @@ private fun PartitionSideRailItem(
     iconFamily: AppSemanticIconFamily,
     onClick: () -> Unit,
     interactive: Boolean = true,
-    forceUnselectedColor: Boolean = false,
     contentColorOverride: Color? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -1026,7 +1023,6 @@ private fun PartitionSideRailItem(
             verticalArrangement = Arrangement.Center
         ) {
             val contentColor = contentColorOverride ?: when {
-                forceUnselectedColor -> unselectedColor
                 clampedSelectionProgress > 0f -> lerp(
                     unselectedColor,
                     selectedColor,
