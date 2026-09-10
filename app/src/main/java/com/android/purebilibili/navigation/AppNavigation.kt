@@ -177,6 +177,7 @@ import com.android.purebilibili.core.plugin.skin.rememberUiSkinState
 // import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass (Removed)
 // import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi (Removed)
 import com.android.purebilibili.feature.home.components.FrostedBottomBar
+import com.android.purebilibili.feature.home.components.LargeScreenFloatingDock
 import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.BottomBarMatchedDockEdge
 import com.android.purebilibili.feature.home.components.BottomBarMatchedDockVisibility
@@ -188,6 +189,7 @@ import com.android.purebilibili.feature.home.components.rememberDynamicPublishSk
 import com.android.purebilibili.feature.home.components.rememberHomeUiSkinDecoration
 import com.android.purebilibili.feature.profile.shouldShowProfileHistoryService
 import com.android.purebilibili.core.store.AppNavigationSettings
+import com.android.purebilibili.core.store.LargeScreenFloatingDockPlacement
 import com.android.purebilibili.core.store.AccountSessionStore
 import com.android.purebilibili.core.store.HomeWallpaperEffectScope
 import com.android.purebilibili.core.store.SettingsManager
@@ -714,6 +716,14 @@ fun AppNavigation(
             windowSizeClass = windowSizeClass,
             tabletUseSidebar = tabletUseSidebar,
             foldPosture = appWindowAdaptiveInfo.posture,
+        )
+        val useLargeScreenFloatingSideDock = shouldUseLargeScreenFloatingSideDock(
+            isLargeScreen = windowSizeClass.isTablet,
+            isBottomBarFloating = isBottomBarFloating,
+            liquidGlassEnabled = effectiveHomeSettings.androidNativeLiquidGlassEnabled &&
+                effectiveHomeSettings.isBottomBarLiquidGlassEnabled,
+            useSideNavigation = useSideNavigation,
+            placement = effectiveHomeSettings.largeScreenFloatingDockPlacement,
         )
         // 由所有入口共用的底栏内部显隐状态。进视频前先置为隐藏，避免返回到主入口后再补一次隐藏动画。
         var isBottomBarVisible by remember(launchToPortraitFeedOnStartupAtInit) {
@@ -1455,7 +1465,9 @@ fun AppNavigation(
             navigationBarsBottom = WindowInsets.navigationBars
                 .asPaddingValues()
                 .calculateBottomPadding(),
-            reserveBottomBar = bottomBarReservesSpace && !useSideNavigation,
+            reserveBottomBar = bottomBarReservesSpace &&
+                !useSideNavigation &&
+                !useLargeScreenFloatingSideDock,
             isBottomBarFloating = isBottomBarFloating,
             hasUiSkinDecoration = bottomBarUiSkinDecoration != null,
         )
@@ -3935,7 +3947,15 @@ fun AppNavigation(
 
             if (bottomBarCanMount) {
                 val bottomBarModifier = Modifier
-                    .align(Alignment.BottomCenter)
+                    .align(
+                        when (effectiveHomeSettings.largeScreenFloatingDockPlacement) {
+                            LargeScreenFloatingDockPlacement.LEFT ->
+                                if (useLargeScreenFloatingSideDock) Alignment.CenterStart else Alignment.BottomCenter
+                            LargeScreenFloatingDockPlacement.RIGHT ->
+                                if (useLargeScreenFloatingSideDock) Alignment.CenterEnd else Alignment.BottomCenter
+                            LargeScreenFloatingDockPlacement.BOTTOM -> Alignment.BottomCenter
+                        }
+                    )
                     .zIndex(1f)
                     .then(
                         if (driveBottomBarByProgress) {
@@ -3959,7 +3979,20 @@ fun AppNavigation(
                         enterFadeDurationMillis = navMotionSpec.slowFadeDurationMillis,
                         exitFadeDurationMillis = navMotionSpec.fastFadeDurationMillis
                     ) {
-                        Column(
+                        if (useLargeScreenFloatingSideDock) {
+                            LargeScreenFloatingDock(
+                                currentItem = currentBottomNavItem,
+                                onItemClick = handleNavItemClick,
+                                visibleItems = visibleBottomBarItems,
+                                itemLabels = bottomBarItemLabels,
+                                homeSettings = effectiveHomeSettings,
+                                miuixBackdrop = bottomBarBackdrop,
+                                hazeState = if (isBottomBarBlurEnabled) mainHazeState else null,
+                                dynamicUnreadCount = dynamicUnreadCount,
+                                onSearchClick = { requestSearchFromBottomBar() },
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                        } else Column(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
