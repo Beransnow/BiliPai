@@ -145,7 +145,9 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains("remember(animationScope) {"))
         assertFalse(body.contains("remember(animationScope, tabWidthPx)"))
         assertTrue(dragPort.contains("releaseJob?.cancel()"))
-        assertTrue(dragPort.contains("pressJob?.join()"))
+        // 照搬 HyperIsland：release 直接接管放大动画，不等待 pressJob 跑完，
+        // 否则缩放会先到峰值再停住、之后才缩回（放大 → 停顿 → 缩小）。
+        assertFalse(dragPort.contains("pressJob?.join()"))
         assertFalse(dragPort.contains("isInside && wasInside"))
         assertTrue(body.contains("resolveFloatingDockIndicatorLayerScaleX("))
         assertTrue(body.contains("LocalFloatingBottomBarIndicatorStretchX provides indicatorStretchXProvider"))

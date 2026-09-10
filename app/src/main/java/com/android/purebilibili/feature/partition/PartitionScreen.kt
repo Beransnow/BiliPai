@@ -137,7 +137,7 @@ import com.android.purebilibili.feature.home.components.resolveBottomBarIndicato
 import com.android.purebilibili.feature.home.components.resolveBottomBarLiquidGlassHighlightAlpha
 import com.android.purebilibili.feature.home.components.resolveBottomBarRefractionMotionProfile
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
-import com.android.purebilibili.feature.home.components.rememberBottomBarIndicatorDragScaleProgress
+import com.android.purebilibili.feature.home.components.rememberBottomBarIndicatorLayerScaleTransform
 import com.android.purebilibili.feature.home.components.normalizeTopTabLabelMode
 import com.android.purebilibili.feature.home.components.resolveSegmentedControlMotionProgress
 import com.android.purebilibili.feature.home.components.resolveSegmentedControlMotionSpec
@@ -929,10 +929,13 @@ private fun PartitionSideRailMovingIndicator(
     SideEffect {
         onVideoListPushChanged(videoListPushPx)
     }
-    val indicatorDragScaleProgress = rememberBottomBarIndicatorDragScaleProgress(
-        isDragging = dragAnimation.isDragging
+    // 照搬 HyperIsland LiquidGlassNavigationBar：scaleX 与 scaleY 是两条独立 Animatable
+    // （spring(0.6f, 250f, 0.001f) / spring(0.7f, 250f, 0.001f)）；pressProgress
+    // （spring(1f, 1000f)）只负责高光与 lens，不再用 maxOf 把两种弹簧混进缩放曲线。
+    val indicatorLayerScaleTransform = rememberBottomBarIndicatorLayerScaleTransform(
+        active = dragAnimation.isDragging || pressProgress > 0f,
+        target = dragScaleTarget
     )
-    val indicatorLayerScaleProgress = maxOf(indicatorDragScaleProgress, pressProgress)
     val indicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(
         progress = pressProgress
     )
@@ -968,7 +971,8 @@ private fun PartitionSideRailMovingIndicator(
                 motionProgress = motionProgress,
                 velocityItemsPerSecond = dragAnimation.velocity,
                 isDragging = dragAnimation.isDragging,
-                indicatorLayerScaleProgress = indicatorLayerScaleProgress,
+                indicatorLayerScaleProgress = 0f,
+                indicatorLayerScaleTransform = indicatorLayerScaleTransform,
                 dragScaleTarget = dragScaleTarget,
                 bottomBarMotionSpec = motionSpec,
                 isDarkTheme = isDarkTheme,

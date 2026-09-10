@@ -195,6 +195,8 @@ class DampedDragAnimationState internal constructor(
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(1f, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(1f, scaleYAnimationSpec) }
+            // 速度形变是非对称的，不归零会留下椭圆残影。
+            launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
         }
     }
 

@@ -57,7 +57,8 @@ class FloatingBottomBarGeometryTest {
         assertEquals(30f, resolveFloatingDockIndicatorHeightDp(
             30f, 48f, FloatingBottomBarGeometryMode.Segmented, 40f,
         ), 0.001f)
-        assertEquals(52f, resolveFloatingDockIndicatorHeightDp(
+        // Dock 模式也留静止边距（56dp 壳 → 56 × 4/64 = 3.5dp/侧 → 49dp 指示器）。
+        assertEquals(49f, resolveFloatingDockIndicatorHeightDp(
             52f, 75f, FloatingBottomBarGeometryMode.Dock, 56f,
         ), 0.001f)
     }
@@ -360,21 +361,16 @@ class FloatingBottomBarGeometryTest {
     }
 
     @Test
-    fun `home rest indicator keeps a 4dp vertical inset inside the 64dp shell`() {
+    fun `home rest indicator keeps the HyperIsland 4dp per 64dp shell vertical inset`() {
         assertEquals(
             4f,
-            resolveFloatingDockRestIndicatorVerticalInsetDp(
-                shellHeightDp = 64f,
-                indicatorHeightDp = 56f,
-            ),
+            resolveFloatingDockRestIndicatorVerticalInsetDp(shellHeightDp = 64f),
             0.001f,
         )
+        // 56dp 壳按同一比例得到 3.5dp。原先这里期望 0f：指示器与壳同高、静止边距为 0。
         assertEquals(
-            0f,
-            resolveFloatingDockRestIndicatorVerticalInsetDp(
-                shellHeightDp = 56f,
-                indicatorHeightDp = 56f,
-            ),
+            3.5f,
+            resolveFloatingDockRestIndicatorVerticalInsetDp(shellHeightDp = 56f),
             0.001f,
         )
     }

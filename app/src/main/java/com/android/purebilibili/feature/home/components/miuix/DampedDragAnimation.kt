@@ -202,13 +202,15 @@ class DampedDragAnimation(
                     .filter { it <= threshold }
                     .first()
             }
-            // Finish the visible press before taking ownership of its scale Animatables.
-            // A tap schedules press and release in the same turn; cancelling here earlier
-            // would suppress the entire enlargement, especially without a moving pager.
-            pressJob?.join()
+            // 照搬 HyperIsland LiquidGlassNavigationBar 的 release()：直接接管正在跑的
+            // 放大动画，不等待它结束。原先这里的 pressJob?.join() 会让缩放先跑到峰值停住、
+            // 之后才开始缩回（放大 → 停顿 → 缩小），破坏连贯性。
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(initialScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(initialScale, scaleYAnimationSpec) }
+            // 速度形变是非对称的（scaleX 除以 1-v、scaleY 乘以 1-v），不归零就会留下
+            // 椭圆残影。参考项目靠 animateToValue 里的归零，这里补上 release 路径。
+            launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
         }
     }
 
