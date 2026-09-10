@@ -1648,13 +1648,15 @@ internal fun resolveBottomBarIndicatorLayerTransform(
     } else {
         0f
     }
-    // Direction changes which edge leads, not the capsule's thickness. Stretch along the
-    // travel axis with speed magnitude and keep the cross-axis at its press scale.
-    val velocityScaleX = (abs(velocity) * BILIPAI_INDICATOR_VELOCITY_SCALE_X_MULTIPLIER)
-        .coerceIn(0f, BILIPAI_INDICATOR_VELOCITY_CLAMP)
+    // HyperIsland: the leading/trailing direction affects both longitudinal stretch and
+    // cross-axis compression, producing the asymmetric liquid handoff while dragging.
+    val velocityScaleX = (velocity * BILIPAI_INDICATOR_VELOCITY_SCALE_X_MULTIPLIER)
+        .coerceIn(-BILIPAI_INDICATOR_VELOCITY_CLAMP, BILIPAI_INDICATOR_VELOCITY_CLAMP)
+    val velocityScaleY = (velocity * 0.25f)
+        .coerceIn(-BILIPAI_INDICATOR_VELOCITY_CLAMP, BILIPAI_INDICATOR_VELOCITY_CLAMP)
     return BottomBarIndicatorLayerTransform(
         scaleX = baseScaleX / (1f - velocityScaleX),
-        scaleY = baseScaleY
+        scaleY = baseScaleY * (1f - velocityScaleY)
     )
 }
 

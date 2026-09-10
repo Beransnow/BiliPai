@@ -16,6 +16,7 @@ package com.android.purebilibili.feature.home.components
 import android.os.Build
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -252,14 +253,14 @@ fun PlainMiuixFloatingBottomBar(
 }
 
 /** Flatter resting indicator; the shell and indicator retain the same capsule shape. */
-val FloatingBottomBarIndicatorHeight: Dp = 52.dp
+val FloatingBottomBarIndicatorHeight: Dp = 56.dp
 
 val FloatingBottomBarDefaultShellHeight: Dp = 56.dp
 
 const val FloatingBottomBarPressedScale: Float =
     com.android.purebilibili.core.ui.BottomBarReferencePressedScale
 
-/** Restore the original home-dock 78/56 press ratio without retuning other rails. */
+/** HyperIsland liquid indicator press bloom: 56dp -> 78dp. */
 internal const val FloatingBottomBarDockPressedScale: Float = 78f / 56f
 
 internal const val EXTERNAL_PAGER_INDICATOR_CATCH_UP_EPSILON = 0.05f
@@ -595,16 +596,12 @@ fun FloatingBottomBar(
 
     val offsetAnimation = remember { Animatable(0f) }
     val rubberBandPx = with(density) { 4.dp.toPx() }
-    val panelOffset by remember(rubberBandPx, density, horizontalPadding) {
+    val panelOffset by remember(rubberBandPx) {
         derivedStateOf {
             if (totalWidthPx == 0f) {
                 0f
             } else {
-                val referenceWidth = resolveFloatingDockDragReferenceWidthPx(
-                    tabWidthPx = tabWidthPx,
-                    horizontalPaddingPx = with(density) { horizontalPadding.toPx() },
-                )
-                val fraction = (offsetAnimation.value / referenceWidth).fastCoerceIn(-1f, 1f)
+                val fraction = (offsetAnimation.value / totalWidthPx).fastCoerceIn(-1f, 1f)
                 rubberBandPx * fraction.sign * EaseOut.transform(abs(fraction))
             }
         }
@@ -679,10 +676,8 @@ fun FloatingBottomBar(
                 if (targetIndex != selected) {
                     onSelectedLatest.value(targetIndex)
                 }
-                // The indicator position spring already settles the gesture. Keeping a second,
-                // slower rubber-band spring here makes release visibly rebound twice.
                 animationScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                    offsetAnimation.snapTo(0f)
+                    offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
                 }
             },
             onDrag = { _, dragAmount ->
@@ -987,16 +982,14 @@ fun FloatingBottomBar(
             )
         }
 
-        val referenceTabWidthPx = with(density) {
-            FLOATING_DOCK_VELOCITY_REFERENCE_TAB_WIDTH_DP.dp.toPx()
-        }
         val indicatorStretchXProvider: () -> Float = {
-            val scaleY = dampedDragAnimation.scaleY.coerceAtLeast(0.001f)
+            val scaleY = resolveFloatingDockIndicatorLayerScaleY(
+                baseScaleY = dampedDragAnimation.scaleY,
+                velocity = dampedDragAnimation.velocity,
+            ).coerceAtLeast(0.001f)
             resolveFloatingDockIndicatorLayerScaleX(
                 baseScaleX = dampedDragAnimation.scaleX,
                 velocity = dampedDragAnimation.velocity,
-                tabWidthPx = tabWidthPx,
-                referenceTabWidthPx = referenceTabWidthPx,
             ) / scaleY
         }
         if (isLiquidGlassMode && backdrop != null) {
@@ -1111,12 +1104,13 @@ fun FloatingBottomBar(
                                 pillHighlight?.value?.copy(alpha = dampedDragAnimation.pressProgress)
                             },
                             layerBlock = {
-                                scaleY = dampedDragAnimation.scaleY
+                                scaleY = resolveFloatingDockIndicatorLayerScaleY(
+                                    baseScaleY = dampedDragAnimation.scaleY,
+                                    velocity = dampedDragAnimation.velocity,
+                                )
                                 scaleX = resolveFloatingDockIndicatorLayerScaleX(
                                     baseScaleX = dampedDragAnimation.scaleX,
                                     velocity = dampedDragAnimation.velocity,
-                                    tabWidthPx = tabWidthPx,
-                                    referenceTabWidthPx = referenceTabWidthPx,
                                 )
                             },
                             onDrawSurface = {

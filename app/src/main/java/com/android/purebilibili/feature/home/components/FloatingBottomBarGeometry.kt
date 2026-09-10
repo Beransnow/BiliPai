@@ -193,7 +193,6 @@ internal fun Modifier.floatingDockScaleOverflow(
 internal const val FLOATING_DOCK_INDICATOR_VELOCITY_DIVISOR = 10f
 internal const val FLOATING_DOCK_INDICATOR_VELOCITY_SCALE_X_MULTIPLIER = 0.75f
 internal const val FLOATING_DOCK_INDICATOR_VELOCITY_CLAMP = 0.2f
-internal const val FLOATING_DOCK_VELOCITY_REFERENCE_TAB_WIDTH_DP = 75f
 
 enum class FloatingBottomBarGeometryMode { Dock, Segmented, TopNavigation }
 
@@ -250,18 +249,21 @@ internal fun resolveFloatingDockIndicatorHeightDp(
 internal fun resolveFloatingDockIndicatorLayerScaleX(
     baseScaleX: Float,
     velocity: Float,
-    tabWidthPx: Float,
-    referenceTabWidthPx: Float,
 ): Float {
-    val widthRatio = if (tabWidthPx <= 0f || referenceTabWidthPx <= 0f) {
-        1f
-    } else {
-        (tabWidthPx / referenceTabWidthPx).coerceIn(0.55f, 1f)
-    }
-    val normalizedVelocity = velocity * widthRatio / FLOATING_DOCK_INDICATOR_VELOCITY_DIVISOR
-    val velocityScale = (abs(normalizedVelocity) * FLOATING_DOCK_INDICATOR_VELOCITY_SCALE_X_MULTIPLIER)
-        .coerceIn(0f, FLOATING_DOCK_INDICATOR_VELOCITY_CLAMP)
+    val normalizedVelocity = velocity / FLOATING_DOCK_INDICATOR_VELOCITY_DIVISOR
+    val velocityScale = (normalizedVelocity * FLOATING_DOCK_INDICATOR_VELOCITY_SCALE_X_MULTIPLIER)
+        .coerceIn(-FLOATING_DOCK_INDICATOR_VELOCITY_CLAMP, FLOATING_DOCK_INDICATOR_VELOCITY_CLAMP)
     return baseScaleX / (1f - velocityScale)
+}
+
+internal fun resolveFloatingDockIndicatorLayerScaleY(
+    baseScaleY: Float,
+    velocity: Float,
+): Float {
+    val normalizedVelocity = velocity / FLOATING_DOCK_INDICATOR_VELOCITY_DIVISOR
+    val velocityScale = (normalizedVelocity * 0.25f)
+        .coerceIn(-FLOATING_DOCK_INDICATOR_VELOCITY_CLAMP, FLOATING_DOCK_INDICATOR_VELOCITY_CLAMP)
+    return baseScaleY * (1f - velocityScale)
 }
 
 internal fun resolveFloatingDockCapturedContentHorizontalScale(

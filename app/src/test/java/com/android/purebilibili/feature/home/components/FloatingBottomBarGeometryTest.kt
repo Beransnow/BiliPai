@@ -186,21 +186,16 @@ class FloatingBottomBarGeometryTest {
     }
 
     @Test
-    fun `narrow tabs reduce velocity stretch toward the search-off slot`() {
-        val wide = resolveFloatingDockIndicatorLayerScaleX(
-            baseScaleX = 1.5f,
-            velocity = 8f,
-            tabWidthPx = 75f,
-            referenceTabWidthPx = 75f,
-        )
-        val narrow = resolveFloatingDockIndicatorLayerScaleX(
-            baseScaleX = 1.5f,
-            velocity = 8f,
-            tabWidthPx = 56f,
-            referenceTabWidthPx = 75f,
-        )
-        assertTrue(narrow < wide)
-        assertTrue(narrow >= 1.5f)
+    fun `velocity deformation follows HyperIsland on both axes and directions`() {
+        val forwardX = resolveFloatingDockIndicatorLayerScaleX(1.4f, 8f)
+        val backwardX = resolveFloatingDockIndicatorLayerScaleX(1.4f, -8f)
+        val forwardY = resolveFloatingDockIndicatorLayerScaleY(1.4f, 8f)
+        val backwardY = resolveFloatingDockIndicatorLayerScaleY(1.4f, -8f)
+
+        assertTrue(forwardX > 1.4f)
+        assertTrue(backwardX < 1.4f)
+        assertTrue(forwardY < 1.4f)
+        assertTrue(backwardY > 1.4f)
     }
 
     @Test

@@ -40,7 +40,7 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("indicatorHeight: Dp = FloatingBottomBarIndicatorHeight"))
         assertTrue(source.contains("dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING"))
         assertTrue(source.contains("FloatingBottomBarDefaultShellHeight: Dp = 56.dp"))
-        assertTrue(source.contains("FloatingBottomBarIndicatorHeight: Dp = 52.dp"))
+        assertTrue(source.contains("FloatingBottomBarIndicatorHeight: Dp = 56.dp"))
         assertTrue(source.contains("BottomBarReferencePressedScale"))
     }
 
@@ -136,7 +136,7 @@ class FloatingBottomBarStructureTest {
         assertFalse(baseRow.contains(".then(dampedDragAnimation.modifier)"))
         assertTrue(movingIndicator.contains("interactiveHighlight?.gestureModifier"))
         assertTrue(movingIndicator.contains(".then(dampedDragAnimation.modifier)"))
-        assertTrue(body.contains("offsetAnimation.snapTo(0f)"))
+        assertTrue(body.contains("offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))"))
         val dragRememberKeys = body
             .substringAfter("val dampedDragAnimation = remember(")
             .substringBefore(") {")
