@@ -106,6 +106,8 @@ class PartitionScreenStructureTest {
         assertTrue(indicator.contains("contentAlignment = Alignment.CenterStart"))
         assertTrue(indicator.contains("PartitionSideRailMd3UnderlineStartPadding"))
         assertTrue(indicator.contains("onVideoListPushChanged(0f)"))
+        assertTrue(indicator.contains("resolveAndroidNativeIndicatorColor("))
+        assertTrue(indicator.contains("themeColor = MaterialTheme.colorScheme.primary"))
         assertTrue(indicator.indexOf("return") < indicator.indexOf("BottomBarMatchedLiquidIndicator("))
     }
 

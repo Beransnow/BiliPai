@@ -128,7 +128,7 @@ import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimatio
 import com.android.purebilibili.feature.home.components.miuix.InteractiveHighlight
 import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import com.android.purebilibili.feature.home.components.resolveAndroidNativeExportTintColor
-import com.android.purebilibili.feature.home.components.resolveAndroidNativeIdleIndicatorSurfaceColor
+import com.android.purebilibili.feature.home.components.resolveAndroidNativeIndicatorColor
 import com.android.purebilibili.feature.home.components.resolveSharedLiquidExportMonochromeColor
 import com.android.purebilibili.feature.home.components.resolveBottomBarBackdropPresetIndicatorLens
 import com.android.purebilibili.feature.home.components.resolveBottomBarCaptureSafeInsetDp
@@ -962,7 +962,10 @@ private fun PartitionSideRailMovingIndicator(
                 indicatorLensSpec = indicatorLensSpec,
                 liquidGlassTuning = liquidGlassTuning,
                 effectivePressProgress = pressProgress,
-                indicatorIdleSurfaceColor = resolveAndroidNativeIdleIndicatorSurfaceColor(darkTheme = isDarkTheme),
+                indicatorIdleSurfaceColor = resolveAndroidNativeIndicatorColor(
+                    themeColor = MaterialTheme.colorScheme.primary,
+                    darkTheme = isDarkTheme,
+                ),
                 glassEnabled = liquidGlassIndicatorEnabled,
                 motionProgress = motionProgress,
                 velocityItemsPerSecond = dragAnimation.velocity,
