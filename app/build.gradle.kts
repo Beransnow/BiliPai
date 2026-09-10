@@ -352,6 +352,7 @@ composeCompiler {
 
 dependencies {
     val material3Version = "1.5.0-alpha25"
+    val material3AdaptiveVersion = "1.3.0-rc01"
     val media3Version = "1.10.1"
     val lifecycleVersion = "2.11.0"
     val roomVersion = "2.8.4"
@@ -378,6 +379,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3:$material3Version")
     implementation("androidx.compose.material3:material3-window-size-class:$material3Version") // [新增] 窗口大小类
+    implementation("androidx.compose.material3.adaptive:adaptive:$material3AdaptiveVersion")
     implementation(libs.miuix.ui)
     implementation(libs.miuix.preference)
     implementation(libs.miuix.blur)
