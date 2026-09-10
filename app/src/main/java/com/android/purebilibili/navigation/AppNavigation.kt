@@ -4017,7 +4017,6 @@ fun AppNavigation(
                                 visibleItems = visibleBottomBarItems,
                                 itemLabels = bottomBarItemLabels,
                                 homeSettings = effectiveHomeSettings,
-                                miuixBackdrop = bottomBarBackdrop,
                                 hazeState = if (isBottomBarBlurEnabled) mainHazeState else null,
                                 dynamicUnreadCount = dynamicUnreadCount,
                                 onSearchClick = { requestSearchFromBottomBar() },

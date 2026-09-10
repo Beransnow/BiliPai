@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,7 +21,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
@@ -38,17 +39,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import kotlin.math.abs
 import kotlin.math.roundToInt
-import top.yukonga.miuix.kmp.blur.LayerBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation
-import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
 
 private val LargeScreenDockWidth = 64.dp
-private val LargeScreenDockItemSize = 56.dp
+private val LargeScreenDockItemSize = 48.dp
+private val LargeScreenDockIndicatorWidth = 56.dp
+private val LargeScreenDockIndicatorHeight =
+    resolveMatchedLiquidIndicatorHeightDp(LargeScreenDockItemSize.value).dp
 private val LargeScreenDockPadding = 4.dp
-private val LargeScreenDockGap = 2.dp
+private val LargeScreenDockGap = 4.dp
 
 /** A floating vertical liquid-glass dock; deliberately separate from the full-height tablet rail. */
 @Composable
@@ -58,7 +60,6 @@ fun LargeScreenFloatingDock(
     visibleItems: List<BottomNavItem>,
     itemLabels: Map<String, String>,
     homeSettings: HomeSettings,
-    miuixBackdrop: LayerBackdrop?,
     hazeState: HazeState?,
     dynamicUnreadCount: Int = 0,
     onSearchClick: () -> Unit = {},
@@ -98,10 +99,23 @@ fun LargeScreenFloatingDock(
     val shellShape = resolveSharedBottomBarCapsuleShape()
     val shellColor = AppSurfaceTokens.chromeBackground().copy(alpha = tuning.surfaceAlpha)
     val lastIndex = dockItems.lastIndex
-    val fallbackPageBackdrop = rememberLayerBackdrop()
-    val pageBackdrop = miuixBackdrop ?: fallbackPageBackdrop
+    val dockPageBackdrop = rememberLayerBackdrop()
     val dockContentBackdrop = rememberLayerBackdrop()
-    val combinedBackdrop = rememberCombinedBackdrop(pageBackdrop, dockContentBackdrop)
+    val combinedBackdrop = rememberCombinedBackdrop(dockPageBackdrop, dockContentBackdrop)
+    val indicatorGeometry = remember {
+        resolveMatchedLiquidIndicatorGeometry(
+            dockHeightDp = LargeScreenDockItemSize.value,
+            indicatorHeightDp = LargeScreenDockIndicatorHeight.value,
+        )
+    }
+    val fullIndicatorLens = resolveBottomBarBackdropPresetIndicatorLens(progress = 1f)
+    val captureSafeInset = resolveBottomBarCaptureSafeInsetDp(
+        indicatorWidthDp = LargeScreenDockIndicatorWidth.value,
+        refractionHeightDp = fullIndicatorLens.refractionHeightDp,
+        refractionAmountDp = fullIndicatorLens.refractionAmountDp,
+        panelOffsetDp = 0f,
+        dragScaleTarget = indicatorGeometry.pressedScale,
+    ).dp
     val dragAnimation = remember(scope, dockItems.size, slotPx) {
         DampedDragAnimation(
             animationScope = scope,
@@ -109,8 +123,7 @@ fun LargeScreenFloatingDock(
             valueRange = 0f..lastIndex.toFloat(),
             visibilityThreshold = 0.001f,
             initialScale = 1f,
-            pressedScale = FloatingBottomBarPressedScale,
-            trackingMode = DampedDragTrackingMode.DIRECT,
+            pressedScale = indicatorGeometry.pressedScale,
             onDragStarted = { haptic(HapticType.LIGHT) },
             onDragStopped = {
                 val target = targetValue.roundToInt().coerceIn(0, lastIndex)
@@ -141,24 +154,38 @@ fun LargeScreenFloatingDock(
                 bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             )
             .width(LargeScreenDockWidth)
-            .biliPaiMiuixFloatingDockSurface(
-                shape = shellShape,
-                backdrop = miuixBackdrop,
-                containerColor = shellColor,
-                blurEnabled = hazeState != null,
-                glassEnabled = true,
-                blurRadius = tuning.backdropBlurRadius.dp,
-                hazeState = hazeState,
-                motionTier = MotionTier.Normal,
-                isTransitionRunning = false,
-                forceLowBlurBudget = false,
-                liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-                liquidGlassTuning = tuning,
-            )
             .padding(LargeScreenDockPadding),
     ) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .bottomBarMatchedCaptureOverflow(captureSafeInset)
+                .alpha(0f)
+                .layerBackdrop(dockPageBackdrop)
+                .background(AppSurfaceTokens.background())
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .biliPaiMiuixFloatingDockSurface(
+                    shape = shellShape,
+                    backdrop = dockPageBackdrop,
+                    containerColor = shellColor,
+                    blurEnabled = hazeState != null,
+                    glassEnabled = true,
+                    blurRadius = tuning.backdropBlurRadius.dp,
+                    hazeState = hazeState,
+                    motionTier = MotionTier.Normal,
+                    isTransitionRunning = false,
+                    forceLowBlurBudget = false,
+                    liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+                    liquidGlassTuning = tuning,
+                )
+        )
         Column(
-            modifier = Modifier.layerBackdrop(dockContentBackdrop),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .layerBackdrop(dockContentBackdrop),
             verticalArrangement = Arrangement.spacedBy(LargeScreenDockGap),
         ) {
             dockItems.forEachIndexed { index, item ->
@@ -181,11 +208,7 @@ fun LargeScreenFloatingDock(
                     AppIcon(
                         imageVector = resolveHomeNavigationBarIcon(item, visuallySelected),
                         contentDescription = label,
-                        tint = lerp(
-                            MaterialTheme.colorScheme.onSurfaceVariant,
-                            MaterialTheme.colorScheme.primary,
-                            selectionProgress,
-                        ),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(26.dp),
                     )
                     if (item == BottomNavItem.DYNAMIC && dynamicUnreadCount > 0) {
@@ -239,14 +262,16 @@ fun LargeScreenFloatingDock(
             visible = true,
             dockContentAlpha = 1f,
             indicatorTranslationXPx = 0f,
-            indicatorTranslationYPx = indicatorPosition * slotPx,
+            indicatorTranslationYPx = indicatorPosition * slotPx + with(density) {
+                ((LargeScreenDockItemSize - LargeScreenDockIndicatorHeight) / 2).toPx()
+            },
             indicatorPanelOffsetPx = 0f,
-            indicatorWidth = LargeScreenDockItemSize,
-            indicatorHeight = LargeScreenDockItemSize,
+            indicatorWidth = LargeScreenDockIndicatorWidth,
+            indicatorHeight = LargeScreenDockIndicatorHeight,
             shellShape = shellShape,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
             contentBackdrop = combinedBackdrop,
-            backdrop = pageBackdrop,
+            backdrop = dockPageBackdrop,
             indicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(pressProgress),
             liquidGlassTuning = tuning,
             effectivePressProgress = pressProgress,
@@ -256,7 +281,7 @@ fun LargeScreenFloatingDock(
             velocityItemsPerSecond = dragAnimation.velocity,
             isDragging = dragAnimation.isDragging,
             indicatorLayerScaleProgress = maxOf(dragScaleProgress, pressProgress),
-            dragScaleTarget = FloatingBottomBarPressedScale,
+            dragScaleTarget = indicatorGeometry.pressedScale,
             bottomBarMotionSpec = motionSpec,
             isDarkTheme = isDarkTheme,
             orientation = BottomBarLiquidOrientation.VERTICAL,
