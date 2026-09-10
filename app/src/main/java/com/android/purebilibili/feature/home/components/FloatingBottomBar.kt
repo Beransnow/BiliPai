@@ -460,13 +460,13 @@ fun FloatingBottomBar(
     content: @Composable RowScope.() -> Unit
 ) {
     val isInDark = isSystemInDarkTheme()
+    val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass
     val segmentedGeometry = geometryMode != FloatingBottomBarGeometryMode.Dock
-    val allowOverflow = !segmentedGeometry
+    val allowOverflow = isLiquidGlassMode || !segmentedGeometry
     val horizontalPadding = contentHorizontalPadding.coerceAtLeast(0.dp)
     val verticalPadding = contentVerticalPadding.coerceIn(0.dp, shellHeight.coerceAtLeast(0.dp) / 2)
     val horizontalPaddingLatest = rememberUpdatedState(horizontalPadding)
     val pillShape = remember { resolveSharedBottomBarCapsuleShape() }
-    val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass
     val isBlurMode = mode == FloatingBottomBarMode.Blur
     val adaptiveReadabilityEnabled = isLiquidGlassMode &&
         liquidGlassTuning.readabilityMode == LiquidGlassReadabilityMode.ADAPTIVE
@@ -645,6 +645,7 @@ fun FloatingBottomBar(
                     totalWidthPx - padding - tabWidthPx - indicatorX + offset.x
                 }
                 if (globalTouchX !in 0f..totalWidthPx) return@DampedDragAnimation false
+                if (segmentedGeometry) return@DampedDragAnimation true
                 shouldAcceptFloatingDockDragAtWindowX(
                     windowX = dragHitTest.dockWindowLeftPx + globalTouchX,
                     screenWidthPx = dragHitTest.screenWidthPx,

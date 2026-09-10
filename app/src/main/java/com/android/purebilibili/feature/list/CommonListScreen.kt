@@ -1861,6 +1861,7 @@ fun CommonListScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, bottom = commonListBottomPadding + AppSpacingTokens.Medium),
+                backdrop = commonListChromeBackdrop,
             )
         }
     }

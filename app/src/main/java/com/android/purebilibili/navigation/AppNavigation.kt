@@ -1709,7 +1709,6 @@ fun AppNavigation(
             LocalSetBottomBarVisible provides setBottomBarVisible,
             LocalBottomBarVisible provides (finalBottomBarVisible && !driveBottomBarByProgress),
             LocalBottomBarContentPadding provides bottomBarContentPadding,
-            com.android.purebilibili.core.ui.blur.LocalFloatingChromeBackdrop provides bottomBarBackdrop,
             LocalGlobalWallpaperBackdropVisible provides exposeGlobalHomeWallpaperChrome,
             LocalPredictiveBackGestureEnabled provides predictiveBackEnabled,
             com.android.purebilibili.core.ui.LocalUpBadgeVisibility provides

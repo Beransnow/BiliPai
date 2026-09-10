@@ -58,6 +58,9 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
 import com.android.purebilibili.core.store.HomeSettings
@@ -1309,10 +1312,13 @@ internal fun VideoCommentTab(
                 title = "${sortMode.label}评论",
             )
         }
+        val commentBackdrop = rememberLayerBackdrop()
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(commentBackdrop),
                 contentPadding = contentPadding
             ) {
             if (isRepliesLoading && replies.isEmpty()) {
@@ -1413,6 +1419,7 @@ internal fun VideoCommentTab(
                         listState.animateScrollToItem(0)
                     }
                 },
+                backdrop = commentBackdrop,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(

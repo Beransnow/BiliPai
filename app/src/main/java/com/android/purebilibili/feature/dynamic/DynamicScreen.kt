@@ -77,6 +77,7 @@ import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppLiquidGlassBackToTopButton
+import top.yukonga.miuix.kmp.blur.Backdrop
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -699,6 +700,7 @@ fun DynamicScreen(
             //  [新增] 模式切换动画
             val modeEnterFadeSpec = AppMotionTokens.emphasizedSpec<Float>()
             val modeExitFadeSpec = AppMotionTokens.standardSpec<Float>()
+            var activeDynamicBackdrop by remember { mutableStateOf<Backdrop?>(null) }
             AnimatedContent(
                 targetState = displayMode,
                 transitionSpec = {
@@ -726,6 +728,11 @@ fun DynamicScreen(
                     null
                 }
                 val dynamicDockBackdrop = dynamicDockSource?.takeIf { it.isReady }?.backdrop
+                SideEffect {
+                    if (activeDynamicBackdrop != dynamicDockBackdrop) {
+                        activeDynamicBackdrop = dynamicDockBackdrop
+                    }
+                }
                 //  根据布局模式选择不同布局
                 when (targetMode) {
                     DynamicDisplayMode.SIDEBAR,
@@ -1133,6 +1140,7 @@ fun DynamicScreen(
                                     hazeState = dynamicTopBarHazeState,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
                                     isScrollInProgressProvider = dynamicTabScrollInProgressProvider,
+                                    shouldShowHorizontalUserList = shouldShowHorizontalUserList,
                                 )
                             }
 
@@ -1154,7 +1162,7 @@ fun DynamicScreen(
                                     onToggleHidden = { viewModel.toggleHiddenUser(it) },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        // 收缩可见区域并裁掉移出的头像，避免穿透透明顶栏和状态栏。
+                                        // 与内容滚动逐像素联动：下滑时自然上收并裁切，回顶时完整恢复。
                                         .dynamicScrollCollapseLayout(
                                             expandedHeightPx = expandedUserListHeightPx,
                                             listStateProvider = { activeListState },
@@ -1188,6 +1196,7 @@ fun DynamicScreen(
                         scrollDynamicFeedToTop(refreshWhenAlreadyAtTop = false)
                     }
                 },
+                backdrop = activeDynamicBackdrop,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, bottom = dynamicListBottomPadding + AppSpacingTokens.Medium),
@@ -1839,11 +1848,12 @@ private fun HorizontalUserList(
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            // 头像行名称不要用头像宽度限制，避免正常昵称被提前截断；
+                            // 预留高度已覆盖名称基线；此处再放宽名字宽度上限，
+                            // 避免较长昵称在窄视口下被过早省略号截断。
                             // LazyRow 仍会在屏幕边缘自然裁切超出视口的内容。
                             modifier = Modifier.widthIn(
                                 min = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large,
-                                max = 112.dp,
+                                max = 128.dp,
                             )
                         )
                     }

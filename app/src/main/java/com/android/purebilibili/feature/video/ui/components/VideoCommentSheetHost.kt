@@ -1013,6 +1013,7 @@ internal fun VideoCommentMainList(
 
                 AppLiquidGlassBackToTopButton(
                     visible = rememberBackToTopButtonEnabled() && shouldShowBackToTop,
+                    backdrop = commentChromeBackdrop,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(end = 20.dp, bottom = 20.dp),

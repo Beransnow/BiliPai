@@ -2148,6 +2148,7 @@ fun SearchScreen(
                         }
                     }
                 },
+                backdrop = searchChromeBackdrop,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(

@@ -29,6 +29,8 @@ import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.components.AppLiquidGlassBackToTopButton
 import com.android.purebilibili.core.ui.components.AppIconButton
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.data.repository.VideoRepository
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
@@ -213,6 +215,8 @@ fun CategoryScreen(
             viewModel.loadMore()
         }
     }
+
+    val categoryBackdrop = rememberLayerBackdrop()
     
     AppScaffold(
         topBar = {
@@ -254,7 +258,9 @@ fun CategoryScreen(
                     isRefreshing = isRefreshing,
                     onRefresh = viewModel::refresh,
                     indicatorTopInset = 0.dp,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .layerBackdrop(categoryBackdrop)
                 ) {
                     // 视频网格
                     LazyVerticalGrid(
@@ -353,6 +359,7 @@ fun CategoryScreen(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(20.dp),
+                backdrop = categoryBackdrop,
             )
         }
     }
