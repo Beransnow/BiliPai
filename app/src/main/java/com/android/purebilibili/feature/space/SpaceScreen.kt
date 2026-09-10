@@ -2288,6 +2288,7 @@ private fun SpaceHeader(
     val heroHeight = (bannerTotalHeightDp - chromeTopInset).coerceAtLeast(0.dp)
     val avatarSize = 80.dp
     val avatarBannerOverlap = 24.dp
+    val avatarTopPadding = (heroHeight - avatarBannerOverlap).coerceAtLeast(0.dp)
     val actionsTopMargin = 8.dp
 
     Column(
@@ -2371,7 +2372,7 @@ private fun SpaceHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = heroHeight - avatarBannerOverlap, start = 4.dp, end = 0.dp),
+                    .padding(top = avatarTopPadding, start = 4.dp, end = 0.dp),
                 verticalAlignment = Alignment.Top
             ) {
                 val avatarModifier = if (sharedTransitionScope != null && animatedVisibilityScope != null) {
