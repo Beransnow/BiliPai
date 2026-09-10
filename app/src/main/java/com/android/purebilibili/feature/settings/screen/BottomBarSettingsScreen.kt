@@ -45,7 +45,6 @@ import com.android.purebilibili.core.store.HomeTopLayoutOrder
 import com.android.purebilibili.core.store.HomeTopRightAction
 import com.android.purebilibili.core.store.BottomBarSearchAutoExpandMode
 import com.android.purebilibili.core.store.BottomBarSearchLayoutMode
-import com.android.purebilibili.core.store.LargeScreenFloatingDockPlacement
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.resolveHomeHeaderCollapseModeForTopBarHide
 import com.android.purebilibili.core.theme.BottomBarColors  //  统一底栏颜色配置
@@ -207,13 +206,6 @@ fun BottomBarSettingsContent(
         .collectAsStateWithLifecycle(initialValue = HomeTopRightAction.SETTINGS)
     val isBottomBarFloating by SettingsManager.getBottomBarFloating(context)
         .collectAsStateWithLifecycle(initialValue = true)
-    val androidLiquidGlassEnabled by SettingsManager.getAndroidNativeLiquidGlassEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = false)
-    val bottomBarLiquidGlassEnabled by SettingsManager.getBottomBarLiquidGlassEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = false)
-    val largeScreenFloatingDockPlacement by SettingsManager
-        .getLargeScreenFloatingDockPlacement(context)
-        .collectAsStateWithLifecycle(initialValue = LargeScreenFloatingDockPlacement.BOTTOM)
     val navigationIconCrossScaleEnabled by SettingsManager
         .getNavigationIconCrossScaleEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
@@ -353,33 +345,6 @@ fun BottomBarSettingsContent(
                             },
                             iconTint = com.android.purebilibili.core.theme.iOSPurple,
                         )
-                        if (
-                            windowSizeClass.isTablet &&
-                            androidLiquidGlassEnabled &&
-                            bottomBarLiquidGlassEnabled &&
-                            isBottomBarFloating
-                        ) {
-                            AppPreferenceDivider()
-                            SettingsSingleChoicePreference(
-                                title = "大屏悬浮 Dock 位置",
-                                subtitle = "智能模式会在书本态跟随最近操作的左/右屏，并自动避开水平铰链",
-                                options = LargeScreenFloatingDockPlacement.entries.map { placement ->
-                                    AppSegmentOption(placement, placement.label)
-                                },
-                                selectedValue = largeScreenFloatingDockPlacement,
-                                onSelectionChange = { placement ->
-                                    scope.launch {
-                                        SettingsManager.setLargeScreenFloatingDockPlacement(
-                                            context,
-                                            placement
-                                        )
-                                        if (placement != LargeScreenFloatingDockPlacement.BOTTOM) {
-                                            SettingsManager.setTabletUseSidebar(context, false)
-                                        }
-                                    }
-                                },
-                            )
-                        }
                         AppPreferenceDivider()
                         AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.NAV_ICON_CROSS_SCALE),

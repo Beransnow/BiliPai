@@ -37,10 +37,6 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.feature.article.ArticleDetailScreen
@@ -181,7 +177,6 @@ import com.android.purebilibili.core.plugin.skin.rememberUiSkinState
 // import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass (Removed)
 // import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi (Removed)
 import com.android.purebilibili.feature.home.components.FrostedBottomBar
-import com.android.purebilibili.feature.home.components.LargeScreenFloatingDock
 import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.BottomBarMatchedDockEdge
 import com.android.purebilibili.feature.home.components.BottomBarMatchedDockVisibility
@@ -193,7 +188,6 @@ import com.android.purebilibili.feature.home.components.rememberDynamicPublishSk
 import com.android.purebilibili.feature.home.components.rememberHomeUiSkinDecoration
 import com.android.purebilibili.feature.profile.shouldShowProfileHistoryService
 import com.android.purebilibili.core.store.AppNavigationSettings
-import com.android.purebilibili.core.store.LargeScreenFloatingDockPlacement
 import com.android.purebilibili.core.store.AccountSessionStore
 import com.android.purebilibili.core.store.HomeWallpaperEffectScope
 import com.android.purebilibili.core.store.SettingsManager
@@ -720,24 +714,6 @@ fun AppNavigation(
             windowSizeClass = windowSizeClass,
             tabletUseSidebar = tabletUseSidebar,
             foldPosture = appWindowAdaptiveInfo.posture,
-        )
-        var lastContentInteractionXPx by remember { mutableStateOf<Float?>(null) }
-        val hingeBounds = appWindowAdaptiveInfo.foldingFeature.hingeBounds
-        val resolvedLargeScreenFloatingDockPlacement = resolveLargeScreenFloatingDockPlacement(
-            requested = effectiveHomeSettings.largeScreenFloatingDockPlacement,
-            foldPosture = appWindowAdaptiveInfo.posture,
-            hingeOrientation = appWindowAdaptiveInfo.foldingFeature.hingeOrientation,
-            hingeCenterXPx = hingeBounds?.let { (it.left + it.right) / 2f },
-            lastInteractionXPx = lastContentInteractionXPx,
-            isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr,
-        )
-        val useLargeScreenFloatingSideDock = shouldUseLargeScreenFloatingSideDock(
-            isLargeScreen = windowSizeClass.isTablet,
-            isBottomBarFloating = isBottomBarFloating,
-            liquidGlassEnabled = effectiveHomeSettings.androidNativeLiquidGlassEnabled &&
-                effectiveHomeSettings.isBottomBarLiquidGlassEnabled,
-            useSideNavigation = useSideNavigation,
-            placement = resolvedLargeScreenFloatingDockPlacement,
         )
         // 由所有入口共用的底栏内部显隐状态。进视频前先置为隐藏，避免返回到主入口后再补一次隐藏动画。
         var isBottomBarVisible by remember(launchToPortraitFeedOnStartupAtInit) {
@@ -1479,9 +1455,7 @@ fun AppNavigation(
             navigationBarsBottom = WindowInsets.navigationBars
                 .asPaddingValues()
                 .calculateBottomPadding(),
-            reserveBottomBar = bottomBarReservesSpace &&
-                !useSideNavigation &&
-                !useLargeScreenFloatingSideDock,
+            reserveBottomBar = bottomBarReservesSpace && !useSideNavigation,
             isBottomBarFloating = isBottomBarFloating,
             hasUiSkinDecoration = bottomBarUiSkinDecoration != null,
         )
@@ -1857,22 +1831,7 @@ fun AppNavigation(
                     },
                 )
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(appWindowAdaptiveInfo.posture) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                val event = awaitPointerEvent(PointerEventPass.Initial)
-                                event.changes.firstOrNull {
-                                    it.pressed && !it.previousPressed
-                                }?.let { change ->
-                                    lastContentInteractionXPx = change.position.x
-                                }
-                            }
-                        }
-                    }
-            ) {
+            Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
                 // Remove the whole slot on video detail so an exit animation cannot reserve width.
                 if (windowSizeClass.shouldUseSideNavigation && sideBarMountGate) {
@@ -3977,16 +3936,7 @@ fun AppNavigation(
 
             if (bottomBarCanMount) {
                 val bottomBarModifier = Modifier
-                    .align(
-                        when (resolvedLargeScreenFloatingDockPlacement) {
-                            LargeScreenFloatingDockPlacement.LEFT ->
-                                if (useLargeScreenFloatingSideDock) Alignment.CenterStart else Alignment.BottomCenter
-                            LargeScreenFloatingDockPlacement.RIGHT ->
-                                if (useLargeScreenFloatingSideDock) Alignment.CenterEnd else Alignment.BottomCenter
-                            LargeScreenFloatingDockPlacement.BOTTOM -> Alignment.BottomCenter
-                            else -> Alignment.BottomCenter
-                        }
-                    )
+                    .align(Alignment.BottomCenter)
                     .zIndex(1f)
                     .then(
                         if (driveBottomBarByProgress) {
@@ -4010,18 +3960,7 @@ fun AppNavigation(
                         enterFadeDurationMillis = navMotionSpec.slowFadeDurationMillis,
                         exitFadeDurationMillis = navMotionSpec.fastFadeDurationMillis
                     ) {
-                        if (useLargeScreenFloatingSideDock) {
-                            LargeScreenFloatingDock(
-                                currentItem = currentBottomNavItem,
-                                onItemClick = handleNavItemClick,
-                                visibleItems = visibleBottomBarItems,
-                                itemLabels = bottomBarItemLabels,
-                                homeSettings = effectiveHomeSettings,
-                                dynamicUnreadCount = dynamicUnreadCount,
-                                onSearchClick = { requestSearchFromBottomBar() },
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                            )
-                        } else Column(
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {

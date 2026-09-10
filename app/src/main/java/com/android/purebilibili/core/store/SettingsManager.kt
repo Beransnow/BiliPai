@@ -634,8 +634,6 @@ data class HomeSettings(
         BottomBarSearchAutoExpandMode.EXPAND_AT_HOME_TOP,
     val bottomBarSearchLayoutMode: BottomBarSearchLayoutMode =
         BottomBarSearchLayoutMode.FULL_DOCK,
-    val largeScreenFloatingDockPlacement: LargeScreenFloatingDockPlacement =
-        LargeScreenFloatingDockPlacement.BOTTOM,
     val androidNativeLiquidGlassEnabled: Boolean = true,
     val liquidGlassStyle: LiquidGlassStyle = LiquidGlassStyle.CLASSIC, // [New]
     val liquidGlassMode: LiquidGlassMode = LiquidGlassMode.BALANCED,
@@ -755,18 +753,6 @@ enum class BottomBarSearchLayoutMode(val value: Int, val label: String) {
     companion object {
         fun fromValue(value: Int): BottomBarSearchLayoutMode =
             entries.find { it.value == value } ?: FULL_DOCK
-    }
-}
-
-enum class LargeScreenFloatingDockPlacement(val value: Int, val label: String) {
-    AUTO(3, "智能"),
-    BOTTOM(0, "底部"),
-    LEFT(1, "左侧"),
-    RIGHT(2, "右侧");
-
-    companion object {
-        fun fromValue(value: Int): LargeScreenFloatingDockPlacement =
-            entries.find { it.value == value } ?: BOTTOM
     }
 }
 
@@ -1493,8 +1479,6 @@ object SettingsManager {
         intPreferencesKey("bottom_bar_search_auto_expand_mode")
     private val KEY_BOTTOM_BAR_SEARCH_LAYOUT_MODE =
         intPreferencesKey("bottom_bar_search_layout_mode")
-    private val KEY_LARGE_SCREEN_FLOATING_DOCK_PLACEMENT =
-        intPreferencesKey("large_screen_floating_dock_placement")
     private val KEY_ANDROID_NATIVE_LIQUID_GLASS_ENABLED =
         booleanPreferencesKey("android_native_liquid_glass_enabled")
     private val KEY_LEGACY_ANDROID_NATIVE_TOP_TAB_LIQUID_GLASS_ENABLED =
@@ -1696,10 +1680,6 @@ object SettingsManager {
             bottomBarSearchLayoutMode = BottomBarSearchLayoutMode.fromValue(
                 preferences[KEY_BOTTOM_BAR_SEARCH_LAYOUT_MODE]
                     ?: BottomBarSearchLayoutMode.FULL_DOCK.value
-            ),
-            largeScreenFloatingDockPlacement = LargeScreenFloatingDockPlacement.fromValue(
-                preferences[KEY_LARGE_SCREEN_FLOATING_DOCK_PLACEMENT]
-                    ?: LargeScreenFloatingDockPlacement.BOTTOM.value
             ),
             androidNativeLiquidGlassEnabled =
                 preferences[KEY_ANDROID_NATIVE_LIQUID_GLASS_ENABLED]
@@ -3904,24 +3884,6 @@ object SettingsManager {
     ) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_BOTTOM_BAR_SEARCH_LAYOUT_MODE] = value.value
-        }
-    }
-
-    fun getLargeScreenFloatingDockPlacement(
-        context: Context
-    ): Flow<LargeScreenFloatingDockPlacement> = context.settingsDataStore.data.map { preferences ->
-        LargeScreenFloatingDockPlacement.fromValue(
-            preferences[KEY_LARGE_SCREEN_FLOATING_DOCK_PLACEMENT]
-                ?: LargeScreenFloatingDockPlacement.BOTTOM.value
-        )
-    }
-
-    suspend fun setLargeScreenFloatingDockPlacement(
-        context: Context,
-        value: LargeScreenFloatingDockPlacement
-    ) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_LARGE_SCREEN_FLOATING_DOCK_PLACEMENT] = value.value
         }
     }
 
@@ -7298,10 +7260,6 @@ object SettingsManager {
             StringShareablePreferenceDefinition(KEY_APP_ICON_STYLE, SettingsShareSection.APPEARANCE),
             StringShareablePreferenceDefinition(KEY_APP_LIST_ITEM_STYLE, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(KEY_BOTTOM_BAR_FLOATING, SettingsShareSection.APPEARANCE),
-            IntShareablePreferenceDefinition(
-                KEY_LARGE_SCREEN_FLOATING_DOCK_PLACEMENT,
-                SettingsShareSection.APPEARANCE,
-            ),
             BooleanShareablePreferenceDefinition(
                 KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED,
                 SettingsShareSection.APPEARANCE,
