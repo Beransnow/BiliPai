@@ -28,7 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import com.android.purebilibili.core.ui.components.AppButton
-import com.android.purebilibili.core.ui.components.AppBackToTopButton
+import com.android.purebilibili.core.ui.components.AppLiquidGlassBackToTopButton
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
@@ -398,7 +398,7 @@ fun LiveSearchScreen(
                 }
             }
 
-            AppBackToTopButton(
+            AppLiquidGlassBackToTopButton(
                 visible = backToTopButtonEnabled && hasSubmitted && !isLoading && hasScrolledAwayFromTop,
                 onClick = {
                     scope.launch {

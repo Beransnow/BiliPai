@@ -7,7 +7,7 @@ import com.android.purebilibili.core.ui.components.videoListItemModifier
 import com.android.purebilibili.core.ui.components.AnimatedVideoListItem
 import coil3.request.crossfade
 import com.android.purebilibili.core.ui.components.AppAssistChip
-import com.android.purebilibili.core.ui.components.AppBackToTopButton
+import com.android.purebilibili.core.ui.components.AppLiquidGlassBackToTopButton
 import com.android.purebilibili.core.ui.components.AppCheckbox
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
@@ -66,7 +66,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 //  Material Icons
@@ -113,7 +112,6 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.isMiuixNonGlassEnabled
 import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
-import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
 import com.android.purebilibili.feature.home.components.BiliPaiImmersiveTopBar
 import com.android.purebilibili.feature.home.components.HomeTopChromeRenderMode
@@ -2139,7 +2137,7 @@ fun SearchScreen(
             }
             }
 
-            AppBackToTopButton(
+            AppLiquidGlassBackToTopButton(
                 visible = backToTopButtonEnabled && shouldShowBackToTop,
                 onClick = {
                     scope.launch {
@@ -2156,17 +2154,6 @@ fun SearchScreen(
                         end = 20.dp,
                         bottom = resultBottomPadding + 12.dp
                     ),
-                buttonModifier = Modifier.biliPaiFloatingDockShell(
-                    backdrop = searchChromeBackdrop,
-                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
-                    pressProgress = 0f,
-                    enabled = effectiveLiquidGlassEnabled && !isLowBlurBudgetForced(),
-                ),
-                containerColor = if (effectiveLiquidGlassEnabled && searchChromeBackdrop != null) {
-                    Color.Transparent
-                } else {
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
-                },
             )
             
             // ---  搜索建议下拉列表 ---

@@ -19,7 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import com.android.purebilibili.core.ui.components.AppIcon
-import com.android.purebilibili.core.ui.components.AppBackToTopButton
+import com.android.purebilibili.core.ui.components.AppLiquidGlassBackToTopButton
 import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.FilterChipDefaults
@@ -300,7 +300,7 @@ fun LiveAreaDetailScreen(
                 }
             }
 
-            AppBackToTopButton(
+            AppLiquidGlassBackToTopButton(
                 visible = backToTopButtonEnabled && rooms.isNotEmpty() && hasScrolledAwayFromTop,
                 onClick = {
                     scope.launch {

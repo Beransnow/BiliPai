@@ -27,7 +27,7 @@ import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
 import com.android.purebilibili.core.ui.adaptive.resolveEffectiveMotionTier
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
-import com.android.purebilibili.core.ui.components.AppBackToTopButton
+import com.android.purebilibili.core.ui.components.AppLiquidGlassBackToTopButton
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.data.repository.VideoRepository
@@ -343,7 +343,7 @@ fun CategoryScreen(
                 }
             }
 
-            AppBackToTopButton(
+            AppLiquidGlassBackToTopButton(
                 visible = backToTopButtonEnabled && videos.isNotEmpty() && hasScrolledAwayFromTop,
                 onClick = {
                     scope.launch {

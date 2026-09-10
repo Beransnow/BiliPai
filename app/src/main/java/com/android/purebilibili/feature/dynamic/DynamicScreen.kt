@@ -76,13 +76,13 @@ import com.android.purebilibili.core.ui.components.AppPrimaryButton
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
+import com.android.purebilibili.core.ui.components.AppLiquidGlassBackToTopButton
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.ui.LoadingAnimation
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
-import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppDynamicIcon
 import com.android.purebilibili.core.store.AccountSessionStore
@@ -1181,29 +1181,17 @@ fun DynamicScreen(
                 }
             }
 
-            AnimatedVisibility(
+            AppLiquidGlassBackToTopButton(
                 visible = rememberBackToTopButtonEnabled() && shouldShowBackToTop,
+                onClick = {
+                    scope.launch {
+                        scrollDynamicFeedToTop(refreshWhenAlreadyAtTop = false)
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, bottom = dynamicListBottomPadding + AppSpacingTokens.Medium),
-                enter = fadeIn(animationSpec = AppMotionTokens.standardSpec()) + scaleIn(initialScale = 0.92f),
-                exit = fadeOut(animationSpec = AppMotionTokens.standardSpec()) + scaleOut(targetScale = 0.92f)
-            ) {
-                AppSmallFloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            scrollDynamicFeedToTop(refreshWhenAlreadyAtTop = false)
-                        }
-                    },
-                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2),
-                    contentColor = MaterialTheme.colorScheme.primary
-                ) {
-                    AppIcon(
-                        imageVector = rememberAppChevronUpIcon(),
-                        contentDescription = "回到顶部"
-                    )
-                }
-            }
+            )
         }
     }
 
