@@ -3983,7 +3983,7 @@ fun AppNavigation(
                             LargeScreenFloatingDockPlacement.RIGHT ->
                                 if (useLargeScreenFloatingSideDock) Alignment.CenterEnd else Alignment.BottomCenter
                             LargeScreenFloatingDockPlacement.BOTTOM -> Alignment.BottomCenter
-                            LargeScreenFloatingDockPlacement.AUTO -> Alignment.BottomCenter
+                            else -> Alignment.BottomCenter
                         }
                     )
                     .zIndex(1f)
