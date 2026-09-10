@@ -371,9 +371,9 @@ fun DynamicScreen(
                     activeListState?.animateScrollToItem(0)
                 }
                 DynamicTabReselectAction.SWITCH_TAB -> {
-                    // 点击标签时页面与指示器在同一帧提交，避免内容已经切换、
-                    // 外部 Pager 指示器仍在补间追赶的迟滞感。横向手势仍保留跟手动画。
-                    pagerState.scrollToPage(page = visibleIndex)
+                    // Reuse the shared pager-follow deformation: tap switching now drives the
+                    // same indicator stretch, scale and settle motion as other tab docks.
+                    pagerState.animateScrollToPage(page = visibleIndex)
                 }
             }
         }
