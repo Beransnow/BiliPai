@@ -105,7 +105,8 @@ class FloatingBottomBarStructureTest {
 
         assertTrue(source.contains("import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation"))
         assertTrue(body.contains("DampedDragAnimation("))
-        assertTrue(body.contains("pressedScale = matchedGeometry.pressedScale"))
+        assertTrue(body.contains("pressedScale = pressedScale"))
+        assertTrue(body.contains("FloatingBottomBarDockPressedScale"))
         assertTrue(body.contains("floatingDockScaleOverflow("))
         assertTrue(body.contains("overflow = scaleOverflowDp"))
         assertTrue(body.contains("shellHeight = shellHeight"))
@@ -140,7 +141,7 @@ class FloatingBottomBarStructureTest {
             .substringAfter("val dampedDragAnimation = remember(")
             .substringBefore(") {")
         assertFalse(dragRememberKeys.contains("matchedGeometry.pressedScale"))
-        assertTrue(body.contains("dampedDragAnimation.pressedScale = matchedGeometry.pressedScale"))
+        assertTrue(body.contains("dampedDragAnimation.pressedScale = pressedScale"))
         assertTrue(body.contains("remember(animationScope) {"))
         assertFalse(body.contains("remember(animationScope, tabWidthPx)"))
         assertTrue(dragPort.contains("releaseJob?.cancel()"))

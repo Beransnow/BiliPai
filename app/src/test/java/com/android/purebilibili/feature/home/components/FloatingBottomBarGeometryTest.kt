@@ -10,6 +10,11 @@ import kotlin.test.assertTrue
 class FloatingBottomBarGeometryTest {
 
     @Test
+    fun `home dock restores original 56 to 78 press bloom ratio`() {
+        assertEquals(78f / 56f, FloatingBottomBarDockPressedScale, 0.0001f)
+    }
+
+    @Test
     fun `home top icon text and combined modes keep fuller flat indicators`() {
         // 0: icon + label, 1: icon only, 2: label only. Use the actual dock width policy.
         for (mode in listOf(0, 1, 2)) {

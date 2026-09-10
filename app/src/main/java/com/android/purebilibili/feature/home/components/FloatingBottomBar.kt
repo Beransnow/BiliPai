@@ -259,6 +259,9 @@ val FloatingBottomBarDefaultShellHeight: Dp = 56.dp
 const val FloatingBottomBarPressedScale: Float =
     com.android.purebilibili.core.ui.BottomBarReferencePressedScale
 
+/** Restore the original home-dock 78/56 press ratio without retuning other rails. */
+internal const val FloatingBottomBarDockPressedScale: Float = 78f / 56f
+
 internal const val EXTERNAL_PAGER_INDICATOR_CATCH_UP_EPSILON = 0.05f
 
 /**
@@ -516,12 +519,6 @@ fun FloatingBottomBar(
     val tabPressScale = remember(shellHeight) {
         resolveCompactDockTabPressScale(shellHeight.value)
     }
-    val scaleOverflowDp = remember(shellHeight, indicatorHeight) {
-        resolveCompactDockScaleOverflowDp(
-            shellHeightDp = shellHeight.value,
-            indicatorHeightDp = indicatorHeight.value,
-        ).dp
-    }
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val layoutDirection = LocalLayoutDirection.current
     val configuration = LocalConfiguration.current
@@ -561,6 +558,16 @@ fun FloatingBottomBar(
             dockHeightDp = shellHeight.value,
             indicatorHeightDp = fittedIndicatorHeight.value,
         )
+    }
+    val pressedScale = if (geometryMode == FloatingBottomBarGeometryMode.Dock) {
+        FloatingBottomBarDockPressedScale
+    } else {
+        matchedGeometry.pressedScale
+    }
+    val scaleOverflowDp = remember(shellHeight, fittedIndicatorHeight, pressedScale) {
+        ((fittedIndicatorHeight.value * pressedScale - shellHeight.value) / 2f)
+            .coerceAtLeast(0f)
+            .dp
     }
     class DockDragHitTest {
         var dockWindowLeftPx = 0f
@@ -631,7 +638,7 @@ fun FloatingBottomBar(
             valueRange = 0f..maxTabIndex.toFloat(),
             visibilityThreshold = 0.001f,
             initialScale = 1f,
-            pressedScale = matchedGeometry.pressedScale,
+            pressedScale = pressedScale,
             trackingMode = dragTrackingMode,
             canDrag = { offset ->
                 val animation = holder.instance ?: return@DampedDragAnimation true
@@ -694,7 +701,7 @@ fun FloatingBottomBar(
     SideEffect {
         // Search reserving space beside the dock can retarget indicator geometry. Updating the
         // field keeps press bloom in sync without recreating the pointerInput owner.
-        dampedDragAnimation.pressedScale = matchedGeometry.pressedScale
+        dampedDragAnimation.pressedScale = pressedScale
     }
     // Pager swipes are already continuous state. When explicitly requested, read that position
     // in layout/draw instead of depending solely on the coroutine mirror above. This keeps the
