@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.home.components
 
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -20,11 +19,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
@@ -32,7 +34,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.store.HomeSettings
-import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.adaptive.MotionTier
@@ -43,6 +44,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineStart
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
 
@@ -85,6 +88,9 @@ fun LargeScreenFloatingDock(
     val itemsLatest by rememberUpdatedState(dockItems)
     val slotPx = with(density) { (LargeScreenDockItemSize + LargeScreenDockGap).toPx() }
     val indicatorOffset = remember { Animatable(selectedIndex.toFloat()) }
+    var directDragPosition by remember { mutableStateOf<Float?>(null) }
+    val indicatorPosition = directDragPosition ?: indicatorOffset.value
+    val motionSpec = remember { resolveSegmentedControlMotionSpec() }
     val tuning = remember(
         homeSettings.liquidGlassProgress,
         homeSettings.liquidGlassAdvancedSettings,
@@ -103,7 +109,7 @@ fun LargeScreenFloatingDock(
     LaunchedEffect(selectedIndex) {
         indicatorOffset.animateTo(
             selectedIndex.toFloat(),
-            animationSpec = spring(dampingRatio = 0.78f, stiffness = 520f),
+            animationSpec = motionSpec.drag.selectionSpring.toSpringSpec(),
         )
     }
 
@@ -133,24 +139,25 @@ fun LargeScreenFloatingDock(
                 var dragStart = indicatorOffset.value
                 detectDragGestures(
                     onDragStart = {
-                        dragStart = indicatorOffset.value
+                        dragStart = indicatorPosition
+                        directDragPosition = indicatorPosition
                         haptic(HapticType.LIGHT)
                     },
                     onDrag = { change, amount ->
                         change.consume()
-                        scope.launch {
-                            indicatorOffset.snapTo(
-                                (indicatorOffset.value + amount.y / slotPx)
-                                    .coerceIn(0f, lastIndex.toFloat())
-                            )
-                        }
+                        directDragPosition = (
+                            (directDragPosition ?: indicatorOffset.value) + amount.y / slotPx
+                            ).coerceIn(0f, lastIndex.toFloat())
                     },
                     onDragEnd = {
-                        val target = indicatorOffset.value.roundToInt().coerceIn(0, lastIndex)
-                        scope.launch {
+                        val releasePosition = indicatorPosition
+                        val target = releasePosition.roundToInt().coerceIn(0, lastIndex)
+                        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                            indicatorOffset.snapTo(releasePosition)
+                            directDragPosition = null
                             indicatorOffset.animateTo(
                                 target.toFloat(),
-                                animationSpec = spring(dampingRatio = 0.72f, stiffness = 600f),
+                                animationSpec = motionSpec.drag.selectionSpring.toSpringSpec(),
                             )
                         }
                         itemsLatest.getOrNull(target)?.let {
@@ -159,14 +166,22 @@ fun LargeScreenFloatingDock(
                         }
                     },
                     onDragCancel = {
-                        scope.launch { indicatorOffset.animateTo(dragStart) }
+                        val cancelPosition = indicatorPosition
+                        scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                            indicatorOffset.snapTo(cancelPosition)
+                            directDragPosition = null
+                            indicatorOffset.animateTo(
+                                dragStart,
+                                animationSpec = motionSpec.drag.selectionSpring.toSpringSpec(),
+                            )
+                        }
                     },
                 )
             },
     ) {
         Box(
             modifier = Modifier
-                .graphicsLayer { translationY = indicatorOffset.value * slotPx }
+                .graphicsLayer { translationY = indicatorPosition * slotPx }
                 .size(LargeScreenDockItemSize)
                 .biliPaiMiuixFloatingDockSurface(
                     shape = shellShape,
@@ -185,7 +200,9 @@ fun LargeScreenFloatingDock(
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(LargeScreenDockGap)) {
-            dockItems.forEach { item ->
+            dockItems.forEachIndexed { index, item ->
+                val selectionProgress = (1f - abs(index - indicatorPosition)).coerceIn(0f, 1f)
+                val visuallySelected = selectionProgress > 0.5f
                 val isSelected = item == currentItem
                 val label = resolveBottomNavItemLabel(item, itemLabels)
                 Box(
@@ -201,13 +218,13 @@ fun LargeScreenFloatingDock(
                     contentAlignment = Alignment.Center,
                 ) {
                     AppIcon(
-                        imageVector = resolveHomeNavigationBarIcon(item, isSelected),
+                        imageVector = resolveHomeNavigationBarIcon(item, visuallySelected),
                         contentDescription = label,
-                        tint = if (isSelected) {
-                            MaterialTheme.colorScheme.onPrimaryContainer
-                        } else {
-                            AppSurfaceTokens.onSurfaceVariantSummary()
-                        },
+                        tint = lerp(
+                            MaterialTheme.colorScheme.onSurfaceVariant,
+                            MaterialTheme.colorScheme.primary,
+                            selectionProgress,
+                        ),
                         modifier = Modifier.size(26.dp),
                     )
                     if (item == BottomNavItem.DYNAMIC && dynamicUnreadCount > 0) {
