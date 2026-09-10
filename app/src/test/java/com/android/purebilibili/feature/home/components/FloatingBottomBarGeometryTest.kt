@@ -416,7 +416,7 @@ class FloatingBottomBarGeometryTest {
             indicatorHeightDp = 30f,
         )
         assertEquals((78f - 64f) / 2f, homeOverflow, 0.001f)
-        assertEquals((78f - 40f) / 2f, compactOverflow, 0.001f)
+        assertEquals((40f * 78f / 56f - 40f) / 2f, compactOverflow, 0.001f)
         assertTrue(compactOverflow > 0f)
     }
 

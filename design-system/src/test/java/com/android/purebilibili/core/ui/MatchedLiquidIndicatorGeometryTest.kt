@@ -23,8 +23,8 @@ class MatchedLiquidIndicatorGeometryTest {
         val geometry = resolveMatchedLiquidIndicatorGeometry(dockHeightDp = 40f)
 
         assertEquals(35f, geometry.indicatorHeightDp, 0.0001f)
-        assertEquals(BottomBarReferencePressedScale, geometry.pressedScale, 0.0001f)
-        assertEquals(78f, geometry.pressedHeightDp, 0.0001f)
+        assertEquals(40f * 78f / 56f / 35f, geometry.pressedScale, 0.0001f)
+        assertEquals(40f * 78f / 56f, geometry.pressedHeightDp, 0.0001f)
         assertEquals(35, roundMatchedLiquidIndicatorHeightDp(40f))
     }
 
@@ -35,7 +35,7 @@ class MatchedLiquidIndicatorGeometryTest {
             indicatorHeightDp = 27f,
         )
 
-        assertEquals(78f / 27f, geometry.pressedScale, 0.0001f)
+        assertEquals(40f * 78f / 56f / 27f, geometry.pressedScale, 0.0001f)
         assertTrue(geometry.pressedHeightDp > geometry.dockHeightDp)
     }
 

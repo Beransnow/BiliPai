@@ -39,9 +39,13 @@ fun resolveMatchedLiquidIndicatorPressedScale(
     indicatorHeightDp: Float,
 ): Float {
     if (dockHeightDp <= 0f || indicatorHeightDp <= 0f) return 1f
-    // HyperIsland's interaction target is an actual 78dp glass body, not merely a ratio of a
-    // compact dock. This keeps top/bottom dispersion visibly outside 40dp global controls too.
-    return (BottomBarReferencePressedHeightDp / indicatorHeightDp).coerceAtLeast(1f)
+    // Preserve HyperIsland's 56 -> 78 bloom proportion on compact chrome, while capping the
+    // physical glass body at 78dp so short global controls do not turn into oversized bubbles.
+    val pressedHeight = minOf(
+        BottomBarReferencePressedHeightDp,
+        dockHeightDp * BottomBarReferencePressedScale,
+    )
+    return (pressedHeight / indicatorHeightDp).coerceAtLeast(1f)
 }
 
 fun resolveMatchedLiquidIndicatorGeometry(
