@@ -22,6 +22,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import com.android.purebilibili.core.util.PickMultipleGalleryVisualMedia
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -238,7 +239,7 @@ fun CommentInputDialog(
         }
     }
     val imagePickerLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickMultipleVisualMedia(maxItems = 9)
+        PickMultipleGalleryVisualMedia(maxItems = 9)
     ) { uris ->
         if (uris.isNotEmpty()) {
             selectedImageUris = (selectedImageUris + uris)
