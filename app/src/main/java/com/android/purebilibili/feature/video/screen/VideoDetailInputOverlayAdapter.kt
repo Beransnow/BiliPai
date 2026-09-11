@@ -173,7 +173,8 @@ internal fun VideoDetailInputOverlayAdapter(
             isSending = isSendingComment,
             replyToName = replyingToComment?.member?.uname,
             inputHint = if (replyingToComment != null) commentState.childInputHint else commentState.rootInputHint,
-            canUploadImage = commentState.canUploadImage,
+            // Match PiliPlus: pictures belong to a root comment, not a child reply.
+            canUploadImage = commentState.canUploadImage && replyingToComment == null,
             canInputComment = commentState.canInputComment,
             emotePackages = emotePackages,
             mentionUsers = mentionSearchState.users,
@@ -187,7 +188,6 @@ internal fun VideoDetailInputOverlayAdapter(
             updateDraft = viewModel::updateCommentDraft,
             send = { message, imageUris, syncToDynamic ->
                 viewModel.sendComment(message, imageUris, syncToDynamic)
-                viewModel.hideCommentInputDialog()
             },
         ),
         currentVideoPositionMsProvider = currentVideoPositionMsProvider,

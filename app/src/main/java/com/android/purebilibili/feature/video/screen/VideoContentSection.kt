@@ -1,5 +1,7 @@
 // 文件路径: feature/video/screen/VideoContentSection.kt
 package com.android.purebilibili.feature.video.screen
+
+import com.android.purebilibili.navigation.animatePagerSelection
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
@@ -654,8 +656,9 @@ internal fun VideoContentSection(
                 // 出发的动画；否则 offset 会先归零回弹到左侧，再动画到目标页。
                 pagerState.scrollToPage(index)
             } else {
-                pagerState.animateScrollToPage(
-                    page = index,
+                animatePagerSelection(
+                    pagerState = pagerState,
+                    targetPage = index,
                     animationSpec = tween(
                         durationMillis = tabSwitchAnimationSpec.durationMs,
                         easing = FastOutSlowInEasing

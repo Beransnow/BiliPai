@@ -108,7 +108,9 @@ data class ReplyPageControl(
     val uploadPictureIconState: Int = 0
 ) {
     val canUploadPicture: Boolean
-        get() = uploadPictureIconState == 1 && !inputDisable
+        // EditorIconState.DEFAULT (0) is not a denial. PiliPlus keeps image publishing
+        // available unless the editor explicitly disables or hides the action.
+        get() = uploadPictureIconState in 0..1 && !inputDisable
 }
 
 @Serializable

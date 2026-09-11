@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.list
+
+import com.android.purebilibili.navigation.animatePagerSelection
 import com.android.purebilibili.core.ui.components.VideoListLayoutToggle
 import com.android.purebilibili.core.ui.components.resolveVideoListColumns
 import com.android.purebilibili.core.ui.components.rememberVideoListLayoutControl
@@ -1764,7 +1766,7 @@ fun CommonListScreen(
                                 val targetPage = historyFilters.indexOf(filter).coerceAtLeast(0)
                                 scope.launch {
                                     if (historyPagerState.currentPage != targetPage) {
-                                        historyPagerState.animateScrollToPage(targetPage)
+                                        animatePagerSelection(historyPagerState, targetPage)
                                     }
                                     historyPagerGridStates[targetPage]?.scrollToItem(0)
                                 }

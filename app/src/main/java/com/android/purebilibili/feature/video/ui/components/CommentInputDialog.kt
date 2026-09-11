@@ -166,6 +166,14 @@ internal fun commentDraftTextFieldValue(text: String): TextFieldValue {
     )
 }
 
+internal fun canPublishCommentDraft(
+    text: String,
+    selectedImageCount: Int,
+    canInputComment: Boolean,
+    isSending: Boolean
+): Boolean = canInputComment && !isSending &&
+    (text.isNotBlank() || selectedImageCount > 0)
+
 /**
  * 评论输入对话框
  * 
@@ -213,6 +221,12 @@ fun CommentInputDialog(
     var currentTab by remember { mutableIntStateOf(0) } // 0=Kaomoji, 1=Emoji, 2+=API Packages
     var selectedImageUris by remember { mutableStateOf(initialImageUris) }
     val text = textFieldValue.text
+    val canPublish = canPublishCommentDraft(
+        text = text,
+        selectedImageCount = selectedImageUris.size,
+        canInputComment = canInputComment,
+        isSending = isSending
+    )
     
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
@@ -616,14 +630,14 @@ fun CommentInputDialog(
                             // 发送按钮
                             AppButton(
                                 onClick = {
-                                    if (text.isNotBlank() && !isSending && canInputComment) {
+                                    if (canPublish) {
                                         keyboardController?.hide()
                                         focusManager.clearFocus(force = true)
                                         android.util.Log.d("CommentInputDialog", "📤 Sending comment: $text")
                                         onSend(text.trim(), selectedImageUris, isForwardToDynamic)
                                     }
                                 },
-                                enabled = text.isNotBlank() && !isSending && canInputComment,
+                                enabled = canPublish,
                                 shape = AppShapes.container(ContainerLevel.Floating),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
