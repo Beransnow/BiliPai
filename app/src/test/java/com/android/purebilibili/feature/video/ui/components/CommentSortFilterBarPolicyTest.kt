@@ -58,10 +58,19 @@ class CommentSortFilterBarPolicyTest {
         val headerSource = source
             .substringAfter("fun CommentSortHeader(")
             .substringBefore("fun CommentSortFilterBar(")
+        val dockHostSource = headerSource
+            .substringAfter("if (uiStyle == AppUiStyle.MIUIX) {")
+            .substringBefore("AppThemeAdaptiveTabRow(")
 
         assertTrue(headerSource.contains("tapPressRefractionEnabled = false"))
         assertFalse(headerSource.contains(".offset("))
         assertFalse(headerSource.contains("bottomClearanceDp"))
+        assertTrue(
+            dockHostSource.contains(
+                "Modifier.width((spec.itemWidthDp * sortModes.size).dp)"
+            )
+        )
+        assertFalse(dockHostSource.contains("height = spec.heightDp.dp"))
     }
 
     @Test

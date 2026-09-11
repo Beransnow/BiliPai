@@ -122,10 +122,7 @@ fun CommentSortHeader(
         )
         if (uiStyle == AppUiStyle.MIUIX) {
             Box(
-                modifier = Modifier.size(
-                    width = (spec.itemWidthDp * sortModes.size).dp,
-                    height = spec.heightDp.dp,
-                ),
+                modifier = Modifier.width((spec.itemWidthDp * sortModes.size).dp),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 AppThemeAdaptiveTabRow(
