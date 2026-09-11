@@ -23,7 +23,6 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
-import kotlin.math.ceil
 
 internal data class CommentSortSegmentedControlSpec(
     val itemWidthDp: Int,
@@ -48,19 +47,6 @@ internal fun hasCommentSortIndicatorScaleClearance(
         indicatorHeightDp = indicatorHeightDp.toFloat(),
     )
     return geometry.pressedHeightDp > containerHeightDp
-}
-
-internal fun resolveCommentSortHeaderBottomClearanceDp(
-    containerHeightDp: Int,
-    indicatorHeightDp: Int,
-): Int {
-    val geometry = com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry(
-        dockHeightDp = containerHeightDp.toFloat(),
-        indicatorHeightDp = indicatorHeightDp.toFloat(),
-    )
-    return ceil(
-        ((geometry.pressedHeightDp - containerHeightDp) / 2f).coerceAtLeast(0f)
-    ).toInt()
 }
 
 /**
@@ -121,22 +107,11 @@ fun CommentSortHeader(
     val spec = remember(sortModes.size) {
         resolveCommentSortSegmentedControlSpec(itemCount = sortModes.size)
     }
-    val bottomClearanceDp = remember(uiStyle, spec) {
-        if (uiStyle == AppUiStyle.MIUIX) {
-            resolveCommentSortHeaderBottomClearanceDp(
-                containerHeightDp = spec.heightDp,
-                indicatorHeightDp = spec.indicatorHeightDp,
-            )
-        } else {
-            0
-        }
-    }
-    val dockLiftDp = bottomClearanceDp
     FlowRow(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .padding(top = 6.dp, bottom = bottomClearanceDp.dp),
+            .padding(top = 6.dp),
         itemVerticalAlignment = Alignment.CenterVertically,
         verticalArrangement = Arrangement.spacedBy(2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -147,14 +122,10 @@ fun CommentSortHeader(
         )
         if (uiStyle == AppUiStyle.MIUIX) {
             Box(
-                modifier = Modifier
-                    // Lift the complete dock, including its backdrop sampling bounds. Padding the
-                    // header alone leaves the liquid layer visually attached to the first reply.
-                    .offset(y = (-dockLiftDp).dp)
-                    .size(
-                        width = (spec.itemWidthDp * sortModes.size).dp,
-                        height = spec.heightDp.dp,
-                    ),
+                modifier = Modifier.size(
+                    width = (spec.itemWidthDp * sortModes.size).dp,
+                    height = spec.heightDp.dp,
+                ),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 AppThemeAdaptiveTabRow(
@@ -167,7 +138,7 @@ fun CommentSortHeader(
                     labelFontSize = 13.sp,
                     compactMiuixWhenTwoOptions = true,
                     dragSelectionEnabled = true,
-                    tapPressRefractionEnabled = true,
+                    tapPressRefractionEnabled = false,
                 )
             }
         } else {
