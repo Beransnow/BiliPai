@@ -94,6 +94,7 @@ import com.android.purebilibili.feature.video.ui.components.PagesSelector
 import com.android.purebilibili.feature.video.ui.components.CommentListHeader
 import com.android.purebilibili.feature.video.ui.components.CommentSortHeader
 import com.android.purebilibili.feature.video.ui.components.CommentSortFilterBar
+import com.android.purebilibili.feature.video.ui.components.resolveCommentSortDockViewportOverflowDp
 import com.android.purebilibili.feature.video.ui.components.ReplyItemView
 import com.android.purebilibili.feature.video.ui.components.rememberVideoCommentAppearance
 import com.android.purebilibili.feature.video.ui.components.resolveReplyItemContentType
@@ -767,6 +768,12 @@ internal fun VideoContentSection(
     val tabBarVisibleHeightDp = with(density) {
         (tabBarMaxHeightPx - tabBarCollapsePx).coerceAtLeast(0f).toDp()
     }
+    val commentSortDockLiftDp = remember {
+        resolveCommentSortDockViewportOverflowDp(
+            containerHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp,
+            indicatorHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp,
+        )
+    }
     // Match the home bottom dock: one full-size content source, with liquid docks rendered as
     // overlay siblings outside that source. A source attached only to the LazyColumns starts
     // below the tab row, so sampling at the dock's coordinates resolves outside its bounds.
@@ -984,6 +991,9 @@ internal fun VideoContentSection(
                 CommentSortFilterBar(
                     sortMode = sortMode,
                     onSortModeChange = onSortModeChange,
+                    // The liquid dock reports its press/drag bloom as layout viewport. Lift that
+                    // complete viewport so the resting 40dp shell aligns with the comment header.
+                    modifier = Modifier.offset(y = (-commentSortDockLiftDp).dp),
                     miuixBackdrop = videoContentMiuixBackdrop,
                 )
             }

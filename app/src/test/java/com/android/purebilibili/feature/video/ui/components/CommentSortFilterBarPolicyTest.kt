@@ -37,6 +37,13 @@ class CommentSortFilterBarPolicyTest {
                 indicatorHeightDp = spec.indicatorHeightDp
             )
         )
+        assertEquals(
+            8,
+            resolveCommentSortDockViewportOverflowDp(
+                containerHeightDp = spec.heightDp,
+                indicatorHeightDp = spec.indicatorHeightDp,
+            )
+        )
     }
 
     @Test
