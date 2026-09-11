@@ -40,13 +40,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.*
 import androidx.compose.runtime.mutableIntStateOf
@@ -188,7 +188,7 @@ fun CommentInputDialog(
     isSending: Boolean = false,
     replyToName: String? = null,
     inputHint: String = "进来唠会嗑呗~",
-    canUploadImage: Boolean = true,
+    showImageUpload: Boolean = true,
     canInputComment: Boolean = true,
     modifier: Modifier = Modifier,
     currentVideoPositionMsProvider: () -> Long = { 0L },
@@ -603,25 +603,23 @@ fun CommentInputDialog(
                                     )
                                 }
 
-                                AppIconButton(
-                                    onClick = {
-                                        imagePickerLauncher.launch(
-                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                        )
-                                    },
-                                    enabled = canUploadImage && canInputComment && !isSending,
-                                    modifier = Modifier.size(layoutPolicy.toolbarToolButtonSizeDp.dp)
-                                ) {
-                                    AppIcon(
-                                        imageVector = Icons.Filled.AddCircle,
-                                        contentDescription = "Add",
-                                        tint = if (canUploadImage) {
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                        } else {
-                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+                                if (showImageUpload) {
+                                    AppIconButton(
+                                        onClick = {
+                                            imagePickerLauncher.launch(
+                                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                            )
                                         },
-                                        modifier = Modifier.size(26.dp)
-                                    )
+                                        enabled = canInputComment && !isSending,
+                                        modifier = Modifier.size(layoutPolicy.toolbarToolButtonSizeDp.dp)
+                                    ) {
+                                        AppIcon(
+                                            imageVector = Icons.Outlined.Image,
+                                            contentDescription = "图片",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(26.dp)
+                                        )
+                                    }
                                 }
                             }
 
@@ -667,13 +665,6 @@ fun CommentInputDialog(
                         if (!canInputComment) {
                             AppText(
                                 text = "当前评论区暂不可评论",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(top = 6.dp)
-                            )
-                        } else if (!canUploadImage) {
-                            AppText(
-                                text = "当前评论区不支持图片评论",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(top = 6.dp)

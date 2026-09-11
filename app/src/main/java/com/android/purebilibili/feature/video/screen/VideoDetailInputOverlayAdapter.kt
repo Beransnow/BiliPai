@@ -60,7 +60,7 @@ private data class CommentInputSnapshot(
     val isSending: Boolean,
     val replyToName: String?,
     val inputHint: String,
-    val canUploadImage: Boolean,
+    val showImageUpload: Boolean,
     val canInputComment: Boolean,
     val emotePackages: List<EmotePackage>,
     val mentionUsers: List<MentionSearchUser>,
@@ -173,8 +173,8 @@ internal fun VideoDetailInputOverlayAdapter(
             isSending = isSendingComment,
             replyToName = replyingToComment?.member?.uname,
             inputHint = if (replyingToComment != null) commentState.childInputHint else commentState.rootInputHint,
-            // The same image-comment endpoint also accepts root/parent reply targets.
-            canUploadImage = commentState.canUploadImage,
+            // PiliPlus only exposes the image action while publishing a root comment.
+            showImageUpload = replyingToComment == null,
             canInputComment = commentState.canInputComment,
             emotePackages = emotePackages,
             mentionUsers = mentionSearchState.users,
@@ -230,7 +230,7 @@ private fun VideoDetailCommentInputOverlayContent(
         isSending = snapshot.isSending,
         replyToName = snapshot.replyToName,
         inputHint = snapshot.inputHint,
-        canUploadImage = snapshot.canUploadImage,
+        showImageUpload = snapshot.showImageUpload,
         canInputComment = snapshot.canInputComment,
         emotePackages = snapshot.emotePackages,
         mentionUsers = snapshot.mentionUsers,
