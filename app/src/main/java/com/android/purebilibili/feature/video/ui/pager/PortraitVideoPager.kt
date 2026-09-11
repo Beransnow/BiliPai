@@ -3534,7 +3534,7 @@ private fun VideoPageItem(
                 isSending = isSendingComment,
                 replyToName = replyingToComment?.member?.uname,
                 inputHint = if (replyingToComment != null) commentState.childInputHint else commentState.rootInputHint,
-                canUploadImage = commentState.canUploadImage && replyingToComment == null,
+                canUploadImage = commentState.canUploadImage,
                 canInputComment = commentState.canInputComment,
                 emotePackages = emotePackages,
                 mentionUsers = mentionSearchState.users,

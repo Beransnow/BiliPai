@@ -19,13 +19,17 @@ class PagerSelectionMotionStructureTest {
 
     @Test
     fun `primary tab pagers share continuous selection motion`() {
+        val bottom = loadSource("navigation/MainBottomPagerState.kt")
         val home = loadSource("feature/home/HomeScreen.kt")
         val dynamic = loadSource("feature/dynamic/DynamicScreen.kt")
         val search = loadSource("feature/search/SearchScreen.kt")
+        val commonList = loadSource("feature/list/CommonListScreen.kt")
 
+        assertTrue(bottom.contains("animatePagerSelection(pagerState, safeTargetIndex)"))
         assertTrue(home.contains("animatePagerSelection(pagerState, index)"))
         assertTrue(dynamic.contains("animatePagerSelection(pagerState, visibleIndex)"))
         assertTrue(search.contains("animatePagerSelection(searchPagerState, page)"))
+        assertTrue(commonList.contains("animatePagerSelection(pagerState, targetPage)"))
     }
 
     private fun loadSource(relativePath: String): String {

@@ -173,8 +173,8 @@ internal fun VideoDetailInputOverlayAdapter(
             isSending = isSendingComment,
             replyToName = replyingToComment?.member?.uname,
             inputHint = if (replyingToComment != null) commentState.childInputHint else commentState.rootInputHint,
-            // Match PiliPlus: pictures belong to a root comment, not a child reply.
-            canUploadImage = commentState.canUploadImage && replyingToComment == null,
+            // The same image-comment endpoint also accepts root/parent reply targets.
+            canUploadImage = commentState.canUploadImage,
             canInputComment = commentState.canInputComment,
             emotePackages = emotePackages,
             mentionUsers = mentionSearchState.users,

@@ -13,8 +13,8 @@ import kotlin.math.abs
  *
  * Compose's animateScrollToPage may pre-jump for distant targets. That optimization is useful
  * for content carousels, but makes a tab indicator appear to hard-cut. Tab rails use this helper
- * so their page content and indicator share the same continuous position, just like the main
- * bottom navigation pager.
+ * so page content and indicators share one continuous position. The main bottom navigation and
+ * every tab rail that opts into progressive page traversal call this same implementation.
  */
 internal suspend fun animatePagerSelection(
     pagerState: PagerState,
