@@ -210,7 +210,7 @@ cd BiliPai
 
 ## 最近更新
 
-当前构建为 `0.2.3-beta.33 / versionCode 356`；最新完整发布记录为 `v0.2.3-beta.32`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
+当前构建为 `0.2.3-beta.33 / versionCode 357`；最新完整发布记录为 `v0.2.3-beta.33`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
 
 - 分段导航消除滑动直角露出，分类与筛选栏升级为自适应滑动液态轨道，长标签文本完整展示不截断。
 - 搜索结果页适配平板与折叠屏栅格排版，自适应多列布局并支持用户自选列数。

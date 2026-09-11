@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <sub>Last updated: 2026-09-11 · Current build: 0.2.3-beta.33 · Latest documented release: v0.2.3-beta.32</sub>
+  <sub>Last updated: 2026-09-11 · Current build: 0.2.3-beta.33 · Latest documented release: v0.2.3-beta.33</sub>
 </p>
 
 <p align="center">
@@ -454,7 +454,7 @@ See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
 ### Current source build (v0.2.3-beta.33 · 2026-09-11)
 
-- Current source build: `0.2.3-beta.33` / `versionCode 356`.
+- Current source build: `0.2.3-beta.33` / `versionCode 357`.
 - Segmented navigation prevents right-angle protrusion during scrolling; category and filter bars upgraded to adaptive sliding liquid track; long labels fully visible without truncation.
 - Search results page adapted for tablets and foldables with multi-column grid layout and user-customizable column counts.
 - Dynamic feed detail and incremental refresh refactored with fallback recovery for offline stability; enriched rich text and comments panel interactions.
