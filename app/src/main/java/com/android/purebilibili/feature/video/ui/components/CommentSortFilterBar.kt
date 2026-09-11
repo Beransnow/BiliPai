@@ -23,6 +23,7 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
+import kotlin.math.ceil
 
 internal data class CommentSortSegmentedControlSpec(
     val itemWidthDp: Int,
@@ -47,6 +48,19 @@ internal fun hasCommentSortIndicatorScaleClearance(
         indicatorHeightDp = indicatorHeightDp.toFloat(),
     )
     return geometry.pressedHeightDp > containerHeightDp
+}
+
+internal fun resolveCommentSortHeaderBottomClearanceDp(
+    containerHeightDp: Int,
+    indicatorHeightDp: Int,
+): Int {
+    val geometry = com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry(
+        dockHeightDp = containerHeightDp.toFloat(),
+        indicatorHeightDp = indicatorHeightDp.toFloat(),
+    )
+    return ceil(
+        ((geometry.pressedHeightDp - containerHeightDp) / 2f).coerceAtLeast(0f)
+    ).toInt()
 }
 
 /**
@@ -103,11 +117,25 @@ fun CommentSortHeader(
     modifier: Modifier = Modifier,
 ) {
     val uiStyle = LocalAppUiStyle.current
+    val sortModes = remember { listOf(CommentSortMode.HOT, CommentSortMode.NEWEST) }
+    val spec = remember(sortModes.size) {
+        resolveCommentSortSegmentedControlSpec(itemCount = sortModes.size)
+    }
+    val bottomClearanceDp = remember(uiStyle, spec) {
+        if (uiStyle == AppUiStyle.MIUIX) {
+            resolveCommentSortHeaderBottomClearanceDp(
+                containerHeightDp = spec.heightDp,
+                indicatorHeightDp = spec.indicatorHeightDp,
+            )
+        } else {
+            0
+        }
+    }
     FlowRow(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .padding(top = 6.dp),
+            .padding(top = 6.dp, bottom = bottomClearanceDp.dp),
         itemVerticalAlignment = Alignment.CenterVertically,
         verticalArrangement = Arrangement.spacedBy(2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -117,12 +145,11 @@ fun CommentSortHeader(
             count = count,
         )
         if (uiStyle == AppUiStyle.MIUIX) {
-            val sortModes = remember { listOf(CommentSortMode.HOT, CommentSortMode.NEWEST) }
-            val spec = remember(sortModes.size) {
-                resolveCommentSortSegmentedControlSpec(itemCount = sortModes.size)
-            }
             Box(
-                modifier = Modifier.width((spec.itemWidthDp * sortModes.size).dp),
+                modifier = Modifier.size(
+                    width = (spec.itemWidthDp * sortModes.size).dp,
+                    height = spec.heightDp.dp,
+                ),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 AppThemeAdaptiveTabRow(

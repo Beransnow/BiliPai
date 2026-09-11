@@ -70,11 +70,13 @@ import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSo
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.LocalVideoTransitionAdaptiveInfo
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.rememberNativeVideoCardSnapshotController
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.shouldUseVideoCardShellSharedBounds
 import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrEmpty
+import com.android.purebilibili.core.ui.transition.withMeasuredCoverDecodeSize
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.HapticType
@@ -245,6 +247,9 @@ fun RelatedVideoItem(
             ?.takeIf { it.isAttached }
             ?.boundsInRoot()
             ?.let { bounds ->
+                val sourceCoverBounds = coverCoordinatesRef.value
+                    ?.takeIf { it.isAttached }
+                    ?.boundsInRoot()
                 CardPositionManager.recordVideoCardPosition(
                     bvid = video.bvid,
                     sourceRoute = sourceRoute,
@@ -253,9 +258,7 @@ fun RelatedVideoItem(
                     screenHeight = screenHeightPx,
                     density = densityValue,
                     sourceCornerDp = cardCornerRadiusDp,
-                    coverBounds = coverCoordinatesRef.value
-                        ?.takeIf { it.isAttached }
-                        ?.boundsInRoot(),
+                    coverBounds = sourceCoverBounds,
                     sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
                     sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
                         title = video.title,
@@ -272,9 +275,12 @@ fun RelatedVideoItem(
                                 showStatsInInfo = true,
                                 showOverflowMenu = onMoreClick != null,
                             ),
+                        coverPresentation = VideoCardSourceCoverPresentation(
+                            showDurationOnCover = true,
+                        ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
-                    ),
+                    ).withMeasuredCoverDecodeSize(sourceCoverBounds),
                 )
                 nativeCardSnapshot.capture()
             }
@@ -336,21 +342,27 @@ fun RelatedVideoItem(
                     alignment = Alignment.Center,
                     modifier = Modifier.fillMaxSize()
                 )
-                AppText(
-                    text = FormatUtils.formatDuration(video.duration),
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        shadow = Shadow(
-                            color = Color.Black.copy(alpha = 0.6f),
-                            blurRadius = 4f,
-                            offset = Offset(0f, 1f)
-                        )
-                    ),
+                Box(
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(6.dp)
-                )
+                        .fillMaxSize()
+                        .then(nativeCardSnapshot.coverOverlayModifier),
+                ) {
+                    AppText(
+                        text = FormatUtils.formatDuration(video.duration),
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            shadow = Shadow(
+                                color = Color.Black.copy(alpha = 0.6f),
+                                blurRadius = 4f,
+                                offset = Offset(0f, 1f)
+                            )
+                        ),
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(6.dp)
+                    )
+                }
             }
 
             Column(

@@ -146,6 +146,7 @@ import com.android.purebilibili.core.ui.common.rememberClipboardCopyHandler
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP
 import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
@@ -164,6 +165,7 @@ import com.android.purebilibili.core.ui.transition.videoSharedElementBoundsTrans
 import com.android.purebilibili.core.ui.transition.rememberNativeVideoCardSnapshotController
 import com.android.purebilibili.core.ui.transition.shouldUseVideoCardShellSharedBounds
 import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrEmpty
+import com.android.purebilibili.core.ui.transition.withMeasuredCoverDecodeSize
 import com.android.purebilibili.feature.home.components.cards.videoCardShellReturnChromeAlpha
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.core.ui.components.UserLevelBadge
@@ -3078,7 +3080,7 @@ private fun SpaceHomeVideoCard(
                                 ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
-                        ),
+                        ).withMeasuredCoverDecodeSize(coverBounds),
                     )
                     nativeCardSnapshot.capture()
                 }
@@ -3291,7 +3293,7 @@ private fun SpaceAggregateMediaCard(
                                 ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
-                        ),
+                        ).withMeasuredCoverDecodeSize(coverBounds),
                     )
                     nativeCardSnapshot.capture()
                 }
@@ -3469,7 +3471,7 @@ private fun SpaceTopVideoCard(
                                 ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
-                        ),
+                        ).withMeasuredCoverDecodeSize(coverBounds),
                     )
                     nativeCardSnapshot.capture()
                 }
@@ -3683,9 +3685,15 @@ private fun SpaceArchiveListItemRow(
                                     showStatsInInfo = true,
                                     showOverflowMenu = true,
                                 ),
+                            coverPresentation = VideoCardSourceCoverPresentation(
+                                showDurationOnCover = duration.isNotBlank(),
+                                premiumBadgeText = badgeLabel.orEmpty(),
+                                showHistoryProgressBar = progressState?.showProgressBar == true,
+                                historyProgressFraction = progressState?.progressFraction ?: 0f,
+                            ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
-                        ),
+                        ).withMeasuredCoverDecodeSize(coverBounds),
                     )
                     nativeCardSnapshot.capture()
                 }
@@ -3711,41 +3719,47 @@ private fun SpaceArchiveListItemRow(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
-            if (!badgeLabel.isNullOrBlank()) {
-                AppSurface(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(6.dp),
-                    shape = AppShapes.container(ContainerLevel.Chip),
-                    color = MaterialTheme.colorScheme.primary
-                ) {
-                    AppText(
-                        text = badgeLabel,
-                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimary
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(nativeCardSnapshot.coverOverlayModifier),
+            ) {
+                if (!badgeLabel.isNullOrBlank()) {
+                    AppSurface(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp),
+                        shape = AppShapes.container(ContainerLevel.Chip),
+                        color = MaterialTheme.colorScheme.primary
+                    ) {
+                        AppText(
+                            text = badgeLabel,
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
+                if (duration.isNotBlank()) {
+                    VideoCardCoverDurationText(
+                        text = duration,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(6.dp),
                     )
                 }
-            }
-            if (duration.isNotBlank()) {
-                VideoCardCoverDurationText(
-                    text = duration,
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(6.dp),
-                )
-            }
-            if (progressState?.showProgressBar == true) {
-                AppLinearProgressIndicator(
-                    progress = { progressState.progressFraction },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .height(3.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    trackColor = Color.White.copy(alpha = 0.28f)
-                )
+                if (progressState?.showProgressBar == true) {
+                    AppLinearProgressIndicator(
+                        progress = { progressState.progressFraction },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(3.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = Color.White.copy(alpha = 0.28f)
+                    )
+                }
             }
         }
 

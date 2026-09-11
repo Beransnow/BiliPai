@@ -53,6 +53,7 @@ internal fun PersonalMediaCardFrame(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     coverModifier: Modifier = Modifier,
+    coverOverlayModifier: Modifier = Modifier,
     selected: Boolean = false,
     stacked: Boolean = false,
     enabled: Boolean = true,
@@ -90,7 +91,9 @@ internal fun PersonalMediaCardFrame(
                         modifier = coverModifier.fillMaxWidth().aspectRatio(coverAspectRatio).clip(cardShape),
                     ) {
                         coverContent()
-                        coverOverlayContent?.invoke(this)
+                        Box(modifier = Modifier.fillMaxSize().then(coverOverlayModifier)) {
+                            coverOverlayContent?.invoke(this)
+                        }
                     }
                     Row(verticalAlignment = Alignment.Bottom) {
                         Column(
@@ -124,7 +127,9 @@ internal fun PersonalMediaCardFrame(
                             .clip(coverShape),
                     ) {
                         coverContent()
-                        coverOverlayContent?.invoke(this)
+                        Box(modifier = Modifier.fillMaxSize().then(coverOverlayModifier)) {
+                            coverOverlayContent?.invoke(this)
+                        }
                     }
 
                     Column(

@@ -37,6 +37,13 @@ class CommentSortFilterBarPolicyTest {
                 indicatorHeightDp = spec.indicatorHeightDp
             )
         )
+        assertEquals(
+            8,
+            resolveCommentSortHeaderBottomClearanceDp(
+                containerHeightDp = spec.heightDp,
+                indicatorHeightDp = spec.indicatorHeightDp,
+            ),
+        )
     }
 
     @Test
@@ -47,6 +54,8 @@ class CommentSortFilterBarPolicyTest {
 
         assertTrue(source.contains("tapPressRefractionEnabled = true"))
         assertTrue(source.contains("itemWidth = spec.itemWidthDp.dp"))
+        assertTrue(source.contains("bottom = bottomClearanceDp.dp"))
+        assertTrue(source.contains("height = spec.heightDp.dp"))
     }
 
     @Test

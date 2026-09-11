@@ -67,12 +67,14 @@ import com.android.purebilibili.core.ui.videoCardTitleOverflow
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.rememberNativeVideoCardSnapshotController
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.transition.shouldUseVideoCardShellSharedBounds
 import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrEmpty
+import com.android.purebilibili.core.ui.transition.withMeasuredCoverDecodeSize
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.HapticType
@@ -157,6 +159,7 @@ internal fun HomeStyleSingleColumnVideoCard(
     }
     val triggerClick = {
         cardBounds.value?.let { bounds ->
+            val sourceCoverBounds = coverBounds.value
             CardPositionManager.recordVideoCardPosition(
                 bvid = video.bvid,
                 sourceRoute = sourceRoute,
@@ -165,7 +168,7 @@ internal fun HomeStyleSingleColumnVideoCard(
                 screenHeight = screenHeightPx,
                 density = density.density,
                 sourceCornerDp = cardCornerDp.value.roundToInt(),
-                coverBounds = coverBounds.value,
+                coverBounds = sourceCoverBounds,
                 sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
                 sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
                     title = video.title,
@@ -182,9 +185,12 @@ internal fun HomeStyleSingleColumnVideoCard(
                             showStatsInInfo = true,
                             showOverflowMenu = onMoreClick != null || trailingContent != null,
                         ),
+                    coverPresentation = VideoCardSourceCoverPresentation(
+                        showDurationOnCover = true,
+                    ),
                     coverUrl = stationaryCoverUrl,
                     coverCacheKey = stationaryCoverUrl,
-                ),
+                ).withMeasuredCoverDecodeSize(sourceCoverBounds),
             )
             nativeCardSnapshot.capture()
         }
@@ -245,21 +251,27 @@ internal fun HomeStyleSingleColumnVideoCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-            AppText(
-                text = FormatUtils.formatDuration(video.duration),
-                color = MediaContrastPalette.Foreground,
-                style = contentTypography.coverBadge.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    shadow = Shadow(
-                        color = MediaContrastPalette.Scrim.copy(alpha = 0.64f),
-                        blurRadius = 4f,
-                        offset = Offset(0f, 1f),
-                    ),
-                ),
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro),
-            )
+                    .fillMaxSize()
+                    .then(nativeCardSnapshot.coverOverlayModifier),
+            ) {
+                AppText(
+                    text = FormatUtils.formatDuration(video.duration),
+                    color = MediaContrastPalette.Foreground,
+                    style = contentTypography.coverBadge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        shadow = Shadow(
+                            color = MediaContrastPalette.Scrim.copy(alpha = 0.64f),
+                            blurRadius = 4f,
+                            offset = Offset(0f, 1f),
+                        ),
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro),
+                )
+            }
         }
 
         Column(

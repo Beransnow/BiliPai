@@ -66,11 +66,13 @@ import com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceCoverPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.rememberNativeVideoCardSnapshotController
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.shouldUseVideoCardShellSharedBounds
 import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrEmpty
+import com.android.purebilibili.core.ui.transition.withMeasuredCoverDecodeSize
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.HistoryBusiness
@@ -227,6 +229,7 @@ internal fun HistoryPersonalCard(
     val triggerClick = {
         if (!batchMode) {
             cardBounds.value?.let { bounds ->
+                val sourceCoverBounds = coverBounds.value
                 CardPositionManager.recordVideoCardPosition(
                     bvid = video.bvid,
                     sourceRoute = sourceRoute,
@@ -234,7 +237,7 @@ internal fun HistoryPersonalCard(
                     screenWidth = screenWidthPx,
                     screenHeight = screenHeightPx,
                     sourceCornerDp = 12,
-                    coverBounds = coverBounds.value,
+                    coverBounds = sourceCoverBounds,
                     sourceLayout = if (stacked) VideoCardSourceLayout.STACKED else VideoCardSourceLayout.SIDE_BY_SIDE,
                     sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
                         title = video.title,
@@ -252,9 +255,14 @@ internal fun HistoryPersonalCard(
                                 ownerBeforePublish = true,
                                 showOverflowMenu = !batchMode,
                             ),
+                        coverPresentation = VideoCardSourceCoverPresentation(
+                            showDurationOnCover = true,
+                            showHistoryProgressBar = progressState.showProgressBar,
+                            historyProgressFraction = progressState.progressFraction,
+                        ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
-                    ),
+                    ).withMeasuredCoverDecodeSize(sourceCoverBounds),
                 )
                 nativeCardSnapshot.capture()
             }
@@ -339,6 +347,7 @@ internal fun HistoryPersonalCard(
                 )
                 .onGloballyPositioned { cardBounds.value = it.boundsInRoot() },
             nativeSnapshotModifier = nativeCardSnapshot.modifier,
+            coverOverlayModifier = nativeCardSnapshot.coverOverlayModifier,
             coverModifier = Modifier.onGloballyPositioned { coverBounds.value = it.boundsInRoot() },
             headlineContent = {
                 AppText(text = video.title, style = contentTypography.title, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -416,25 +425,31 @@ internal fun HistoryPersonalCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-            AppText(
-                text = resolveHistoryProgressLabel(progressState.progressSec, video.duration),
-                color = MediaContrastPalette.Foreground,
-                style = feedContentTypography().coverBadge
-                    .copy(fontWeight = FontWeight.Medium)
-                    .merge(coverOverlayTextStyle),
-                maxLines = 1,
-                tapToCopyEnabled = false,
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(start = 6.dp, end = 6.dp, bottom = 8.dp),
-            )
-            if (progressState.showProgressBar) {
-                AppLinearProgressIndicator(
-                    progress = { progressState.progressFraction },
+                    .fillMaxSize()
+                    .then(nativeCardSnapshot.coverOverlayModifier),
+            ) {
+                AppText(
+                    text = resolveHistoryProgressLabel(progressState.progressSec, video.duration),
+                    color = MediaContrastPalette.Foreground,
+                    style = feedContentTypography().coverBadge
+                        .copy(fontWeight = FontWeight.Medium)
+                        .merge(coverOverlayTextStyle),
+                    maxLines = 1,
+                    tapToCopyEnabled = false,
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth(),
+                        .align(Alignment.BottomEnd)
+                        .padding(start = 6.dp, end = 6.dp, bottom = 8.dp),
                 )
+                if (progressState.showProgressBar) {
+                    AppLinearProgressIndicator(
+                        progress = { progressState.progressFraction },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth(),
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.width(10.dp))
