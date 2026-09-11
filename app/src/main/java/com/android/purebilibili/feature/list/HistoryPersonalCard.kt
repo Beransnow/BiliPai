@@ -8,8 +8,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -78,8 +76,8 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.HistoryBusiness
 import com.android.purebilibili.data.model.response.HistoryItem
 import com.android.purebilibili.feature.home.components.cards.resolveVideoCardCoverOverlayTextShadow
+import com.android.purebilibili.feature.home.components.cards.HorizontalVideoCardFrame
 import com.android.purebilibili.feature.personal.PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO
-import com.android.purebilibili.feature.personal.PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP
 
 internal fun resolveHistoryKindLabel(business: HistoryBusiness): String = when (business) {
     HistoryBusiness.ARCHIVE -> "视频"
@@ -106,31 +104,20 @@ internal fun HistoryPersonalCardSkeleton(
 ) {
     val pulse = if (blockColor == null) rememberContentSkeletonPulse() else 0f
     val color = blockColor ?: rememberContentSkeletonBlockColor(pulse)
-    val coverWidth = PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP.dp
-    val coverHeight =
-        (PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP / PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO).dp
     val blockShape = AppShapes.container(ContainerLevel.Card)
 
-    Row(
+    HorizontalVideoCardFrame(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = coverHeight)
             .padding(horizontal = 12.dp, vertical = 5.dp),
-        verticalAlignment = Alignment.Top,
-    ) {
-        ContentSkeletonBlock(
-            color = color,
-            shape = blockShape,
-            modifier = Modifier
-                .width(coverWidth)
-                .height(coverHeight),
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 4.dp),
-        ) {
+        coverContent = {
+            ContentSkeletonBlock(
+                color = color,
+                shape = blockShape,
+                modifier = Modifier.fillMaxSize(),
+            )
+        },
+        infoContent = {
             ContentSkeletonBlock(
                 color = color,
                 modifier = Modifier
@@ -158,9 +145,17 @@ internal fun HistoryPersonalCardSkeleton(
                     .fillMaxWidth(0.34f)
                     .height(12.dp),
             )
-        }
-        Spacer(modifier = Modifier.width(29.dp))
-    }
+        },
+        trailingContent = {
+            ContentSkeletonBlock(
+                color = color,
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .padding(end = 8.dp)
+                    .size(24.dp),
+            )
+        },
+    )
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
@@ -274,9 +269,6 @@ internal fun HistoryPersonalCard(
         TextStyle(shadow = resolveVideoCardCoverOverlayTextShadow())
     }
     val contentTypography = feedContentTypography(FeedTitleHierarchy.Standard)
-    val coverWidth = PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP.dp
-    val coverHeight =
-        (PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP / PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO).dp
     val coverShape = AppShapes.mediaCover()
     val owner = video.owner.name.takeIf { it.isNotBlank() }
         ?: if (item.business == HistoryBusiness.PGC) "番剧" else "未知作者"
@@ -379,7 +371,7 @@ internal fun HistoryPersonalCard(
         return
     }
 
-    Row(
+    HorizontalVideoCardFrame(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 5.dp)
@@ -410,54 +402,42 @@ internal fun HistoryPersonalCard(
                     Modifier
                 }
             ),
-        verticalAlignment = Alignment.Top,
-    ) {
-        Box(
-            modifier = Modifier
-                .width(coverWidth)
-                .height(coverHeight)
-                .clip(coverShape)
-                .onGloballyPositioned { coverBounds.value = it.boundsInRoot() },
-        ) {
+        coverAspectRatio = PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO,
+        coverModifier = Modifier.onGloballyPositioned {
+            coverBounds.value = it.boundsInRoot()
+        },
+        coverOverlayModifier = nativeCardSnapshot.coverOverlayModifier,
+        coverContent = {
             AsyncImage(
                 model = stationaryCoverRequest,
                 contentDescription = video.title,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
-            Box(
+        },
+        coverOverlayContent = {
+            AppText(
+                text = resolveHistoryProgressLabel(progressState.progressSec, video.duration),
+                color = MediaContrastPalette.Foreground,
+                style = feedContentTypography().coverBadge
+                    .copy(fontWeight = FontWeight.Medium)
+                    .merge(coverOverlayTextStyle),
+                maxLines = 1,
+                tapToCopyEnabled = false,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .then(nativeCardSnapshot.coverOverlayModifier),
-            ) {
-                AppText(
-                    text = resolveHistoryProgressLabel(progressState.progressSec, video.duration),
-                    color = MediaContrastPalette.Foreground,
-                    style = feedContentTypography().coverBadge
-                        .copy(fontWeight = FontWeight.Medium)
-                        .merge(coverOverlayTextStyle),
-                    maxLines = 1,
-                    tapToCopyEnabled = false,
+                    .align(Alignment.BottomEnd)
+                    .padding(start = 6.dp, end = 6.dp, bottom = 8.dp),
+            )
+            if (progressState.showProgressBar) {
+                AppLinearProgressIndicator(
+                    progress = { progressState.progressFraction },
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(start = 6.dp, end = 6.dp, bottom = 8.dp),
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth(),
                 )
-                if (progressState.showProgressBar) {
-                    AppLinearProgressIndicator(
-                        progress = { progressState.progressFraction },
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth(),
-                    )
-                }
             }
-        }
-        Spacer(modifier = Modifier.width(10.dp))
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 4.dp),
-        ) {
+        },
+        infoContent = {
             AppText(
                 text = video.title,
                 style = contentTypography.title,
@@ -482,7 +462,9 @@ internal fun HistoryPersonalCard(
                     tapToCopyEnabled = false,
                 )
             }
-        }
-        Box(modifier = Modifier.align(Alignment.Bottom)) { actionContent() }
-    }
+        },
+        trailingContent = {
+            Box(modifier = Modifier.align(Alignment.BottomEnd)) { actionContent() }
+        },
+    )
 }

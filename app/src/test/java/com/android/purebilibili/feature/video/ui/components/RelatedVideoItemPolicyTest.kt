@@ -62,14 +62,10 @@ class RelatedVideoItemPolicyTest {
 
         assertTrue(source.contains("RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
         assertTrue(source.contains("coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
-        assertTrue(source.contains("HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP"))
+        assertTrue(source.contains("HorizontalVideoCardFrame("))
         assertTrue(source.contains("VideoStatRow("))
         assertTrue(source.contains(".align(Alignment.BottomEnd)"))
-        assertTrue(source.contains(".size(32.dp)"))
-        assertTrue(
-            source.contains(".padding(end = if (onMoreClick != null) 32.dp else 0.dp)"),
-            "follow metadata must reserve the trailing overflow action width",
-        )
+        assertTrue(source.contains(".size(48.dp)"))
         assertTrue(source.contains("resolveHomeFeedCardLayout(homeFeedCardStyle)"))
         assertTrue(source.contains("RELATED_VIDEO_GRID_COLUMNS = 1"))
         assertTrue(source.contains("coverAspectRatio = cardLayout.coverAspectRatio"))
@@ -89,9 +85,8 @@ class RelatedVideoItemPolicyTest {
         assertTrue(source.contains("RelatedVideoGridRow("))
         assertTrue(source.contains("chunkRelatedVideosForHomeStyleGrid("))
         assertFalse(source.contains("relatedCoverWidth = 130.dp"))
-        assertTrue(source.contains(".height(coverHeight)"))
-        assertTrue(source.contains(".heightIn(min = coverHeight)"))
-        assertTrue(source.contains("verticalArrangement = Arrangement.SpaceBetween"))
+        assertFalse(source.contains(".height(coverHeight)"))
+        assertFalse(source.contains(".heightIn(min = coverHeight)"))
         assertFalse(source.contains(".weight(1f, fill = false)"))
         assertTrue(
             source.indexOf("UpBadgeName(") < source.indexOf("VideoStatRow(")

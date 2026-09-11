@@ -61,6 +61,7 @@ import com.android.purebilibili.core.ui.transition.shouldReleaseHostOwnedDepthLa
 import com.android.purebilibili.core.ui.transition.shouldShowVideoCardTransitionNavBackdrop
 import com.android.purebilibili.core.ui.transition.shouldUseHostOwnedVideoCardTransitionSnapshot
 import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackAnimationStyle
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
 import com.android.purebilibili.navigation3.predictiveback.MIUIX_PREDICTIVE_BACK_DEFAULT_MAX_PROGRESS_PERCENT
@@ -318,6 +319,7 @@ internal fun BiliPaiNavDisplayHost(
         previousStack = stackSnapshot
         if (!cardMorphAvailable) {
             videoCardClock.snapClearAndIdle()
+            CardPositionManager.clearNativeVideoCardLayers()
             return@LaunchedEffect
         }
         val previousTop = previous.lastOrNull()
@@ -345,6 +347,7 @@ internal fun BiliPaiNavDisplayHost(
                     // LiveNavTransitionScope reads the shared navigation presentation even after
                     // its video entry leaves. Release it before another route reuses that driver.
                     videoCardTransitionProgress.clear()
+                    CardPositionManager.clearNativeVideoCardLayers()
                 }
                 VideoCardTransitionDiagnostics.onMotionPhase(
                     state, heroMotion, sourceMetadata.sourceLayout, diagnosticConfiguration,

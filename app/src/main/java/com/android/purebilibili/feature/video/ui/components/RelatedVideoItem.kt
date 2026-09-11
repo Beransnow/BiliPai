@@ -11,15 +11,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -87,8 +83,7 @@ import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.repository.ActionRepository
 import com.android.purebilibili.data.repository.BlockedUpRepository
 import com.android.purebilibili.feature.home.HomeFeedCardLayout
-import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP
-import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP
+import com.android.purebilibili.feature.home.components.cards.HorizontalVideoCardFrame
 import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
@@ -287,13 +282,11 @@ fun RelatedVideoItem(
         onClick()
         Unit
     }
-    val coverShape = AppShapes.mediaCover()
-    val coverWidth = HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP.dp
-    val coverHeight = coverWidth / coverAspectRatio
     // 排版对齐首页单列卡片:标题用 feed 紧凑级,统计用 labelSmall。
     val contentTypography = com.android.purebilibili.core.ui.feedContentTypography(
         com.android.purebilibili.core.ui.FeedTitleHierarchy.Standard,
     )
+    val moreHaptic = rememberHapticFeedback()
 
     Box(
         modifier = modifier
@@ -317,81 +310,51 @@ fun RelatedVideoItem(
             .background(AppSurfaceTokens.cardContainer())
             .clickable(onClick = triggerRelatedVideoClick)
     ) {
-        val effectiveCoverAspectRatio = if (coverAspectRatio <= 1f) 16f / 9f else coverAspectRatio
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = coverHeight),
-            horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP.dp),
-            verticalAlignment = Alignment.Top,
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(coverWidth)
-                    .aspectRatio(effectiveCoverAspectRatio)
-                    .onGloballyPositioned { coordinates ->
-                        coverCoordinatesRef.value = coordinates
-                    }
-                    .clip(coverShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-            ) {
+        HorizontalVideoCardFrame(
+            coverAspectRatio = coverAspectRatio,
+            coverModifier = Modifier.onGloballyPositioned { coordinates ->
+                coverCoordinatesRef.value = coordinates
+            },
+            coverOverlayModifier = nativeCardSnapshot.coverOverlayModifier,
+            coverContent = {
                 AsyncImage(
                     model = coverRequest,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     alignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .then(nativeCardSnapshot.coverOverlayModifier),
-                ) {
-                    AppText(
-                        text = FormatUtils.formatDuration(video.duration),
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            shadow = Shadow(
-                                color = Color.Black.copy(alpha = 0.6f),
-                                blurRadius = 4f,
-                                offset = Offset(0f, 1f)
-                            )
+            },
+            coverOverlayContent = {
+                AppText(
+                    text = FormatUtils.formatDuration(video.duration),
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        shadow = Shadow(
+                            color = Color.Black.copy(alpha = 0.6f),
+                            blurRadius = 4f,
+                            offset = Offset(0f, 1f),
                         ),
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(6.dp)
-                    )
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .heightIn(min = coverHeight)
-                    .padding(vertical = AppSpacingTokens.Small),
-                verticalArrangement = Arrangement.SpaceBetween,
-            ) {
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(6.dp),
+                )
+            },
+            infoContent = {
                 AppText(
                     text = video.title,
                     style = contentTypography.title,
-                    // This side-by-side card has a cover-bound fixed height. Never let the
-                    // global "full card content" preference make its title overlap metadata.
                     maxLines = 2,
                     minLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 )
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
-                ) {
+                Column(verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall)) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            // Keep the follow badge clear of the trailing overflow action.
-                            .padding(end = if (onMoreClick != null) 48.dp else 0.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                     ) {
@@ -465,37 +428,36 @@ fun RelatedVideoItem(
                     HorizontalVideoStatRow(
                         playText = FormatUtils.formatStat(video.stat.view.toLong()),
                         danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                        modifier = Modifier.padding(end = if (onMoreClick != null) 48.dp else 0.dp),
                     )
                 }
-            }
-        }
-
-        if (onMoreClick != null) {
-            val moreHaptic = rememberHapticFeedback()
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null
+            },
+            trailingContent = onMoreClick?.let { moreClick ->
+                {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) {
+                                moreHaptic(HapticType.LIGHT)
+                                moreClick()
+                            },
+                        contentAlignment = Alignment.Center,
                     ) {
-                        moreHaptic(HapticType.LIGHT)
-                        onMoreClick()
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                AppText(
-                    text = "⋮",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 2.dp)
-                )
-            }
-        }
+                        AppText(
+                            text = "⋮",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 2.dp),
+                        )
+                    }
+                }
+            },
+        )
     }
 }
 
