@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class CommentImageReplyStructureTest {
 
     @Test
-    fun `image action follows PiliPlus root comment policy without deprecated server gating`() {
+    fun `root and child reply composers always expose image upload`() {
         val detailAdapter = loadSource(
             "feature/video/screen/VideoDetailInputOverlayAdapter.kt"
         )
@@ -22,10 +22,11 @@ class CommentImageReplyStructureTest {
             "feature/video/viewmodel/VideoCommentViewModel.kt"
         )
 
-        assertTrue(detailAdapter.contains("showImageUpload = replyingToComment == null"))
-        assertTrue(portraitPager.contains("showImageUpload = replyingToComment == null"))
-        assertTrue(inputDialog.contains("if (showImageUpload)"))
+        assertFalse(detailAdapter.contains("showImageUpload"))
+        assertFalse(portraitPager.contains("showImageUpload"))
+        assertFalse(inputDialog.contains("showImageUpload"))
         assertFalse(inputDialog.contains("当前评论区不支持图片评论"))
+        assertTrue(inputDialog.contains("enabled = canInputComment && !isSending"))
         assertFalse(commentViewModel.contains("canUploadImage = data.control"))
         assertFalse(commentViewModel.contains("val canUploadImage"))
     }

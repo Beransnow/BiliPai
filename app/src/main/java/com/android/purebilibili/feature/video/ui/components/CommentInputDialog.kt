@@ -188,7 +188,6 @@ fun CommentInputDialog(
     isSending: Boolean = false,
     replyToName: String? = null,
     inputHint: String = "进来唠会嗑呗~",
-    showImageUpload: Boolean = true,
     canInputComment: Boolean = true,
     modifier: Modifier = Modifier,
     currentVideoPositionMsProvider: () -> Long = { 0L },
@@ -603,23 +602,21 @@ fun CommentInputDialog(
                                     )
                                 }
 
-                                if (showImageUpload) {
-                                    AppIconButton(
-                                        onClick = {
-                                            imagePickerLauncher.launch(
-                                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                            )
-                                        },
-                                        enabled = canInputComment && !isSending,
-                                        modifier = Modifier.size(layoutPolicy.toolbarToolButtonSizeDp.dp)
-                                    ) {
-                                        AppIcon(
-                                            imageVector = Icons.Outlined.Image,
-                                            contentDescription = "图片",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.size(26.dp)
+                                AppIconButton(
+                                    onClick = {
+                                        imagePickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                         )
-                                    }
+                                    },
+                                    enabled = canInputComment && !isSending,
+                                    modifier = Modifier.size(layoutPolicy.toolbarToolButtonSizeDp.dp)
+                                ) {
+                                    AppIcon(
+                                        imageVector = Icons.Outlined.Image,
+                                        contentDescription = "图片",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(26.dp)
+                                    )
                                 }
                             }
 
