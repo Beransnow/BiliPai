@@ -9,6 +9,7 @@ import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.resolveScrollableTabIndicatorFollowDeltaPx
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 
@@ -1362,13 +1363,48 @@ private fun LightweightHomeTopTabs(
         val selectedIndexLatest = rememberUpdatedState(selectedIndex)
         val onCategorySelectedLatest = rememberUpdatedState(onCategorySelected)
         val indicatorDragItemWidthPx = with(density) { itemWidth.toPx() }
+        val indicatorDragEdgePaddingPx = with(density) { AppSpacingTokens.Medium.toPx() }
+        val followIndicatorInViewport: (Float) -> Unit = { position ->
+            if (isViewportSyncEnabled) {
+                val layoutInfo = listState.layoutInfo
+                val currentScrollPx =
+                    listState.firstVisibleItemIndex * indicatorDragItemWidthPx +
+                        listState.firstVisibleItemScrollOffset.toFloat()
+                listState.dispatchRawDelta(
+                    resolveScrollableTabIndicatorFollowDeltaPx(
+                        indicatorPosition = position,
+                        itemWidthPx = indicatorDragItemWidthPx,
+                        viewportWidthPx = layoutInfo.viewportSize.width.toFloat(),
+                        currentScrollPx = currentScrollPx,
+                        contentPaddingPx = with(density) { topTabHorizontalPadding.toPx() },
+                        edgePaddingPx = indicatorDragEdgePaddingPx,
+                    )
+                )
+            }
+        }
+        LaunchedEffect(
+            pagerState,
+            currentPositionProvider,
+            indicatorDragItemWidthPx,
+            topTabHorizontalPadding,
+            isViewportSyncEnabled,
+        ) {
+            val activePager = pagerState ?: return@LaunchedEffect
+            snapshotFlow {
+                if (activePager.isScrollInProgress) currentPositionProvider() else null
+            }.collect { position ->
+                position?.let(followIndicatorInViewport)
+            }
+        }
         val indicatorDraggableState = rememberDraggableState { dragAmountPx ->
             if (!topTabIndicatorDirectDragActive || indicatorDragItemWidthPx <= 0f) {
                 return@rememberDraggableState
             }
-            topTabIndicatorDirectDragPosition = (
+            val nextPosition = (
                 topTabIndicatorDirectDragPosition + dragAmountPx / indicatorDragItemWidthPx
             ).coerceIn(0f, categories.lastIndex.coerceAtLeast(0).toFloat())
+            topTabIndicatorDirectDragPosition = nextPosition
+            followIndicatorInViewport(nextPosition)
         }
         LaunchedEffect(pagerState, topTabIndicatorSettlingTarget, categories.size) {
             val activePager = pagerState ?: return@LaunchedEffect
