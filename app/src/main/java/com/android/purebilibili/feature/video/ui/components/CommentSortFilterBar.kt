@@ -131,6 +131,7 @@ fun CommentSortHeader(
             0
         }
     }
+    val dockLiftDp = bottomClearanceDp
     FlowRow(
         modifier = modifier
             .fillMaxWidth()
@@ -146,10 +147,14 @@ fun CommentSortHeader(
         )
         if (uiStyle == AppUiStyle.MIUIX) {
             Box(
-                modifier = Modifier.size(
-                    width = (spec.itemWidthDp * sortModes.size).dp,
-                    height = spec.heightDp.dp,
-                ),
+                modifier = Modifier
+                    // Lift the complete dock, including its backdrop sampling bounds. Padding the
+                    // header alone leaves the liquid layer visually attached to the first reply.
+                    .offset(y = (-dockLiftDp).dp)
+                    .size(
+                        width = (spec.itemWidthDp * sortModes.size).dp,
+                        height = spec.heightDp.dp,
+                    ),
                 contentAlignment = Alignment.CenterStart,
             ) {
                 AppThemeAdaptiveTabRow(

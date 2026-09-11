@@ -55,6 +55,7 @@ class CommentSortFilterBarPolicyTest {
         assertTrue(source.contains("tapPressRefractionEnabled = true"))
         assertTrue(source.contains("itemWidth = spec.itemWidthDp.dp"))
         assertTrue(source.contains("bottom = bottomClearanceDp.dp"))
+        assertTrue(source.contains(".offset(y = (-dockLiftDp).dp)"))
         assertTrue(source.contains("height = spec.heightDp.dp"))
     }
 
