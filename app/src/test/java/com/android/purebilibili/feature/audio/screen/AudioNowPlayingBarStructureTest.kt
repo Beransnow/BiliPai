@@ -16,7 +16,7 @@ class AudioNowPlayingBarStructureTest {
         assertTrue(source.contains("resolveSharedBottomBarCapsuleShape()"))
         assertTrue(source.contains(".biliPaiFloatingDockShell("))
         assertTrue(source.contains("enabled = glassActive"))
-        assertTrue(source.contains("color = if (glassActive) Color.Transparent else containerColor"))
+        assertTrue(source.contains("1f - dockMergeProgress.coerceIn(0f, 1f)"))
         assertTrue(source.contains("rememberMusicArtworkRotationDegrees("))
         assertTrue(source.contains("shouldRotateMusicArtwork("))
         assertTrue(source.contains("playbackSpeed = state.playbackSpeed"))
@@ -34,7 +34,7 @@ class AudioNowPlayingBarStructureTest {
             "app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt"
         )
         val overlay = source
-            .substringAfter("if (bottomBarCanMount)")
+            .substringAfter("val isLandscapeNowPlaying =")
             .substringBefore("MainHostTabBackHandler(")
 
         assertTrue(overlay.contains("AudioNowPlayingBar("))

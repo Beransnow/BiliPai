@@ -505,9 +505,9 @@ class BottomBarLayoutPolicyTest {
     }
 
     @Test
-    fun `compact bottom search mode keeps home as the only dock tab`() {
+    fun `compact bottom search mode preserves tabs for unfolding`() {
         assertEquals(
-            listOf(BottomNavItem.HOME),
+            listOf(BottomNavItem.HOME, BottomNavItem.DYNAMIC, BottomNavItem.HISTORY, BottomNavItem.PROFILE),
             resolveBottomBarVisibleItemsForSearchMode(
                 visibleItems = listOf(
                     BottomNavItem.HOME,
