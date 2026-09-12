@@ -1048,6 +1048,7 @@ internal fun VideoContentSection(
 
         AnimatedVisibility(
             visible = pagerState.currentPage == 1 &&
+                !pagerState.isScrollInProgress &&
                 (liquidGlassEnabled || immersiveVideoContentChromeEnabled) &&
                 (!tabBarCollapseEnabled || commentListAtTop),
             enter = fadeIn(animationSpec = tween(durationMillis = 120)),
