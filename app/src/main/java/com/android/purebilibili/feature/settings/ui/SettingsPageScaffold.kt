@@ -41,6 +41,8 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppTopBarStyle
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.LocalSetBottomBarVisible
 import com.android.purebilibili.core.ui.appTopBarNestedScroll
@@ -164,8 +166,13 @@ internal fun SettingsPageScaffold(
         shouldAllowRenderEffectBackedHazeEffect(android.os.Build.VERSION.SDK_INT)
     ) rememberRecoverableHazeState() else null
     val topBarBlurActive = progressiveBlurEnabled || hazeState != null
-    val pageContainerColor = if (nonGlassMiuix) AppSurfaceTokens.surface()
-        else AppSurfaceTokens.groupedListContainer()
+    // Miuix's official Scaffold preset uses `surface` as the page base in both
+    // glass and non-glass modes. Glass changes chrome treatment, not the page tone.
+    val pageContainerColor = if (LocalAppUiStyle.current == AppUiStyle.MIUIX) {
+        AppSurfaceTokens.surface()
+    } else {
+        AppSurfaceTokens.groupedListContainer()
+    }
 
     CompositionLocalProvider(
         LocalAppPreferenceIconTreatment provides AppPreferenceIconTreatment.FILLED,
