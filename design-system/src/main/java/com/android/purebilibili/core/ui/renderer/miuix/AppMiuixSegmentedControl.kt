@@ -34,7 +34,6 @@ import com.android.purebilibili.core.ui.resolveMiuixNonGlassControlGeometry
 import com.android.purebilibili.core.ui.isMiuixNonGlassEnabled
 import top.yukonga.miuix.kmp.basic.TabRow
 import top.yukonga.miuix.kmp.basic.TabRowDefaults
-import top.yukonga.miuix.kmp.squircle.squircleBorder
 import top.yukonga.miuix.kmp.squircle.squircleClip
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
@@ -72,22 +71,33 @@ internal fun <T> AppMiuixSegmentedControl(
     }
     val targetHeight = height ?: 34.dp
     val cornerRadius = 8.dp
-    val activeCardColor = if (isDark) Color(0xFF2C2C2E) else Color(0xFFE5E5EA)
-    val activeTextColor = if (isDark) Color.White else Color(0xFF111111)
-    val inactiveTextColor = if (isDark) Color(0xFF98989D) else Color(0xFF6C6C70)
-    val outlineColor = if (isDark) Color(0xFF48484A) else Color(0xFFD1D1D6)
+    val tabColors = resolveAppMiuixSegmentedColors(colors)
 
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .adaptiveSquircleBackground(
+                color = tabColors.backgroundColor,
+                cornerRadius = cornerRadius + 3.dp,
+            )
+            .squircleClip(cornerRadius + 3.dp)
+            .padding(3.dp)
             .then(if (!enabled) Modifier.semantics { disabled() } else Modifier),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(3.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         options.forEach { option ->
             val selected = option.value == selectedValue
-            val itemBackground = if (selected) activeCardColor else Color.Transparent
-            val contentColor = if (selected) activeTextColor else inactiveTextColor
+            val itemBackground = if (selected) {
+                tabColors.selectedBackgroundColor
+            } else {
+                Color.Transparent
+            }
+            val contentColor = if (selected) {
+                tabColors.selectedContentColor
+            } else {
+                tabColors.contentColor
+            }
 
             Box(
                 modifier = Modifier
@@ -98,15 +108,6 @@ internal fun <T> AppMiuixSegmentedControl(
                             Modifier.dropShadow(
                                 shape = RoundedCornerShape(cornerRadius),
                                 shadow = Shadow(radius = 3.dp, color = Color.Black, alpha = 0.08f)
-                            )
-                        } else Modifier
-                    )
-                    .then(
-                        if (!selected) {
-                            Modifier.squircleBorder(
-                                width = 1.dp,
-                                color = outlineColor,
-                                cornerRadius = cornerRadius,
                             )
                         } else Modifier
                     )
