@@ -372,16 +372,16 @@ fun HomeScreen(
         }
     }
 
-    suspend fun withHomeHeaderRevealLock(block: suspend () -> Unit) {
+    suspend fun withHomeScrollToTopLock(block: suspend () -> Unit) {
         homeHeaderRevealLock = true
-        topTabsAutoCollapsedByScroll = false
-        globalScrollOffset.floatValue = 0f
-        animateHeaderOffsetTo(0f)
+        headerSettleAnimationJob?.cancel()
+        headerSettleAnimationJob = null
         try {
             block()
         } finally {
-            headerSettleAnimationJob?.join()
-            setHeaderOffsetImmediate(0f)
+            // Reveal chrome only after the list reaches its top. Revealing before scrollToItem /
+            // animateScrollToItem makes the dock and avatar appear one frame before content moves.
+            revealHomeHeaderNow()
             homeHeaderRevealLock = false
         }
     }
@@ -445,7 +445,7 @@ fun HomeScreen(
     val latestHomeTopTabEntries by rememberUpdatedState(topTabEntries)
     LaunchedEffect(scrollChannel) {
         scrollChannel?.receiveAsFlow()?.collectLatest { request ->
-            withHomeHeaderRevealLock {
+            withHomeScrollToTopLock {
                 val entry = resolveHomeTopTabEntryOrNull(
                     latestHomeTopTabEntries,
                     latestHomePagerPage
