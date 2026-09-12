@@ -472,11 +472,11 @@ internal fun miuixVideoCardNavTransition(
 
         override fun Modifier.transformEntry(scope: NavTransitionScope): Modifier {
             progress.bind(scope)
-            val (deviceCornerPx, floatingCornerPx) = with(scope.density) {
+            val floatingCornerPx = with(scope.density) {
                 val devicePx = deviceCornerDp.toPx()
                 val floatingCornerPx = MIUIX_VIDEO_CARD_FLOATING_CORNER_DP.dp.toPx()
                     .coerceAtLeast(devicePx)
-                devicePx to floatingCornerPx
+                floatingCornerPx
             }
             val gestureModifier = if (gestureFollowEnabled) {
                 Modifier.graphicsLayer {
@@ -556,7 +556,8 @@ internal fun miuixVideoCardNavTransition(
                             outerScaleY = outerScaleY,
                             morphProgress = morph,
                             floatingCornerPx = floatingCornerPx,
-                            fullscreenCornerPx = deviceCornerPx,
+                            // Fullscreen content must reach square host bounds, including on tablets.
+                            fullscreenCornerPx = 0f,
                         )
                         shape = MiuixVideoCardClipShape(
                             radiusX = clipRadii.radiusX,

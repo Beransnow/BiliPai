@@ -4274,10 +4274,8 @@ internal fun VideoDetailScreenStateHolder(
                                 sourceLayout = miuixLandingState.sourceLayout,
                             ).takeIf { it.canRender }
                         }
-                        // The related-card cover is rounded on all four corners. Keep that same
-                        // media clip on the resized flying layer so the final handoff cannot expose
-                        // a square edge before the stationary card takes ownership.
-                        val returnMediaClipShape = AppShapes.mediaCover()
+                        // Only the source-card endpoint is rounded; the detail player fills its viewport.
+                        val returnMediaClipCornerDp = AppShapes.mediaCoverCornerDp()
                         val returnMediaInverseScaleProvider: () ->
                             com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardInverseScale = {
                             val landing = landingLayoutForMedia
@@ -4425,7 +4423,7 @@ internal fun VideoDetailScreenStateHolder(
                                             inverseScaleYProvider = {
                                                 returnMediaInverseScaleProvider().scaleY
                                             },
-                                            clipShape = returnMediaClipShape,
+                                            clipCornerDp = returnMediaClipCornerDp,
                                         )
                                         // Cover is the top media layer. SurfaceView does not reliably obey
                                         // an ancestor Compose alpha, but it can be occluded by this layer.
@@ -4452,7 +4450,7 @@ internal fun VideoDetailScreenStateHolder(
                                         inverseScaleYProvider = {
                                             returnMediaInverseScaleProvider().scaleY
                                         },
-                                        clipShape = returnMediaClipShape,
+                                        clipCornerDp = returnMediaClipCornerDp,
                                     )
                                     .zIndex(0f)
                                     .graphicsLayer {
