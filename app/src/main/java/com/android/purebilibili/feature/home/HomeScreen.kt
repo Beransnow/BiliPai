@@ -370,6 +370,11 @@ fun HomeScreen(
                 if (headerSettleAnimationJob === job) {
                     headerSettleAnimationJob = null
                 }
+                // Keep the tab visibility state tied to the settled header position. Without
+                // this, the avatar row can return while the tabs remain permanently hidden.
+                if (targetValue >= -0.5f) {
+                    topTabsAutoCollapsedByScroll = false
+                }
             }
         }
     }
@@ -1623,6 +1628,9 @@ fun HomeScreen(
                         .coerceIn(0f, available.y)
                 } else {
                     0f
+                }
+                if (firstItemAtTop && headerOffsetHeightPx >= -0.5f) {
+                    topTabsAutoCollapsedByScroll = false
                 }
                 return Offset(0f, consumedRevealY)
             }
