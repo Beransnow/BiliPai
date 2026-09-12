@@ -17,7 +17,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.IntSize
-import com.android.purebilibili.core.ui.animation.resolveLiquidIndicatorCollisionDeformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -58,8 +57,6 @@ class DampedDragAnimation(
         spring(1f, 1000f, visibilityThreshold)
     private val velocityAnimationSpec =
         spring(0.5f, 300f, visibilityThreshold * 10f)
-    private val collisionImpactAnimationSpec =
-        spring(0.52f, 430f, 0.001f)
     private val pressProgressAnimationSpec =
         spring(1f, 1000f, 0.001f)
     // Motion tuning copied from HyperIsland's LiquidGlassNavigationBar.
@@ -78,8 +75,6 @@ class DampedDragAnimation(
         Animatable(initialScale, 0.001f)
     private val scaleYAnimation =
         Animatable(initialScale, 0.001f)
-    private val collisionImpactAnimation =
-        Animatable(0f, 0.001f)
 
     // Pointer events may arrive again before the coroutine launched by updateValue starts.
     // Keep the requested target synchronous so every drag delta accumulates from the latest one.
@@ -97,12 +92,8 @@ class DampedDragAnimation(
     val value: Float get() = valueAnimation.value
     val targetValue: Float get() = requestedValue
     val pressProgress: Float get() = pressProgressAnimation.value
-    val scaleX: Float
-        get() = scaleXAnimation.value *
-            resolveLiquidIndicatorCollisionDeformation(collisionImpactAnimation.value).scaleX
-    val scaleY: Float
-        get() = scaleYAnimation.value *
-            resolveLiquidIndicatorCollisionDeformation(collisionImpactAnimation.value).scaleY
+    val scaleX: Float get() = scaleXAnimation.value
+    val scaleY: Float get() = scaleYAnimation.value
     val velocity: Float get() = velocityAnimation.value
 
     var isDragging by mutableStateOf(false)
@@ -112,7 +103,6 @@ class DampedDragAnimation(
 
     val modifier: Modifier = Modifier.pointerInput(Unit) {
         var gestureAccepted = false
-        var accumulatedDragDistancePx = 0f
         inspectDragGestures(
             onDragStart = { down ->
                 // Decide ownership from the initial down and keep it for the whole gesture.
@@ -121,7 +111,6 @@ class DampedDragAnimation(
                 gestureAccepted = canDrag(down.position)
                 if (gestureAccepted) {
                     isDragging = true
-                    accumulatedDragDistancePx = 0f
                     onDragStarted(down.position)
                     press()
                 }
@@ -132,7 +121,7 @@ class DampedDragAnimation(
                     // between isDragging flipping false and the drag target being recorded.
                     onDragStopped()
                     isDragging = false
-                    release(withCollisionImpact = accumulatedDragDistancePx >= 4f)
+                    release()
                 }
                 gestureAccepted = false
             },
@@ -151,7 +140,6 @@ class DampedDragAnimation(
             // made a second drag lose real-time tracking after search resized the dock.
             if (dragAmount != Offset.Zero) {
                 change.consume()
-                accumulatedDragDistancePx += abs(dragAmount.x)
             }
             onDrag(size, dragAmount)
         }
@@ -159,13 +147,11 @@ class DampedDragAnimation(
 
     val longPressModifier: Modifier = Modifier.pointerInput(Unit) {
         var gestureAccepted = false
-        var accumulatedDragDistancePx = 0f
         detectDragGesturesAfterLongPress(
             onDragStart = { position ->
                 gestureAccepted = canDrag(position)
                 if (gestureAccepted) {
                     isDragging = true
-                    accumulatedDragDistancePx = 0f
                     onDragStarted(position)
                     press()
                 }
@@ -174,7 +160,7 @@ class DampedDragAnimation(
                 if (gestureAccepted) {
                     onDragStopped()
                     isDragging = false
-                    release(withCollisionImpact = accumulatedDragDistancePx >= 4f)
+                    release()
                 }
                 gestureAccepted = false
             },
@@ -189,7 +175,6 @@ class DampedDragAnimation(
             onDrag = { change, dragAmount ->
                 if (!gestureAccepted) return@detectDragGesturesAfterLongPress
                 if (dragAmount != Offset.Zero) change.consume()
-                accumulatedDragDistancePx += abs(dragAmount.x)
                 onDrag(size, dragAmount)
             },
         )
@@ -200,14 +185,13 @@ class DampedDragAnimation(
         releaseJob?.cancel()
         pressJob?.cancel()
         pressJob = animationScope.launch {
-            launch { collisionImpactAnimation.snapTo(0f) }
             launch { pressProgressAnimation.animateTo(1f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(pressedScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(pressedScale, scaleYAnimationSpec) }
         }
     }
 
-    fun release(withCollisionImpact: Boolean = false) {
+    fun release() {
         releaseJob?.cancel()
         releaseJob = animationScope.launch {
             withFrameNanos { }
@@ -224,14 +208,9 @@ class DampedDragAnimation(
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(initialScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(initialScale, scaleYAnimationSpec) }
-            // 落位碰撞先横向压扁、纵向鼓起，再略微反弹并恢复原形。
-            launch {
-                velocityAnimation.animateTo(0f, velocityAnimationSpec)
-            }
-            if (withCollisionImpact) launch {
-                collisionImpactAnimation.snapTo(1f)
-                collisionImpactAnimation.animateTo(0f, collisionImpactAnimationSpec)
-            }
+            // 速度形变是非对称的（scaleX 除以 1-v、scaleY 乘以 1-v），不归零就会留下
+            // 椭圆残影。参考项目靠 animateToValue 里的归零，这里补上 release 路径。
+            launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
         }
     }
 

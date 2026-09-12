@@ -1,33 +1,19 @@
 package com.android.purebilibili.feature.home.components.miuix
 
-import androidx.compose.runtime.BroadcastFrameClock
-import com.android.purebilibili.core.ui.animation.resolveLiquidIndicatorCollisionDeformation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import androidx.compose.runtime.BroadcastFrameClock
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DampedDragAnimationTargetTest {
-    @Test
-    fun `collision impact compresses then rebounds before returning to rest`() {
-        val impact = resolveLiquidIndicatorCollisionDeformation(1f)
-        val rebound = resolveLiquidIndicatorCollisionDeformation(-0.2f)
-        val rest = resolveLiquidIndicatorCollisionDeformation(0f)
-
-        assertTrue(impact.scaleX < 1f)
-        assertTrue(impact.scaleY > 1f)
-        assertTrue(rebound.scaleX > 1f)
-        assertTrue(rebound.scaleY < 1f)
-        assertEquals(1f, rest.scaleX, 0.001f)
-        assertEquals(1f, rest.scaleY, 0.001f)
-    }
 
     @Test
     fun `velocity normalization follows the selectable range`() {

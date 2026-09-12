@@ -47,26 +47,6 @@ internal fun resolveDampedDragVelocityItemsPerSecond(
 
 internal const val HORIZONTAL_DRAG_DOMINANCE_RATIO = 1.25f
 internal const val HORIZONTAL_DRAG_MIN_DISTANCE_PX = 8f
-private const val LIQUID_INDICATOR_COLLISION_MIN_DRAG_DISTANCE_PX = 4f
-
-data class LiquidIndicatorCollisionDeformation(
-    val scaleX: Float,
-    val scaleY: Float,
-)
-
-/**
- * Models a soft ball contacting a wall: compress along the travel axis, expand across it,
- * then let an under-damped spring briefly cross zero before returning to the resting shape.
- */
-fun resolveLiquidIndicatorCollisionDeformation(
-    progress: Float,
-): LiquidIndicatorCollisionDeformation {
-    val safeProgress = progress.coerceIn(-0.24f, 1f)
-    return LiquidIndicatorCollisionDeformation(
-        scaleX = 1f - 0.055f * safeProgress,
-        scaleY = 1f + 0.035f * safeProgress,
-    )
-}
 
 /** 指示器拖拽的目标跟随方式；BiliPai 模式不做飞掷投影或超滚。 */
 enum class DampedDragTrackingMode {
@@ -137,7 +117,6 @@ class DampedDragAnimationState internal constructor(
 ) {
     private val valueAnimationSpec = spring(1f, 1000f, 0.001f)
     private val velocityAnimationSpec = spring(0.5f, 300f, 0.01f)
-    private val collisionImpactAnimationSpec = spring(0.52f, 430f, 0.001f)
     private val pressProgressAnimationSpec = spring(1f, 1000f, 0.001f)
     // Motion tuning copied from HyperIsland's LiquidGlassNavigationBar.
     private val scaleXAnimationSpec = spring(0.6f, 250f, 0.001f)
@@ -148,7 +127,6 @@ class DampedDragAnimationState internal constructor(
     private val pressProgressAnimation = Animatable(0f, 0.001f)
     private val scaleXAnimation = Animatable(1f, 0.001f)
     private val scaleYAnimation = Animatable(1f, 0.001f)
-    private val collisionImpactAnimation = Animatable(0f, 0.001f)
     private val offsetAnimation = Animatable(0f)
     private val mutatorMutex = MutatorMutex()
     private val deformationVelocityTracker = VelocityTracker()
@@ -161,19 +139,14 @@ class DampedDragAnimationState internal constructor(
 
     /** 9.0.0 风格的拖拽期望位置（允许超滚，不受边界限制） */
     private var desiredValue = initialIndex.toFloat()
-    private var accumulatedDragDistancePx = 0f
 
     val value: Float get() = valueAnimation.value
     val targetValue: Float get() = valueAnimation.targetValue
     val velocity: Float get() = velocityAnimation.value
     val deformationVelocityItemsPerSecond: Float get() = velocityAnimation.value
     val pressProgress: Float get() = pressProgressAnimation.value
-    val scaleX: Float
-        get() = scaleXAnimation.value *
-            resolveLiquidIndicatorCollisionDeformation(collisionImpactAnimation.value).scaleX
-    val scaleY: Float
-        get() = scaleYAnimation.value *
-            resolveLiquidIndicatorCollisionDeformation(collisionImpactAnimation.value).scaleY
+    val scaleX: Float get() = scaleXAnimation.value
+    val scaleY: Float get() = scaleYAnimation.value
     val scale: Float get() = maxOf(scaleX, scaleY)
     val dragOffset: Float get() = offsetAnimation.value
     val isRunning: Boolean get() = valueAnimation.isRunning
@@ -202,17 +175,13 @@ class DampedDragAnimationState internal constructor(
         deformationVelocityTracker.resetTracking()
         releaseJob?.cancel()
         releaseJob = scope.launch {
-            launch { collisionImpactAnimation.snapTo(0f) }
             launch { pressProgressAnimation.animateTo(1f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(pressedScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(pressedScale, scaleYAnimationSpec) }
         }
     }
 
-    fun release(
-        onSettled: (() -> Unit)? = null,
-        withCollisionImpact: Boolean = false,
-    ) {
+    fun release(onSettled: (() -> Unit)? = null) {
         releaseJob?.cancel()
         releaseJob = scope.launch {
             awaitFrame()
@@ -226,15 +195,8 @@ class DampedDragAnimationState internal constructor(
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(1f, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(1f, scaleYAnimationSpec) }
-            // 主体落位时先压扁，再通过欠阻尼弹簧略微反弹并恢复原形。
-            velocityJob?.cancel()
-            velocityJob = launch {
-                velocityAnimation.animateTo(0f, velocityAnimationSpec)
-            }
-            if (withCollisionImpact) launch {
-                collisionImpactAnimation.snapTo(1f)
-                collisionImpactAnimation.animateTo(0f, collisionImpactAnimationSpec)
-            }
+            // 速度形变是非对称的，不归零会留下椭圆残影。
+            launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
         }
     }
 
@@ -267,7 +229,6 @@ class DampedDragAnimationState internal constructor(
         value: Float,
         onSettled: (() -> Unit)? = null,
         animatePress: Boolean = true,
-        withCollisionImpact: Boolean = false,
     ) {
         scope.launch {
             mutatorMutex.mutate {
@@ -280,10 +241,7 @@ class DampedDragAnimationState internal constructor(
                     velocityJob?.cancel()
                     velocityJob = launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
                 }
-                release(
-                    onSettled = onSettled,
-                    withCollisionImpact = withCollisionImpact,
-                )
+                release(onSettled = onSettled)
             }
         }
     }
@@ -303,7 +261,6 @@ class DampedDragAnimationState internal constructor(
         if (itemWidthPx <= 0f || itemCount <= 0) return
         if (!isDragging) {
             isDragging = true
-            accumulatedDragDistancePx = 0f
             startNewMotion()
             valueJob?.cancel()
             offsetJob?.cancel()
@@ -314,7 +271,6 @@ class DampedDragAnimationState internal constructor(
             press()
         }
         velocityPxPerSecond = gestureVelocityPxPerSecond
-        accumulatedDragDistancePx += abs(dragAmountPx)
 
         when (trackingMode) {
             DampedDragTrackingMode.BILIPAI_SPRING -> {
@@ -406,8 +362,6 @@ class DampedDragAnimationState internal constructor(
                 }
             },
             animatePress = false,
-            withCollisionImpact =
-                accumulatedDragDistancePx >= LIQUID_INDICATOR_COLLISION_MIN_DRAG_DISTANCE_PX,
         )
         offsetJob?.cancel()
         offsetJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
