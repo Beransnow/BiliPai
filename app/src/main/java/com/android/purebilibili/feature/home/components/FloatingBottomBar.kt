@@ -80,7 +80,6 @@ import androidx.compose.ui.util.lerp
 import com.android.purebilibili.feature.home.components.liquid.InnerShadow
 import com.android.purebilibili.feature.home.components.liquid.innerShadow
 import com.android.purebilibili.feature.home.components.liquid.lens
-import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import com.android.purebilibili.feature.home.components.liquid.vibrancy
 import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
 import com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry
@@ -95,7 +94,6 @@ import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.blur
 import top.yukonga.miuix.kmp.blur.drawBackdrop
-import com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import androidx.compose.material3.LocalContentColor as M3LocalContentColor
 import top.yukonga.miuix.kmp.theme.LocalContentColor as MiuixLocalContentColor
@@ -487,8 +485,6 @@ fun FloatingBottomBar(
             colors.containerColor
         }
 
-    val tabsBackdropSource = if (isLiquidGlassMode) rememberChromeBackdropSource() else null
-    val tabsBackdrop = tabsBackdropSource?.backdrop
     val density = LocalDensity.current
     val shellLensDp = resolveCompactDockLensDp(shellHeight.value)
     val pressBloomDp = resolveCompactDockPressBloomDp(shellHeight.value)
@@ -838,12 +834,6 @@ fun FloatingBottomBar(
         ).dp,
     ) else null
 
-    val combinedBackdrop = if (backdrop != null && tabsBackdrop != null) {
-        rememberCombinedBackdrop(backdrop, tabsBackdrop)
-    } else {
-        backdrop
-    }
-
     Box(
         modifier = modifier
             .trackLiquidGlassAdaptiveReadability(
@@ -976,80 +966,11 @@ fun FloatingBottomBar(
             )
         }
 
-        val indicatorStretchXProvider: () -> Float = {
-            val scaleY = resolveFloatingDockIndicatorLayerScaleY(
-                baseScaleY = dampedDragAnimation.scaleY,
-                velocity = dampedDragAnimation.velocity,
-            ).coerceAtLeast(0.001f)
-            resolveFloatingDockIndicatorLayerScaleX(
-                baseScaleX = dampedDragAnimation.scaleX,
-                velocity = dampedDragAnimation.velocity,
-            ) / scaleY
-        }
-        if (isLiquidGlassMode && backdrop != null) {
-            CompositionLocalProvider(
-                LocalFloatingBottomBarTabScale provides {
-                    lerp(1f, tabPressScale, dampedDragAnimation.pressProgress)
-                },
-                LocalFloatingBottomBarContentColor provides colors.activeContentColor,
-                LocalFloatingBottomBarActiveContent provides true,
-                LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
-                LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
-                LocalFloatingBottomBarIndicatorStretchX provides indicatorStretchXProvider,
-            ) {
-                Row(
-                    Modifier
-                        .clearAndSetSemantics {}
-                        .alpha(0f)
-                        .then(tabsBackdropSource?.modifier ?: Modifier)
-                        .graphicsLayer {
-                            translationX = panelOffset
-                            if (allowOverflow) {
-                                clip = false
-                            }
-                        }
-                        .drawBackdrop(
-                            backdrop = backdrop,
-                            shape = { pillShape },
-                            effects = {
-                                vibrancy(liquidGlassTuning.saturation)
-                                blur(
-                                    liquidGlassTuning.backdropBlurRadius.dp.toPx(),
-                                    liquidGlassTuning.backdropBlurRadius.dp.toPx()
-                                )
-                                lens(
-                                    refractionHeight = shellRefractionHeightPx,
-                                    refractionAmount = shellRefractionAmountPx,
-                                    chromaticAberration =
-                                        liquidGlassTuning.shellChromaticAberrationAmount,
-                                )
-                            },
-                            onDrawSurface = {
-                                drawRect(containerColor)
-                                if (liquidGlassTuning.contentReadabilityScrimAlpha > 0f) {
-                                    drawRect(
-                                        readabilityScrimColor.copy(
-                                            alpha = liquidGlassTuning.contentReadabilityScrimAlpha
-                                        )
-                                    )
-                                }
-                            },
-                        )
-                        .then(interactiveHighlight?.modifier ?: Modifier)
-                        .height(capturedContentHeight)
-                        .padding(horizontal = horizontalPadding),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    content(this)
-                }
-            }
-        }
-
         if (tabWidthPx > 0f) {
             val tabWidthDp = with(density) { tabWidthPx.toDp() }
             val tabsContentStartPx = with(density) { horizontalPadding.toPx() }
 
-            if (isLiquidGlassMode && combinedBackdrop != null) {
+            if (isLiquidGlassMode && backdrop != null) {
                 Box(
                     Modifier
                         .padding(horizontal = horizontalPadding)
@@ -1071,7 +992,9 @@ fun FloatingBottomBar(
                         }
                         .clearAndSetSemantics {}
                         .drawBackdrop(
-                            backdrop = combinedBackdrop,
+                            // Sample the page/shell only. The selected icons are drawn once as
+                            // a clipped foreground below, avoiding a refracted duplicate.
+                            backdrop = backdrop,
                             shape = { pillShape },
                             effects = {
                                 val progress = resolveFloatingDockRefractionProgress(
@@ -1131,8 +1054,6 @@ fun FloatingBottomBar(
                         .width(fittedIndicatorWidth),
                     contentAlignment = Alignment.CenterStart,
                 ) {
-                    // Backdrop capture provides the refraction, while this clipped active
-                    // copy guarantees that icons are filled throughout indicator motion.
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
