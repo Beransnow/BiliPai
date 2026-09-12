@@ -575,6 +575,7 @@ internal fun VideoContentSection(
     val context = LocalContext.current
     val liquidGlassEnabled = LocalAppThemeConfig.current.liquidGlassEnabled
     val progressiveCommentHeaderEnabled = LocalAppThemeConfig.current.progressiveTopBlurEnabled
+    val immersiveVideoContentChromeEnabled = progressiveCommentHeaderEnabled
     val tabs = listOf("简介", "评论")
     val scope = rememberCoroutineScope()
     TrackJankStateFlag(
@@ -805,6 +806,13 @@ internal fun VideoContentSection(
                 userScrollEnabled = false,
                 modifier = Modifier
                     .fillMaxSize()
+                    .then(
+                        if (immersiveVideoContentChromeEnabled) {
+                            Modifier
+                        } else {
+                            Modifier.padding(top = tabBarVisibleHeightDp)
+                        }
+                    )
                     .verticalPriorityHorizontalPagerSwipe(
                         state = pagerState,
                         enabled = shouldEnableVideoContentHorizontalPagerSwipe(
@@ -845,7 +853,7 @@ internal fun VideoContentSection(
                         onWatchLaterClick = onWatchLaterClick,
                         onShareClick = onShareClick,
                         contentPadding = PaddingValues(
-                            top = tabBarVisibleHeightDp,
+                            top = if (immersiveVideoContentChromeEnabled) tabBarVisibleHeightDp else 0.dp,
                             bottom = bottomContentPadding,
                         ),
                         transitionEnabled = transitionEnabled,
@@ -900,7 +908,7 @@ internal fun VideoContentSection(
                         onTimestampClick = onTimestampClick,
                         showUpFlag = showUpFlag,
                         contentPadding = PaddingValues(
-                            top = tabBarVisibleHeightDp,
+                            top = if (immersiveVideoContentChromeEnabled) tabBarVisibleHeightDp else 0.dp,
                             bottom = bottomContentPadding,
                         ),
                         currentMid = currentMid,
@@ -920,8 +928,8 @@ internal fun VideoContentSection(
                         onSortModeChange = onSortModeChange,
                         showNativeSortHeader = !liquidGlassEnabled,
                         showSortControlInHeader = true,
-                        showHeader = false,
-                        floatingHeaderContentPadding = 46.dp,
+                        showHeader = !immersiveVideoContentChromeEnabled,
+                        floatingHeaderContentPadding = if (immersiveVideoContentChromeEnabled) 46.dp else 0.dp,
                     )
                 }
             }
@@ -944,15 +952,17 @@ internal fun VideoContentSection(
                 ),
             contentAlignment = Alignment.TopStart,
         ) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .biliPaiProgressiveTopBlur(
-                        backdrop = videoContentMiuixBackdrop,
-                        enabled = progressiveCommentHeaderEnabled,
-                        surfaceColor = Color.Transparent,
-                    ),
-            )
+            if (immersiveVideoContentChromeEnabled) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .biliPaiProgressiveTopBlur(
+                            backdrop = videoContentMiuixBackdrop,
+                            enabled = true,
+                            surfaceColor = Color.Transparent,
+                        ),
+                )
+            }
             VideoContentTabBar(
                 tabs = tabs,
                 replyCount = replyCount,
@@ -996,23 +1006,28 @@ internal fun VideoContentSection(
             )
         }
 
-        if (pagerState.currentPage == 1) {
+        if (
+            pagerState.currentPage == 1 &&
+            (liquidGlassEnabled || immersiveVideoContentChromeEnabled)
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = tabBarVisibleHeightDp)
                     .heightIn(min = 46.dp),
             ) {
-                AnimatedVisibility(
-                    visible = commentListAtTop,
-                    enter = fadeIn(animationSpec = tween(durationMillis = 120)),
-                    exit = fadeOut(animationSpec = tween(durationMillis = 90)),
-                    modifier = Modifier.align(Alignment.TopStart),
-                ) {
-                    CommentListHeader(
-                        count = replyCount,
-                        title = "${sortMode.label}评论",
-                    )
+                if (immersiveVideoContentChromeEnabled) {
+                    AnimatedVisibility(
+                        visible = commentListAtTop,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 120)),
+                        exit = fadeOut(animationSpec = tween(durationMillis = 90)),
+                        modifier = Modifier.align(Alignment.TopStart),
+                    ) {
+                        CommentListHeader(
+                            count = replyCount,
+                            title = "${sortMode.label}评论",
+                        )
+                    }
                 }
                 CommentSortFilterBar(
                     sortMode = sortMode,
