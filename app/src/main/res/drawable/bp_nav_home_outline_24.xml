@@ -5,9 +5,10 @@
     android:viewportHeight="960"
     android:tint="?attr/colorControlNormal">
     <path
-        android:fillColor="@android:color/white"
+        android:fillColor="@android:color/transparent"
         android:strokeColor="@android:color/white"
-        android:strokeWidth="20"
+        android:strokeWidth="60"
+        android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M240,760L360,760L360,520L600,520L600,760L720,760L720,400L480,220L240,400L240,760ZM160,840L160,360L480,120L800,360L800,840L520,840L520,600L440,600L440,840L160,840Z" />
+        android:pathData="M200,400L480,190L760,400L760,800L570,800L570,570L390,570L390,800L200,800Z" />
 </vector>
