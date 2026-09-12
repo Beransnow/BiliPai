@@ -1128,55 +1128,8 @@ fun FloatingBottomBar(
                             )
                         }
                         .height(fittedIndicatorHeight)
-                        .width(fittedIndicatorWidth),
-                    contentAlignment = Alignment.CenterStart,
-                ) {
-                    // Backdrop capture provides the refraction, while this clipped active
-                    // copy guarantees that icons are filled throughout indicator motion.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(pillShape),
-                        contentAlignment = Alignment.CenterStart,
-                    ) {
-                        CompositionLocalProvider(
-                            LocalFloatingBottomBarContentColor provides colors.activeContentColor,
-                            LocalFloatingBottomBarActiveContent provides true,
-                            LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
-                            LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
-                        ) {
-                            Row(
-                                Modifier
-                                    .clearAndSetSemantics {}
-                                    .wrapContentWidth(align = Alignment.Start, unbounded = true)
-                                    .requiredWidth(
-                                        with(density) {
-                                            (totalWidthPx - (horizontalPadding * 2).toPx())
-                                                .coerceAtLeast(0f)
-                                                .toDp()
-                                        }
-                                    )
-                                    .requiredHeight(capturedContentHeight)
-                                    .graphicsLayer {
-                                        val contentTranslationPx =
-                                            resolveFloatingDockClippedContentTranslationPx(
-                                                position = visualIndicatorPositionProvider(),
-                                                tabWidthPx = tabWidthPx,
-                                                tabsCount = safeTabsCount,
-                                                indicatorWidthPx = fittedIndicatorWidthPx,
-                                            )
-                                        translationX = if (isLtr) {
-                                            contentTranslationPx
-                                        } else {
-                                            -contentTranslationPx
-                                        }
-                                    },
-                                verticalAlignment = Alignment.CenterVertically,
-                                content = { content(this) }
-                            )
-                        }
-                    }
-                }
+                        .width(fittedIndicatorWidth)
+                )
             } else {
                 Box(
                     modifier = Modifier
