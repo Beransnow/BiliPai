@@ -83,7 +83,7 @@ internal fun <T> AppMiuixSegmentedControl(
             .squircleClip(cornerRadius + 3.dp)
             .padding(3.dp)
             .then(if (!enabled) Modifier.semantics { disabled() } else Modifier),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         options.forEach { option ->
@@ -286,7 +286,7 @@ private fun <T> AppMiuixNonGlassTabs(
             // height; an outer 48dp wrapper alone leaves the selectable area at 36/42dp.
             height = interactiveHeight,
             cornerRadius = geometry.cornerRadius,
-            itemSpacing = AppSpacingTokens.ExtraSmall,
+            itemSpacing = if (compact) 0.dp else AppSpacingTokens.ExtraSmall,
             listState = scrollState,
         )
     }
