@@ -2,8 +2,6 @@ package com.android.purebilibili.feature.home.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
-import com.android.purebilibili.R
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Community
 import top.yukonga.miuix.kmp.icon.extended.Contacts
@@ -88,23 +86,12 @@ internal fun resolveMiuixPreferredHomeNavigationIcon(
     return resolveMiuixHomeNavigationIcon(role, selected)
 }
 
-/**
- * Miuix navigation chrome keeps its native behavior and colors. Home and history use local
- * outlined/filled vectors because the native Miuix glyphs are solid even at Light weight; all
- * other destinations keep their native Miuix icons.
- */
+/** Miuix navigation chrome uses its native Light/Medium pair for every destination. */
 @Composable
 internal fun resolveMiuixBottomNavigationIcon(
     item: BottomNavItem,
     selected: Boolean,
-): ImageVector {
-    val resourceId = when (item) {
-        BottomNavItem.HOME -> if (selected) R.drawable.ms_home_fill_24 else R.drawable.ms_home_24
-        BottomNavItem.HISTORY -> if (selected) R.drawable.ms_history_fill_24 else R.drawable.ms_history_24
-        else -> return resolveMiuixPreferredHomeNavigationIcon(item.name, selected)
-    }
-    return ImageVector.vectorResource(resourceId)
-}
+): ImageVector = resolveMiuixPreferredHomeNavigationIcon(item.name, selected)
 
 private fun resolveMiuixHomeNavigationIcon(
     role: HomeNavigationIconRole,

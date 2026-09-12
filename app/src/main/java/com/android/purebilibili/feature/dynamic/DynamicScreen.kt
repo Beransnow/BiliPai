@@ -722,14 +722,17 @@ fun DynamicScreen(
             ) { targetMode ->
                 // Each animated layout owns one source; outgoing/incoming trees must not share it.
                 val dynamicDockSource = if (
-                    (appThemeConfig.progressiveTopBlurEnabled || appThemeConfig.headerBlurEnabled || appThemeConfig.liquidGlassEnabled) &&
-                    !(activePresentation.isLoading && activePresentation.items.isEmpty())
+                    appThemeConfig.progressiveTopBlurEnabled ||
+                    appThemeConfig.headerBlurEnabled ||
+                    appThemeConfig.liquidGlassEnabled
                 ) {
                     com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
                 } else {
                     null
                 }
-                val dynamicDockBackdrop = dynamicDockSource?.takeIf { it.isReady }?.backdrop
+                val dynamicDockBackdrop = dynamicDockSource?.takeIf {
+                    !(activePresentation.isLoading && activePresentation.items.isEmpty()) && it.isReady
+                }?.backdrop
                 SideEffect {
                     if (activeDynamicBackdrop != dynamicDockBackdrop) {
                         activeDynamicBackdrop = dynamicDockBackdrop

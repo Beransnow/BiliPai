@@ -349,12 +349,14 @@ fun SpaceScreen(
         enabled = spaceThemeConfig.progressiveTopBlurEnabled && !spaceThemeConfig.headerBlurEnabled,
         hasBackdrop = true,
     ) && !isLowBlurBudgetForced()
-    val spaceChromeSource = if (spaceProgressiveBlur && uiState is SpaceUiState.Success) {
+    val spaceChromeSource = if (spaceProgressiveBlur) {
         com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
     } else {
         null
     }
-    val spaceChromeBackdrop = spaceChromeSource?.takeIf { it.isReady }?.backdrop
+    val spaceChromeBackdrop = spaceChromeSource?.takeIf {
+        uiState is SpaceUiState.Success && it.isReady
+    }?.backdrop
     AppScaffold(
         topBar = {
             BiliPaiImmersiveTopBar(

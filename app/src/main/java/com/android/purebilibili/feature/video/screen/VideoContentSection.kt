@@ -65,8 +65,6 @@ import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
-import com.android.purebilibili.core.store.HomeSettings
-import com.android.purebilibili.core.store.SettingsManager
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
@@ -576,12 +574,7 @@ internal fun VideoContentSection(
     val onIntroScrollThresholdChange = uiActions.onIntroScrollThresholdChange
     val onCommentScrollStateChange = uiActions.onCommentScrollStateChange
     val context = LocalContext.current
-    val homeSettings by SettingsManager
-        .getHomeSettings(context)
-        .collectAsStateWithLifecycle(
-            // Avoid a one-frame glass tab bar while the persisted setting is loading.
-            initialValue = HomeSettings(androidNativeLiquidGlassEnabled = false)
-        )
+    val liquidGlassEnabled = LocalAppThemeConfig.current.liquidGlassEnabled
     val tabs = listOf("简介", "评论")
     val scope = rememberCoroutineScope()
     TrackJankStateFlag(
@@ -911,7 +904,7 @@ internal fun VideoContentSection(
                         lightweightCommentRendering = lightweightCommentRendering,
                         sortMode = sortMode,
                         onSortModeChange = onSortModeChange,
-                        showNativeSortHeader = !homeSettings.androidNativeLiquidGlassEnabled,
+                        showNativeSortHeader = !liquidGlassEnabled,
                         showSortControlInHeader = true,
                     )
                 }
@@ -1794,13 +1787,7 @@ private fun VideoContentTabBar(
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
 ) {
-    val context = LocalContext.current
-    val homeSettings by SettingsManager
-        .getHomeSettings(context)
-        .collectAsStateWithLifecycle(
-            // Avoid a one-frame glass tab bar while the persisted setting is loading.
-            initialValue = HomeSettings(androidNativeLiquidGlassEnabled = false)
-        )
+    val liquidGlassEnabledForTabBar = LocalAppThemeConfig.current.liquidGlassEnabled
     val configuration = LocalConfiguration.current
     val layoutSpec = remember(configuration.screenWidthDp) {
         resolveVideoContentTabBarLayoutSpec(widthDp = configuration.screenWidthDp)
@@ -1808,7 +1795,6 @@ private fun VideoContentTabBar(
     val danmakuActionLayoutPolicy = remember(configuration.screenWidthDp) {
         resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp = configuration.screenWidthDp)
     }
-    val liquidGlassEnabledForTabBar = homeSettings.androidNativeLiquidGlassEnabled
     val liquidChromeSpec = remember(
         liquidGlassEnabledForTabBar,
         LocalAppUiStyle.current,

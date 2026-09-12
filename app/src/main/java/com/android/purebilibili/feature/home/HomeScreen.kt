@@ -990,13 +990,15 @@ fun HomeScreen(
         chromeCategoryState.videos.isEmpty() && chromeCategoryState.liveRooms.isEmpty())
     val shouldCaptureHomeChromeBackdrop = isLiquidGlassEnabled ||
         isHeaderBlurEnabled || isBottomBarBlurEnabled || appThemeConfig.progressiveTopBlurEnabled
-    val homeMiuixBackdropSource = if (shouldCaptureHomeChromeBackdrop && chromeContentReady) {
+    val homeMiuixBackdropSource = if (shouldCaptureHomeChromeBackdrop) {
         rememberChromeBackdropSource()
     } else {
         null
     }
     val homeMiuixBackdrop = homeMiuixBackdropSource?.backdrop
-    val readyHomeMiuixBackdrop = homeMiuixBackdropSource?.takeIf { it.isReady }?.backdrop
+    val readyHomeMiuixBackdrop = homeMiuixBackdropSource?.takeIf {
+        chromeContentReady && it.isReady
+    }?.backdrop
     val isDataSaverActive = homePerformanceConfig.isDataSaverActive
     val preloadAheadCount = homePerformanceConfig.preloadAheadCount
     val configuredHomeWallpaperUri by SettingsManager.getHomeWallpaperUri(context).collectAsStateWithLifecycle(initialValue = ""
