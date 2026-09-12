@@ -4479,10 +4479,7 @@ internal fun resolveMaterialBottomBarIcon(
 internal fun resolveHomeNavigationBarIcon(
     item: BottomNavItem,
     selected: Boolean
-): ImageVector = resolveMiuixPreferredHomeNavigationIcon(
-    tabId = item.name,
-    selected = selected,
-)
+): ImageVector = resolveMiuixBottomNavigationIcon(item, selected)
 
 @Composable
 private fun resolveSharedBottomBarIcon(

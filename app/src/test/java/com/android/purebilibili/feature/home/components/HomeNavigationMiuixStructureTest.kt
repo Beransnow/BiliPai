@@ -54,12 +54,11 @@ class HomeNavigationMiuixStructureTest {
         assertTrue(source.contains("MiuixIcons.Search"))
         assertTrue(source.contains("resolveHomeNavigationBarIcon("))
         assertTrue(floatingSource.contains("LocalFloatingBottomBarActiveContent provides true"))
-        assertTrue(iconPolicySource.contains("MiuixIcons.Medium.Home else MiuixIcons.Light.Home"))
-        assertTrue(iconPolicySource.contains("MiuixIcons.Medium.Community else MiuixIcons.Light.Community"))
-        assertTrue(iconPolicySource.contains("MiuixIcons.Medium.Recent else MiuixIcons.Light.Recent"))
-        assertTrue(iconPolicySource.contains("MiuixIcons.Medium.Recording else MiuixIcons.Light.Recording"))
-        assertFalse(iconPolicySource.contains("ImageVector.vectorResource"))
-        assertFalse(iconPolicySource.contains("R.drawable.ic_home_nav_"))
+        assertTrue(source.contains("resolveMiuixBottomNavigationIcon(item, selected)"))
+        assertTrue(iconPolicySource.contains("R.drawable.ms_home_fill_24 else R.drawable.ms_home_24"))
+        assertTrue(iconPolicySource.contains("R.drawable.ms_history_fill_24 else R.drawable.ms_history_24"))
+        assertTrue(iconPolicySource.contains("R.drawable.ms_library_music_fill_24 else R.drawable.ms_library_music_24"))
+        assertTrue(iconPolicySource.contains("R.drawable.ms_settings_fill_24 else R.drawable.ms_settings_24"))
     }
 
     @Test
