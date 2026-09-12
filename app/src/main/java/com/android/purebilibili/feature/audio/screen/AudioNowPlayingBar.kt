@@ -132,8 +132,9 @@ internal fun AudioNowPlayingBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(if (dockHosted) 56.dp else 64.dp)
-                .padding(horizontal = if (iconOnly) 6.dp else 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = if (iconOnly) 0.dp else 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = if (iconOnly) Arrangement.Center else Arrangement.Start,
         ) {
             AsyncImage(
                 model = state.coverUrl,

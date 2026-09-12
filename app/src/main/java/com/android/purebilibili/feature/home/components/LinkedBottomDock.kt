@@ -193,6 +193,7 @@ internal fun LinkedBottomDock(
         val button = 56.dp.roundToPx()
         val barHeight = 64.dp.roundToPx()
         val controlHeight = 56.dp.roundToPx()
+        val searchHeight = 48.dp.roundToPx()
         val gap = 8.dp.roundToPx()
         val progress = merge.value.coerceIn(0f, 1f)
         val geometry = resolveLinkedDockGeometry(
@@ -207,7 +208,7 @@ internal fun LinkedBottomDock(
         val audio = children[2].measure(
             Constraints.fixed(if (hasAudio) audioWidth else 0, if (hasAudio) controlHeight else 0)
         )
-        val searchBox = children[3].measure(Constraints.fixed(searchWidth, controlHeight))
+        val searchBox = children[3].measure(Constraints.fixed(searchWidth, searchHeight))
         layout(constraints.maxWidth, geometry.height) {
             val left = (constraints.maxWidth - width) / 2
             if (progress < 0.999f) nav.placeRelative(left, top)
@@ -220,7 +221,7 @@ internal fun LinkedBottomDock(
             }
             searchBox.placeRelative(
                 left + width - searchWidth,
-                top + (barHeight - controlHeight) / 2,
+                top + (barHeight - searchHeight) / 2,
             )
         }
     }
