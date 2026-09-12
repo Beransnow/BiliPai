@@ -61,6 +61,7 @@ import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
@@ -313,7 +314,12 @@ internal fun resolveVideoContentTabBarCollapseProgress(
     selectedTabIndex: Int,
     listAtTop: Boolean,
     commentPageIndex: Int = 1,
-): Float = 0f
+): Float {
+    if (selectedTabIndex != commentPageIndex) return 0f
+    if (maxCollapsePx <= 0f) return 0f
+    if (!listAtTop) return 1f
+    return (collapsePx / maxCollapsePx).coerceIn(0f, 1f)
+}
 
 
 internal data class VideoContentTabBarCollapseScrollUpdate(
@@ -332,7 +338,27 @@ internal fun reduceVideoContentTabBarCollapseOnPreScroll(
     availableY: Float,
     listAtTop: Boolean,
     enabled: Boolean,
-): VideoContentTabBarCollapseScrollUpdate? = null
+): VideoContentTabBarCollapseScrollUpdate? {
+    if (!enabled || maxCollapsePx <= 0f || availableY == 0f) return null
+    val clampedCollapse = collapsePx.coerceIn(0f, maxCollapsePx)
+    if (availableY < 0f) {
+        val room = maxCollapsePx - clampedCollapse
+        if (room <= 0f) return null
+        val take = minOf(-availableY, room)
+        if (take <= 0f) return null
+        return VideoContentTabBarCollapseScrollUpdate(
+            nextCollapsePx = clampedCollapse + take,
+            consumedY = -take,
+        )
+    }
+    if (!listAtTop || clampedCollapse <= 0f) return null
+    val take = minOf(availableY, clampedCollapse)
+    if (take <= 0f) return null
+    return VideoContentTabBarCollapseScrollUpdate(
+        nextCollapsePx = clampedCollapse - take,
+        consumedY = take,
+    )
+}
 
 /**
  * Nested postScroll：列表已贴顶后仍有未消费的上滑余量时，继续展开分段（fling 回顶可跟手展完）。
@@ -343,14 +369,28 @@ internal fun reduceVideoContentTabBarCollapseOnPostScroll(
     availableY: Float,
     listAtTop: Boolean,
     enabled: Boolean,
-): VideoContentTabBarCollapseScrollUpdate? = null
+): VideoContentTabBarCollapseScrollUpdate? {
+    if (!enabled || maxCollapsePx <= 0f || availableY <= 0f || !listAtTop) return null
+    val clampedCollapse = collapsePx.coerceIn(0f, maxCollapsePx)
+    if (clampedCollapse <= 0f) return null
+    val take = minOf(availableY, clampedCollapse)
+    if (take <= 0f) return null
+    return VideoContentTabBarCollapseScrollUpdate(
+        nextCollapsePx = clampedCollapse - take,
+        consumedY = take,
+    )
+}
 
 internal fun resolveVideoContentTabBarCollapsePxWhenListLeavesTop(
     collapsePx: Float,
     maxCollapsePx: Float,
     listAtTop: Boolean,
     enabled: Boolean,
-): Float = 0f
+): Float {
+    if (!enabled || maxCollapsePx <= 0f) return 0f
+    if (!listAtTop) return maxCollapsePx
+    return collapsePx.coerceIn(0f, maxCollapsePx)
+}
 
 
 /**
@@ -715,9 +755,9 @@ internal fun VideoContentSection(
         }
     }
     val backToTopButtonEnabled = rememberBackToTopButtonEnabled()
-    val tabBarCollapseEnabled by remember {
-        derivedStateOf { false }
-    }
+    val tabBarCollapseEnabled by SettingsManager
+        .getVideoDetailChromeScrollHideEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     // 离开评论列表顶部时钳到全收；回到简介 Tab 时复位展开。
     LaunchedEffect(tabBarCollapseEnabled, commentListAtTop, tabBarMaxHeightPx) {
         tabBarCollapsePx = resolveVideoContentTabBarCollapsePxWhenListLeavesTop(
@@ -1006,15 +1046,23 @@ internal fun VideoContentSection(
             )
         }
 
-        if (
-            pagerState.currentPage == 1 &&
-            (liquidGlassEnabled || immersiveVideoContentChromeEnabled)
+        AnimatedVisibility(
+            visible = pagerState.currentPage == 1 &&
+                (liquidGlassEnabled || immersiveVideoContentChromeEnabled) &&
+                (!tabBarCollapseEnabled || commentListAtTop),
+            enter = fadeIn(animationSpec = tween(durationMillis = 120)),
+            exit = fadeOut(animationSpec = tween(durationMillis = 90)),
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = tabBarVisibleHeightDp)
-                    .heightIn(min = 46.dp),
+                    .heightIn(min = 46.dp)
+                    .graphicsLayer {
+                        val progress = tabBarCollapseProgress.coerceIn(0f, 1f)
+                        alpha = 1f - progress
+                        translationY = -tabBarMaxHeightPx * progress * 0.35f
+                    },
             ) {
                 if (immersiveVideoContentChromeEnabled) {
                     AnimatedVisibility(
@@ -1047,7 +1095,10 @@ internal fun VideoContentSection(
         AppLiquidGlassBackToTopButton(
             visible = pagerState.currentPage == 1 && backToTopButtonEnabled && showCommentBackToTop,
             onClick = {
-                scope.launch { commentListState.animateScrollToItem(0) }
+                scope.launch {
+                    commentListState.animateScrollToItem(0)
+                    tabBarCollapsePx = 0f
+                }
             },
             backdrop = videoContentMiuixBackdrop,
             modifier = Modifier
