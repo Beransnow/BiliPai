@@ -16,12 +16,25 @@ class LinkedDockPolicyTest {
     }
 
     @Test
-    fun mergedPlaybackFitsBetweenNavigationAndSearch() {
+    fun compactPlaybackKeepsGapsBetweenThreeSeparateCapsules() {
         val geometry = geometry(merge = 1f, search = 0f)
-        assertEquals(56, geometry.audioX)
-        assertEquals(224, geometry.audioWidth)
-        assertEquals(336, geometry.audioX + geometry.audioWidth + geometry.searchWidth)
+        assertEquals(64, geometry.audioX)
+        assertEquals(208, geometry.audioWidth)
+        assertEquals(336, geometry.audioX + geometry.audioWidth + 8 + geometry.searchWidth)
         assertEquals(64, geometry.height)
+    }
+
+    @Test
+    fun playbackGapsRemainVisibleAcrossWindowWidths() {
+        for (width in listOf(240, 296, 336, 600)) {
+            for (searchEnabled in listOf(false, true)) {
+                val geometry = resolveLinkedDockGeometry(width, 56, 64, 8, true, searchEnabled, 1f, 0f)
+                assertEquals(8, geometry.audioX - 56)
+                val trailingGap = width - geometry.searchWidth - geometry.audioX - geometry.audioWidth
+                assertEquals(if (searchEnabled) 8 else 0, trailingGap)
+                assertTrue(geometry.audioWidth >= 112)
+            }
+        }
     }
 
     @Test

@@ -3965,9 +3965,9 @@ fun AppNavigation(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                        val dockAudioContent: (@Composable (Modifier, Float, Boolean) -> Unit)? =
+                        val dockAudioContent: (@Composable (Modifier, Float, Boolean, Float) -> Unit)? =
                             if (showAudioNowPlayingInDock && audioNowPlayingItem != null) {
-                                { audioModifier, dockMergeProgress, iconOnly ->
+                                { audioModifier, dockMergeProgress, iconOnly, surfaceMergeProgress ->
                                     val playbackManager = miniPlayerManager ?: MiniPlayerManager.getInstance(context)
                                     AudioNowPlayingBar(
                                         state = AudioNowPlayingBarState(
@@ -4002,13 +4002,14 @@ fun AppNavigation(
                                         consumeNavigationBarsPadding = false,
                                         dockHosted = isBottomBarFloating,
                                         dockMergeProgress = dockMergeProgress,
+                                        surfaceMergeProgress = surfaceMergeProgress,
                                         iconOnly = iconOnly,
                                         modifier = audioModifier
                                     )
                                 }
                             } else null
                         if (!isBottomBarFloating) {
-                            dockAudioContent?.invoke(Modifier, 0f, false)
+                            dockAudioContent?.invoke(Modifier, 0f, false, 0f)
                         }
                         if (isBottomBarFloating) {
                             Box(

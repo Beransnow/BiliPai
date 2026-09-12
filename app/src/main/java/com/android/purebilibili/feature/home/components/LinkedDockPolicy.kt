@@ -31,11 +31,14 @@ internal fun resolveLinkedDockGeometry(
     val searchWidth = if (!searchEnabled) 0 else (
         button + (width - button * (if (hasAudio) 3 else 2)) * search
     ).roundToInt().coerceAtLeast(button).coerceAtMost((width - button).coerceAtLeast(0))
-    val compactAudioWidth = (width - button - searchWidth).coerceAtLeast(0)
+    // Playback uses three separate capsules. Only active search joins the surfaces.
+    val playbackGap = (gap * (1f - search)).roundToInt()
+    val compactAudioWidth = (width - button - searchWidth -
+        playbackGap * (if (searchEnabled) 2 else 1)).coerceAtLeast(0)
     return LinkedDockGeometry(
         searchWidth = searchWidth,
         audioWidth = if (hasAudio) (width + (compactAudioWidth - width) * merge).roundToInt() else 0,
-        audioX = (button * merge).roundToInt(),
+        audioX = ((button + playbackGap) * merge).roundToInt(),
         audioY = (top * merge).roundToInt(),
         top = top,
         height = top + barHeight,

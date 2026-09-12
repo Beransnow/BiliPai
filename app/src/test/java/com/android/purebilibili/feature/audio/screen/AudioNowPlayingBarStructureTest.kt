@@ -16,7 +16,7 @@ class AudioNowPlayingBarStructureTest {
         assertTrue(source.contains("resolveSharedBottomBarCapsuleShape()"))
         assertTrue(source.contains(".biliPaiFloatingDockShell("))
         assertTrue(source.contains("enabled = glassActive"))
-        assertTrue(source.contains("1f - dockMergeProgress.coerceIn(0f, 1f)"))
+        assertTrue(source.contains("1f - surfaceMergeProgress.coerceIn(0f, 1f)"))
         assertTrue(source.contains("rememberMusicArtworkRotationDegrees("))
         assertTrue(source.contains("shouldRotateMusicArtwork("))
         assertTrue(source.contains("playbackSpeed = state.playbackSpeed"))

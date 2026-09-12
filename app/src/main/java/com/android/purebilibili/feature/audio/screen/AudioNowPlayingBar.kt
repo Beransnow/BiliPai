@@ -74,6 +74,7 @@ internal fun AudioNowPlayingBar(
     dockHosted: Boolean = false,
     dockMergeProgress: Float = 0f,
     iconOnly: Boolean = false,
+    surfaceMergeProgress: Float = dockMergeProgress,
     modifier: Modifier = Modifier
 ) {
     val compact = dockMergeProgress > 0.5f
@@ -117,7 +118,7 @@ internal fun AudioNowPlayingBar(
     ) {
         Box(
             Modifier.matchParentSize()
-                .graphicsLayer { alpha = 1f - dockMergeProgress.coerceIn(0f, 1f) }
+                .graphicsLayer { alpha = 1f - surfaceMergeProgress.coerceIn(0f, 1f) }
                 .biliPaiFloatingDockShell(
                     backdrop = miuixBackdrop,
                     containerColor = containerColor,

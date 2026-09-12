@@ -49,7 +49,7 @@ internal fun LinkedBottomDock(
     glassEnabled: Boolean,
     liquidGlassTuning: LiquidGlassTuning,
     iconStyle: SharedFloatingBottomBarIconStyle,
-    nowPlayingContent: (@Composable (Modifier, Float, Boolean) -> Unit)?,
+    nowPlayingContent: (@Composable (Modifier, Float, Boolean, Float) -> Unit)?,
     modifier: Modifier = Modifier,
     navigationContent: @Composable () -> Unit,
 ) {
@@ -106,7 +106,7 @@ internal fun LinkedBottomDock(
             .padding(horizontal = 12.dp, vertical = 8.dp),
         content = {
             Box(Modifier.graphicsLayer {
-                alpha = merge.value.coerceIn(0f, 1f)
+                alpha = search.value.coerceIn(0f, 1f)
                 val settle = (merge.value - 1f).coerceAtLeast(0f)
                 scaleX = 1f + settle * 0.2f
                 scaleY = 1f + settle * 0.1f
@@ -129,6 +129,10 @@ internal fun LinkedBottomDock(
             Box(Modifier.graphicsLayer { alpha = (merge.value * 2f).coerceIn(0f, 1f) }
                 .then(if (phase != LinkedDockPhase.Expanded) Modifier.clickable(role = Role.Button) { expand() }
                     else Modifier.clearAndSetSemantics {}), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxSize().graphicsLayer {
+                    alpha = 1f - search.value.coerceIn(0f, 1f)
+                }.biliPaiFloatingDockShell(backdrop, containerColor, 0f, shape = shape,
+                    enabled = glassEnabled, liquidGlassTuning = liquidGlassTuning))
                 if (merge.value > 0.001f) {
                     AppIcon(
                         imageVector = if (iconStyle == SharedFloatingBottomBarIconStyle.MIUIX) {
@@ -141,11 +145,11 @@ internal fun LinkedBottomDock(
             }
             Box {
                 nowPlayingContent?.invoke(Modifier.fillMaxSize(), merge.value.coerceIn(0f, 1f),
-                    search.value > 0.5f)
+                    search.value > 0.5f, search.value.coerceIn(0f, 1f))
             }
             Box(contentAlignment = Alignment.Center) {
                 if (searchEnabled) {
-                    Box(Modifier.fillMaxSize().graphicsLayer { alpha = 1f - merge.value }
+                    Box(Modifier.fillMaxSize().graphicsLayer { alpha = 1f - search.value.coerceIn(0f, 1f) }
                         .biliPaiFloatingDockShell(backdrop, containerColor, 0f, shape = shape,
                             enabled = glassEnabled, liquidGlassTuning = liquidGlassTuning))
                     Box(Modifier.fillMaxSize().then(
@@ -187,16 +191,17 @@ internal fun LinkedBottomDock(
         val navWidth = (width - (if (searchEnabled) button + gap else 0)).coerceAtLeast(0)
         val shell = children[0].measure(Constraints.fixed(width, barHeight))
         val nav = children[1].measure(Constraints.fixed(navWidth, barHeight))
-        val first = children[2].measure(Constraints.fixed(button, barHeight))
+        val first = children[2].measure(Constraints.fixed(button, button))
         val audio = children[3].measure(Constraints.fixed(if (hasAudio) audioWidth else 0, if (hasAudio) barHeight else 0))
-        val searchBox = children[4].measure(Constraints.fixed(searchWidth, barHeight))
+        val searchHeight = button + ((barHeight - button) * search.value.coerceIn(0f, 1f)).toInt()
+        val searchBox = children[4].measure(Constraints.fixed(searchWidth, searchHeight))
         layout(constraints.maxWidth, geometry.height) {
             val left = (constraints.maxWidth - width) / 2
             shell.placeRelative(left, top)
             if (progress < 0.999f) nav.placeRelative(left, top)
-            if (progress > 0.001f) first.placeRelative(left, top)
+            if (progress > 0.001f) first.placeRelative(left, top + (barHeight - button) / 2)
             if (hasAudio) audio.placeRelative(left + geometry.audioX, geometry.audioY)
-            searchBox.placeRelative(left + width - searchWidth, top)
+            searchBox.placeRelative(left + width - searchWidth, top + (barHeight - searchHeight) / 2)
         }
     }
 }
