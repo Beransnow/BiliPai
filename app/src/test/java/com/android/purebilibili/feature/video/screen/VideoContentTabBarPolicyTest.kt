@@ -325,6 +325,15 @@ class VideoContentTabBarPolicyTest {
         assertTrue(source.contains(".biliPaiProgressiveTopBlur("))
         assertTrue(source.contains("liquidGlassEffectsEnabled = liquidGlassEnabled"))
         assertTrue(source.contains("floatingHeaderContentPadding = if (floatingCommentHeaderEnabled) 46.dp else 0.dp"))
+        val pinnedCommentHeader = source.substringAfter("if (pagerState.currentPage == 1 && floatingCommentHeaderEnabled)")
+            .substringBefore("// Inline 弹幕设置")
+        assertTrue(
+            pinnedCommentHeader.indexOf(".biliPaiProgressiveTopBlur(") <
+                pinnedCommentHeader.indexOf("CommentListHeader("),
+        )
+        val primaryTabChrome = source.substringAfter("contentAlignment = Alignment.TopStart,")
+            .substringBefore("if (pagerState.currentPage == 1 && floatingCommentHeaderEnabled)")
+        assertTrue(primaryTabChrome.contains(".biliPaiProgressiveTopBlur("))
         val pagerBlock = source
             .substringAfter("HorizontalPager(")
             .substringBefore(") { page ->")

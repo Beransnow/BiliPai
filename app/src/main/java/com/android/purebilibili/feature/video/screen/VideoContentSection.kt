@@ -933,6 +933,15 @@ internal fun VideoContentSection(
                 ),
             contentAlignment = Alignment.TopStart,
         ) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .biliPaiProgressiveTopBlur(
+                        backdrop = videoContentMiuixBackdrop,
+                        enabled = progressiveCommentHeaderEnabled,
+                        surfaceColor = Color.Transparent,
+                    ),
+            )
             VideoContentTabBar(
                 tabs = tabs,
                 replyCount = replyCount,
@@ -983,13 +992,19 @@ internal fun VideoContentSection(
                     .padding(
                         top = tabBarVisibleHeightDp,
                     )
-                    .heightIn(min = 46.dp)
-                    .biliPaiProgressiveTopBlur(
-                        backdrop = videoContentMiuixBackdrop,
-                        enabled = progressiveCommentHeaderEnabled,
-                        surfaceColor = Color.Transparent,
-                    ),
+                    .heightIn(min = 46.dp),
             ) {
+                // Keep the shader on a background sibling so the pinned title and controls stay
+                // sharp while comments continue to move beneath the material.
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .biliPaiProgressiveTopBlur(
+                            backdrop = videoContentMiuixBackdrop,
+                            enabled = progressiveCommentHeaderEnabled,
+                            surfaceColor = Color.Transparent,
+                        ),
+                )
                 CommentListHeader(
                     count = replyCount,
                     title = "${sortMode.label}评论",
