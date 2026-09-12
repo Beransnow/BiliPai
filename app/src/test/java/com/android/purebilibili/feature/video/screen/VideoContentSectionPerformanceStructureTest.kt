@@ -61,7 +61,8 @@ class VideoContentSectionPerformanceStructureTest {
         assertTrue(source.contains("resolveVideoContentTabBarCollapseProgress("))
         assertFalse(source.contains("visible = !collapseTabBarForCommentScroll"))
         // Sort filter bar lives in the top chrome beside the comment tab.
-        assertTrue(source.contains("visible = pagerState.currentPage == 1 && commentListAtTop"))
+        assertTrue(source.contains("if (pagerState.currentPage == 1)"))
+        assertTrue(source.contains("visible = commentListAtTop"))
         assertTrue(source.contains("CommentSortFilterBar("))
         assertTrue(source.contains("showHeader = false"))
         assertTrue(source.contains("shouldShowVideoContentTabBarDanmakuActions(selectedTabIndex)"))

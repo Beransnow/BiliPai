@@ -62,8 +62,6 @@ import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
@@ -707,6 +705,15 @@ internal fun VideoContentSection(
             )
         }
     }
+    val showCommentBackToTop by remember(commentListState) {
+        derivedStateOf {
+            shouldShowVideoCommentBackToTop(
+                firstVisibleItemIndex = commentListState.firstVisibleItemIndex,
+                firstVisibleItemScrollOffset = commentListState.firstVisibleItemScrollOffset,
+            )
+        }
+    }
+    val backToTopButtonEnabled = rememberBackToTopButtonEnabled()
     val tabBarCollapseEnabled by remember {
         derivedStateOf { false }
     }
@@ -989,24 +996,24 @@ internal fun VideoContentSection(
             )
         }
 
-        AnimatedVisibility(
-            visible = pagerState.currentPage == 1 && commentListAtTop,
-            enter = fadeIn(animationSpec = tween(durationMillis = 120)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 90)),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = tabBarVisibleHeightDp),
-        ) {
+        if (pagerState.currentPage == 1) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(top = tabBarVisibleHeightDp)
                     .heightIn(min = 46.dp),
             ) {
-                CommentListHeader(
-                    count = replyCount,
-                    title = "${sortMode.label}评论",
+                AnimatedVisibility(
+                    visible = commentListAtTop,
+                    enter = fadeIn(animationSpec = tween(durationMillis = 120)),
+                    exit = fadeOut(animationSpec = tween(durationMillis = 90)),
                     modifier = Modifier.align(Alignment.TopStart),
-                )
+                ) {
+                    CommentListHeader(
+                        count = replyCount,
+                        title = "${sortMode.label}评论",
+                    )
+                }
                 CommentSortFilterBar(
                     sortMode = sortMode,
                     onSortModeChange = onSortModeChange,
@@ -1021,6 +1028,20 @@ internal fun VideoContentSection(
                 )
             }
         }
+
+        AppLiquidGlassBackToTopButton(
+            visible = pagerState.currentPage == 1 && backToTopButtonEnabled && showCommentBackToTop,
+            onClick = {
+                scope.launch { commentListState.animateScrollToItem(0) }
+            },
+            backdrop = videoContentMiuixBackdrop,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(
+                    end = 20.dp,
+                    bottom = bottomContentPadding + 12.dp,
+                ),
+        )
 
         // Inline 弹幕设置不是 Dialog，必须在详情内容之后绘制，避免被列表盖住。
         if (showImagePreview && previewImages.isNotEmpty()) {
@@ -1300,15 +1321,6 @@ internal fun VideoCommentTab(
 ) {
     val commentAppearance = rememberVideoCommentAppearance()
     val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
-    val scope = rememberCoroutineScope()
-    val shouldShowBackToTop by remember(listState) {
-        derivedStateOf {
-            shouldShowVideoCommentBackToTop(
-                firstVisibleItemIndex = listState.firstVisibleItemIndex,
-                firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset
-            )
-        }
-    }
     val shouldLoadMore by remember(
         listState,
         replies.size,
@@ -1351,13 +1363,11 @@ internal fun VideoCommentTab(
                 title = "${sortMode.label}评论",
             )
         }
-        val commentBackdrop = rememberLayerBackdrop()
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn(
                 state = listState,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .layerBackdrop(commentBackdrop),
+                    .fillMaxSize(),
                 contentPadding = PaddingValues(
                     start = contentPadding.calculateStartPadding(layoutDirection),
                     top = contentPadding.calculateTopPadding() + floatingHeaderContentPadding,
@@ -1456,21 +1466,6 @@ internal fun VideoCommentTab(
             }
             }
 
-            AppLiquidGlassBackToTopButton(
-                visible = rememberBackToTopButtonEnabled() && shouldShowBackToTop,
-                onClick = {
-                    scope.launch {
-                        listState.animateScrollToItem(0)
-                    }
-                },
-                backdrop = commentBackdrop,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(
-                        end = 20.dp,
-                        bottom = contentPadding.calculateBottomPadding() + 12.dp
-                    ),
-            )
         }
     }
 }
