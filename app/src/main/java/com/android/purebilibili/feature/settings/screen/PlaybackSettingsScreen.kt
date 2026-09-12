@@ -625,11 +625,11 @@ fun PlaybackSettingsContent(
                         AppPreferenceDivider()
                         AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYLIST_AUTO_CONTINUE),
-                            title = "听视频小横条",
+                            title = "视频小横条",
                             subtitle = if (audioNowPlayingBarEnabled) {
-                                "已开启：返回首页等页面时显示正在播放条"
+                                "进入视频详情后返回首页等页面时显示，即使未播放也保留当前视频入口"
                             } else {
-                                "关闭后离开听视频页不再显示底部小横条"
+                                "关闭后返回首页等页面时不显示视频小横条"
                             },
                             checked = audioNowPlayingBarEnabled,
                             onCheckedChange = {

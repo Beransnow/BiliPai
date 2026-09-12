@@ -23,6 +23,8 @@ class AudioNowPlayingBarStructureTest {
         assertTrue(source.contains("consumeNavigationBarsPadding"))
         assertTrue(source.contains("artistAvatarUrl"))
         assertTrue(source.contains("state.artistAvatarUrl"))
+        assertTrue(source.contains("basicMarquee(iterations = Int.MAX_VALUE)"))
+        assertTrue(source.contains("overflow = TextOverflow.Clip"))
         assertFalse(source.contains("enabled = false"))
         assertFalse(source.contains("backdrop = null"))
         assertFalse(source.contains("ContainerLevel.Card"))

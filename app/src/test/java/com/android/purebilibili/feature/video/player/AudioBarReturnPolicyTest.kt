@@ -6,12 +6,10 @@ import kotlin.test.assertTrue
 
 class AudioBarReturnPolicyTest {
     @Test
-    fun eligibleVideoReturnActivatesAudioBar() {
+    fun videoReturnActivatesAudioBarWithoutPlaybackState() {
         assertTrue(
             shouldActivateAudioBarOnVideoExit(
                 barEnabled = true,
-                stopPlaybackOnExit = false,
-                hasPlayer = true,
                 hasVideoIdentity = true,
                 isLive = false,
                 isMiniOrPip = false,
@@ -21,22 +19,27 @@ class AudioBarReturnPolicyTest {
     }
 
     @Test
-    fun explicitStopAndNonVideoDestinationsDoNotActivateAudioBar() {
-        assertFalse(eligible(stopPlaybackOnExit = true))
+    fun nonVideoDestinationsDoNotActivateAudioBar() {
+        assertFalse(
+            shouldActivateAudioBarOnVideoExit(
+                barEnabled = false,
+                hasVideoIdentity = true,
+                isLive = false,
+                isMiniOrPip = false,
+                isNavigatingToVideo = false,
+            )
+        )
         assertFalse(eligible(isLive = true))
         assertFalse(eligible(isMiniOrPip = true))
         assertFalse(eligible(isNavigatingToVideo = true))
     }
 
     private fun eligible(
-        stopPlaybackOnExit: Boolean = false,
         isLive: Boolean = false,
         isMiniOrPip: Boolean = false,
         isNavigatingToVideo: Boolean = false,
     ) = shouldActivateAudioBarOnVideoExit(
         barEnabled = true,
-        stopPlaybackOnExit = stopPlaybackOnExit,
-        hasPlayer = true,
         hasVideoIdentity = true,
         isLive = isLive,
         isMiniOrPip = isMiniOrPip,

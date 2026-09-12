@@ -150,8 +150,8 @@ internal fun shouldClearPlaybackNotificationOnNavigationExit(
     stopPlaybackOnExit: Boolean,
     keepForAudioNowPlaying: Boolean = false,
 ): Boolean {
-    if (keepForAudioNowPlaying) return false
     if (stopPlaybackOnExit) return true
+    if (keepForAudioNowPlaying) return false
     return mode == SettingsManager.MiniPlayerMode.OFF ||
         mode == SettingsManager.MiniPlayerMode.SYSTEM_PIP
 }
@@ -1652,8 +1652,6 @@ class MiniPlayerManager private constructor(private val context: Context) :
         if (!shouldHandleNavigationLeaveForBvid(expectedBvid, currentBvid)) return false
         if (!shouldActivateAudioBarOnVideoExit(
                 barEnabled = SettingsManager.getAudioNowPlayingBarEnabledSync(context),
-                stopPlaybackOnExit = SettingsManager.getStopPlaybackOnExitSync(context),
-                hasPlayer = player != null && isActive,
                 hasVideoIdentity = !currentBvid.isNullOrBlank() && currentCid > 0L,
                 isLive = isLiveMode,
                 isMiniOrPip = isMiniMode || isSystemPipActive,
@@ -2245,8 +2243,10 @@ class MiniPlayerManager private constructor(private val context: Context) :
     /**
      * 暂停/播放切换
      */
-    fun togglePlayPause() {
+    fun togglePlayPause(): Boolean {
+        if (player == null) return false
         performMediaControl(MediaControlType.PLAY_PAUSE)
+        return true
     }
 
     private fun performMediaControl(controlType: MediaControlType) {

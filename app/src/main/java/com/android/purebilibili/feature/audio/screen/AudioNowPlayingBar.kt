@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.audio.screen
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -109,7 +110,7 @@ internal fun AudioNowPlayingBar(
                 }
             )
             .clip(shape)
-            .semantics { contentDescription = "正在播放：${state.title}，打开听视频" }
+            .semantics { contentDescription = "当前视频：${state.title}，打开听视频" }
             .clickable(onClick = onExpand)
             .audioNowPlayingSkipGesture(
                 onSkipNext = onSkipNext,
@@ -150,8 +151,10 @@ internal fun AudioNowPlayingBar(
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                     AppText(
                         text = state.title,
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Clip,
+                        softWrap = false,
                         color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                         style = MaterialTheme.typography.bodyMedium

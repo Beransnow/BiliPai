@@ -1746,7 +1746,17 @@ fun AppNavigation(
 
             fun prepareVideoPlaybackForNavigationExit(videoKey: BiliPaiNavKey.VideoDetail) {
                 val manager = miniPlayerManager ?: return
-                if (manager.prepareAudioNowPlayingForNavigationExit(videoKey.bvid)) return
+                if (manager.prepareAudioNowPlayingForNavigationExit(videoKey.bvid)) {
+                    manager.markLeavingByNavigation(
+                        expectedBvid = videoKey.bvid,
+                        deferPlaybackStop = com.android.purebilibili.feature.video.screen
+                            .shouldDeferPlaybackStopForSharedLiveReturn(
+                                cardTransitionEnabled = cardTransitionEnabled,
+                                hasSourceRoute = !videoKey.sourceRoute.isNullOrBlank(),
+                            ),
+                    )
+                    return
+                }
                 if (manager.shouldShowInAppMiniPlayer()) {
                     manager.enterMiniMode()
                 } else if (shouldMarkNavigationLeaveBeforeVideoExit(isMiniMode = manager.isMiniMode)) {
@@ -3987,7 +3997,16 @@ fun AppNavigation(
                                                 )
                                             )
                                         },
-                                        onPlayPause = { playbackManager.togglePlayPause() },
+                                        onPlayPause = {
+                                            if (!playbackManager.togglePlayPause()) {
+                                                pushNavigation3Route(
+                                                    ScreenRoutes.AudioMode.createRoute(
+                                                        bvid = audioNowPlayingItem.bvid,
+                                                        cid = audioNowPlayingItem.cid
+                                                    )
+                                                )
+                                            }
+                                        },
                                         onSkipNext = { playbackManager.playNext() },
                                         onSkipPrevious = { playbackManager.playPrevious() },
                                         onDismiss = {
@@ -4128,7 +4147,16 @@ fun AppNavigation(
                             )
                         )
                     },
-                    onPlayPause = { playbackManager.togglePlayPause() },
+                    onPlayPause = {
+                        if (!playbackManager.togglePlayPause()) {
+                            pushNavigation3Route(
+                                ScreenRoutes.AudioMode.createRoute(
+                                    bvid = audioNowPlayingItem.bvid,
+                                    cid = audioNowPlayingItem.cid
+                                )
+                            )
+                        }
+                    },
                     onSkipNext = { playbackManager.playNext() },
                     onSkipPrevious = { playbackManager.playPrevious() },
                     onDismiss = {

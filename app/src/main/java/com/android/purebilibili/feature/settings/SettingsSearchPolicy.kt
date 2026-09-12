@@ -578,7 +578,7 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "后台播放 / 画中画 / 小窗",
         subtitle = "设置离开播放页后停止、后台继续或进入小窗",
         section = "播放设置",
-        aliases = listOf("后台播放", "画中画", "pip", "小窗", "小窗画中画", "音频焦点", "自动进入画中画", "离开播放页后停止", "听视频小横条", "听视频横条", "正在播放条", "now playing"),
+        aliases = listOf("后台播放", "画中画", "pip", "小窗", "小窗画中画", "音频焦点", "自动进入画中画", "离开播放页后停止", "视频小横条", "听视频小横条", "听视频横条", "当前视频条", "now playing"),
         focusId = SettingsSearchFocusIds.PLAYBACK_MINI_PLAYER
     ),
     SettingsSearchEntry(
@@ -631,20 +631,20 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.BOTTOM_BAR,
-        title = "悬浮底栏 / 导航图标动效",
-        subtitle = "底栏形态、图标交叉缩放、搜索入口与自动展开",
+        title = "悬浮底栏 / 搜索联动",
+        subtitle = "底栏形态、图标交叉缩放、搜索与视频小横条联动",
         section = "导航设置",
         aliases = listOf(
             "悬浮底栏",
             "底栏搜索",
-            "底栏搜索入口",
+            "底栏搜索联动",
             "搜索入口",
             "悬浮搜索",
             "导航图标交叉缩放",
             "图标放大缩小",
             "选中图标 1.10 倍",
-            "底栏搜索布局",
-            "搜索框自动展开",
+            "视频小横条联动",
+            "底栏收拢",
         ),
         focusId = SettingsSearchFocusIds.BOTTOM_BAR_BEHAVIOR
     ),
