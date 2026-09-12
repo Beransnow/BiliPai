@@ -167,13 +167,9 @@ internal fun SettingsPageScaffold(
     ) rememberRecoverableHazeState() else null
     val topBarBlurActive = progressiveBlurEnabled || hazeState != null
     val pageContainerColor = when (LocalAppUiStyle.current) {
-        AppUiStyle.MIUIX -> if (nonGlassMiuix) {
-            AppSurfaceTokens.surface()
-        } else {
-            // Glass chrome samples the Miuix background tone. Keeping a black
-            // surface here makes every settings subpage turn pure black.
-            AppSurfaceTokens.background()
-        }
+        // Miuix presets keep the page base stable when liquid glass is toggled.
+        // Glass changes chrome rendering only; `background` is the official page tone.
+        AppUiStyle.MIUIX -> AppSurfaceTokens.background()
         AppUiStyle.MATERIAL3 -> AppSurfaceTokens.groupedListContainer()
     }
 
