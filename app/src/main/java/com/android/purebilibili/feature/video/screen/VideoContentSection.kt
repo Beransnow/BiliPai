@@ -61,6 +61,7 @@ import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
+import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
@@ -575,6 +576,8 @@ internal fun VideoContentSection(
     val onCommentScrollStateChange = uiActions.onCommentScrollStateChange
     val context = LocalContext.current
     val liquidGlassEnabled = LocalAppThemeConfig.current.liquidGlassEnabled
+    val progressiveCommentHeaderEnabled = LocalAppThemeConfig.current.progressiveTopBlurEnabled
+    val floatingCommentHeaderEnabled = liquidGlassEnabled || progressiveCommentHeaderEnabled
     val tabs = listOf("简介", "评论")
     val scope = rememberCoroutineScope()
     TrackJankStateFlag(
@@ -906,6 +909,8 @@ internal fun VideoContentSection(
                         onSortModeChange = onSortModeChange,
                         showNativeSortHeader = !liquidGlassEnabled,
                         showSortControlInHeader = true,
+                        showHeader = !floatingCommentHeaderEnabled,
+                        floatingHeaderContentPadding = if (floatingCommentHeaderEnabled) 46.dp else 0.dp,
                     )
                 }
             }
@@ -971,23 +976,36 @@ internal fun VideoContentSection(
             )
         }
 
-        if (pagerState.currentPage == 1 && homeSettings.androidNativeLiquidGlassEnabled) {
+        if (pagerState.currentPage == 1 && floatingCommentHeaderEnabled) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
-                        top = tabBarVisibleHeightDp + 6.dp,
-                        end = 16.dp,
+                        top = tabBarVisibleHeightDp,
+                    )
+                    .heightIn(min = 46.dp)
+                    .biliPaiProgressiveTopBlur(
+                        backdrop = videoContentMiuixBackdrop,
+                        enabled = progressiveCommentHeaderEnabled,
+                        surfaceColor = Color.Transparent,
                     ),
-                contentAlignment = Alignment.TopEnd,
             ) {
+                CommentListHeader(
+                    count = replyCount,
+                    title = "${sortMode.label}评论",
+                    modifier = Modifier.align(Alignment.TopStart),
+                )
                 CommentSortFilterBar(
                     sortMode = sortMode,
                     onSortModeChange = onSortModeChange,
                     // The liquid dock reports its press/drag bloom as layout viewport. Lift that
                     // complete viewport so the resting 40dp shell aligns with the comment header.
-                    modifier = Modifier.offset(y = (-commentSortDockLiftDp).dp),
-                    miuixBackdrop = videoContentMiuixBackdrop,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 6.dp, end = 16.dp)
+                        .offset(y = (-commentSortDockLiftDp).dp),
+                    miuixBackdrop = if (liquidGlassEnabled) videoContentMiuixBackdrop else null,
+                    liquidGlassEffectsEnabled = liquidGlassEnabled,
                 )
             }
         }
@@ -1265,8 +1283,11 @@ internal fun VideoCommentTab(
     onSortModeChange: (CommentSortMode) -> Unit = {},
     showNativeSortHeader: Boolean = false,
     showSortControlInHeader: Boolean = false,
+    showHeader: Boolean = true,
+    floatingHeaderContentPadding: Dp = 0.dp,
 ) {
     val commentAppearance = rememberVideoCommentAppearance()
+    val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
     val scope = rememberCoroutineScope()
     val shouldShowBackToTop by remember(listState) {
         derivedStateOf {
@@ -1299,7 +1320,7 @@ internal fun VideoCommentTab(
         }
     }
     Column(modifier = modifier.fillMaxSize()) {
-        if (showSortControlInHeader) {
+        if (showHeader && showSortControlInHeader) {
             if (showNativeSortHeader) {
                 CommentSortHeader(
                     count = replyCount,
@@ -1312,7 +1333,7 @@ internal fun VideoCommentTab(
                     title = "${sortMode.label}评论",
                 )
             }
-        } else {
+        } else if (showHeader) {
             CommentListHeader(
                 count = replyCount,
                 title = "${sortMode.label}评论",
@@ -1325,7 +1346,12 @@ internal fun VideoCommentTab(
                 modifier = Modifier
                     .fillMaxSize()
                     .layerBackdrop(commentBackdrop),
-                contentPadding = contentPadding
+                contentPadding = PaddingValues(
+                    start = contentPadding.calculateStartPadding(layoutDirection),
+                    top = contentPadding.calculateTopPadding() + floatingHeaderContentPadding,
+                    end = contentPadding.calculateEndPadding(layoutDirection),
+                    bottom = contentPadding.calculateBottomPadding(),
+                )
             ) {
             if (isRepliesLoading && replies.isEmpty()) {
                 item {

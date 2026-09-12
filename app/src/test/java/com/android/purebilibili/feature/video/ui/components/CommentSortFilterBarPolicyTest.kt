@@ -88,7 +88,7 @@ class CommentSortFilterBarPolicyTest {
 
         assertTrue(source.contains("miuixBackdrop = miuixBackdrop"))
         assertFalse(source.contains("forceLiquidChrome"))
-        assertTrue(source.contains("liquidGlassEffectsEnabled = true"))
+        assertTrue(source.contains("liquidGlassEffectsEnabled = liquidGlassEffectsEnabled"))
         assertTrue(source.contains("MiuixBackdrop"))
     }
 

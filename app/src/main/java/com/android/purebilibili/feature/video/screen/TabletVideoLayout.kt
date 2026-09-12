@@ -60,6 +60,7 @@ import com.android.purebilibili.feature.video.ui.section.resolveNavigationLiveSu
 import com.android.purebilibili.core.store.DanmakuSettings
 import com.android.purebilibili.core.store.DanmakuSettingsScope
 import com.android.purebilibili.core.store.SettingsManager
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.viewmodel.CommentUiState
