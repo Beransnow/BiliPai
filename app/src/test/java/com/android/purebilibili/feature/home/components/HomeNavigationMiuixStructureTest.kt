@@ -58,17 +58,12 @@ class HomeNavigationMiuixStructureTest {
         assertTrue(source.contains("MiuixIcons.Search"))
         assertTrue(source.contains("resolveHomeNavigationBarIcon("))
         assertTrue(floatingSource.contains("LocalFloatingBottomBarActiveContent provides true"))
-        assertTrue(
-            iconPolicySource.contains(
-                "HomeNavigationIconRole.PLUGINS -> if (selected) MiuixIcons.FolderFill else MiuixIcons.Folder"
-            )
-        )
-        assertTrue(iconPolicySource.contains("R.drawable.ic_home_nav_dynamic_filled"))
-        assertTrue(iconPolicySource.contains("R.drawable.ic_home_nav_history_filled"))
-        assertTrue(iconPolicySource.contains("R.drawable.ic_home_nav_profile_filled"))
-        assertTrue(iconPolicySource.contains("R.drawable.ic_home_nav_story_filled"))
-        assertTrue(iconPolicySource.contains("R.drawable.ic_home_nav_live_filled"))
-        assertTrue(iconPolicySource.contains("R.drawable.ic_home_nav_game_filled"))
+        assertTrue(iconPolicySource.contains("MiuixIcons.Medium.Home else MiuixIcons.Light.Home"))
+        assertTrue(iconPolicySource.contains("MiuixIcons.Medium.Community else MiuixIcons.Light.Community"))
+        assertTrue(iconPolicySource.contains("MiuixIcons.Medium.Recent else MiuixIcons.Light.Recent"))
+        assertTrue(iconPolicySource.contains("MiuixIcons.Medium.Recording else MiuixIcons.Light.Recording"))
+        assertFalse(iconPolicySource.contains("ImageVector.vectorResource"))
+        assertFalse(iconPolicySource.contains("R.drawable.ic_home_nav_"))
     }
 
     @Test
