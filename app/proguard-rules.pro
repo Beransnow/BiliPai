@@ -30,11 +30,3 @@
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
-
-# R8 9.3.1 can merge the large Compose-generated DynamicCardV2 method and
-# unrelated static members into Play Services' Dynamite loader classes. The
-# resulting register typing is rejected by Android 17 at startup (VerifyError:
-# Boolean where an Integer is expected). Keep these two narrowly scoped class
-# families out of optimization/class merging while still allowing obfuscation.
--keep,allowobfuscation class com.android.purebilibili.feature.dynamic.components.DynamicCardKt { *; }
--keep,allowobfuscation class com.google.android.gms.dynamite.** { *; }
