@@ -57,8 +57,9 @@ class HomeNavigationMiuixStructureTest {
         assertTrue(source.contains("resolveMiuixBottomNavigationIcon(item, selected)"))
         assertTrue(iconPolicySource.contains("R.drawable.ms_home_fill_24 else R.drawable.ms_home_24"))
         assertTrue(iconPolicySource.contains("R.drawable.ms_history_fill_24 else R.drawable.ms_history_24"))
-        assertTrue(iconPolicySource.contains("R.drawable.ms_library_music_fill_24 else R.drawable.ms_library_music_24"))
-        assertTrue(iconPolicySource.contains("R.drawable.ms_settings_fill_24 else R.drawable.ms_settings_24"))
+        assertTrue(iconPolicySource.contains("else -> return resolveMiuixPreferredHomeNavigationIcon(item.name, selected)"))
+        assertFalse(iconPolicySource.contains("R.drawable.ms_library_music_fill_24"))
+        assertFalse(iconPolicySource.contains("R.drawable.ms_settings_fill_24"))
     }
 
     @Test

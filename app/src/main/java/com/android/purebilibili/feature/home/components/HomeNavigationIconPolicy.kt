@@ -89,28 +89,22 @@ internal fun resolveMiuixPreferredHomeNavigationIcon(
 }
 
 /**
- * Miuix navigation chrome keeps its native behavior and colors while the bottom/side navigation
- * uses one optically consistent Material Symbols set for outlined and filled selection states.
+ * Miuix navigation chrome keeps its native behavior and colors. Home and history use local
+ * outlined/filled vectors because the native Miuix glyphs are solid even at Light weight; all
+ * other destinations keep their native Miuix icons.
  */
 @Composable
 internal fun resolveMiuixBottomNavigationIcon(
     item: BottomNavItem,
     selected: Boolean,
-): ImageVector = ImageVector.vectorResource(
-    when (item) {
+): ImageVector {
+    val resourceId = when (item) {
         BottomNavItem.HOME -> if (selected) R.drawable.ms_home_fill_24 else R.drawable.ms_home_24
-        BottomNavItem.DYNAMIC -> if (selected) R.drawable.ms_notifications_fill_24 else R.drawable.ms_notifications_none_24
-        BottomNavItem.STORY -> if (selected) R.drawable.ms_play_circle_fill_24 else R.drawable.ms_play_circle_outline_24
         BottomNavItem.HISTORY -> if (selected) R.drawable.ms_history_fill_24 else R.drawable.ms_history_24
-        BottomNavItem.LISTEN_VIDEO -> if (selected) R.drawable.ms_library_music_fill_24 else R.drawable.ms_library_music_24
-        BottomNavItem.PROFILE -> if (selected) R.drawable.ms_person_fill_24 else R.drawable.ms_person_24
-        BottomNavItem.FAVORITE -> if (selected) R.drawable.ms_collections_bookmark_fill_24 else R.drawable.ms_collections_bookmark_24
-        BottomNavItem.LIVE -> if (selected) R.drawable.ms_live_tv_fill_24 else R.drawable.ms_live_tv_24
-        BottomNavItem.WATCHLATER -> if (selected) R.drawable.ms_watch_later_fill_24 else R.drawable.ms_watch_later_24
-        BottomNavItem.SETTINGS -> if (selected) R.drawable.ms_settings_fill_24 else R.drawable.ms_settings_24
-        BottomNavItem.PLUGINS -> if (selected) R.drawable.ms_extension_fill_24 else R.drawable.ms_extension_24
+        else -> return resolveMiuixPreferredHomeNavigationIcon(item.name, selected)
     }
-)
+    return ImageVector.vectorResource(resourceId)
+}
 
 private fun resolveMiuixHomeNavigationIcon(
     role: HomeNavigationIconRole,
