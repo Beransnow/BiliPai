@@ -14,6 +14,10 @@ class ProgressiveTopChromePolicyTest {
         assertFalse(shouldUseOpaqueTopChromeBackground(true, false))
         assertFalse(shouldUseOpaqueTopChromeBackground(false, true))
         assertFalse(shouldUseOpaqueTopChromeBackground(true, true))
+
+        val source = loadSource("feature/home/components/ProgressiveTopChrome.kt")
+        assertTrue(source.contains("MaterialTheme.colorScheme.background.copy(alpha = 1f)"))
+        assertTrue(source.contains(".then(modifier)"))
     }
 
     @Test

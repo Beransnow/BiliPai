@@ -2226,7 +2226,7 @@ fun HomeHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(pinnedChromeContentHeight)
-                    .background(com.android.purebilibili.core.ui.AppSurfaceTokens.background().copy(alpha = 1f))
+                    .background(MaterialTheme.colorScheme.background.copy(alpha = 1f))
             )
         }
         if (effectiveContinuousSlabRenderMode != HomeTopChromeRenderMode.PLAIN) {

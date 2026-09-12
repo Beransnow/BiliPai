@@ -3,8 +3,8 @@ package com.android.purebilibili.feature.home.components
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -153,10 +153,12 @@ internal fun BiliPaiImmersiveTopBar(
         headerBlurActive = LocalAppThemeConfig.current.headerBlurEnabled,
     )
     androidx.compose.foundation.layout.Box(
-        modifier = modifier.background(
-            if (opaqueBackground) AppSurfaceTokens.background().copy(alpha = 1f)
-            else Color.Transparent
-        ),
+        modifier = Modifier
+            .background(
+                if (opaqueBackground) MaterialTheme.colorScheme.background.copy(alpha = 1f)
+                else Color.Transparent
+            )
+            .then(modifier),
     ) {
         if (active) {
             androidx.compose.foundation.layout.Box(
