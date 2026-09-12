@@ -4672,16 +4672,25 @@ private fun BottomBarBlendedMiuixIcon(
             unreadCount = unreadCount,
             floatingCompact = floatingCompactBadge
         ) {
-            AppIcon(
-                imageVector = resolveHomeNavigationBarIcon(item, selected = false),
-                contentDescription = contentDescription,
-                modifier = Modifier.alpha(1f - clampedSelectedAlpha)
-            )
-            AppIcon(
-                imageVector = resolveHomeNavigationBarIcon(item, selected = true),
-                contentDescription = null,
-                modifier = Modifier.alpha(clampedSelectedAlpha)
-            )
+            val idleIcon = resolveHomeNavigationBarIcon(item, selected = false)
+            val activeIcon = resolveHomeNavigationBarIcon(item, selected = true)
+            if (idleIcon == activeIcon) {
+                AppIcon(
+                    imageVector = idleIcon,
+                    contentDescription = contentDescription
+                )
+            } else {
+                AppIcon(
+                    imageVector = idleIcon,
+                    contentDescription = contentDescription,
+                    modifier = Modifier.alpha(1f - clampedSelectedAlpha)
+                )
+                AppIcon(
+                    imageVector = activeIcon,
+                    contentDescription = null,
+                    modifier = Modifier.alpha(clampedSelectedAlpha)
+                )
+            }
         }
     }
 }

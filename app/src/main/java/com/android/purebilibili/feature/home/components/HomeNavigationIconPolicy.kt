@@ -108,25 +108,12 @@ private fun resolveMiuixHomeNavigationIcon(
     if (selected) {
         val filledResource = when (role) {
             HomeNavigationIconRole.HOME -> R.drawable.ms_home_fill_24
-            HomeNavigationIconRole.DYNAMIC -> R.drawable.ms_notifications_fill_24
-            HomeNavigationIconRole.STORY -> R.drawable.ms_play_circle_fill_24
             HomeNavigationIconRole.HISTORY -> R.drawable.ms_history_fill_24
-            HomeNavigationIconRole.LISTEN_VIDEO -> R.drawable.ms_library_music_fill_24
-            HomeNavigationIconRole.PROFILE -> R.drawable.ms_person_fill_24
-            HomeNavigationIconRole.FAVORITE -> R.drawable.ms_collections_bookmark_fill_24
-            HomeNavigationIconRole.LIVE -> R.drawable.ms_live_tv_fill_24
-            HomeNavigationIconRole.WATCH_LATER -> R.drawable.ms_watch_later_fill_24
-            HomeNavigationIconRole.SETTINGS -> R.drawable.ms_settings_fill_24
-            HomeNavigationIconRole.PLUGINS -> R.drawable.ms_extension_fill_24
-            HomeNavigationIconRole.FOLLOW -> R.drawable.ms_person_fill_24
-            HomeNavigationIconRole.POPULAR -> R.drawable.ms_trending_up_fill_24
-            HomeNavigationIconRole.ANIME -> R.drawable.ms_collections_bookmark_fill_24
-            HomeNavigationIconRole.GAME -> R.drawable.ms_sports_esports_fill_24
-            HomeNavigationIconRole.PARTITION -> R.drawable.ms_grid_view_fill_24
-            HomeNavigationIconRole.KNOWLEDGE -> R.drawable.ms_lightbulb_fill_24
-            HomeNavigationIconRole.TECH -> R.drawable.ms_smart_toy_fill_24
+            else -> null
         }
-        return ImageVector.vectorResource(filledResource)
+        if (filledResource != null) return ImageVector.vectorResource(filledResource)
+        // Keep the same Miuix silhouette under the moving tint mask. Unrelated Material
+        // filled glyphs (for example a bell for Community) do not align with the idle icon.
     }
     return when (role) {
         HomeNavigationIconRole.HOME -> ImageVector.vectorResource(R.drawable.bp_nav_home_outline_24)
