@@ -549,7 +549,7 @@ fun AppearanceSettingsContent(
                                 icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
                                 title = "安卓液态玻璃",
                                 subtitle = if (isLiquidGlassAvailable) {
-                                    "开启后，首页顶部标签栏、搜索框、底部导航栏和评论区底栏统一使用液态玻璃"
+                                    "开启后，搜索框、底部导航栏和评论区操作栏使用液态玻璃；标签与筛选控件保持原生样式"
                                 } else {
                                     "当前 Android 版本暂不支持液态玻璃效果"
                                 },

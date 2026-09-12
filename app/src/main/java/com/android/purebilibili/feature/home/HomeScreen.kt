@@ -57,6 +57,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
@@ -102,6 +103,7 @@ import com.android.purebilibili.feature.home.policy.quantizeHomeHeaderOffset
 import com.android.purebilibili.feature.home.policy.reduceHomePreScroll
 import com.android.purebilibili.feature.home.policy.resolveHomeHeaderTransitionRunning
 import com.android.purebilibili.feature.home.policy.resolveHomeHeaderSettleTransition
+import com.android.purebilibili.feature.home.policy.resolveHomeHeaderReleaseTarget
 import com.android.purebilibili.feature.home.policy.resolveHomeEmbeddedPageTopPaddingPx
 import com.android.purebilibili.feature.home.policy.shouldApplyHomeFeedScrollAnchor
 import com.android.purebilibili.feature.home.policy.shouldHandleHomeVerticalPreScroll
@@ -1569,13 +1571,17 @@ fun HomeScreen(
                 if (!shouldHandleHomeVerticalPreScroll(deltaX = available.x, deltaY = available.y)) {
                     return Offset.Zero
                 }
-                val firstItemVisible = activeGridState == null ||
-                    activeGridState.firstVisibleItemIndex == 0
+                val firstItemAtTop = activeGridState == null ||
+                    (
+                        activeGridState.firstVisibleItemIndex == 0 &&
+                            activeGridState.firstVisibleItemScrollOffset == 0
+                    )
+                val previousHeaderOffsetPx = headerOffsetHeightPx
                 val scrollUpdate = reduceHomePreScroll(
                     currentHeaderOffsetPx = headerOffsetHeightPx,
                     deltaY = available.y,
                     minHeaderOffsetPx = -headerAutoCollapseDistancePx,
-                    canRevealHeader = firstItemVisible,
+                    canRevealHeader = firstItemAtTop,
                     collapseMode = CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY,
                     isHeaderCollapseEnabled = isAnyHeaderCollapseEnabled,
                     isBottomBarAutoHideEnabled = isBottomBarAutoHideEnabled,
@@ -1608,7 +1614,34 @@ fun HomeScreen(
                     null -> Unit
                 }
 
-                return Offset.Zero
+                val consumedRevealY = if (
+                    available.y > 0f &&
+                    firstItemAtTop &&
+                    isAnyHeaderCollapseEnabled
+                ) {
+                    (headerOffsetHeightPx - previousHeaderOffsetPx)
+                        .coerceIn(0f, available.y)
+                } else {
+                    0f
+                }
+                return Offset(0f, consumedRevealY)
+            }
+
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                if (!isAnyHeaderCollapseEnabled || homeHeaderRevealLock) return Velocity.Zero
+                val firstItemAtTop = activeGridState == null ||
+                    (
+                        activeGridState.firstVisibleItemIndex == 0 &&
+                            activeGridState.firstVisibleItemScrollOffset == 0
+                    )
+                animateHeaderOffsetTo(
+                    resolveHomeHeaderReleaseTarget(
+                        maxHeaderCollapsePx = headerAutoCollapseDistancePx,
+                        canRevealHeader = firstItemAtTop,
+                        collapseMode = CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY,
+                    )
+                )
+                return Velocity.Zero
             }
         }
     }

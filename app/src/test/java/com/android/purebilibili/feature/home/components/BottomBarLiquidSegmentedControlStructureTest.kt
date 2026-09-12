@@ -426,7 +426,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
-    fun `global segmented control delegates liquid chrome to bottom bar matched implementation`() {
+    fun `global segmented control always delegates to native tab row`() {
         val source = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarLiquidSegmentedControl.kt"
         )
@@ -439,11 +439,10 @@ class BottomBarLiquidSegmentedControlStructureTest {
 
         assertTrue(source.contains("BottomBarMotionProfile.ANDROID_NATIVE_FLOATING"))
         assertFalse(source.contains("BottomBarMotionProfile.IOS_FLOATING"))
-        assertTrue(source.contains("!homeSettings.androidNativeLiquidGlassEnabled"))
         assertTrue(source.contains("AppNativeTabRow("))
         assertTrue(source.contains("allowLabelOverflow = allowNativeLabelOverflow"))
         assertTrue(source.contains("indicatorPositionProvider = indicatorPositionProvider"))
-        assertTrue(source.contains("BottomBarFloatingSegmentedControl("))
+        assertFalse(source.contains("BottomBarFloatingSegmentedControl("))
         assertTrue(floating.contains("FloatingBottomBar("))
         assertTrue(floating.contains("FloatingBottomBarItem("))
         assertTrue(floating.contains("resolveBiliPaiBottomBarShellColor("))
