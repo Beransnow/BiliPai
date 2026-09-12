@@ -55,11 +55,9 @@ class HomeNavigationMiuixStructureTest {
         assertTrue(source.contains("resolveHomeNavigationBarIcon("))
         assertTrue(floatingSource.contains("LocalFloatingBottomBarActiveContent provides true"))
         assertTrue(source.contains("resolveMiuixBottomNavigationIcon(item, selected)"))
-        assertTrue(iconPolicySource.contains("BottomNavItem.HOME -> ImageVector.vectorResource(R.drawable.bp_nav_home_outline_24)"))
-        assertTrue(iconPolicySource.contains("BottomNavItem.HISTORY -> ImageVector.vectorResource(R.drawable.bp_nav_history_outline_24)"))
+        assertTrue(iconPolicySource.contains("if (selected) R.drawable.ms_home_fill_24 else R.drawable.bp_nav_home_outline_24"))
+        assertTrue(iconPolicySource.contains("if (selected) R.drawable.ms_history_fill_24 else R.drawable.bp_nav_history_outline_24"))
         assertTrue(iconPolicySource.contains("else -> resolveMiuixPreferredHomeNavigationIcon(item.name, selected)"))
-        assertFalse(iconPolicySource.contains("R.drawable.ms_home_fill_24"))
-        assertFalse(iconPolicySource.contains("R.drawable.ms_history_fill_24"))
         assertFalse(iconPolicySource.contains("R.drawable.ms_library_music_fill_24"))
         assertFalse(iconPolicySource.contains("R.drawable.ms_settings_fill_24"))
     }

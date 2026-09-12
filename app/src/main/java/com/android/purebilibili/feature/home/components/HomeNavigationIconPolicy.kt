@@ -89,17 +89,21 @@ internal fun resolveMiuixPreferredHomeNavigationIcon(
 }
 
 /**
- * Miuix Home and Recent remain visually solid even at Light weight. Keep those two destinations
- * outlined in both states and let NavigationBarItem colors communicate selection; all other
- * destinations retain their native Miuix Light/Medium pair.
+ * Miuix Home and Recent remain visually solid even at Light weight. Their idle layer uses the
+ * thin local outline while the selected layer uses a filled glyph, allowing the moving indicator
+ * to crossfade real interior fill without leaving an idle black solid icon behind.
  */
 @Composable
 internal fun resolveMiuixBottomNavigationIcon(
     item: BottomNavItem,
     selected: Boolean,
 ): ImageVector = when (item) {
-    BottomNavItem.HOME -> ImageVector.vectorResource(R.drawable.bp_nav_home_outline_24)
-    BottomNavItem.HISTORY -> ImageVector.vectorResource(R.drawable.bp_nav_history_outline_24)
+    BottomNavItem.HOME -> ImageVector.vectorResource(
+        if (selected) R.drawable.ms_home_fill_24 else R.drawable.bp_nav_home_outline_24
+    )
+    BottomNavItem.HISTORY -> ImageVector.vectorResource(
+        if (selected) R.drawable.ms_history_fill_24 else R.drawable.bp_nav_history_outline_24
+    )
     else -> resolveMiuixPreferredHomeNavigationIcon(item.name, selected)
 }
 
