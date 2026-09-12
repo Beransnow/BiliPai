@@ -3918,6 +3918,7 @@ internal fun VideoDetailScreenStateHolder(
                         LaunchedEffect(
                             playerCollapsedForAutoPause,
                             pauseOnPlayerCollapseEnabled,
+                            isPortraitFullscreen,
                             currentBvid,
                         ) {
                             val player = playerState.player
@@ -3925,6 +3926,7 @@ internal fun VideoDetailScreenStateHolder(
                                     autoPauseEnabled = pauseOnPlayerCollapseEnabled,
                                     isPlayerCollapsed = playerCollapsedForAutoPause,
                                     isPlaying = player.isPlaying,
+                                    isPortraitFullscreen = isPortraitFullscreen,
                                 )
                             ) {
                                 player.pause()
@@ -3935,6 +3937,7 @@ internal fun VideoDetailScreenStateHolder(
                                     autoPauseEnabled = pauseOnPlayerCollapseEnabled,
                                     isPlayerCollapsed = playerCollapsedForAutoPause,
                                     wasAutoPausedByCollapse = autoPausedByPlayerCollapse,
+                                    isPortraitFullscreen = isPortraitFullscreen,
                                 )
                             ) {
                                 autoPausedByPlayerCollapse = false
