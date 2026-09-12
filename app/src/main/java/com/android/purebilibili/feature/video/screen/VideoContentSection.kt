@@ -989,33 +989,19 @@ internal fun VideoContentSection(
             )
         }
 
-        if (pagerState.currentPage == 1) {
+        AnimatedVisibility(
+            visible = pagerState.currentPage == 1 && commentListAtTop,
+            enter = fadeIn(animationSpec = tween(durationMillis = 120)),
+            exit = fadeOut(animationSpec = tween(durationMillis = 90)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = tabBarVisibleHeightDp),
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        top = tabBarVisibleHeightDp,
-                    )
                     .heightIn(min = 46.dp),
             ) {
-                // Keep the shader on a background sibling so the pinned title and controls stay
-                // sharp while comments continue to move beneath the material.
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            if (progressiveCommentHeaderEnabled || liquidGlassEnabled) {
-                                Color.Transparent
-                            } else {
-                                MaterialTheme.colorScheme.surface
-                            }
-                        )
-                        .biliPaiProgressiveTopBlur(
-                            backdrop = videoContentMiuixBackdrop,
-                            enabled = progressiveCommentHeaderEnabled,
-                            surfaceColor = Color.Transparent,
-                        ),
-                )
                 CommentListHeader(
                     count = replyCount,
                     title = "${sortMode.label}评论",
