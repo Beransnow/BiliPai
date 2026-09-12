@@ -89,7 +89,7 @@ internal const val MIUIX_VIDEO_CARD_GESTURE_GRAB_ROTATION_DEGREES = 10f
 internal const val MIUIX_VIDEO_CARD_GESTURE_LIFT_SCALE = 0.045f
 internal const val MIUIX_VIDEO_CARD_GESTURE_CAMERA_DISTANCE_DP = 8f
 internal const val MIUIX_VIDEO_CARD_GESTURE_CAMERA_PULL_DP = 3f
-internal const val MIUIX_VIDEO_CARD_GESTURE_SHADOW_DP = 18f
+internal const val MIUIX_VIDEO_CARD_GESTURE_SHADOW_DP = 12f
 internal const val MIUIX_VIDEO_CARD_FLOATING_CORNER_DP = 28f
 
 internal fun resolveMiuixVideoCardGesturePoseWeight(morphProgress: Float): Float {
@@ -562,27 +562,10 @@ internal fun miuixVideoCardNavTransition(
                             radiusX = clipRadii.radiusX,
                             radiusY = clipRadii.radiusY,
                         )
-                        val gesture = scope.gesture
                         if (gestureFollowEnabled) {
-                            val transform = if (gesture != null) {
-                                resolveMiuixVideoCardGestureTransform(
-                                    morphProgress = morph,
-                                    touchY = gesture.touchY,
-                                    initialTouchY = gesture.initialTouchY,
-                                    widthPx = width,
-                                    heightPx = height,
-                                    isLeftEdge = gesture.swipeEdge == NavSwipeEdge.Left,
-                                    maxVerticalTravelPx = 56.dp.toPx(),
-                                )
-                            } else {
-                                resolveMiuixVideoCardClickTransform(
-                                    morphProgress = morph,
-                                    widthPx = width,
-                                    heightPx = height,
-                                    sourceBounds = bounds,
-                                )
-                            }
-                            shadowElevation = transform.shadowElevationDp.dp.toPx()
+                            // Click and back poses share this envelope. Reuse it instead of
+                            // allocating and resolving the full gesture transform a second time.
+                            shadowElevation = MIUIX_VIDEO_CARD_GESTURE_SHADOW_DP.dp.toPx() * poseWeight
                         }
                     }
                 }.graphicsLayer {
