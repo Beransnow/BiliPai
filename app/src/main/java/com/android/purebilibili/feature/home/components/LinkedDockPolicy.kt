@@ -51,6 +51,20 @@ internal data class LinkedDockImpact(
     val scaleY: Float,
 )
 
+internal data class LinkedDockSearchStretch(
+    val scaleX: Float,
+    val scaleY: Float,
+)
+
+/** Apply the spring's overshoot after safe layout measurement, anchored at the trailing edge. */
+internal fun resolveLinkedDockSearchStretch(progress: Float): LinkedDockSearchStretch {
+    val overshoot = (progress - progress.coerceIn(0f, 1f)).coerceIn(-0.10f, 0.10f)
+    return LinkedDockSearchStretch(
+        scaleX = 1f + overshoot * 0.30f,
+        scaleY = 1f - overshoot * 0.14f,
+    )
+}
+
 /** Preserve spring overshoot in the draw layer while measurement stays within valid bounds. */
 internal fun resolveLinkedDockImpact(
     progress: Float,

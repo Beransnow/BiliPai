@@ -92,6 +92,20 @@ class LinkedDockPolicyTest {
         assertTrue(impact.scaleY > 1f)
     }
 
+    @Test
+    fun searchStretchPreservesSpringOvershootOutsideSafeLayoutBounds() {
+        val expandedOvershoot = resolveLinkedDockSearchStretch(progress = 1.08f)
+        val collapsedOvershoot = resolveLinkedDockSearchStretch(progress = -0.08f)
+        val settled = resolveLinkedDockSearchStretch(progress = 1f)
+
+        assertTrue(expandedOvershoot.scaleX > 1f)
+        assertTrue(expandedOvershoot.scaleY < 1f)
+        assertTrue(collapsedOvershoot.scaleX < 1f)
+        assertTrue(collapsedOvershoot.scaleY > 1f)
+        assertEquals(1f, settled.scaleX, 0.001f)
+        assertEquals(1f, settled.scaleY, 0.001f)
+    }
+
     private fun geometry(merge: Float, search: Float) =
         resolveLinkedDockGeometry(336, 56, 64, 8, true, true, merge, search)
 }

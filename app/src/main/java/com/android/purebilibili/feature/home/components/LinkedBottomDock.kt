@@ -95,7 +95,7 @@ internal fun LinkedBottomDock(
         label = "dockMerge",
     ) { if (it == LinkedDockPhase.Expanded) 0f else 1f }
     val search = transition.animateFloat(
-        transitionSpec = { if (reduceMotion) snap() else spring(dampingRatio = 0.86f, stiffness = 480f) },
+        transitionSpec = { if (reduceMotion) snap() else spring(dampingRatio = 0.64f, stiffness = 430f) },
         label = "dockSearch",
     ) { if (it == LinkedDockPhase.Search) 1f else 0f }
     val shape = resolveSharedBottomBarCapsuleShape()
@@ -162,28 +162,39 @@ internal fun LinkedBottomDock(
                 contentAlignment = Alignment.Center,
             ) {
                 if (searchEnabled) {
-                    Box(Modifier.fillMaxSize().biliPaiFloatingDockShell(backdrop, containerColor, 0f, shape = shape,
-                            enabled = glassEnabled, liquidGlassTuning = liquidGlassTuning))
-                    Box(Modifier.fillMaxSize().then(
-                        if (phase != LinkedDockPhase.Search) Modifier.clickable(role = Role.Button) {
-                            phase = LinkedDockPhase.Search
-                        } else Modifier
-                    )) {
-                        BiliPaiBottomBarSearchVisualContent(
-                            expanded = phase == LinkedDockPhase.Search,
-                            query = query,
-                            onQueryChange = { query = it },
-                            onSubmit = {
-                                focusManager.clearFocus()
-                                if (query.isBlank()) onSearchClick() else onSearchKeywordSubmit(query.trim())
-                            },
-                            contentColor = contentColor,
-                            accentColor = accentColor,
-                            iconScale = 1f,
-                            fieldAlpha = search.value,
-                            interactive = true,
-                            iconStyle = iconStyle,
-                        )
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .graphicsLayer {
+                                val stretch = resolveLinkedDockSearchStretch(search.value)
+                                transformOrigin = TransformOrigin(1f, 0.5f)
+                                scaleX = stretch.scaleX
+                                scaleY = stretch.scaleY
+                            }
+                    ) {
+                        Box(Modifier.fillMaxSize().biliPaiFloatingDockShell(backdrop, containerColor, 0f, shape = shape,
+                                enabled = glassEnabled, liquidGlassTuning = liquidGlassTuning))
+                        Box(Modifier.fillMaxSize().then(
+                            if (phase != LinkedDockPhase.Search) Modifier.clickable(role = Role.Button) {
+                                phase = LinkedDockPhase.Search
+                            } else Modifier
+                        )) {
+                            BiliPaiBottomBarSearchVisualContent(
+                                expanded = phase == LinkedDockPhase.Search,
+                                query = query,
+                                onQueryChange = { query = it },
+                                onSubmit = {
+                                    focusManager.clearFocus()
+                                    if (query.isBlank()) onSearchClick() else onSearchKeywordSubmit(query.trim())
+                                },
+                                contentColor = contentColor,
+                                accentColor = accentColor,
+                                iconScale = 1f,
+                                fieldAlpha = search.value.coerceIn(0f, 1f),
+                                interactive = true,
+                                iconStyle = iconStyle,
+                            )
+                        }
                     }
                 }
             }
