@@ -18,6 +18,31 @@ class VideoContentTabBarPolicyTest {
     }
 
     @Test
+    fun `collapse only consumes scroll on a settled comment page`() {
+        assertTrue(
+            shouldEnableVideoContentTabBarCollapse(
+                settingEnabled = true,
+                selectedTabIndex = 1,
+                isPagerScrollInProgress = false,
+            ),
+        )
+        assertFalse(
+            shouldEnableVideoContentTabBarCollapse(
+                settingEnabled = true,
+                selectedTabIndex = 0,
+                isPagerScrollInProgress = false,
+            ),
+        )
+        assertFalse(
+            shouldEnableVideoContentTabBarCollapse(
+                settingEnabled = true,
+                selectedTabIndex = 1,
+                isPagerScrollInProgress = true,
+            ),
+        )
+    }
+
+    @Test
     fun `collapse progress follows nested collapse px and snaps full when list leaves top`() {
         assertEquals(
             0f,

@@ -304,6 +304,15 @@ internal fun isVideoContentCommentListAtTop(
     firstVisibleItemScrollOffset: Int,
 ): Boolean = firstVisibleItemIndex <= 0 && firstVisibleItemScrollOffset <= 0
 
+internal fun shouldEnableVideoContentTabBarCollapse(
+    settingEnabled: Boolean,
+    selectedTabIndex: Int,
+    isPagerScrollInProgress: Boolean,
+    commentPageIndex: Int = 1,
+): Boolean = settingEnabled &&
+    selectedTabIndex == commentPageIndex &&
+    !isPagerScrollInProgress
+
 /**
  * 跟手折叠进度 0 = 全展开，1 = 全收起。
  * 由 [collapsePx] / [maxCollapsePx] 得到；列表已离开顶部时钳到 1，保证浏览评论时 chrome 收净。
@@ -755,9 +764,18 @@ internal fun VideoContentSection(
         }
     }
     val backToTopButtonEnabled = rememberBackToTopButtonEnabled()
-    val tabBarCollapseEnabled by SettingsManager
+    val tabBarScrollHideEnabled by SettingsManager
         .getVideoDetailChromeScrollHideEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
+    val tabBarCollapseEnabled by remember(tabBarScrollHideEnabled) {
+        derivedStateOf {
+            shouldEnableVideoContentTabBarCollapse(
+                settingEnabled = tabBarScrollHideEnabled,
+                selectedTabIndex = pagerState.currentPage,
+                isPagerScrollInProgress = pagerState.isScrollInProgress,
+            )
+        }
+    }
     // 离开评论列表顶部时钳到全收；回到简介 Tab 时复位展开。
     LaunchedEffect(tabBarCollapseEnabled, commentListAtTop, tabBarMaxHeightPx) {
         tabBarCollapsePx = resolveVideoContentTabBarCollapsePxWhenListLeavesTop(
