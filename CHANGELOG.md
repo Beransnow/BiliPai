@@ -1,12 +1,12 @@
 # Changelog
 
-## v0.2.3-beta.33 (2026-09-12)
+## v0.2.3-beta.34 (2026-09-12)
 
 更新日志(ChangeLog)
 
-[更改] 版本号 0.2.3-beta.33，versionCode 359
-[更改] 正式包 BiliPai-0.2.3-beta.33.apk，Dev 包 BiliPai-0.2.3-beta.33-dev.apk
-[更改] 基准为 beta.33 版本整理提交（ac9de08b7，versionCode 358）
+[更改] 版本号 0.2.3-beta.34，versionCode 359
+[更改] 正式包 BiliPai-0.2.3-beta.34.apk，Dev 包 BiliPai-0.2.3-beta.34-dev.apk
+[更改] 基准为 beta.34 版本整理提交（ac9de08b7，versionCode 358）
 
 ### 界面与主题
 [优化] 全局统一首页、动态、搜索、详情、空间、直播、音频及插件中的顶部标签、筛选、排序和模式切换控件为 Miuix 原生分段样式，移除页面级浮动 Dock
