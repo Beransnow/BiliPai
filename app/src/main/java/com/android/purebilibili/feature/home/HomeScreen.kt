@@ -1275,7 +1275,7 @@ fun HomeScreen(
         when (item) {
             BottomNavItem.HOME -> {
                 coroutineScope.launch {
-                    withHomeHeaderRevealLock {
+                    withHomeScrollToTopLock {
                         val gridState = if (currentCategory == HomeCategory.POPULAR) {
                             popularGridStates[popularSubCategory]
                         } else {
