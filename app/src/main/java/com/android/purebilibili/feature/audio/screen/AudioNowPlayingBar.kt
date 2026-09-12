@@ -131,7 +131,7 @@ internal fun AudioNowPlayingBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .height(if (dockHosted) 56.dp else 64.dp)
                 .padding(horizontal = if (iconOnly) 6.dp else 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -139,7 +139,7 @@ internal fun AudioNowPlayingBar(
                 model = state.coverUrl,
                 contentDescription = null,
                 modifier = Modifier
-                    .size((44f - 8f * dockMergeProgress.coerceIn(0f, 1f)).dp)
+                    .size((40f - 8f * dockMergeProgress.coerceIn(0f, 1f)).dp)
                     .graphicsLayer { rotationZ = coverRotationDegrees() }
                     .clip(if (chrome.coverShapeIsCircle) CircleShape else AppShapes.container(ContainerLevel.Field)),
                 contentScale = ContentScale.Crop

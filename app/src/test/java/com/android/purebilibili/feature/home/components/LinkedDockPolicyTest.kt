@@ -41,7 +41,7 @@ class LinkedDockPolicyTest {
     fun searchLeavesOneAccessibleArtworkTarget() {
         val geometry = geometry(merge = 1f, search = 1f)
         assertEquals(56, geometry.audioWidth)
-        assertEquals(224, geometry.searchWidth)
+        assertEquals(208, geometry.searchWidth)
         assertEquals(64, geometry.height)
     }
 
@@ -52,7 +52,9 @@ class LinkedDockPolicyTest {
                 val geometry = resolveLinkedDockGeometry(width, 56, 64, 8, hasAudio, true, 1f, 1f)
                 assertTrue(geometry.searchWidth >= 56)
                 assertTrue(geometry.audioWidth >= 0)
-                assertEquals(width, 56 + geometry.audioWidth + geometry.searchWidth)
+                val occupiedWidth = 56 + geometry.audioWidth + geometry.searchWidth +
+                    if (hasAudio) 16 else 8
+                assertEquals(width, occupiedWidth)
             }
         }
     }
@@ -70,6 +72,24 @@ class LinkedDockPolicyTest {
         assertEquals(16f, accumulateDockScroll(10f, 6f))
         assertEquals(-3f, accumulateDockScroll(16f, -3f))
         assertEquals(-13f, accumulateDockScroll(-3f, -10f))
+    }
+
+    @Test
+    fun landingOvershootSquashesAllLinkedControls() {
+        val impact = resolveLinkedDockImpact(progress = 1.08f)
+
+        assertTrue(impact.translationYDp > 0f)
+        assertTrue(impact.scaleX > 1f)
+        assertTrue(impact.scaleY < 1f)
+    }
+
+    @Test
+    fun reverseOvershootLiftsAndStretchesControls() {
+        val impact = resolveLinkedDockImpact(progress = -0.08f)
+
+        assertTrue(impact.translationYDp < 0f)
+        assertTrue(impact.scaleX < 1f)
+        assertTrue(impact.scaleY > 1f)
     }
 
     private fun geometry(merge: Float, search: Float) =

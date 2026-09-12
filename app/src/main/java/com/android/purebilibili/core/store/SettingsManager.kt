@@ -74,6 +74,7 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
@@ -5998,11 +5999,26 @@ object SettingsManager {
 
     fun getAudioNowPlayingBarEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
         .map { preferences -> preferences[KEY_AUDIO_NOW_PLAYING_BAR_ENABLED] ?: true }
+        .onEach { value ->
+            context.getSharedPreferences("mini_player", Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean("audio_now_playing_bar_enabled", value)
+                .apply()
+        }
 
     suspend fun setAudioNowPlayingBarEnabled(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_AUDIO_NOW_PLAYING_BAR_ENABLED] = value
         }
+        context.getSharedPreferences("mini_player", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("audio_now_playing_bar_enabled", value)
+            .apply()
+    }
+
+    fun getAudioNowPlayingBarEnabledSync(context: Context): Boolean {
+        return context.getSharedPreferences("mini_player", Context.MODE_PRIVATE)
+            .getBoolean("audio_now_playing_bar_enabled", true)
     }
 
     internal fun shouldEnableAudioModeAutoPipToggle(mode: MiniPlayerMode): Boolean {

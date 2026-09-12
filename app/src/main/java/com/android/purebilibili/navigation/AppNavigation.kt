@@ -1746,6 +1746,7 @@ fun AppNavigation(
 
             fun prepareVideoPlaybackForNavigationExit(videoKey: BiliPaiNavKey.VideoDetail) {
                 val manager = miniPlayerManager ?: return
+                if (manager.prepareAudioNowPlayingForNavigationExit(videoKey.bvid)) return
                 if (manager.shouldShowInAppMiniPlayer()) {
                     manager.enterMiniMode()
                 } else if (shouldMarkNavigationLeaveBeforeVideoExit(isMiniMode = manager.isMiniMode)) {
