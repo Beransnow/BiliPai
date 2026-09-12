@@ -2,6 +2,8 @@ package com.android.purebilibili.feature.home.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import com.android.purebilibili.R
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Community
 import top.yukonga.miuix.kmp.icon.extended.Contacts
@@ -86,12 +88,20 @@ internal fun resolveMiuixPreferredHomeNavigationIcon(
     return resolveMiuixHomeNavigationIcon(role, selected)
 }
 
-/** Miuix navigation chrome uses its native Light/Medium pair for every destination. */
+/**
+ * Miuix Home and Recent remain visually solid even at Light weight. Keep those two destinations
+ * outlined in both states and let NavigationBarItem colors communicate selection; all other
+ * destinations retain their native Miuix Light/Medium pair.
+ */
 @Composable
 internal fun resolveMiuixBottomNavigationIcon(
     item: BottomNavItem,
     selected: Boolean,
-): ImageVector = resolveMiuixPreferredHomeNavigationIcon(item.name, selected)
+): ImageVector = when (item) {
+    BottomNavItem.HOME -> ImageVector.vectorResource(R.drawable.ms_home_24)
+    BottomNavItem.HISTORY -> ImageVector.vectorResource(R.drawable.ms_history_24)
+    else -> resolveMiuixPreferredHomeNavigationIcon(item.name, selected)
+}
 
 private fun resolveMiuixHomeNavigationIcon(
     role: HomeNavigationIconRole,
