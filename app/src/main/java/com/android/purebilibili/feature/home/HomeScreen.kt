@@ -2130,6 +2130,7 @@ fun HomeScreen(
                                      showUpAvatars = settledShowHomeUpAvatars,
                                      homeDurationStyle = homeSettings.homeDurationStyle,
                                      homeFeedCardStyle = homeFeedCardStyle,
+                                     showFullVideoCardContent = homeSettings.showFullVideoCardContent,
                                      homeHeroCarouselEnabled = homeSettings.homeHeroCarouselEnabled,
                                      homeHeroCarouselAutoplayEnabled = homeSettings.homeHeroCarouselAutoplayEnabled,
                                      onHeroCarouselGestureActiveChange = onHeroCarouselGestureActiveChange,
