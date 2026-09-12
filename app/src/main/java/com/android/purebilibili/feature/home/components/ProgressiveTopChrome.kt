@@ -1,7 +1,10 @@
 package com.android.purebilibili.feature.home.components
 
 import android.os.Build
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -44,6 +47,12 @@ internal fun shouldUseBiliPaiProgressiveTopBlur(
     hasBackdrop: Boolean,
     sdkInt: Int = Build.VERSION.SDK_INT,
 ): Boolean = enabled && hasBackdrop && sdkInt >= Build.VERSION_CODES.TIRAMISU
+
+/** Floating controls need a continuous opaque surface when neither header blur is active. */
+internal fun shouldUseOpaqueTopChromeBackground(
+    progressiveBlurActive: Boolean,
+    headerBlurActive: Boolean,
+): Boolean = !progressiveBlurActive && !headerBlurActive
 
 internal fun resolveProgressiveTopBlurBottomExtension(
     enabled: Boolean,
@@ -139,7 +148,16 @@ internal fun BiliPaiImmersiveTopBar(
 ) {
     val active = shouldUseBiliPaiProgressiveTopBlur(enabled, backdrop != null) &&
         !isLowBlurBudgetForced()
-    androidx.compose.foundation.layout.Box(modifier = modifier) {
+    val opaqueBackground = shouldUseOpaqueTopChromeBackground(
+        progressiveBlurActive = active,
+        headerBlurActive = LocalAppThemeConfig.current.headerBlurEnabled,
+    )
+    androidx.compose.foundation.layout.Box(
+        modifier = modifier.background(
+            if (opaqueBackground) AppSurfaceTokens.background().copy(alpha = 1f)
+            else Color.Transparent
+        ),
+    ) {
         if (active) {
             androidx.compose.foundation.layout.Box(
                 modifier = Modifier
