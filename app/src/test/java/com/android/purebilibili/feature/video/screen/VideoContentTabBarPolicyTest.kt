@@ -301,7 +301,7 @@ class VideoContentTabBarPolicyTest {
         assertTrue(source.contains("miuixBackdrop = videoContentMiuixBackdrop"))
         assertTrue(source.contains(".miuixLayerBackdrop(videoContentMiuixBackdrop)"))
         assertTrue(source.contains(".background(MaterialTheme.colorScheme.surface)"))
-        assertTrue(source.contains(".padding(top = tabBarVisibleHeightDp)"))
+        assertTrue(source.contains("top = tabBarVisibleHeightDp"))
         assertFalse(source.contains("Modifier.miuixLayerBackdrop(chromeBackdrop)"))
         assertFalse(source.contains("chromeBackdrop: LayerBackdrop?"))
         assertTrue(source.contains("Column(modifier = modifier.fillMaxSize())"))
@@ -321,22 +321,22 @@ class VideoContentTabBarPolicyTest {
         assertTrue(source.contains("indicatorPositionProvider = indicatorPositionProvider"))
         assertTrue(source.contains("showNativeSortHeader = !liquidGlassEnabled"))
         assertTrue(source.contains("showSortControlInHeader = true"))
-        assertTrue(source.contains("pagerState.currentPage == 1 && floatingCommentHeaderEnabled"))
+        assertTrue(source.contains("if (pagerState.currentPage == 1)"))
         assertTrue(source.contains(".biliPaiProgressiveTopBlur("))
         assertTrue(source.contains("liquidGlassEffectsEnabled = liquidGlassEnabled"))
-        assertTrue(source.contains("floatingHeaderContentPadding = if (floatingCommentHeaderEnabled) 46.dp else 0.dp"))
-        val pinnedCommentHeader = source.substringAfter("if (pagerState.currentPage == 1 && floatingCommentHeaderEnabled)")
+        assertTrue(source.contains("showHeader = false"))
+        assertTrue(source.contains("floatingHeaderContentPadding = 46.dp"))
+        val pinnedCommentHeader = source.substringAfter("if (pagerState.currentPage == 1)")
             .substringBefore("// Inline 弹幕设置")
         assertTrue(
             pinnedCommentHeader.indexOf(".biliPaiProgressiveTopBlur(") <
                 pinnedCommentHeader.indexOf("CommentListHeader("),
         )
         val primaryTabChrome = source.substringAfter("contentAlignment = Alignment.TopStart,")
-            .substringBefore("if (pagerState.currentPage == 1 && floatingCommentHeaderEnabled)")
+            .substringBefore("if (pagerState.currentPage == 1)")
         assertTrue(primaryTabChrome.contains(".biliPaiProgressiveTopBlur("))
-        val pagerBlock = source
-            .substringAfter("HorizontalPager(")
-            .substringBefore(") { page ->")
+        val pagerBlock = source.substringAfter("HorizontalPager(").substringBefore(") { page ->")
+        assertFalse(pagerBlock.contains(".padding(top = tabBarVisibleHeightDp)"))
         assertFalse(
             pagerBlock.contains("layerBackdrop"),
             "Pager must not capture backdrop; segmented controls inside would self-sample and overflow RenderThread stack on MIUI"

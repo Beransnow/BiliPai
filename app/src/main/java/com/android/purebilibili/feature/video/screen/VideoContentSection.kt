@@ -577,7 +577,6 @@ internal fun VideoContentSection(
     val context = LocalContext.current
     val liquidGlassEnabled = LocalAppThemeConfig.current.liquidGlassEnabled
     val progressiveCommentHeaderEnabled = LocalAppThemeConfig.current.progressiveTopBlurEnabled
-    val floatingCommentHeaderEnabled = liquidGlassEnabled || progressiveCommentHeaderEnabled
     val tabs = listOf("简介", "评论")
     val scope = rememberCoroutineScope()
     TrackJankStateFlag(
@@ -799,7 +798,6 @@ internal fun VideoContentSection(
                 userScrollEnabled = false,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = tabBarVisibleHeightDp)
                     .verticalPriorityHorizontalPagerSwipe(
                         state = pagerState,
                         enabled = shouldEnableVideoContentHorizontalPagerSwipe(
@@ -839,7 +837,10 @@ internal fun VideoContentSection(
                         onDownloadClick = onDownloadClick,
                         onWatchLaterClick = onWatchLaterClick,
                         onShareClick = onShareClick,
-                        contentPadding = PaddingValues(bottom = bottomContentPadding),
+                        contentPadding = PaddingValues(
+                            top = tabBarVisibleHeightDp,
+                            bottom = bottomContentPadding,
+                        ),
                         transitionEnabled = transitionEnabled,
                         isQuickReturnLimitedForSharedElements = isQuickReturnLimitedForSharedElements,
                         sourceRouteForSharedElement = sourceRouteForSharedElement,
@@ -891,7 +892,10 @@ internal fun VideoContentSection(
                         },
                         onTimestampClick = onTimestampClick,
                         showUpFlag = showUpFlag,
-                        contentPadding = PaddingValues(bottom = bottomContentPadding),
+                        contentPadding = PaddingValues(
+                            top = tabBarVisibleHeightDp,
+                            bottom = bottomContentPadding,
+                        ),
                         currentMid = currentMid,
                         dissolvingIds = dissolvingIds,
                         onDeleteComment = onDeleteComment,
@@ -909,8 +913,8 @@ internal fun VideoContentSection(
                         onSortModeChange = onSortModeChange,
                         showNativeSortHeader = !liquidGlassEnabled,
                         showSortControlInHeader = true,
-                        showHeader = !floatingCommentHeaderEnabled,
-                        floatingHeaderContentPadding = if (floatingCommentHeaderEnabled) 46.dp else 0.dp,
+                        showHeader = false,
+                        floatingHeaderContentPadding = 46.dp,
                     )
                 }
             }
@@ -985,7 +989,7 @@ internal fun VideoContentSection(
             )
         }
 
-        if (pagerState.currentPage == 1 && floatingCommentHeaderEnabled) {
+        if (pagerState.currentPage == 1) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -999,6 +1003,13 @@ internal fun VideoContentSection(
                 Box(
                     modifier = Modifier
                         .matchParentSize()
+                        .background(
+                            if (progressiveCommentHeaderEnabled || liquidGlassEnabled) {
+                                Color.Transparent
+                            } else {
+                                MaterialTheme.colorScheme.surface
+                            }
+                        )
                         .biliPaiProgressiveTopBlur(
                             backdrop = videoContentMiuixBackdrop,
                             enabled = progressiveCommentHeaderEnabled,
