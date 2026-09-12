@@ -193,7 +193,8 @@ internal fun LinkedBottomDock(
         val button = 56.dp.roundToPx()
         val barHeight = 64.dp.roundToPx()
         val controlHeight = 56.dp.roundToPx()
-        val searchHeight = 48.dp.roundToPx()
+        // Keep the compact search surface circular; its width starts at [button].
+        val searchHeight = button
         val gap = 8.dp.roundToPx()
         val progress = merge.value.coerceIn(0f, 1f)
         val geometry = resolveLinkedDockGeometry(
