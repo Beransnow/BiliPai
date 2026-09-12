@@ -98,8 +98,8 @@ internal fun resolveMiuixBottomNavigationIcon(
     item: BottomNavItem,
     selected: Boolean,
 ): ImageVector = when (item) {
-    BottomNavItem.HOME -> ImageVector.vectorResource(R.drawable.ms_home_24)
-    BottomNavItem.HISTORY -> ImageVector.vectorResource(R.drawable.ms_history_24)
+    BottomNavItem.HOME -> ImageVector.vectorResource(R.drawable.bp_nav_home_outline_24)
+    BottomNavItem.HISTORY -> ImageVector.vectorResource(R.drawable.bp_nav_history_outline_24)
     else -> resolveMiuixPreferredHomeNavigationIcon(item.name, selected)
 }
 
