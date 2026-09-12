@@ -1,7 +1,7 @@
 package com.android.purebilibili.feature.home.components.miuix
 
 import androidx.compose.runtime.BroadcastFrameClock
-import com.android.purebilibili.core.ui.animation.resolveLiquidIndicatorCollisionTailVelocity
+import com.android.purebilibili.core.ui.animation.resolveLiquidIndicatorCollisionDeformation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -16,11 +16,17 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class DampedDragAnimationTargetTest {
     @Test
-    fun `collision tail reverses meaningful drag velocity and ignores tiny motion`() {
-        assertEquals(0f, resolveLiquidIndicatorCollisionTailVelocity(0.1f), 0.001f)
-        assertTrue(resolveLiquidIndicatorCollisionTailVelocity(2f) < 0f)
-        assertTrue(resolveLiquidIndicatorCollisionTailVelocity(-2f) > 0f)
-        assertEquals(-2.2f, resolveLiquidIndicatorCollisionTailVelocity(20f), 0.001f)
+    fun `collision impact compresses then rebounds before returning to rest`() {
+        val impact = resolveLiquidIndicatorCollisionDeformation(1f)
+        val rebound = resolveLiquidIndicatorCollisionDeformation(-0.2f)
+        val rest = resolveLiquidIndicatorCollisionDeformation(0f)
+
+        assertTrue(impact.scaleX < 1f)
+        assertTrue(impact.scaleY > 1f)
+        assertTrue(rebound.scaleX > 1f)
+        assertTrue(rebound.scaleY < 1f)
+        assertEquals(1f, rest.scaleX, 0.001f)
+        assertEquals(1f, rest.scaleY, 0.001f)
     }
 
     @Test
