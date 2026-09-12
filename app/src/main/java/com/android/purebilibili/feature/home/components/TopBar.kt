@@ -584,6 +584,7 @@ private fun resolveTopTabCategoryForIcon(categoryKey: String): HomeCategory? {
     }
 }
 
+@Composable
 internal fun resolveTopTabCategoryIcon(
     categoryKey: String,
     iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.MATERIAL,
@@ -613,6 +614,7 @@ internal fun resolveTopTabCategoryIcon(
     }
 }
 
+@Composable
 internal fun resolveTopTabPartitionIcon(iconFamily: AppSemanticIconFamily): ImageVector {
     return if (iconFamily == AppSemanticIconFamily.MATERIAL) {
         Icons.AutoMirrored.Outlined.MenuOpen
