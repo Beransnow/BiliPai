@@ -1,19 +1,27 @@
 package com.android.purebilibili.feature.home.components.miuix
 
+import androidx.compose.runtime.BroadcastFrameClock
+import com.android.purebilibili.core.ui.animation.resolveLiquidIndicatorCollisionTailVelocity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import androidx.compose.runtime.BroadcastFrameClock
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class DampedDragAnimationTargetTest {
+    @Test
+    fun `collision tail reverses meaningful drag velocity and ignores tiny motion`() {
+        assertEquals(0f, resolveLiquidIndicatorCollisionTailVelocity(0.1f), 0.001f)
+        assertTrue(resolveLiquidIndicatorCollisionTailVelocity(2f) < 0f)
+        assertTrue(resolveLiquidIndicatorCollisionTailVelocity(-2f) > 0f)
+        assertEquals(-2.2f, resolveLiquidIndicatorCollisionTailVelocity(20f), 0.001f)
+    }
 
     @Test
     fun `velocity normalization follows the selectable range`() {

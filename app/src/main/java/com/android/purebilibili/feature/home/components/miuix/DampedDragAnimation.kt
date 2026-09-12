@@ -17,6 +17,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.IntSize
+import com.android.purebilibili.core.ui.animation.resolveLiquidIndicatorCollisionTailVelocity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -57,6 +58,8 @@ class DampedDragAnimation(
         spring(1f, 1000f, visibilityThreshold)
     private val velocityAnimationSpec =
         spring(0.5f, 300f, visibilityThreshold * 10f)
+    private val collisionTailAnimationSpec =
+        spring(0.48f, 360f, visibilityThreshold * 10f)
     private val pressProgressAnimationSpec =
         spring(1f, 1000f, 0.001f)
     // Motion tuning copied from HyperIsland's LiquidGlassNavigationBar.
@@ -121,7 +124,7 @@ class DampedDragAnimation(
                     // between isDragging flipping false and the drag target being recorded.
                     onDragStopped()
                     isDragging = false
-                    release()
+                    release(withCollisionTail = true)
                 }
                 gestureAccepted = false
             },
@@ -160,7 +163,7 @@ class DampedDragAnimation(
                 if (gestureAccepted) {
                     onDragStopped()
                     isDragging = false
-                    release()
+                    release(withCollisionTail = true)
                 }
                 gestureAccepted = false
             },
@@ -191,7 +194,8 @@ class DampedDragAnimation(
         }
     }
 
-    fun release() {
+    fun release(withCollisionTail: Boolean = false) {
+        val incomingVelocity = if (withCollisionTail) velocityAnimation.value else 0f
         releaseJob?.cancel()
         releaseJob = animationScope.launch {
             withFrameNanos { }
@@ -208,9 +212,19 @@ class DampedDragAnimation(
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(initialScale, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(initialScale, scaleYAnimationSpec) }
-            // 速度形变是非对称的（scaleX 除以 1-v、scaleY 乘以 1-v），不归零就会留下
-            // 椭圆残影。参考项目靠 animateToValue 里的归零，这里补上 release 路径。
-            launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
+            // 落位碰撞先反向压缩，随后欠阻尼越过零点；轻触与低速拖动仍直接归零。
+            launch {
+                val tailVelocity = resolveLiquidIndicatorCollisionTailVelocity(incomingVelocity)
+                if (tailVelocity != 0f) velocityAnimation.snapTo(tailVelocity)
+                velocityAnimation.animateTo(
+                    targetValue = 0f,
+                    animationSpec = if (tailVelocity == 0f) {
+                        velocityAnimationSpec
+                    } else {
+                        collisionTailAnimationSpec
+                    },
+                )
+            }
         }
     }
 

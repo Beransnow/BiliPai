@@ -47,6 +47,21 @@ internal fun resolveDampedDragVelocityItemsPerSecond(
 
 internal const val HORIZONTAL_DRAG_DOMINANCE_RATIO = 1.25f
 internal const val HORIZONTAL_DRAG_MIN_DISTANCE_PX = 8f
+private const val LIQUID_INDICATOR_COLLISION_TAIL_DEAD_ZONE = 0.12f
+private const val LIQUID_INDICATOR_COLLISION_TAIL_TRANSFER = 0.42f
+private const val LIQUID_INDICATOR_COLLISION_TAIL_MAX_VELOCITY = 2.2f
+
+/**
+ * Converts the incoming liquid-indicator velocity into a short reverse impulse at impact.
+ * The following under-damped return crosses zero once, producing a restrained trailing whip.
+ */
+fun resolveLiquidIndicatorCollisionTailVelocity(incomingVelocity: Float): Float {
+    if (abs(incomingVelocity) < LIQUID_INDICATOR_COLLISION_TAIL_DEAD_ZONE) return 0f
+    return (-incomingVelocity * LIQUID_INDICATOR_COLLISION_TAIL_TRANSFER).coerceIn(
+        -LIQUID_INDICATOR_COLLISION_TAIL_MAX_VELOCITY,
+        LIQUID_INDICATOR_COLLISION_TAIL_MAX_VELOCITY,
+    )
+}
 
 /** 指示器拖拽的目标跟随方式；BiliPai 模式不做飞掷投影或超滚。 */
 enum class DampedDragTrackingMode {
@@ -117,6 +132,7 @@ class DampedDragAnimationState internal constructor(
 ) {
     private val valueAnimationSpec = spring(1f, 1000f, 0.001f)
     private val velocityAnimationSpec = spring(0.5f, 300f, 0.01f)
+    private val collisionTailAnimationSpec = spring(0.48f, 360f, 0.01f)
     private val pressProgressAnimationSpec = spring(1f, 1000f, 0.001f)
     // Motion tuning copied from HyperIsland's LiquidGlassNavigationBar.
     private val scaleXAnimationSpec = spring(0.6f, 250f, 0.001f)
@@ -181,7 +197,10 @@ class DampedDragAnimationState internal constructor(
         }
     }
 
-    fun release(onSettled: (() -> Unit)? = null) {
+    fun release(
+        onSettled: (() -> Unit)? = null,
+        collisionTailVelocity: Float = 0f,
+    ) {
         releaseJob?.cancel()
         releaseJob = scope.launch {
             awaitFrame()
@@ -195,8 +214,20 @@ class DampedDragAnimationState internal constructor(
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
             launch { scaleXAnimation.animateTo(1f, scaleXAnimationSpec) }
             launch { scaleYAnimation.animateTo(1f, scaleYAnimationSpec) }
-            // 速度形变是非对称的，不归零会留下椭圆残影。
-            launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
+            // 主体落位后把入射速度转换为反向压缩，再用欠阻尼弹簧越过零点形成甩尾。
+            velocityJob?.cancel()
+            velocityJob = launch {
+                val tailVelocity = resolveLiquidIndicatorCollisionTailVelocity(collisionTailVelocity)
+                if (tailVelocity != 0f) velocityAnimation.snapTo(tailVelocity)
+                velocityAnimation.animateTo(
+                    targetValue = 0f,
+                    animationSpec = if (tailVelocity == 0f) {
+                        velocityAnimationSpec
+                    } else {
+                        collisionTailAnimationSpec
+                    },
+                )
+            }
         }
     }
 
@@ -229,6 +260,7 @@ class DampedDragAnimationState internal constructor(
         value: Float,
         onSettled: (() -> Unit)? = null,
         animatePress: Boolean = true,
+        collisionTailVelocity: Float = 0f,
     ) {
         scope.launch {
             mutatorMutex.mutate {
@@ -241,7 +273,10 @@ class DampedDragAnimationState internal constructor(
                     velocityJob?.cancel()
                     velocityJob = launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
                 }
-                release(onSettled = onSettled)
+                release(
+                    onSettled = onSettled,
+                    collisionTailVelocity = collisionTailVelocity,
+                )
             }
         }
     }
@@ -362,6 +397,7 @@ class DampedDragAnimationState internal constructor(
                 }
             },
             animatePress = false,
+            collisionTailVelocity = deformationVelocityItemsPerSecond,
         )
         offsetJob?.cancel()
         offsetJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {

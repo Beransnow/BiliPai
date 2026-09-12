@@ -151,7 +151,11 @@ internal fun AudioNowPlayingBar(
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                     AppText(
                         text = state.title,
-                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
+                        modifier = if (state.isPlaying) {
+                            Modifier.basicMarquee(iterations = Int.MAX_VALUE)
+                        } else {
+                            Modifier
+                        },
                         maxLines = 1,
                         overflow = TextOverflow.Clip,
                         softWrap = false,
