@@ -9,10 +9,6 @@ class HomeNavigationMiuixStructureTest {
 
     @Test
     fun `home navigation runtime does not select Cupertino or Material icons`() {
-        // 顶栏类别图标是刻意例外：Miuix 图标集（156 个）缺少推荐/关注/直播/番剧/游戏/
-        // 知识/科技等类别图标，TopBar 类别解析器沿用 Material（与 BottomBar 同样的文档化
-        // 例外）；因此严格检查只覆盖 HomeHeader 与导航图标策略，TopBar 仅禁止 Cupertino
-        // 与 fallbackIconFamily 回退机制。
         val strictSources = listOf(
             "HomeHeader.kt",
             "HomeNavigationIconPolicy.kt",
@@ -67,12 +63,21 @@ class HomeNavigationMiuixStructureTest {
     }
 
     @Test
-    fun `home header actions use Miuix search settings and messages icons`() {
+    fun `home header actions resolve native icons from the active theme`() {
         val source = sourceText("HomeHeader.kt")
 
-        assertTrue(source.contains("val searchIcon = MiuixIcons.Search"))
-        assertTrue(source.contains("val settingsIcon = MiuixIcons.Settings"))
-        assertTrue(source.contains("val inboxIcon = MiuixIcons.Messages"))
+        assertTrue(source.contains("resolveHomeTopActionIcons(semanticVisualPolicy.effectiveIconFamily)"))
+        assertTrue(source.contains("search = MiuixIcons.Search"))
+        assertTrue(source.contains("settings = resolveAppSettingsIcon()"))
+        assertTrue(source.contains("inbox = resolveAppInboxIcon()"))
+    }
+
+    @Test
+    fun `top category bar resolves native Miuix icons for Miuix theme`() {
+        val source = sourceText("TopBar.kt")
+
+        assertTrue(source.contains("AppSemanticIconFamily.MIUIX -> resolveMiuixPreferredHomeNavigationIcon("))
+        assertTrue(source.contains("resolveMiuixPreferredHomeNavigationIcon(tabId = \"PARTITION\")"))
     }
 
     private fun sourceText(fileName: String): String = listOf(

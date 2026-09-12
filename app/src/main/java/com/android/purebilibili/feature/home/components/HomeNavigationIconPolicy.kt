@@ -1,6 +1,5 @@
 package com.android.purebilibili.feature.home.components
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Community
@@ -78,7 +77,6 @@ internal fun resolveMiuixPreferredHomeNavigationIconSource(
 /**
  * 首页底栏、侧栏和顶部分区的唯一图标入口。
  */
-@Composable
 internal fun resolveMiuixPreferredHomeNavigationIcon(
     tabId: String,
     selected: Boolean = false,

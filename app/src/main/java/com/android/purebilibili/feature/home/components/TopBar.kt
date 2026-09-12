@@ -563,13 +563,11 @@ internal fun shouldShowTopTabText(mode: Int): Boolean {
 
 internal fun resolveTopTabIconFamily(
     chromeIconFamily: AppSemanticIconFamily,
-    useBottomBarMatchedChrome: Boolean,
     iconStyle: AppIconStyle = AppIconStyle.AUTO
 ): AppSemanticIconFamily {
     return when {
         // MD3 官方推荐样式统一使用 Material 官方字形
         iconStyle == AppIconStyle.MD3_STANDARD -> AppSemanticIconFamily.MATERIAL
-        useBottomBarMatchedChrome -> AppSemanticIconFamily.MATERIAL
         else -> chromeIconFamily
     }
 }
@@ -593,8 +591,7 @@ internal fun resolveTopTabCategoryIcon(
 ): ImageVector {
     val category = resolveTopTabCategoryForIcon(categoryKey)
     return when (iconFamily) {
-        AppSemanticIconFamily.MATERIAL,
-        AppSemanticIconFamily.MIUIX -> when (category) {
+        AppSemanticIconFamily.MATERIAL -> when (category) {
             HomeCategory.RECOMMEND -> if (selected) Icons.Filled.Home else Icons.Outlined.Home
             HomeCategory.FOLLOW -> if (selected) Icons.Filled.Person else Icons.Outlined.Person
             HomeCategory.POPULAR -> if (selected) {
@@ -609,6 +606,10 @@ internal fun resolveTopTabCategoryIcon(
             HomeCategory.TECH -> if (selected) Icons.Filled.SmartToy else Icons.Outlined.SmartToy
             else -> Icons.AutoMirrored.Outlined.MenuOpen
         }
+        AppSemanticIconFamily.MIUIX -> resolveMiuixPreferredHomeNavigationIcon(
+            tabId = category?.name ?: "PARTITION",
+            selected = selected,
+        )
     }
 }
 
@@ -616,7 +617,7 @@ internal fun resolveTopTabPartitionIcon(iconFamily: AppSemanticIconFamily): Imag
     return if (iconFamily == AppSemanticIconFamily.MATERIAL) {
         Icons.AutoMirrored.Outlined.MenuOpen
     } else {
-        Icons.AutoMirrored.Outlined.MenuOpen
+        resolveMiuixPreferredHomeNavigationIcon(tabId = "PARTITION")
     }
 }
 
@@ -1041,7 +1042,6 @@ private fun LightweightHomeTopTabs(
     val normalizedLabelMode = normalizeTopTabLabelMode(labelMode)
     val topTabIconFamily = resolveTopTabIconFamily(
         chromeIconFamily = chromePolicy.effectiveIconFamily,
-        useBottomBarMatchedChrome = isFloatingStyle || hasOuterChromeSurface,
         iconStyle = chromePolicy.iconStyle
     )
     val showIcon = shouldShowTopTabIcon(normalizedLabelMode)
