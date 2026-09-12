@@ -166,12 +166,15 @@ internal fun SettingsPageScaffold(
         shouldAllowRenderEffectBackedHazeEffect(android.os.Build.VERSION.SDK_INT)
     ) rememberRecoverableHazeState() else null
     val topBarBlurActive = progressiveBlurEnabled || hazeState != null
-    // Miuix's official Scaffold preset uses `surface` as the page base in both
-    // glass and non-glass modes. Glass changes chrome treatment, not the page tone.
-    val pageContainerColor = if (LocalAppUiStyle.current == AppUiStyle.MIUIX) {
-        AppSurfaceTokens.surface()
-    } else {
-        AppSurfaceTokens.groupedListContainer()
+    val pageContainerColor = when (LocalAppUiStyle.current) {
+        AppUiStyle.MIUIX -> if (nonGlassMiuix) {
+            AppSurfaceTokens.surface()
+        } else {
+            // Glass chrome samples the Miuix background tone. Keeping a black
+            // surface here makes every settings subpage turn pure black.
+            AppSurfaceTokens.background()
+        }
+        AppUiStyle.MATERIAL3 -> AppSurfaceTokens.groupedListContainer()
     }
 
     CompositionLocalProvider(
