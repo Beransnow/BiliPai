@@ -382,7 +382,6 @@ internal fun resolveSharedLiquidExportMonochromeColor(
     OpticalContrastPalette.Highlight
 }
 
-@Suppress("UNUSED_PARAMETER")
 @Composable
 fun BottomBarLiquidSegmentedControl(
     items: List<String>,
@@ -419,28 +418,105 @@ fun BottomBarLiquidSegmentedControl(
 ) {
     if (items.isEmpty()) return
 
-    val nativeOptions = remember(items) {
-        items.mapIndexed { index, label -> AppSegmentOption(index, label) }
-    }
-    val nativeModifier = if (itemWidth != null) {
-        modifier.width(
-            itemWidth.coerceAtLeast(AppChromeSizeTokens.MinimumTouchTarget) * items.size +
-                containerHorizontalPadding.coerceAtLeast(0.dp) * 2
-        )
+    val effectiveLabelFontSize = if (labelFontSize.isSpecified) {
+        labelFontSize
     } else {
-        modifier
+        MaterialTheme.typography.labelLarge.fontSize
     }
-    AppNativeTabRow(
-        options = nativeOptions,
-        selectedValue = selectedIndex.coerceIn(0, items.lastIndex),
-        onSelectionChange = onSelected,
-        modifier = nativeModifier,
+
+    val context = LocalContext.current
+    val visualPolicy = rememberAppSemanticVisualPolicy()
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .map { it as HomeSettings? }
+        .collectAsStateWithLifecycle(
+            // Do not render a provisional chrome: either choice would visibly switch when
+            // DataStore emits the persisted setting.
+            initialValue = null,
+            context = kotlin.coroutines.EmptyCoroutineContext
+        )
+    val resolvedHomeSettings = homeSettings ?: return
+    if (!resolvedHomeSettings.androidNativeLiquidGlassEnabled) {
+        val nativeOptions = remember(items) {
+            items.mapIndexed { index, label -> AppSegmentOption(index, label) }
+        }
+        val nativeModifier = if (itemWidth != null) {
+            modifier.width(
+                itemWidth.coerceAtLeast(AppChromeSizeTokens.MinimumTouchTarget) * items.size +
+                    containerHorizontalPadding.coerceAtLeast(0.dp) * 2
+            )
+        } else {
+            modifier
+        }
+        AppNativeTabRow(
+            options = nativeOptions,
+            selectedValue = selectedIndex.coerceIn(0, items.lastIndex),
+            onSelectionChange = onSelected,
+            modifier = nativeModifier,
+            enabled = enabled,
+            scrollable = itemWidth != null,
+            forceEqualWidth = forceEqualWidth,
+            // Short native tabs size from their label while retaining a real 48dp minimum
+            // hit width. The former 72dp liquid-dock default overflowed compact sibling rows.
+            minTabWidth = itemWidth ?: AppChromeSizeTokens.MinimumTouchTarget,
+            allowLabelOverflow = allowNativeLabelOverflow,
+            indicatorPositionProvider = indicatorPositionProvider,
+        )
+        return
+    }
+    val chromeStyle = resolveSegmentedControlChromeStyle(
+        uiStyle = LocalAppUiStyle.current,
+        prefersNativeChrome = visualPolicy.prefersNativeChrome,
+        androidNativeLiquidGlassEnabled = resolvedHomeSettings.androidNativeLiquidGlassEnabled,
+        preferInlineContentStyle = preferInlineContentStyle
+    )
+    if (chromeStyle == SegmentedControlChromeStyle.ANDROID_NATIVE_UNDERLINE) {
+        AndroidNativeUnderlinedSegmentedControl(
+            items = items,
+            selectedIndex = selectedIndex,
+            onSelected = onSelected,
+            modifier = modifier,
+            enabled = enabled,
+            itemWidth = itemWidth,
+            height = height,
+            labelFontSize = effectiveLabelFontSize,
+            allowLabelOverflow = allowNativeLabelOverflow,
+            selectedTextColorOverride = selectedTextColorOverride,
+            unselectedTextColorOverride = unselectedTextColorOverride,
+            indicatorPositionProvider = indicatorPositionProvider,
+            onIndicatorPositionChanged = onIndicatorPositionChanged
+        )
+        return
+    }
+
+    BottomBarFloatingSegmentedControl(
+        items = items,
+        selectedIndex = selectedIndex,
+        onSelected = onSelected,
+        modifier = modifier,
         enabled = enabled,
-        scrollable = itemWidth != null,
-        forceEqualWidth = forceEqualWidth,
-        minTabWidth = itemWidth ?: AppChromeSizeTokens.MinimumTouchTarget,
+        itemWidth = itemWidth,
+        height = height,
+        indicatorHeight = indicatorHeight,
+        labelFontSize = effectiveLabelFontSize,
         allowLabelOverflow = allowNativeLabelOverflow,
+        containerHorizontalPadding = containerHorizontalPadding,
+        containerVerticalPadding = containerVerticalPadding,
+        liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
+        dragSelectionEnabled = dragSelectionEnabled,
+        longPressDragSelectionEnabled = longPressDragSelectionEnabled,
+        tapPressRefractionEnabled = tapPressRefractionEnabled,
+        indicatorIdleSurfaceColorOverride = indicatorIdleSurfaceColorOverride,
+        miuixBackdrop = miuixBackdrop,
+        containerColorOverride = containerColorOverride,
+        selectedTextColorOverride = selectedTextColorOverride,
+        unselectedTextColorOverride = unselectedTextColorOverride,
         indicatorPositionProvider = indicatorPositionProvider,
+        onIndicatorPositionChanged = onIndicatorPositionChanged,
+        isScrollInProgressProvider = isScrollInProgressProvider,
+        externalPagerMotionEffectsEnabled = externalPagerMotionEffectsEnabled,
+        liquidGlassTuningOverride = liquidGlassTuningOverride,
+        geometryMode = geometryMode,
     )
 }
 

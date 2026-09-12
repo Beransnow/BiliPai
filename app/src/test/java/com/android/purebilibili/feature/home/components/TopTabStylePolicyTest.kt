@@ -434,8 +434,8 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `home top tabs never use the bottom-bar floating dock shell`() {
-        assertFalse(
+    fun `capsule top tabs reuse the bottom-bar floating dock shell`() {
+        assertTrue(
             shouldHomeTopTabUseFloatingBottomBarDock(
                 skinPlainStyle = false,
                 hasSkinStickerIcons = false,

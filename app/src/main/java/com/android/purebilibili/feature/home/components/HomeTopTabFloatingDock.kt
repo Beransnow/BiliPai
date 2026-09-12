@@ -47,7 +47,13 @@ internal fun shouldHomeTopTabUseFloatingBottomBarDock(
     presentation: AppTopTabPresentation,
     liquidGlassEnabled: Boolean,
     selectionIndicatorStyle: HomeSelectionIndicatorStyle,
-): Boolean = false
+): Boolean {
+    if (skinPlainStyle || hasSkinStickerIcons) return false
+    if (!liquidGlassEnabled) return false
+    val usesLegacyUnderline = presentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
+        selectionIndicatorStyle == HomeSelectionIndicatorStyle.MD3_UNDERLINE
+    return !usesLegacyUnderline
+}
 
 internal fun shouldHomeTopTabChromeDrawOuterShell(
     drawOuterChrome: Boolean,
