@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.requiredHeight
@@ -1128,8 +1129,55 @@ fun FloatingBottomBar(
                             )
                         }
                         .height(fittedIndicatorHeight)
-                        .width(fittedIndicatorWidth)
-                )
+                        .width(fittedIndicatorWidth),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    // Backdrop capture provides the refraction, while this clipped active
+                    // copy guarantees that icons are filled throughout indicator motion.
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(pillShape),
+                        contentAlignment = Alignment.CenterStart,
+                    ) {
+                        CompositionLocalProvider(
+                            LocalFloatingBottomBarContentColor provides colors.activeContentColor,
+                            LocalFloatingBottomBarActiveContent provides true,
+                            LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
+                            LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
+                        ) {
+                            Row(
+                                Modifier
+                                    .clearAndSetSemantics {}
+                                    .wrapContentWidth(align = Alignment.Start, unbounded = true)
+                                    .requiredWidth(
+                                        with(density) {
+                                            (totalWidthPx - (horizontalPadding * 2).toPx())
+                                                .coerceAtLeast(0f)
+                                                .toDp()
+                                        }
+                                    )
+                                    .requiredHeight(capturedContentHeight)
+                                    .graphicsLayer {
+                                        val contentTranslationPx =
+                                            resolveFloatingDockClippedContentTranslationPx(
+                                                position = visualIndicatorPositionProvider(),
+                                                tabWidthPx = tabWidthPx,
+                                                tabsCount = safeTabsCount,
+                                                indicatorWidthPx = fittedIndicatorWidthPx,
+                                            )
+                                        translationX = if (isLtr) {
+                                            contentTranslationPx
+                                        } else {
+                                            -contentTranslationPx
+                                        }
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                content = { content(this) }
+                            )
+                        }
+                    }
+                }
             } else {
                 Box(
                     modifier = Modifier
