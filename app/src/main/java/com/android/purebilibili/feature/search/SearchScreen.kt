@@ -1027,7 +1027,12 @@ fun SearchScreen(
                 .globalWallpaperAwareBackground()
                 .padding(padding)
         ) {
-            val searchChromeSource = if ((progressiveTopBlurEnabled || effectiveLiquidGlassEnabled) && !state.isSearching) {
+            val searchChromeSource = if (
+                shouldKeepSearchChromeBackdropSource(
+                    progressiveTopBlurEnabled = progressiveTopBlurEnabled,
+                    liquidGlassEnabled = effectiveLiquidGlassEnabled,
+                )
+            ) {
                 com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
             } else {
                 null
