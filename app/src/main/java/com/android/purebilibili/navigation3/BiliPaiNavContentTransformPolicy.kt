@@ -32,8 +32,8 @@ internal fun resolveBiliPaiNavContentTransform(
         BiliPaiNavRouteTransition.REDUCED_MOTION_FADE ->
             fadeIn(animationSpec = tween(NAV3_REDUCED_MOTION_FADE_MILLIS)) togetherWith
                 fadeOut(animationSpec = tween(NAV3_REDUCED_MOTION_FADE_MILLIS))
-        // LEFT/RIGHT 是兼容既有路由状态的历史分类名。用户关闭过渡动画后，
-        // 首页与播放页之间直接切换，避免反复进出仍支付整页动画和双页面绘制成本。
+        // LEFT/RIGHT 是兼容既有路由状态的历史分类名。实际页面转场由 Miuix
+        // NavDisplay 按“全局导航动画”设置驱动；这里必须无动画，避免叠加第二层 Compose 转场。
         BiliPaiNavRouteTransition.CARD_DISABLED_VIDEO_FORWARD_FROM_LEFT,
         BiliPaiNavRouteTransition.CARD_DISABLED_VIDEO_FORWARD_FROM_RIGHT,
         BiliPaiNavRouteTransition.CARD_DISABLED_VIDEO_RETURN_TO_LEFT,

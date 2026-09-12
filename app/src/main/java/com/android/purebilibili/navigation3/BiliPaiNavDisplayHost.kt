@@ -234,11 +234,20 @@ internal fun BiliPaiNavDisplayHost(
     }
     // A restored parent session must not keep the departed child's scope at depth -1.
     val videoCardTransitionProgress = remember(sourceMetadata.sourceKey) { MiuixVideoCardTransitionProgress() }
+    val videoFallbackTransition = if (cardTransitionEnabled) {
+        // 卡片形变开启时，fallback 只负责接住源卡片不可用等降级场景，避免再接管
+        // Miuix 预测返回进度。
+        predictiveBackExcludedTransition
+    } else {
+        // 关闭卡片形变后，视频页完整沿用“全局导航动画”：Miuix、AOSP、缩放、
+        // 经典与无动画都由同一个 Miuix NavDisplay 驱动，不叠加 Compose 转场。
+        globalTransition
+    }
     val observedVideoFallbackTransition = remember(
-        predictiveBackExcludedTransition,
+        videoFallbackTransition,
         videoCardTransitionProgress,
     ) {
-        videoCardTransitionProgress.observe(predictiveBackExcludedTransition)
+        videoCardTransitionProgress.observe(videoFallbackTransition)
     }
     val returningProvider = remember(videoCardClock) {
         { videoCardClock.phase != VideoCardTransitionBackgroundPhase.OPENING }
