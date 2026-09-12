@@ -591,7 +591,11 @@ internal fun resolveBiliPaiBottomBarIndicatorHeight(dockHeight: Dp): Dp {
 }
 
 internal fun resolveBiliPaiBottomBarSearchHeight(searchExpanded: Boolean): Dp {
-    return resolveBiliPaiBottomBarSearchCircleSize()
+    return if (searchExpanded) {
+        AppChromeSizeTokens.MinimumTouchTarget
+    } else {
+        resolveBiliPaiBottomBarSearchCircleSize()
+    }
 }
 
 internal fun resolveBottomBarRefractionCaptureWidth(
