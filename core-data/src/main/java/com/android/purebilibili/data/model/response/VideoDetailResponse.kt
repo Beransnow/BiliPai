@@ -52,6 +52,7 @@ data class ViewInfo(
     val dimension: Dimension? = null,  //  视频尺寸信息
     val ugc_season: UgcSeason? = null,  //  [新增] 视频合集信息
     val copyright: Int = 1,  //  1=原创,2=转载,0=历史脏数据(按原创处理)
+    val staff: List<VideoStaff> = emptyList(),
     val rights: VideoDetailRights = VideoDetailRights(),
     @SerialName("is_upower_exclusive")
     val isUpowerExclusive: Boolean = false,
