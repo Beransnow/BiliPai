@@ -4843,7 +4843,40 @@ internal fun VideoDetailScreenStateHolder(
                                     } else {
                                         1f
                                     }
-                                    drawRect(Color.Black.copy(alpha = backingAlpha))
+                                    // The media shrinks inside this still detail-sized viewport.
+                                    // Keep its backing in the same slot so it cannot darken the
+                                    // source title/info band while that band fades in.
+                                    val handoffProgress = returnMediaHandoffProgressProvider()
+                                    val inverseScale = returnMediaInverseScaleProvider()
+                                    val backingFrame = resolveVideoDetailReturnMediaLayoutFrame(
+                                        containerWidthPx = size.width.roundToInt(),
+                                        containerHeightPx = size.height.roundToInt(),
+                                        landingLayout = landingLayoutForMedia,
+                                        handoffProgress = handoffProgress,
+                                        inverseScaleX = inverseScale.scaleX,
+                                        inverseScaleY = inverseScale.scaleY,
+                                        nativeSnapshotBounds = nativeSnapshotTargetBoundsProvider?.invoke(),
+                                    )
+                                    val hasTargetGeometry = landingLayoutForMedia?.canRender == true ||
+                                        nativeSnapshotTargetBoundsProvider?.invoke()
+                                            ?.let { it.width > 1f && it.height > 1f } == true
+                                    val radius = if (hasTargetGeometry) {
+                                        returnMediaClipCornerDp.toPx() * handoffProgress.coerceIn(0f, 1f)
+                                    } else {
+                                        0f
+                                    }
+                                    drawRoundRect(
+                                        color = Color.Black.copy(alpha = backingAlpha),
+                                        topLeft = androidx.compose.ui.geometry.Offset(
+                                            backingFrame.offsetXPx.toFloat(),
+                                            backingFrame.offsetYPx.toFloat(),
+                                        ),
+                                        size = androidx.compose.ui.geometry.Size(
+                                            backingFrame.widthPx.toFloat(),
+                                            backingFrame.heightPx.toFloat(),
+                                        ),
+                                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(radius, radius),
+                                    )
                                 }
                                 //  [PiP修复] 捕获视频播放器在屏幕上的位置
                                 .onGloballyPositioned { layoutCoordinates ->
