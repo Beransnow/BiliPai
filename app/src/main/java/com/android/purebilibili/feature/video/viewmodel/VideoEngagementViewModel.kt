@@ -55,6 +55,7 @@ data class VideoEngagementUiState(
     val likeCount: Int = 0,
     val coinCount: Int = 0,
     val favoriteCount: Int = 0,
+    val isInWatchLater: Boolean = false,
     val isRepost: Boolean = false,
     val followingMids: Set<Long> = emptySet(),
     val userCoinBalance: Double? = null,
