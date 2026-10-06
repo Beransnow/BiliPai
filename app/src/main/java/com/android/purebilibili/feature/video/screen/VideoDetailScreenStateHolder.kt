@@ -3300,12 +3300,11 @@ internal fun VideoDetailScreenStateHolder(
     // 沉浸式状态栏控制
     val backgroundColor = AppSurfaceTokens.background()
     val isLightBackground = remember(backgroundColor) { backgroundColor.luminance() > 0.5f }
-    var useCollapsedPlayerChromeAppearance by remember(currentBvid) { mutableStateOf(false) }
-    LaunchedEffect(useTabletLayout, isLandscape, isFullscreenMode, isPortraitFullscreen) {
-        if (useTabletLayout || isLandscape || isFullscreenMode || isPortraitFullscreen) {
-            useCollapsedPlayerChromeAppearance = false
-        }
-    }
+    // 进/出全屏瞬间系统栏图标明暗必须同帧切换；若经 LaunchedEffect 复位会晚一拍，
+    // 所以滚动折叠值只做原始状态，全屏/平板场景直接在派生处压制。
+    var playerChromeCollapsedByScroll by remember(currentBvid) { mutableStateOf(false) }
+    val useCollapsedPlayerChromeAppearance = playerChromeCollapsedByScroll &&
+        !(useTabletLayout || isLandscape || isFullscreenMode || isPortraitFullscreen)
     val systemBarsVisibilityPolicy = remember(
         isFullscreenMode,
         isPortraitFullscreen,
@@ -4525,7 +4524,7 @@ internal fun VideoDetailScreenStateHolder(
                             expandForSharedReturn = expandPlayerForSharedReturn,
                         )
                         SideEffect {
-                            useCollapsedPlayerChromeAppearance = layoutCollapseProgress >= 0.98f
+                            playerChromeCollapsedByScroll = layoutCollapseProgress >= 0.98f
                         }
                         LaunchedEffect(expandPlayerForSharedReturn) {
                             if (expandPlayerForSharedReturn) {
