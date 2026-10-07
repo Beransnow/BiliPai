@@ -1,3 +1,19 @@
+## v0.3.2 (2026-10-07)
+
+更新日志(ChangeLog)
+
+[更改] 版本号 0.3.2，versionCode 444
+
+[优化][进行中] 前台滑动与页面切换性能优化进行中（状态订阅收敛、逐帧状态读取下移到布局/绘制阶段、首页非必要工作延后执行），尚未完成数据验收
+
+[修复] 恢复 PR #873 中误删的 UP 主分部（staff）字段与 VideoEngagementUiState.isInWatchLater 字段
+
+[修复] 播放服务在系统回收后重启时补齐前台态，修复 ForegroundServiceDidNotStartInTimeException 闪退
+
+[更改] 拼音转换库由 pinyin4j 更换为 TinyPinyin（原 jar 损坏导致无法构建），模糊搜索行为不变
+
+[更改] Compose 预组合兼容补丁迁移到 build-logic 组合构建插件，修复 Gradle Sync 失败
+
 ## v0.3.1 (2026-10-07)
 
 更新日志(ChangeLog)
