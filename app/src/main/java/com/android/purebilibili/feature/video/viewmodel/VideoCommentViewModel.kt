@@ -495,6 +495,9 @@ class VideoCommentViewModel : ViewModel() {
 
     fun openSubReply(rootReply: ReplyItem, targetReplyId: Long = 0L) {
         val requestSubject = currentSubject
+        com.android.purebilibili.core.util.Logger.d("VideoInputTrace") {
+            "subreply_click subjectValid=${requestSubject.isValid} visible=${_subReplyState.value.visible}"
+        }
         if (!requestSubject.isValid) return
         subReplyLoadJob?.cancel()
         _subReplyState.value = SubReplyUiState(

@@ -48,7 +48,8 @@ class PlaybackService : MediaSessionService() {
         const val ACTION_START_FOREGROUND = "com.android.purebilibili.action.START_FOREGROUND"
         const val ACTION_STOP_FOREGROUND = "com.android.purebilibili.action.STOP_FOREGROUND"
         const val NOTIFICATION_ID = 1002 // 必须与 MiniPlayerManager 中的 ID 一致
-        @Volatile private var isForegroundStarted = false
+        @Volatile var isForegroundStarted = false
+            private set
         @Volatile private var latestHandledStartId = 0
     }
 
@@ -109,12 +110,29 @@ class PlaybackService : MediaSessionService() {
                     stopSelfResult(startId)
                 }
             }
+            else -> {
+                // START_STICKY 重启（intent 为 null）或未知 action 也会走到这里：
+                // startForegroundService 之后系统要求服务必须及时 startForeground()，
+                // 否则抛 ForegroundServiceDidNotStartInTimeException。先补齐前台态。
+                if (!isForegroundStarted) {
+                    try {
+                        Logger.w(TAG, "Unknown action=$action, starting foreground with fallback notification")
+                        startAsForeground(buildFallbackNotification())
+                        isForegroundStarted = true
+                    } catch (e: Exception) {
+                        isForegroundStarted = false
+                        Logger.e(TAG, "Failed to recover foreground service state", e)
+                        stopSelf()
+                    }
+                }
+            }
         }
 
         return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onDestroy() {
+        MiniPlayerManager.getInstance(applicationContext).onPlaybackServiceStopped()
         super.onDestroy()
         isForegroundStarted = false
         latestHandledStartId = 0
