@@ -5,11 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -19,6 +15,11 @@ import java.util.zip.ZipOutputStream;
 
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.tasks.Classpath;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.TaskAction;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -34,8 +35,8 @@ import org.objectweb.asm.Opcodes;
  *
  * <pre>java.lang.IllegalStateException: LayoutNode should be attached to an owner</pre>
  *
- * <p>The throwing method is package-private library code, so the guard is applied as a
- * post-compile bytecode rewrite of exactly one call site: the null branch inside
+ * <p>The throwing method is package-private library code, so the guard is applied as a bytecode
+ * rewrite of exactly one call site: the null branch inside
  * {@code LayoutNodeKt.requireOwner(LayoutNode)}. Instead of falling through to
  * {@code throwIllegalStateExceptionForNullCheck}, that branch is diverted to
  * {@code DetachedOwnerFallback.ownerOrRethrow}, which returns the node's last known Owner or
@@ -43,103 +44,180 @@ import org.objectweb.asm.Opcodes;
  *
  * <p>Scope is deliberately narrow: only {@code androidx/compose/ui/node/LayoutNodeKt.class} is
  * rewritten, and only that single branch. Every other class stays byte-identical.
+ *
+ * <p>The AAR is resolved from the app's own declared dependencies and the patched copy is written
+ * inside the project's build directory. Nothing is read from, or written to, the Gradle transform
+ * cache or {@code ~/.gradle/caches}, which is what lets the guard run on a cold CI runner.
  */
 public class ComposeDetachedOwnerGuardPlugin implements Plugin<Project> {
 
     private static final String TARGET_CLASS = "androidx/compose/ui/node/LayoutNodeKt.class";
-    private static final String TARGET_INTERNAL = "androidx/compose/ui/node/LayoutNodeKt";
     private static final String HELPER_OWNER = "com/android/purebilibili/build/DetachedOwnerFallback";
     private static final String HELPER_DESC =
             "(Landroidx/compose/ui/node/LayoutNode;Landroidx/compose/ui/node/Owner;)Landroidx/compose/ui/node/Owner;";
 
-    @Override
     public void apply(Project project) {
-        // The compose-ui AAR reaches the compiler as an extracted classes.jar under
-        // ~/.gradle/caches/<gradle-version>/transforms. Patching the AAR in modules-2 is not
-        // enough: AGP compiles from the transform output. So the guard rewrites the exact
-        // classes.jar that the build consumes, identified by walking the transform cache for
-        // the LayoutNodeKt class, and keeps a .cdog-orig backup for repeatability.
+        // Deferred on purpose: this plugin is applied from the plugins {} block, before Android
+        // configurations exist. Everything below runs at task-graph time, so the AAR is resolved
+        // from the app's own declared dependencies rather than from a hardcoded version.
         project.getTasks().register("patchComposeDetachedOwnerGuard", PatchTask.class, task -> {
             task.setGroup("build");
-            task.setDescription(
-                    "Rewrite LayoutNodeKt.requireOwner so a detached-root measure no longer throws (#880).");
-            task.getOutputs().upToDateWhen(t -> false);
-            task.setGradleUserHome(project.getGradle().getGradleUserHomeDir());
+            task.setDescription("Rewrite LayoutNodeKt.requireOwner so a detached-root measure no "
+                    + "longer throws (#880).");
+            task.getComposeUiAar().from(project.provider(() -> {
+                Configuration detached = resolveUiAndroid(project);
+                File aar = null;
+                for (File f : detached.getFiles()) {
+                    if (f.getName().endsWith(".aar")) { aar = f; break; }
+                }
+                if (aar == null) {
+                    throw new org.gradle.api.GradleException(
+                            "[ComposeDetachedOwnerGuard] androidx.compose.ui:ui-android did not resolve "
+                                    + "to an AAR (got " + detached.getFiles() + "). Refusing to produce "
+                                    + "a build without the #880 guard.");
+                }
+                return java.util.Collections.singleton(aar);
+            }));
+            task.getPatchedAar().set(project.getLayout().getBuildDirectory()
+                    .file("cdog/ui-android-patched.aar"));
         });
 
-        project.afterEvaluate(p -> p.getTasks()
-                .matching(t -> t.getName().startsWith("compile") || t.getName().contains("Kotlin"))
-                .configureEach(t -> t.dependsOn("patchComposeDetachedOwnerGuard")));
+        project.getTasks().matching(t -> t.getName().startsWith("compile")
+                        || t.getName().contains("Kotlin"))
+                .configureEach(t -> t.dependsOn("patchComposeDetachedOwnerGuard"));
     }
 
-    /** Serializable task: rewrites the consumed LayoutNodeKt.class in place. */
+    /**
+     * Resolves the Android {@code ui-android} AAR at the version the app actually compiles against.
+     *
+     * <p>The version is not hardcoded. {@code app/build.gradle.kts} declares
+     * {@code androidx.compose.ui:ui} without a version and lets the Compose BOM supply it. A bare
+     * {@code detachedConfiguration("androidx.compose.ui:ui")} has no BOM in scope and fails to
+     * resolve at all, and the BOM's own declared version is not the answer either: it pins
+     * {@code ui} to 1.12.1 while the real build resolves {@code ui} to 1.13.0-alpha01, so patching
+     * the declared version would rewrite an AAR the compiler never sees.
+     *
+     * <p>So the version is read off the resolution graph of a runtime classpath the app itself
+     * declares. The whole graph is walked, not just its root, because Compose's modules arrive
+     * through the BOM's constraints.
+     */
+    private static Configuration resolveUiAndroid(Project project) {
+        String version = resolvedUiVersion(project);
+        project.getLogger().lifecycle(
+                "[ComposeDetachedOwnerGuard] compose-ui version in use: " + version);
+        Configuration aar = project.getConfigurations().detachedConfiguration(
+                project.getDependencies().create("androidx.compose.ui:ui-android:" + version));
+        aar.setTransitive(false);
+        return aar;
+    }
+
+    /** Compose UI version as actually resolved by the app, or a hard failure. */
+    private static String resolvedUiVersion(Project project) {
+        String version = null;
+        for (Configuration c : project.getConfigurations()) {
+            String n = c.getName();
+            if (!n.endsWith("RuntimeClasspath") || n.startsWith("androidTest")
+                    || n.startsWith("test") || n.startsWith("benchmark")) {
+                continue;
+            }
+            try {
+                version = findUiVersion(c.getIncoming().getResolutionResult().getRoot());
+            } catch (RuntimeException ignored) {
+                // Some classpaths only resolve for specific variants; try the next one.
+            }
+            if (version != null) break;
+        }
+        if (version == null) {
+            throw new org.gradle.api.GradleException(
+                    "[ComposeDetachedOwnerGuard] could not read the resolved "
+                            + "androidx.compose.ui:ui version from any runtime classpath, so the "
+                            + "matching ui-android AAR cannot be located. The guard will not guess.");
+        }
+        return version;
+    }
+
+    /** Breadth-first search: Compose's modules hang off the BOM, not off the graph root. */
+    private static String findUiVersion(
+            org.gradle.api.artifacts.result.ResolvedComponentResult root) {
+        java.util.Set<org.gradle.api.artifacts.result.ResolvedComponentResult> seen =
+                new java.util.HashSet<>();
+        java.util.ArrayDeque<org.gradle.api.artifacts.result.ResolvedComponentResult> queue =
+                new java.util.ArrayDeque<>();
+        queue.add(root);
+        seen.add(root);
+        while (!queue.isEmpty()) {
+            for (org.gradle.api.artifacts.result.DependencyResult dr :
+                    queue.poll().getDependencies()) {
+                if (!(dr instanceof org.gradle.api.artifacts.result.ResolvedDependencyResult)) continue;
+                org.gradle.api.artifacts.result.ResolvedComponentResult sel =
+                        ((org.gradle.api.artifacts.result.ResolvedDependencyResult) dr).getSelected();
+                if (!seen.add(sel)) continue;
+                org.gradle.api.artifacts.component.ComponentIdentifier id = sel.getId();
+                if (id instanceof org.gradle.api.artifacts.component.ModuleComponentIdentifier) {
+                    org.gradle.api.artifacts.component.ModuleComponentIdentifier m =
+                            (org.gradle.api.artifacts.component.ModuleComponentIdentifier) id;
+                    if ("androidx.compose.ui".equals(m.getGroup()) && "ui".equals(m.getModule())) {
+                        return m.getVersion();
+                    }
+                }
+                queue.add(sel);
+            }
+        }
+        return null;
+    }
+
+    /** Serializable task: AAR in, patched AAR out. Never mutates the resolving cache. */
     public abstract static class PatchTask extends org.gradle.api.DefaultTask {
-        private final org.gradle.api.provider.Property<java.io.File> gradleUserHome =
-                getProject().getObjects().property(java.io.File.class);
 
-        @org.gradle.api.tasks.Internal
-        public org.gradle.api.provider.Property<java.io.File> getGradleUserHome() {
-            return gradleUserHome;
+        private final ConfigurableFileCollection composeUiAar =
+                getProject().getObjects().fileCollection();
+        private final org.gradle.api.file.RegularFileProperty patchedAar =
+                getProject().getObjects().fileProperty();
+
+        /** The resolved {@code ui-android} AAR. Classpath-relative because Gradle reuses the
+         * original artifact file whenever a build cache entry is a hit. */
+        @Classpath
+        public ConfigurableFileCollection getComposeUiAar() {
+            return composeUiAar;
         }
 
-        public void setGradleUserHome(java.io.File v) {
-            gradleUserHome.set(v);
+        @OutputFile
+        public org.gradle.api.file.RegularFileProperty getPatchedAar() {
+            return patchedAar;
         }
 
-        @org.gradle.api.tasks.TaskAction
+        @TaskAction
         public void run() throws IOException {
-            // The transforms cache lives at ${gradleUserHome}/caches/<gradle-version>/transforms.
-            // The Gradle version is not hardcoded: every candidate root is scanned.
-            java.io.File cachesRoot = new java.io.File(gradleUserHome.get(), "caches");
-            java.util.List<java.io.File> roots = new java.util.ArrayList<>();
-            java.io.File[] versionDirs = cachesRoot.listFiles(java.io.File::isDirectory);
-            if (versionDirs != null) {
-                for (java.io.File v : versionDirs) {
-                    java.io.File t = new java.io.File(v, "transforms");
-                    if (t.isDirectory()) roots.add(t);
-                }
+            File aar = null;
+            for (File f : composeUiAar.getFiles()) {
+                if (f.getName().endsWith(".aar")) { aar = f; break; }
             }
-            if (roots.isEmpty()) roots.add(cachesRoot);
-
-            java.util.List<java.io.File> targets = new java.util.ArrayList<>();
-            for (java.io.File transformsRoot : roots) {
-                java.nio.file.Files.walk(transformsRoot.toPath())
-                        .filter(java.nio.file.Files::isRegularFile)
-                        .filter(f -> f.getFileName().toString().equals("classes.jar"))
-                        .filter(f -> f.toString().replace('\\', '/')
-                                .contains("transformed/ui/jars/classes.jar"))
-                        .forEach(f -> targets.add(f.toFile()));
-            }
-
-            if (targets.isEmpty()) {
+            if (aar == null) {
                 throw new org.gradle.api.GradleException(
-                        "[ComposeDetachedOwnerGuard] no compose-ui classes.jar found under " + cachesRoot
-                                + "; run a build once so the transform cache is populated, then retry.");
+                        "[ComposeDetachedOwnerGuard] androidx.compose.ui:ui-android did not resolve to "
+                                + "an AAR (got " + composeUiAar.getFiles() + "). Refusing to produce a "
+                                + "build without the #880 guard.");
             }
 
-            int total = 0;
-            for (java.io.File jar : targets) {
-                java.io.File backup = new java.io.File(jar.getAbsolutePath() + ".cdog-orig");
-                if (!backup.exists()) {
-                    java.nio.file.Files.copy(jar.toPath(), backup.toPath());
-                }
-                java.io.File source = backup;
-                try {
-                    byte[] original = java.nio.file.Files.readAllBytes(source.toPath());
-                    byte[] rewritten = rewriteClassesJar(original, new int[]{0});
-                    java.nio.file.Files.write(jar.toPath(), rewritten);
-                    total++;
-                } catch (IOException e) {
-                    throw new org.gradle.api.GradleException(
-                            "ComposeDetachedOwnerGuard failed on " + jar, e);
-                }
+            File out = patchedAar.get().getAsFile();
+            if (!out.getParentFile().isDirectory() && !out.getParentFile().mkdirs()) {
+                throw new org.gradle.api.GradleException(
+                        "Cannot create " + out.getParentFile() + " for the patched AAR.");
             }
-            getLogger().lifecycle("[ComposeDetachedOwnerGuard] patched " + total
-                    + " compose-ui classes.jar in the transform cache");
+
+            int sites = patchAar(aar, out);
+            if (sites == 0) {
+                throw new org.gradle.api.GradleException(
+                        "[ComposeDetachedOwnerGuard] " + aar + " has no "
+                                + TARGET_CLASS + " call site, so nothing was patched. Failing rather "
+                                + "than shipping an unprotected build.");
+            }
+            getLogger().lifecycle("[ComposeDetachedOwnerGuard] patched " + aar.getName()
+                    + " -> " + out + " (" + sites + " call site)");
         }
     }
 
-    /** Copies the AAR, rewriting {@code classes.jar} on the way through. */
+    /** Copies the AAR, rewriting {@code classes.jar} on the way through. Every entry is kept. */
     private static int patchAar(File aar, File out) throws IOException {
         int[] sites = {0};
         try (ZipFile zip = new ZipFile(aar);
@@ -147,16 +225,14 @@ public class ComposeDetachedOwnerGuardPlugin implements Plugin<Project> {
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
-                if (entry.isDirectory()) continue;
-                zos.putNextEntry(new ZipEntry(entry.getName()));
-                if ("classes.jar".equals(entry.getName())) {
+                zos.putNextEntry(new ZipEntry(entry));
+                if (!entry.isDirectory()) {
                     try (InputStream in = zip.getInputStream(entry)) {
-                        byte[] rewritten = rewriteClassesJar(readAll(in), sites);
-                        zos.write(rewritten);
-                    }
-                } else {
-                    try (InputStream in = zip.getInputStream(entry)) {
-                        copy(in, zos);
+                        if ("classes.jar".equals(entry.getName())) {
+                            zos.write(rewriteClassesJar(readAll(in), sites));
+                        } else {
+                            copy(in, zos);
+                        }
                     }
                 }
                 zos.closeEntry();
@@ -175,14 +251,15 @@ public class ComposeDetachedOwnerGuardPlugin implements Plugin<Project> {
                 Enumeration<JarEntry> entries = jar.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry e = entries.nextElement();
-                    if (e.isDirectory()) continue;
-                    byte[] data;
-                    try (InputStream in = jar.getInputStream(e)) { data = readAll(in); }
-                    if (TARGET_CLASS.equals(e.getName())) {
-                        data = rewriteClass(data, sites);
+                    byte[] data = null;
+                    if (!e.isDirectory()) {
+                        try (InputStream in = jar.getInputStream(e)) { data = readAll(in); }
+                        if (TARGET_CLASS.equals(e.getName())) {
+                            data = rewriteClass(data, sites);
+                        }
                     }
-                    jos.putNextEntry(new JarEntry(e.getName()));
-                    jos.write(data);
+                    jos.putNextEntry(new JarEntry(e));
+                    if (data != null) jos.write(data);
                     jos.closeEntry();
                 }
             }
