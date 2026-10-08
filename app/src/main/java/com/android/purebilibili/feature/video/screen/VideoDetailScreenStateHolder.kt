@@ -1282,12 +1282,10 @@ internal fun VideoDetailScreenStateHolder(
 
     // 🔧 [修复] 追踪用户是否主动请求全屏（点击全屏按钮）
     // 使用 rememberSaveable 确保状态在横竖屏切换时保持
-    // 分屏 / 系统小窗下打开视频即进入全屏（横屏形态），无需手动点全屏
-    // A landscape request can temporarily change freeform bounds enough that the OS
-    // stops reporting multi-window. Do not key this intent to that changing signal:
-    // resetting it lets the sensor immediately request portrait and starts an orientation loop.
+    // 系统小窗 / 分屏也是普通详情入口；窗口模式不代表用户请求了全屏。
+    // 按视频保存手动全屏状态，显式路由请求由下方的入口 effect 处理。
     var userRequestedFullscreen by rememberSaveable(currentBvid) {
-        mutableStateOf(isActivityInMultiWindowMode)
+        mutableStateOf(false)
     }
     var hasHandledStartFullscreenRequest by rememberSaveable(currentBvid, startInFullscreen) {
         mutableStateOf(false)
@@ -1953,8 +1951,10 @@ internal fun VideoDetailScreenStateHolder(
                     notificationManager.cancel(1001)
                     notificationManager.cancel(PlaybackService.NOTIFICATION_ID)
                     try {
-                        deferredContext.stopService(
-                            android.content.Intent(deferredContext, PlaybackService::class.java)
+                        deferredContext.startService(
+                            android.content.Intent(deferredContext, PlaybackService::class.java).apply {
+                                action = PlaybackService.ACTION_STOP_FOREGROUND
+                            }
                         )
                     } catch (_: Exception) {}
                 }

@@ -1015,7 +1015,6 @@ class MiniPlayerManager private constructor(private val context: Context) :
     }
     
     override fun onEnterForeground() {
-        requestForegroundServiceIfNeeded()
         if (!isLowMemoryMode) return
         if (player == null || backgroundOptimizationPlayer !== player) {
             resetBackgroundOptimizationState()
@@ -2156,9 +2155,10 @@ class MiniPlayerManager private constructor(private val context: Context) :
         cachedArtworkBitmap = null
 
         try {
-            // Stopping must never create a service while the app is in the background.
-            context.stopService(Intent(context, PlaybackService::class.java))
-            playbackServiceRequested = false
+            val serviceIntent = Intent(context, PlaybackService::class.java).apply {
+                action = PlaybackService.ACTION_STOP_FOREGROUND
+            }
+            context.startService(serviceIntent)
         } catch (e: Exception) {
             Logger.e(TAG, "Failed to stop playback service", e)
         }
@@ -2687,9 +2687,7 @@ class MiniPlayerManager private constructor(private val context: Context) :
                 scope.launch(Dispatchers.IO) {
                     val bitmap = loadBitmap(coverSnapshot)
                     launch(Dispatchers.Main) {
-                        if (isActive && currentTitle == titleSnapshot && currentCover == coverSnapshot) {
-                            pushNotification(titleSnapshot, ownerSnapshot, bitmap)
-                        }
+                        pushNotification(titleSnapshot, ownerSnapshot, bitmap)
                     }
                 }
             } else {
@@ -2776,10 +2774,7 @@ class MiniPlayerManager private constructor(private val context: Context) :
                 null
             }
             launch(Dispatchers.Main) {
-                if (isActive && currentPlayer === player && currentTitle == title &&
-                    currentCover == effectiveCoverUrl) {
-                    pushNotification(title, artist, bitmap)
-                }
+                pushNotification(title, artist, bitmap)
             }
         }
     }
@@ -2796,8 +2791,6 @@ class MiniPlayerManager private constructor(private val context: Context) :
                 .build()
             val result = loader.execute(request)
             ((result as? SuccessResult)?.image as? coil3.BitmapImage)?.bitmap
-        } catch (e: kotlinx.coroutines.CancellationException) {
-            throw e
         } catch (e: Exception) {
             com.android.purebilibili.core.util.Logger.e(TAG, "Failed to load bitmap", e)
             null
@@ -2927,31 +2920,23 @@ class MiniPlayerManager private constructor(private val context: Context) :
         }
     }
 
-    internal fun onPlaybackServiceStopped() {
-        playbackServiceRequested = false
-    }
-
     private fun requestForegroundServiceIfNeeded() {
         if (!isActive) return
-        // Metadata updates reuse the running service; background callbacks cannot start one.
-        if (PlaybackService.isForegroundStarted || playbackServiceRequested) return
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S &&
-            BackgroundManager.isInBackground) return
         val now = SystemClock.elapsedRealtime()
-        if (lastForegroundStartAtMs != 0L && now - lastForegroundStartAtMs < FOREGROUND_START_DEBOUNCE_MS) {
+        if (playbackServiceRequested && now - lastForegroundStartAtMs < FOREGROUND_START_DEBOUNCE_MS) {
             return
         }
 
         val serviceIntent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_START_FOREGROUND
         }
-        lastForegroundStartAtMs = now
         try {
             androidx.core.content.ContextCompat.startForegroundService(context, serviceIntent)
             playbackServiceRequested = true
+            lastForegroundStartAtMs = now
         } catch (e: Exception) {
             playbackServiceRequested = false
-            Logger.w(TAG, "Foreground playback service request deferred: ${e.message}")
+            Logger.e(TAG, "Failed to request foreground playback service", e)
         }
     }
 }

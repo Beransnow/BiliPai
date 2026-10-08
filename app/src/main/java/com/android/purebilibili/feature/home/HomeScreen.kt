@@ -2892,6 +2892,7 @@ fun HomeScreen(
         )
 
         //  [新增] 刷新撤销悬浮按钮（右下角，5秒后自动消失）
+        if (homeSettings.homeRefreshUndoVisible) {
         //  与「定位上次刷新」胶囊共用同一底部锚点：跟随听视频横条上浮，且在定位胶囊
         //  可见时再抬一个胶囊位（胶囊高约 36dp + 8dp 间距），避免两者互相遮挡。
         val undoVisible = undoAvailable && currentCategory == HomeCategory.RECOMMEND
@@ -2985,6 +2986,8 @@ fun HomeScreen(
                 }
             }
         }
+
+        } // Refresh undo is opt-in; disabled path does not compose the overlay.
 
         com.android.purebilibili.feature.video.share.VideoShareSheetHost(
             payload = pendingVideoShare,
