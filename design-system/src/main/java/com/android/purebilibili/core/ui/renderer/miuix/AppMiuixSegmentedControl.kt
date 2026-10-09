@@ -14,6 +14,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
+import com.android.purebilibili.core.ui.components.resolveMeasuredTabVisibilityDelta
 import androidx.compose.runtime.remember
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Path
@@ -363,7 +369,7 @@ private fun <T> AppMiuixNonGlassTabs(
         0.dp
     }
     val tabRowMaxWidth = if (scrollable) {
-        TabRowDefaults.TabRowMaxWidth
+        maxOf(TabRowDefaults.TabRowMaxWidth, tabRowMinWidth)
     } else {
         Dp.Infinity
     }
@@ -425,8 +431,25 @@ private fun <T> AppMiuixContentSizedNonGlassTabs(
     val listState = rememberLazyListState()
     val motionEnabled = com.android.purebilibili.core.ui.LocalComponentMotionEnabled.current
     LaunchedEffect(selectedIndex, itemWidths, motionEnabled) {
-        val target = selectedIndex.coerceIn(0, options.lastIndex)
-        if (motionEnabled) listState.animateScrollToItem(target) else listState.scrollToItem(target)
+        // Observe resize/measurement, not scroll offsets, so manual scrolling stays free.
+        snapshotFlow { listState.layoutInfo.viewportSize.width to listState.layoutInfo.totalItemsCount }
+            .filter { (width, count) -> width > 0 && count > 0 }
+            .collectLatest {
+                val target = selectedIndex.coerceIn(0, options.lastIndex)
+                val info = listState.layoutInfo
+                val item = info.visibleItemsInfo.firstOrNull { it.index == target }
+                if (item == null) {
+                    if (motionEnabled) listState.animateScrollToItem(target) else listState.scrollToItem(target)
+                } else {
+                    val delta = resolveMeasuredTabVisibilityDelta(
+                        item.offset, item.offset + item.size,
+                        info.viewportStartOffset, info.viewportEndOffset,
+                    ).toFloat()
+                    if (delta != 0f) {
+                        if (motionEnabled) listState.animateScrollBy(delta) else listState.scrollBy(delta)
+                    }
+                }
+            }
     }
     Box(
         modifier = modifier
