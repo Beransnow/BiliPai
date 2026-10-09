@@ -1078,6 +1078,7 @@ private fun MobileSettingsNavLayout(
         onCommentFraudHistoryClick = onCommentFraudHistoryClick,
         onPluginsClick = onPluginsClick,
         onExportLogsClick = onExportLogsClick,
+        onDiagnosticsClick = { onCategoryClick(SettingsRootCategory.PLAYER_DIAGNOSTICS) },
         onSettingsShareClick = onSettingsShareClick,
         onWebDavBackupClick = onWebDavBackupClick,
         onDownloadPathClick = onDownloadPathClick,

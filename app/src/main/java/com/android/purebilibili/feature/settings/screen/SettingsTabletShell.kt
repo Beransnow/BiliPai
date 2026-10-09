@@ -294,11 +294,6 @@ fun SettingsTabletShell(
             secondary = PaneAdaptedValue.Expanded,
             tertiary = PaneAdaptedValue.Hidden,
         )
-        useThreePaneLayout && !isSearchActive -> ThreePaneScaffoldValue(
-            primary = PaneAdaptedValue.Expanded,
-            secondary = PaneAdaptedValue.Expanded,
-            tertiary = PaneAdaptedValue.Expanded,
-        )
         else -> ThreePaneScaffoldValue(
             primary = PaneAdaptedValue.Expanded,
             secondary = PaneAdaptedValue.Expanded,
@@ -310,7 +305,7 @@ fun SettingsTabletShell(
         directive = directive,
         value = scaffoldValue,
         listPane = listPaneContent,
-        detailPane = if (useThreePaneLayout && !isSearchActive) infoPaneContent else detailSlotContent,
-        extraPane = if (useThreePaneLayout && !isSearchActive) detailPane else null,
+        detailPane = detailSlotContent,
+        extraPane = null,
     )
 }
