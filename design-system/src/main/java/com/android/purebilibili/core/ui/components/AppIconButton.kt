@@ -86,7 +86,7 @@ private fun AppIconButtonImpl(
     when (LocalAppUiStyle.current) {
         AppUiStyle.MATERIAL3 -> AppMaterial3IconButton(
             onClick = onClick,
-            modifier = modifier,
+            modifier = modifier.appElasticPress(enabled = enabled),
             enabled = enabled,
             colors = colors,
             interactionSource = interactionSource,
@@ -95,7 +95,7 @@ private fun AppIconButtonImpl(
         )
         AppUiStyle.MIUIX -> AppMiuixIconButton(
             onClick = onClick,
-            modifier = modifier,
+            modifier = modifier.appElasticPress(enabled = enabled),
             enabled = enabled,
             colors = colors,
             interactionSource = interactionSource,

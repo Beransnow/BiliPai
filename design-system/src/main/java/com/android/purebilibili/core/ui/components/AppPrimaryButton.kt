@@ -25,6 +25,7 @@ import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
+import com.android.purebilibili.core.ui.resolveButtonContentColor
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.theme.LocalContentColor as MiuixLocalContentColor
 import top.yukonga.miuix.kmp.theme.MiuixTheme
@@ -41,6 +42,11 @@ fun AppPrimaryButton(
     val haptic = LocalHapticFeedback.current
     val hapticEnabled = LocalAppThemeConfig.current.hapticFeedbackEnabled
     val interactionSource = remember { MutableInteractionSource() }
+    val primaryContentColor = resolveButtonContentColor(
+        containerColor = MaterialTheme.colorScheme.primary,
+        contentColor = MaterialTheme.colorScheme.onPrimary,
+        colorScheme = MaterialTheme.colorScheme,
+    )
 
     if (LocalAppUiStyle.current == AppUiStyle.MATERIAL3) {
         Button(
@@ -48,12 +54,12 @@ fun AppPrimaryButton(
                 if (hapticEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 onClick()
             },
-            modifier = modifier,
+            modifier = modifier.appElasticPress(enabled = enabled && !isLoading),
             enabled = enabled && !isLoading,
             shape = ButtonDefaults.shape,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                contentColor = primaryContentColor,
                 disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                 disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
             ),
@@ -63,7 +69,7 @@ fun AppPrimaryButton(
             if (isLoading) {
                 AppCircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colorScheme.onPrimary,
+                    color = primaryContentColor,
                     strokeWidth = 2.dp,
                 )
             } else {
@@ -75,7 +81,7 @@ fun AppPrimaryButton(
                         Icon(
                             imageVector = leadingIcon,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onPrimary,
+                            tint = primaryContentColor,
                             modifier = Modifier.size(20.dp),
                         )
                         Spacer(modifier = Modifier.width(AppSpacingTokens.Small))

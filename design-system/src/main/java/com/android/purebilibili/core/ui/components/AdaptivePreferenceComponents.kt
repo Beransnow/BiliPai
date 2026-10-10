@@ -1687,6 +1687,7 @@ fun AppSearchEntry(
             modifier = modifier
                 .fillMaxWidth()
                 .heightIn(min = rememberAdaptiveListComponentVisualSpec().searchBarHeightDp.dp)
+                .appElasticPress()
                 .clip(androidx.compose.foundation.shape.CircleShape)
                 .background(if (uiStyle == AppUiStyle.MIUIX) miuixContainerColor
                     else if (containerColor != Color.Unspecified) containerColor
