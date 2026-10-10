@@ -987,7 +987,7 @@ internal fun resolveSettingsSearchResults(
                 "playback.image_preview_long_press_save_enabled" -> listOf("图片长按保存", "长按保存图片")
                 "playback.video_info_default_expanded" -> listOf("简介默认展开")
                 "playback.sub_reply_loaded_count_enabled" -> listOf("楼中楼已加载数量", "已加载条数")
-                "playback.hide_interactive_command_danmaku" -> listOf("关注点赞弹幕", "关注弹幕", "点赞弹幕", "三连弹幕")
+                "playback.hide_interactive_command_danmaku" -> listOf("关注点赞弹幕", "关注弹幕", "点赞弹幕", "三连弹幕", "三连", "隐藏三连", "三连互动提示", "屏蔽互动提示")
                 else -> emptyList()
             },
             focusId = item.sectionKey,

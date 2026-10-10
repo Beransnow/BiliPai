@@ -1162,6 +1162,7 @@ fun WatchLaterScreen(
                     exit = shrinkVertically() + fadeOut(),
                 ) {
                     AppThemeAdaptiveTabRow(
+                        role = com.android.purebilibili.core.ui.components.AppTabRowRole.FILTER,
                         options = watchLaterFilterOptions,
                         selectedValue = state.filter,
                         onSelectionChange = viewModel::selectFilter,

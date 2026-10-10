@@ -283,6 +283,8 @@ private fun LiveAreaParentTabRow(
     val uiStyle = LocalAppUiStyle.current
     val effectiveHorizontalPadding = if (uiStyle == AppUiStyle.MATERIAL3) 0.dp else horizontalPadding
     AppThemeAdaptiveTabRow(
+        role = com.android.purebilibili.core.ui.components.AppTabRowRole.SECONDARY,
+        centerContent = false,
         options = options,
         selectedValue = safeSelectedTab,
         onSelectionChange = onTabSelected,

@@ -548,6 +548,7 @@ internal fun hostForPlaybackLog(url: String?): String {
 
 // ========== UI State ==========
 sealed class VideoPlaybackUiState {
+    enum class RelatedLoadState { LOADING, READY, FAILED }
     data class Loading(
         val retryAttempt: Int = 0,
         val maxAttempts: Int = 4,
@@ -561,6 +562,7 @@ sealed class VideoPlaybackUiState {
         val playUrl: String,
         val audioUrl: String? = null,
         val related: List<RelatedVideo> = emptyList(),
+        val relatedLoadState: RelatedLoadState = RelatedLoadState.READY,
         val currentQuality: Int = 64,
         val playbackQualityMode: PlaybackQualityMode = PlaybackQualityMode.AUTO,
         val adaptiveDashSource: AdaptiveDashPlaybackSource? = null,
@@ -3422,6 +3424,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                             playUrl = cdnSelection.playUrl,
                             audioUrl = cdnSelection.audioUrl,
                             related = result.related,
+                            relatedLoadState = VideoPlaybackUiState.RelatedLoadState.LOADING,
                             currentQuality = result.quality,
                             playbackQualityMode = resolveInitialPlaybackQualityMode(),
                             adaptiveDashSource = cdnSelection.adaptiveDashSource,
@@ -3460,6 +3463,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         )
                         _uiState.value = readyState
                         publishSubjectSnapshot(readyState)
+                        loadRelatedVideosAfterPlayback(result.info.bvid, requestToken)
                         // Do not wait for the foreground Compose collector to mirror this state.
                         // Background collection is lifecycle-paused, while playback can still
                         // advance through a UGC season.
@@ -7792,6 +7796,41 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         if (pluginCheckJob?.isActive != true) startPluginCheck()
     }
 
+    private fun loadRelatedVideosAfterPlayback(
+        bvid: String,
+        requestToken: Long
+    ) {
+        viewModelScope.launch {
+            repeat(2) { attempt ->
+                val current = _uiState.value as? VideoPlaybackUiState.Success ?: return@launch
+                if (currentLoadRequestToken != requestToken ||
+                    current.info.bvid != bvid
+                ) return@launch
+                val result = kotlinx.coroutines.withTimeoutOrNull(8_000L) {
+                    VideoRepository.getRelatedVideosResult(bvid)
+                } ?: Result.failure(IllegalStateException("相关推荐请求超时"))
+                if (result.isFailure && attempt == 0) {
+                    delay(500L)
+                    return@repeat
+                }
+                val related = result.getOrDefault(emptyList())
+                val loadState = if (result.isSuccess) VideoPlaybackUiState.RelatedLoadState.READY
+                    else VideoPlaybackUiState.RelatedLoadState.FAILED
+                _uiState.update { state ->
+                    if (state is VideoPlaybackUiState.Success &&
+                        state.info.bvid == bvid &&
+                        currentLoadRequestToken == requestToken
+                    ) state.copy(related = related, relatedLoadState = loadState) else state
+                }
+                val latest = _uiState.value as? VideoPlaybackUiState.Success ?: return@launch
+                if (latest.info.bvid == bvid &&
+                    currentLoadRequestToken == requestToken && result.isSuccess
+                ) updatePlaylist(latest.info, related)
+                return@launch
+            }
+        }
+    }
+
     private fun scheduleDeferredPostLoadWork(
         loadedBvid: String,
         loadedCid: Long,
@@ -8828,6 +8867,9 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         _uiState.value = restoredState
         publishSubjectSnapshot(restoredState)
         restoreSponsorPlaybackState(restoredState)
+        if (restoredState.relatedLoadState == VideoPlaybackUiState.RelatedLoadState.LOADING) {
+            loadRelatedVideosAfterPlayback(restoredState.info.bvid, currentLoadRequestToken)
+        }
     }
 
     private fun publishSubjectSnapshot(state: VideoPlaybackUiState.Success) {

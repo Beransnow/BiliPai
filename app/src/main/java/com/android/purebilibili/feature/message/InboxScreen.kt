@@ -484,6 +484,7 @@ private fun MessageSessionCategoryRow(
             }
         }
         AppThemeAdaptiveTabRow(
+            role = com.android.purebilibili.core.ui.components.AppTabRowRole.SECONDARY,
             options = options,
             selectedValue = selectedCategory,
             onSelectionChange = onCategoryClick,

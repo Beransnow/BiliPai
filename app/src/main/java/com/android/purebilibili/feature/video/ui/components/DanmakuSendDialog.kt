@@ -226,6 +226,7 @@ fun DanmakuSendDialog(
                 decorFitsSystemWindows = false
             )
         ) {
+            com.android.purebilibili.core.ui.ModalWindowBlurBehindEffect()
             // 统一输入弹层宿主：半开折叠时弹层整体收进铰链安全区，避免输入控件跨缝；
             // 平铺窗口时点击空白处关闭、底部对齐，宽窗口由 widthIn 限宽并水平居中。
             HingeSafeInputOverlayHost(

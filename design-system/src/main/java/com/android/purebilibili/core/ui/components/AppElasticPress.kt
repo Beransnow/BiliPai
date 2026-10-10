@@ -23,7 +23,21 @@ import androidx.compose.runtime.compositionLocalOf
 import com.android.purebilibili.core.ui.LocalComponentMotionEnabled
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.Offset
+import android.os.Build
+import android.graphics.RuntimeShader
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -49,10 +63,24 @@ class AppElasticPressState internal constructor(
     internal val motionEnabled: Boolean,
     private val visibleSizePx: Float?,
     private val expansionPx: Float,
+    private val feedbackStrength: Float,
 ) {
     internal val press = Animatable(0f, visibilityThreshold = 0.001f)
     internal val position = Animatable(Offset.Zero, Offset.VectorConverter, Offset.VisibilityThreshold)
     internal var startPosition by mutableStateOf(Offset.Zero)
+    internal var gestureSize = Size.Zero
+    private val highlight = AppPressHighlight()
+
+    /** Call inside a glass renderer's surface layer so lighting shares its transform. */
+    fun drawHighlight(scope: DrawScope) {
+        if (motionEnabled) {
+            val point = position.value
+            val mappedPoint = if (gestureSize.width > 0f && gestureSize.height > 0f) {
+                Offset(point.x * scope.size.width / gestureSize.width, point.y * scope.size.height / gestureSize.height)
+            } else point
+            highlight.draw(scope, press.value, mappedPoint)
+        }
+    }
 
     val layerBlock: GraphicsLayerScope.() -> Unit = {
         if (motionEnabled) {
@@ -65,8 +93,8 @@ class AppElasticPressState internal constructor(
                 val baseScale = 1f + expansionPx / height * press.value
                 val dragScale = expansionPx / height
                 val angle = atan2(offset.y, offset.x)
-                translationX = minDimension * tanh(0.05f * offset.x / minDimension)
-                translationY = minDimension * tanh(0.05f * offset.y / minDimension)
+                translationX = minDimension * tanh(0.05f * offset.x / minDimension) * feedbackStrength
+                translationY = minDimension * tanh(0.05f * offset.y / minDimension) * feedbackStrength
                 scaleX = baseScale + dragScale * abs(cos(angle) * offset.x / maxDimension) *
                     (width / height).coerceAtMost(1f)
                 scaleY = baseScale + dragScale * abs(sin(angle) * offset.y / maxDimension) *
@@ -77,14 +105,30 @@ class AppElasticPressState internal constructor(
 }
 
 @Composable
-fun rememberAppElasticPressState(visualSize: Dp? = null): AppElasticPressState {
+fun rememberAppElasticPressState(visualSize: Dp? = null, feedbackStrength: Float = 1f): AppElasticPressState {
     val density = LocalDensity.current
     val motionEnabled = LocalComponentMotionEnabled.current
     val visibleSizePx = visualSize?.let { with(density) { it.toPx() } }
-    val expansionPx = with(density) { 4.dp.toPx() }
-    return remember(motionEnabled, visibleSizePx, expansionPx) {
-        AppElasticPressState(motionEnabled, visibleSizePx, expansionPx)
+    val strength = feedbackStrength.coerceIn(0f, 1f)
+    val expansionPx = with(density) { 4.dp.toPx() } * strength
+    return remember(motionEnabled, visibleSizePx, expansionPx, strength) {
+        AppElasticPressState(motionEnabled, visibleSizePx, expansionPx, strength)
     }
+}
+
+/** Wide search capsules use the same restrained gain as dock shells. */
+const val APP_SEARCH_ELASTIC_FEEDBACK_STRENGTH = 0.6f
+
+/** Native editing/selection and parent scrolling retain gesture ownership. */
+fun Modifier.appSearchElasticPress(
+    enabled: Boolean = true,
+    highlightShape: Shape = androidx.compose.foundation.shape.CircleShape,
+): Modifier = composed {
+    appElasticPress(
+        enabled = enabled,
+        state = rememberAppElasticPressState(feedbackStrength = APP_SEARCH_ELASTIC_FEEDBACK_STRENGTH),
+        highlightShape = highlightShape,
+    )
 }
 
 /**
@@ -101,6 +145,7 @@ fun Modifier.appElasticPress(
     dragEnabled: Boolean = true,
     state: AppElasticPressState? = null,
     transformInBackdrop: Boolean = false,
+    highlightShape: Shape = RoundedCornerShape(50),
 ): Modifier {
     if (foldIn(false) { found, element -> found || element === ElasticPressMarker }) return this
     return Modifier.then(ElasticPressMarker).composed {
@@ -131,6 +176,7 @@ fun Modifier.appElasticPress(
                     val down = awaitFirstDown(false, PointerEventPass.Initial)
                     pressJob?.cancel()
                     positionJob?.cancel()
+                    elasticState.gestureSize = Size(size.width.toFloat(), size.height.toFloat())
                     elasticState.startPosition = down.position
                     pressJob = scope.launch {
                         press.animateTo(1f, spring(0.5f, 300f, 0.001f))
@@ -160,7 +206,52 @@ fun Modifier.appElasticPress(
             .then(
                 // drawBackdrop must own the transform so its sampling can undo it.
                 // An ancestor graphicsLayer only stretches a previously rendered glass texture.
-                if (transformInBackdrop) Modifier else Modifier.graphicsLayer(elasticState.layerBlock)
+                if (transformInBackdrop) Modifier else Modifier
+                    .graphicsLayer(elasticState.layerBlock)
+                    .drawWithContent {
+                        drawContent()
+                        // Clip only the light, never the moving content or its parent viewport.
+                        val outline = highlightShape.createOutline(size, layoutDirection, this)
+                        val path = Path().apply { addOutline(outline) }
+                        clipPath(path) { elasticState.drawHighlight(this) }
+                    }
             )
     }.then(this)
+}
+
+/** Same additive illumination and smoothstep falloff as Kyant InteractiveHighlight. */
+class AppPressHighlight {
+    private val shader = if (Build.VERSION.SDK_INT >= 33) PressShader() else null
+
+    fun draw(scope: DrawScope, progress: Float, position: Offset) = with(scope) {
+        val amount = progress.coerceIn(0f, 1f)
+        if (amount <= 0f || size.minDimension <= 0f) return@with
+        if (Build.VERSION.SDK_INT >= 33 && shader != null) {
+            drawRect(Color.White.copy(alpha = 0.08f * amount), blendMode = BlendMode.Plus)
+            shader.draw(this, amount, position)
+        } else {
+            drawRect(Color.White.copy(alpha = 0.25f * amount), blendMode = BlendMode.Plus)
+        }
+    }
+}
+
+@RequiresApi(33)
+private class PressShader {
+    private val shader = RuntimeShader("""
+        layout(color) uniform half4 color;
+        uniform float radius;
+        uniform float2 position;
+        half4 main(float2 coord) {
+            float dist = distance(coord, position);
+            return color * smoothstep(radius, radius * 0.5, dist);
+        }
+    """.trimIndent())
+    private val brush = ShaderBrush(shader)
+
+    fun draw(scope: DrawScope, progress: Float, position: Offset) = with(scope) {
+        shader.setColorUniform("color", android.graphics.Color.argb(0.15f * progress, 1f, 1f, 1f))
+        shader.setFloatUniform("radius", size.minDimension * 1.5f)
+        shader.setFloatUniform("position", position.x.coerceIn(0f, size.width), position.y.coerceIn(0f, size.height))
+        drawRect(brush, blendMode = BlendMode.Plus)
+    }
 }

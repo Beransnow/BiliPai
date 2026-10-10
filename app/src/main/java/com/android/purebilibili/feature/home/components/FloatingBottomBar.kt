@@ -126,6 +126,10 @@ internal val LocalFloatingBottomBarIndicatorStretchX =
 /** 激活内容捕获层会为指示器提供每个槽位的选中态图标。 */
 internal val LocalFloatingBottomBarActiveContent = staticCompositionLocalOf { false }
 
+// Keep wide dock shells calmer than individual elastic buttons.
+private const val DOCK_SHELL_ELASTIC_GAIN = 0.6f
+private const val DOCK_SHELL_MAX_EXTRA_STRETCH = 0.025f
+
 @Immutable
 class FloatingBottomBarColors(
     val containerColor: Color,
@@ -508,7 +512,7 @@ fun FloatingBottomBar(
     val tabsBackdrop = tabsBackdropSource?.backdrop
     val density = LocalDensity.current
     val shellLensDp = resolveCompactDockLensDp(shellHeight.value)
-    val pressBloomDp = resolveCompactDockPressBloomDp(shellHeight.value)
+    val pressBloomDp = resolveCompactDockPressBloomDp(shellHeight.value) * DOCK_SHELL_ELASTIC_GAIN
     val shellRefractionHeightDp = shellLensDp *
         liquidGlassTuning.refractionHeight / MIUIX_UPSTREAM_DOCK_SHELL_LENS_DP *
         liquidGlassTuning.contentDistortionScale
@@ -644,6 +648,17 @@ fun FloatingBottomBar(
     val isScrollInProgressLatest by rememberUpdatedState(isScrollInProgressProvider)
     val pagerFollowGate = remember { ExternalPagerIndicatorFollowGate() }
 
+    val interactiveHighlight =
+        if (com.android.purebilibili.core.ui.LocalComponentMotionEnabled.current) {
+            remember(animationScope) {
+                InteractiveHighlight(
+                    animationScope = animationScope,
+                )
+            }
+        } else {
+            null
+        }
+
     class DampedDragAnimationHolder {
         var instance: DampedDragAnimation? = null
     }
@@ -656,6 +671,7 @@ fun FloatingBottomBar(
         density,
         isLtr,
         dragTrackingMode,
+        interactiveHighlight,
     ) {
         DampedDragAnimation(
             animationScope = animationScope,
@@ -685,12 +701,20 @@ fun FloatingBottomBar(
                     rightInsetPx = dragHitTest.rightInsetPx,
                 )
             },
-            onDragStarted = {
+            onDragStarted = { point ->
+                val padding = with(density) { horizontalPaddingLatest.value.toPx() }
+                val slotStart = if (isLtr) {
+                    padding + targetValue * tabWidthPx
+                } else {
+                    totalWidthPx - padding - tabWidthPx - targetValue * tabWidthPx
+                }
+                interactiveHighlight?.start(Offset(slotStart + point.x, point.y))
                 onIndicatorDragStateChangedLatest.value?.invoke(true)
                 pagerFollowGate.ownedTargetIndex = null
                 pagerFollowGate.previousExternalPosition = null
             },
             onDragStopped = {
+                interactiveHighlight?.release()
                 val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, maxTabIndex)
                 // The pointer gesture already owns press/release. Only settle the value here so
                 // release is not launched twice and the indicator cannot visibly rebound twice.
@@ -712,6 +736,9 @@ fun FloatingBottomBar(
                 }
             },
             onDrag = { _, dragAmount ->
+                interactiveHighlight?.let { light ->
+                    light.updatePosition(light.currentPosition + dragAmount)
+                }
                 if (tabWidthPx > 0f) {
                     val nextPosition =
                         (targetValue + dragAmount.x / tabWidthPx * if (isLtr) 1f else -1f)
@@ -872,32 +899,12 @@ fun FloatingBottomBar(
         }
     }
 
-    val interactiveHighlight =
-        if (isLiquidGlassMode && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            remember(animationScope) {
-                InteractiveHighlight(
-                    animationScope = animationScope,
-                    position = { size, _ ->
-                        Offset(
-                            if (isLtr) {
-                                (visualIndicatorPositionProvider() + 0.5f) * tabWidthPx + panelOffset
-                            } else {
-                                size.width - (visualIndicatorPositionProvider() + 0.5f) * tabWidthPx + panelOffset
-                            },
-                            size.height / 2f
-                        )
-                    },
-                    radius = { size ->
-                        resolveDockInteractiveHighlightRadiusPx(
-                            shellMinDimensionPx = size.minDimension,
-                            tabWidthPx = tabWidthPx,
-                        )
-                    },
-                )
-            }
-        } else {
-            null
-        }
+    // Kyant button rubber band, driven by the indicator pointer (including vertical deltas).
+    // Releasing the shared light position spring also returns the complete dock to its anchor.
+    val dockDragTranslationY: () -> Float = {
+        val heightPx = with(density) { shellHeight.toPx() }.coerceAtLeast(1f)
+        heightPx * kotlin.math.tanh(0.05f * (interactiveHighlight?.offset?.y ?: 0f) / heightPx) * DOCK_SHELL_ELASTIC_GAIN
+    }
 
     val baseHighlight = if (isLiquidGlassMode) rememberBiliPaiGravityHighlight(extraDegrees = -45f) else null
     val pillHighlight = if (isLiquidGlassMode) rememberBiliPaiGravityHighlight(
@@ -986,7 +993,11 @@ fun FloatingBottomBar(
                                             dampedDragAnimation.pressProgress
                                         )
                                         scaleX = s
-                                        scaleY = s
+                                        val dragY = kotlin.math.abs(interactiveHighlight?.offset?.y ?: 0f)
+                                        val extraStretch = (4.dp.toPx() / size.height.coerceAtLeast(1f)) *
+                                            (dragY / width) * (size.height / width).coerceAtMost(1f) *
+                                            DOCK_SHELL_ELASTIC_GAIN
+                                        scaleY = s + extraStretch.coerceAtMost(DOCK_SHELL_MAX_EXTRA_STRETCH)
                                     },
                                     onDrawSurface = {
                                         drawRect(containerColor)
@@ -1012,11 +1023,18 @@ fun FloatingBottomBar(
                                     },
                                 )
                             }
-                            else -> Modifier.background(containerColor, pillShape)
+                            else -> Modifier
+                                .graphicsLayer {
+                                    val bloom = if (interactiveHighlight != null) dampedDragAnimation.pressProgress else 0f
+                                    val scale = 1f + pressBloomPx / size.width.coerceAtLeast(1f) * bloom
+                                    scaleX = scale
+                                    scaleY = scale
+                                }
+                                .background(containerColor, pillShape)
                         }
                     )
                     .then(
-                        if (isLiquidGlassMode && interactiveHighlight != null) {
+                        if (interactiveHighlight != null) {
                             interactiveHighlight.modifier
                         } else {
                             Modifier
@@ -1038,6 +1056,7 @@ fun FloatingBottomBar(
                     }
                     .graphicsLayer {
                         translationX = panelOffset
+                        translationY = dockDragTranslationY()
                         if (allowOverflow) {
                             clip = false
                         }
@@ -1078,6 +1097,7 @@ fun FloatingBottomBar(
                         .then(tabsBackdropSource?.modifier ?: Modifier)
                         .graphicsLayer {
                             translationX = panelOffset
+                            translationY = dockDragTranslationY()
                             if (allowOverflow) {
                                 clip = false
                             }
@@ -1139,6 +1159,7 @@ fun FloatingBottomBar(
                             } else {
                                 -indicatorOffsetPx + panelOffset
                             }
+                            translationY = dockDragTranslationY()
                             if (allowOverflow) {
                                 clip = false
                             }
@@ -1220,6 +1241,7 @@ fun FloatingBottomBar(
                             } else {
                                 -indicatorOffsetPx + panelOffset
                             }
+                            translationY = dockDragTranslationY()
                             if (allowOverflow) {
                                 clip = false
                             }
@@ -1288,11 +1310,11 @@ fun FloatingBottomBar(
                         } else {
                             -tabsContentStartPx - slotOffsetPx + panelOffset
                         }
+                        translationY = dockDragTranslationY()
                         if (allowOverflow) {
                             clip = false
                         }
                     }
-                    .then(interactiveHighlight?.gestureModifier ?: Modifier)
                     .then(
                         when {
                             // Legacy long-press callers also use immediate indicator dragging.

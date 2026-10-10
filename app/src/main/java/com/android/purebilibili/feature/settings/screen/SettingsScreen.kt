@@ -1225,6 +1225,7 @@ fun DonateDialog(onDismiss: () -> Unit) {
             decorFitsSystemWindows = false
         )
     ) {
+        com.android.purebilibili.core.ui.ModalWindowBlurBehindEffect()
         Box(
             modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.9f)),
             contentAlignment = Alignment.Center

@@ -94,7 +94,6 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
-import com.android.purebilibili.core.ui.components.AppTabRowIndicatorPresentation
 import com.android.purebilibili.core.ui.components.AppTextButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -2900,7 +2899,7 @@ fun LandscapeEndDrawer(
                     
                     if (hasSeason) {
                         AppThemeAdaptiveTabRow(
-indicatorPresentation = AppTabRowIndicatorPresentation.TONAL_PILL,
+                            role = com.android.purebilibili.core.ui.components.AppTabRowRole.SECONDARY,
                             options = listOf(
                                 AppSegmentOption(0, "推荐视频"),
                                 AppSegmentOption(1, "合集列表"),

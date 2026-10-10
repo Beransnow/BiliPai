@@ -37,6 +37,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.draw.clip
@@ -241,9 +244,8 @@ fun AppModalBottomSheet(
 ) {
     val uiStyle = LocalAppUiStyle.current
     val miuix = uiStyle == AppUiStyle.MIUIX
-    // Blur belongs to the popup window, independently of the theme's surface renderer.
-    // Preserve the existing opt-out for Miuix's non-glass presentation.
-    val blurBehind = backgroundBlurBehind && !isMiuixNonGlassEnabled()
+    // Window blur is independent of theme and the header's haze/glass preferences.
+    val blurBehind = backgroundBlurBehind
     val configuration = LocalConfiguration.current
     val hingeSafeRegions = LocalHingeSafeOverlayRegions.current.sheet
     val layoutSpec = remember(configuration.screenWidthDp, miuix) {
@@ -258,7 +260,7 @@ fun AppModalBottomSheet(
         var show by remember { mutableStateOf(true) }
         val latestDismiss by rememberUpdatedState(onDismissRequest)
         val body: @Composable () -> Unit = {
-            ModalWindowBlurBehindEffect(enabled = blurBehind)
+            val blurMotionModifier = rememberSheetBlurMotionModifier(blurBehind, trackPosition = !centered)
             // Consume back when the caller handles it inside the sheet (e.g. reply navigation).
             // Drag/outside dismissal remains available independently of this back policy.
             if (!dismissOnBackPress) {
@@ -267,7 +269,7 @@ fun AppModalBottomSheet(
                     onBackCompleted = {},
                 )
             }
-            Column(Modifier.fillMaxWidth().then(sheetSurfaceModifier), content = content)
+            Column(Modifier.fillMaxWidth().then(blurMotionModifier).then(sheetSurfaceModifier), content = content)
         }
         if (centered) {
             WindowDialog(
@@ -360,9 +362,9 @@ fun AppModalBottomSheet(
         dragHandle = dragHandle,
         contentWindowInsets = { windowInsets },
     ) {
-        ModalWindowBlurBehindEffect(enabled = blurBehind)
+        val blurMotionModifier = rememberSheetBlurMotionModifier(blurBehind)
         ModalSheetNavigationHost(dismissOnBackPress, onDismissRequest) {
-            Column(Modifier.fillMaxWidth().then(sheetSurfaceModifier), content = content)
+            Column(Modifier.fillMaxWidth().then(blurMotionModifier).then(sheetSurfaceModifier), content = content)
         }
     }
 }
@@ -412,4 +414,22 @@ fun AppBottomSheetDragHandle() {
                 .background(MaterialTheme.colorScheme.outlineVariant)
         )
     }
+}
+
+/** Follow the native sheet motion without a second animation or frame-rate recomposition. */
+@Composable
+private fun rememberSheetBlurMotionModifier(enabled: Boolean, trackPosition: Boolean = true): Modifier {
+    val view = LocalView.current
+    val coordinates = remember { arrayOfNulls<LayoutCoordinates>(1) }
+    ModalWindowBlurBehindEffect(enabled = enabled, progress = {
+        if (!trackPosition) 1f else {
+            val layout = coordinates[0]
+            if (layout == null || !layout.isAttached || layout.size.height == 0) 0f
+            else {
+                val top = layout.localToWindow(Offset.Zero).y
+                ((view.rootView.height - top) / layout.size.height.toFloat()).coerceIn(0f, 1f)
+            }
+        }
+    })
+    return Modifier.onGloballyPositioned { coordinates[0] = it }
 }

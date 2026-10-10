@@ -46,6 +46,7 @@ internal fun MiuixAppUpdateDialog(
         onDismissRequest = actions.onDismissRequest,
         maxWidth = 420.dp,
     ) {
+        com.android.purebilibili.core.ui.ModalWindowBlurBehindEffect()
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             MiuixUpdateHeader(state = state, onDismissRequest = actions.onDismissRequest)
             MiuixUpdateContent(state = state, actions = actions)

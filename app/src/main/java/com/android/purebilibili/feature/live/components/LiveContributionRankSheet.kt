@@ -102,6 +102,7 @@ fun LiveContributionRankSheet(
                 style = MaterialTheme.typography.bodySmall
             )
             AppThemeAdaptiveTabRow(
+                role = com.android.purebilibili.core.ui.components.AppTabRowRole.SECONDARY,
                 options = rankTypes.mapIndexed { index, type ->
                     AppSegmentOption(index, type.title)
                 },

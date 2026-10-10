@@ -52,6 +52,7 @@ fun DownloadQualityDialog(
             usePlatformDefaultWidth = dialogLayout.usePlatformDefaultWidth,
         ),
     ) {
+        com.android.purebilibili.core.ui.ModalWindowBlurBehindEffect()
         AppPopupSurface(
             type = AppPopupSurfaceType.DIALOG,
             modifier = Modifier.appContentDialogWidth(policy = dialogLayout),

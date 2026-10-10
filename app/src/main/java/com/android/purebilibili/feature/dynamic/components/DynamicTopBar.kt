@@ -193,6 +193,7 @@ fun DynamicTopBarWithTabs(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AppThemeAdaptiveTabRow(
+                role = com.android.purebilibili.core.ui.components.AppTabRowRole.PRIMARY,
                 options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
                 selectedValue = selectedTab,
                 onSelectionChange = onTabSelected,
@@ -237,6 +238,7 @@ fun DynamicTopBarWithTabs(
                                 Modifier.biliPaiFloatingDockShell(
                                     backdrop = requireNotNull(actionDockBackdrop),
                                     interactionLayerBlock = actionElasticState.layerBlock,
+                                    interactionState = actionElasticState,
                                     containerColor = dockColor,
                                     pressProgress = 0f,
                                     shape = dockShape,

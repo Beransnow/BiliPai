@@ -1627,11 +1627,13 @@ fun HomeHeader(
     val searchLiquidGlassEnabled = resolveHomeTopSearchLiquidGlassEnabled(
         homeSettings = homeSettings,
     )
+    // Local search/settings surfaces follow their own header/glass switches.
+    // Progressive header blur and bottom dock blur must not frost these controls.
     val searchChromeMaterialMode = resolveHomeTopChromeMaterialMode(
         isHeaderBlurEnabled = isHeaderBlurEnabled,
-        isBottomBarBlurEnabled = linkedBottomBarAppearance.blurEnabled,
+        isBottomBarBlurEnabled = false,
         isLiquidGlassEnabled = searchLiquidGlassEnabled,
-        isProgressiveTopBlurEnabled = progressiveTopBlurEnabled,
+        isProgressiveTopBlurEnabled = false,
     )
     //  读取当前模糊强度以确定背景透明度
     val blurIntensity = currentUnifiedBlurIntensity()
@@ -1828,6 +1830,7 @@ fun HomeHeader(
         Modifier.biliPaiFloatingDockShell(
             backdrop = topActionBackdrop,
             interactionLayerBlock = topActionElasticState.layerBlock,
+            interactionState = topActionElasticState,
             containerColor = AppSurfaceTokens.surfaceContainerHigh(),
             pressProgress = 0f,
             shape = edgeButtonShape,
@@ -1846,7 +1849,11 @@ fun HomeHeader(
             shape = edgeButtonShape,
             surfaceColor = resolveHomeTopEdgeControlContainerColor(
                 isLightMode = isLightMode,
-                renderMode = HomeTopChromeRenderMode.BLUR,
+                renderMode = if (appThemeConfig.liquidGlassEnabled || useTopControlBlur) {
+                    HomeTopChromeRenderMode.BLUR
+                } else {
+                    searchChromeRenderMode
+                },
             ),
             hazeState = hazeState,
             miuixBackdrop = topActionBackdrop,
@@ -2769,6 +2776,8 @@ fun HomeHeader(
                                     ),
                                 backdrop = miuixBackdrop,
                                 reuseEnabled = true,
+                                elasticFeedbackEnabled = true,
+                                elasticFeedbackStrength = com.android.purebilibili.core.ui.components.APP_SEARCH_ELASTIC_FEEDBACK_STRENGTH,
                                 liquidGlassEffectsEnabled =
                                     searchChromeMaterialMode == TopTabMaterialMode.LIQUID_GLASS,
                                 useNeutralLiquidContainer = true,

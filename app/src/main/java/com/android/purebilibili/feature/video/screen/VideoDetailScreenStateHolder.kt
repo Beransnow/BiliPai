@@ -4808,7 +4808,12 @@ internal fun VideoDetailScreenStateHolder(
                             if (!entryOwnsMiuixCardTransition) {
                                 0f
                             } else {
-                                if (nativeSnapshotTargetBoundsProvider != null) {
+                                if (miuixLandingState.sourceChromeSnapshot?.isNowPlayingBar == true) {
+                                    com.android.purebilibili.core.ui.transition
+                                        .resolveNowPlayingBarMediaLayoutHandoff(
+                                            miuixLandingState.progressProvider(),
+                                        )
+                                } else if (nativeSnapshotTargetBoundsProvider != null) {
                                     com.android.purebilibili.core.ui.transition
                                         .resolveVideoCardReturnSettleFromMorphDepth(
                                             miuixLandingState.progressProvider(),

@@ -838,9 +838,12 @@ fun AppNavigation(
             bvid: String,
             source: BiliPaiVideoSource,
             coverIdentity: String?,
+            useRecordedCardSource: Boolean = true,
         ) = VideoCardTransitionSession.create(
             bvid = bvid,
             source = source,
+            recordedSourceKey = CardPositionManager.lastClickedVideoSourceKey
+                .takeIf { useRecordedCardSource },
             cardBounds = CardPositionManager.lastClickedCardBounds,
             coverBounds = CardPositionManager.lastClickedCoverBounds,
             sourceCornerDp = CardPositionManager.lastClickedVideoSourceCornerDp,
@@ -1074,7 +1077,8 @@ fun AppNavigation(
         fun navigateToVideoRouteInNavigation3(
             route: String,
             sourceRoute: String?,
-            skipPortraitStoryResolution: Boolean = false
+            skipPortraitStoryResolution: Boolean = false,
+            useRecordedCardSource: Boolean = true,
         ) {
             val parsedKey = legacyRouteToBiliPaiNavKey(route)
             val videoKey = parsedKey as? BiliPaiNavKey.VideoDetail
@@ -1113,6 +1117,7 @@ fun AppNavigation(
                                     ).toLegacyRoute(),
                                     sourceRoute = sourceRoute,
                                     skipPortraitStoryResolution = true,
+                                    useRecordedCardSource = useRecordedCardSource,
                                 )
                             } else {
                                 navigateToPortraitStoryInNavigation3(
@@ -1128,7 +1133,8 @@ fun AppNavigation(
                             navigateToVideoRouteInNavigation3(
                                 route = route,
                                 sourceRoute = sourceRoute,
-                                skipPortraitStoryResolution = true
+                                skipPortraitStoryResolution = true,
+                                useRecordedCardSource = useRecordedCardSource,
                             )
                         }
                     }
@@ -1147,7 +1153,7 @@ fun AppNavigation(
             )
             val source = resolveBiliPaiVideoSource(
                 bvid = videoBvid,
-                explicitSourceRoute = sourceRoute ?: matchedVisibleCardRoute,
+                explicitSourceRoute = sourceRoute ?: matchedVisibleCardRoute.takeIf { useRecordedCardSource },
                 currentKey = navigation3BackStack.lastOrNull(),
                 previousSourceRoute = navigation3ReturnSession.lastVideoSourceRoute
             )
@@ -1155,6 +1161,7 @@ fun AppNavigation(
                 bvid = videoBvid,
                 source = source,
                 coverIdentity = videoKey?.coverUrl,
+                useRecordedCardSource = useRecordedCardSource,
             )
             navigation3ReturnSession = navigation3ReturnSession
                 .recordTransitionSession(
@@ -1202,6 +1209,7 @@ fun AppNavigation(
             directPortraitEntry: Boolean = false,
             sourceRoute: String? = null,
             skipPortraitStoryResolution: Boolean = false,
+            useRecordedCardSource: Boolean = true,
         ) {
             val morphDirectPortrait = resolveDirectPortraitDetailMorphEntry(
                 directPortraitStoryEntry = playerInteractionSettings.directPortraitStoryEntry,
@@ -1241,6 +1249,7 @@ fun AppNavigation(
                         directPortraitEntry = directPortraitEntry,
                         sourceRoute = sourceRoute,
                         skipPortraitStoryResolution = skipPortraitStoryResolution,
+                        useRecordedCardSource = useRecordedCardSource,
                     )
                 }
                 return
@@ -1294,6 +1303,7 @@ fun AppNavigation(
                                 directPortraitEntry = true,
                                 sourceRoute = sourceRoute,
                                 skipPortraitStoryResolution = true,
+                                useRecordedCardSource = useRecordedCardSource,
                             )
                         } else {
                             navigateToPortraitStoryInNavigation3(
@@ -1309,7 +1319,8 @@ fun AppNavigation(
                         navigateToVideoRouteInNavigation3(
                             route = videoRoute,
                             sourceRoute = sourceRoute,
-                            skipPortraitStoryResolution = true
+                            skipPortraitStoryResolution = true,
+                            useRecordedCardSource = useRecordedCardSource,
                         )
                     }
                 }
@@ -1318,7 +1329,8 @@ fun AppNavigation(
             navigateToVideoRouteInNavigation3(
                 route = videoRoute,
                 sourceRoute = sourceRoute,
-                skipPortraitStoryResolution = true
+                skipPortraitStoryResolution = true,
+                useRecordedCardSource = useRecordedCardSource,
             )
         }
         fun navigateToHomeVideoInNavigation3(request: HomeVideoClickRequest) {
@@ -1672,7 +1684,9 @@ fun AppNavigation(
 
         fun openBilibiliNativeTargetInNavigation3(target: BilibiliNavigationTarget): Boolean {
             when (target) {
-                is BilibiliNavigationTarget.Video -> navigateToVideoInNavigation3(target.videoId, 0L, "")
+                is BilibiliNavigationTarget.Video -> navigateToVideoInNavigation3(
+                    target.videoId, 0L, "", useRecordedCardSource = false,
+                )
                 is BilibiliNavigationTarget.Dynamic -> {
                     pushNavigation3Key(BiliPaiNavKey.DynamicDetail(target.dynamicId))
                 }
@@ -4807,6 +4821,7 @@ fun AppNavigation(
                 }
                 AudioNowPlayingBarPresenceHost(
                     visible = showAudioNowPlayingIndependent && !(immersiveBarEnabled && immersiveBarHidden),
+                    animatePresence = !driveBottomBarByProgress && !isReturningSameAudioVideo,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .zIndex(2f),

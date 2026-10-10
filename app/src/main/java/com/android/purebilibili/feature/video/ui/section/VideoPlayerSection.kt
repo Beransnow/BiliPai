@@ -78,7 +78,8 @@ import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppTextButton
-import com.android.purebilibili.core.ui.resolveAppTvIcon
+import androidx.compose.ui.res.painterResource
+import com.android.purebilibili.R
 import com.android.purebilibili.data.model.response.ViewPoint
 import com.android.purebilibili.feature.video.progress.PbpProgressData
 import com.android.purebilibili.feature.video.ui.overlay.HotDanmakuBar
@@ -1414,7 +1415,7 @@ private fun VideoPlayerSectionContent(
     var hasObservedOrientationChange by remember { mutableStateOf(false) }
     val gestureMotionSpec = remember { resolveVideoGestureMotionSpec() }
     val playerChromeProfile = rememberAppPlayerChromeProfile()
-    val manualStartPlayIcon = resolveAppTvIcon()
+    val manualStartPlayIcon = painterResource(R.drawable.ic_pili_tv_play)
     val gestureLevelOverlayStyle =
         rememberGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
     val forceCoverDuringReturnAnimation = shouldForceCoverDuringReturnAnimation(
@@ -4385,7 +4386,7 @@ private fun VideoPlayerSectionContent(
                             .padding(
                                 end = manualStartPlayButtonLayoutSpec.endPaddingDp.dp,
                                 bottom = if (manualStartPlayButtonLayoutSpec.anchor == ManualStartPlayButtonAnchor.BottomEnd) {
-                                    24.dp
+                                    10.dp
                                 } else {
                                     0.dp
                                 }
@@ -4396,10 +4397,10 @@ private fun VideoPlayerSectionContent(
                             ),
                     ) {
                         AppIcon(
-                            imageVector = manualStartPlayIcon,
+                            painter = manualStartPlayIcon,
                             contentDescription = "播放视频",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(60.dp),
                         )
                     }
                 }

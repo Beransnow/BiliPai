@@ -1,11 +1,11 @@
 // 文件路径: feature/video/ui/components/CommentInputDialog.kt
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.ui.components.appSearchElasticPress
 import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
-import com.android.purebilibili.core.ui.components.AppTabRowIndicatorPresentation
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
@@ -378,6 +378,7 @@ fun CommentInputDialog(
                 decorFitsSystemWindows = false   // 沉浸式：内容延伸到状态栏/导航栏下
             )
         ) {
+            com.android.purebilibili.core.ui.ModalWindowBlurBehindEffect()
             val density = LocalDensity.current
             val imeBottomPx = WindowInsets.ime.getBottom(density)
             val navigationBarsBottomPx = WindowInsets.navigationBars.getBottom(density)
@@ -795,7 +796,8 @@ fun CommentInputDialog(
                                     .padding(top = 8.dp)
                             ) {
                                 AppThemeAdaptiveTabRow(
-                                    indicatorPresentation = AppTabRowIndicatorPresentation.TONAL_PILL,
+                                    role = com.android.purebilibili.core.ui.components.AppTabRowRole.SECONDARY,
+                                    centerContent = false,
                                     options = emoteTabOptions,
                                     selectedValue = selectedEmoteTab,
                                     onSelectionChange = { currentTab = it },
@@ -997,7 +999,8 @@ private fun CommentMentionSearchPanel(
                 onValueChange = onQueryChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+                    .appSearchElasticPress(),
                 singleLine = true,
                 leadingIcon = {
                     AppIcon(

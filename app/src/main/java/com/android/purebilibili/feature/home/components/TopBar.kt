@@ -70,6 +70,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi // [Added]
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -979,7 +980,8 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
     drawShellLens: Boolean = true,
     shellLensIntensity: Float = 1f,
     isScrolling: Boolean = false,
-    materialScrollProgress: Float = if (isScrolling) 1f else 0f
+    materialScrollProgress: Float = if (isScrolling) 1f else 0f,
+    interactionState: com.android.purebilibili.core.ui.components.AppElasticPressState? = null,
 ): Modifier = composed {
     val isGlassEnabled = renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP ||
         renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
@@ -1013,6 +1015,8 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
             drawLens = drawShellLens,
             lensIntensity = shellLensIntensity,
             liquidGlassTuning = resolvedLiquidGlassTuning,
+            interactionState = interactionState,
+            interactionLayerBlock = interactionState?.layerBlock,
         )
     } else {
         this.bottomBarMatchedLiquidDockSurface(
@@ -2109,7 +2113,37 @@ private fun LightweightHomeTopTabs(
                 } // stable export + visible content with indicator-only motion
 
                 // 非玻璃 MD3 与皮肤顶栏使用单层短指示线，始终位于内容底部居中。
-                if (shouldUseMd3NativeUnderline) {
+                val useNativeTonalPill = shouldUseMd3NativeUnderline &&
+                    !skinPlainStyle && !forceMaterialUnderline &&
+                    LocalAppUiStyle.current == AppUiStyle.MATERIAL3
+                if (useNativeTonalPill) {
+                    val pillColor = MaterialTheme.colorScheme.secondaryContainer
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            // This is a sibling of the content container. Child zIndex
+                            // cannot lift glyphs above a later sibling's opaque fill.
+                            .zIndex(-1f)
+                            .drawBehind {
+                                val pillWidth = (itemWidth.toPx() - 8.dp.toPx()).coerceAtLeast(0f)
+                                val pillHeight = (size.height - 8.dp.toPx()).coerceAtLeast(0f)
+                                val left = resolveMd3TopTabIndicatorTranslationPx(
+                                    absolutePagerPosition = topTabIndicatorPositionState.value,
+                                    itemWidthPx = itemWidth.toPx(),
+                                    rowScrollOffsetPx = rowScrollOffsetPx,
+                                    indicatorWidthPx = pillWidth,
+                                    contentPaddingPx = topTabHorizontalPadding.toPx(),
+                                )
+                                drawRoundRect(
+                                    color = pillColor,
+                                    topLeft = androidx.compose.ui.geometry.Offset(left, 4.dp.toPx()),
+                                    size = androidx.compose.ui.geometry.Size(pillWidth, pillHeight),
+                                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(pillHeight / 2f),
+                                )
+                            },
+                    )
+                }
+                if (shouldUseMd3NativeUnderline && !useNativeTonalPill) {
                     LightweightTopTabMd3Underline(
                         positionState = topTabIndicatorPositionState,
                         density = density,

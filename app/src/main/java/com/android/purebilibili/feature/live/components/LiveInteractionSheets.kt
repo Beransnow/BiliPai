@@ -154,6 +154,8 @@ fun LiveEmoticonSheet(
                 if (packages.size > 1) {
                     val safeIndex = selectedPkgIndex.coerceIn(0, packages.lastIndex)
                     AppThemeAdaptiveTabRow(
+                        role = com.android.purebilibili.core.ui.components.AppTabRowRole.SECONDARY,
+                        centerContent = false,
                         options = packages.mapIndexed { index, pkg ->
                             AppSegmentOption(index, pkg.name)
                         },

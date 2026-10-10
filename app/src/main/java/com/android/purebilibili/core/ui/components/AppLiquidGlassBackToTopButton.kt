@@ -76,6 +76,9 @@ fun AppLiquidGlassBackToTopButton(
     val glassActive = LocalAppThemeConfig.current.liquidGlassEnabled && !isLowBlurBudgetForced()
     val localBackdrop = if (glassActive && backdrop == null) rememberLayerBackdrop() else null
     val effectiveBackdrop = backdrop ?: localBackdrop
+    val elasticState = rememberAppElasticPressState(visualSize = 48.dp)
+    val glassMotion = glassActive && effectiveBackdrop != null
+    val elasticEnabled = com.android.purebilibili.core.ui.LocalComponentMotionEnabled.current
     val dockColor = AppSurfaceTokens.surfaceContainerHigh()
 
     val persistedOffsetDp by remember(context) {
@@ -156,11 +159,13 @@ fun AppLiquidGlassBackToTopButton(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .appElasticPress(enabled = !isDragging)
+                    .appElasticPress(enabled = !isDragging, state = elasticState, transformInBackdrop = glassMotion)
                     .then(
                         if (glassActive && effectiveBackdrop != null) {
                             Modifier.biliPaiFloatingDockShell(
                                 backdrop = effectiveBackdrop,
+                                interactionLayerBlock = elasticState.layerBlock,
+                                interactionState = elasticState,
                                 containerColor = dockColor,
                                 pressProgress = if (isDragging) 0.15f else 0f,
                                 shape = CircleShape,
@@ -221,7 +226,7 @@ fun AppLiquidGlassBackToTopButton(
                     )
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(),
+                        indication = if (elasticEnabled) null else ripple(),
                         onClick = {
                             if (!isDragging && !dragJustFinished) {
                                 onClick()
@@ -231,6 +236,7 @@ fun AppLiquidGlassBackToTopButton(
                 contentAlignment = Alignment.Center,
             ) {
                 AppIcon(
+                    modifier = if (glassMotion) Modifier.graphicsLayer(elasticState.layerBlock) else Modifier,
                     imageVector = rememberAppChevronUpIcon(),
                     contentDescription = contentDescription,
                     tint = MaterialTheme.colorScheme.primary,

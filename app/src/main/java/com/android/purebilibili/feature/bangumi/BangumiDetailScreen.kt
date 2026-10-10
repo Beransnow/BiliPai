@@ -373,7 +373,6 @@ private fun TabletBangumiDetailContent(
                                 onClick = { onEpisodeClick(targetEpisode) },
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                                 modifier = Modifier.weight(1f).height(48.dp),
-                                shape = AppShapes.container(ContainerLevel.Chip),
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
                                     contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
@@ -413,7 +412,6 @@ private fun TabletBangumiDetailContent(
                             ),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f).height(48.dp),
-                            shape = AppShapes.container(ContainerLevel.Chip)
                         ) {
                             AppIcon(
                                 if (isFollowing) Icons.Outlined.Check else Icons.Outlined.Add,
@@ -432,7 +430,6 @@ private fun TabletBangumiDetailContent(
                                 onClick = { onReviewsClick(detail.mediaId, detail.title) },
                                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                                 modifier = Modifier.weight(1f).height(48.dp),
-                                shape = AppShapes.container(ContainerLevel.Chip)
                             ) {
                                 AppText("点评")
                             }
@@ -928,7 +925,6 @@ private fun MobileBangumiDetailContent(
                             onClick = { onEpisodeClick(targetEpisode) },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f).height(48.dp),
-                            shape = AppShapes.container(ContainerLevel.Chip),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
                                 contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
@@ -967,7 +963,6 @@ private fun MobileBangumiDetailContent(
                                 1.dp, 
                                 MaterialTheme.colorScheme.primary
                             ),
-                            shape = AppShapes.container(ContainerLevel.Chip),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f).height(48.dp)
                         ) {
@@ -989,7 +984,6 @@ private fun MobileBangumiDetailContent(
                                 containerColor = if (targetEpisode != null) MaterialTheme.colorScheme.surfaceVariant else resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
                                 contentColor = if (targetEpisode != null) MaterialTheme.colorScheme.onSurfaceVariant else resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                             ),
-                            shape = AppShapes.container(ContainerLevel.Chip),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f).height(48.dp)
                         ) {
@@ -1007,7 +1001,6 @@ private fun MobileBangumiDetailContent(
                             onClick = { onReviewsClick(detail.mediaId, detail.title) },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             modifier = Modifier.weight(1f).height(48.dp),
-                            shape = AppShapes.container(ContainerLevel.Chip)
                         ) {
                             AppText("点评")
                         }

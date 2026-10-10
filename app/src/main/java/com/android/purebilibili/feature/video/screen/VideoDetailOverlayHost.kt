@@ -366,6 +366,7 @@ internal fun VideoDetailPlaybackEndedDialog(
             usePlatformDefaultWidth = dialogLayout.usePlatformDefaultWidth,
         ),
     ) {
+        com.android.purebilibili.core.ui.ModalWindowBlurBehindEffect()
         AppSurface(
             modifier = Modifier.appContentDialogWidth(policy = dialogLayout),
             shape = AppShapes.container(ContainerLevel.Dialog),

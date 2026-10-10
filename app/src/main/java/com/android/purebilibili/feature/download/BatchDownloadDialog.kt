@@ -65,6 +65,7 @@ internal fun BatchDownloadDialog(
             usePlatformDefaultWidth = dialogLayout.usePlatformDefaultWidth,
         ),
     ) {
+        com.android.purebilibili.core.ui.ModalWindowBlurBehindEffect()
         BoxWithConstraints(
             modifier = Modifier.appContentDialogWidth(policy = dialogLayout, wrapHeight = false),
         ) {

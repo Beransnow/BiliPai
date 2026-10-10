@@ -186,6 +186,7 @@ fun ExternalPlaylistImportDialog(
             decorFitsSystemWindows = false,
         ),
     ) {
+        com.android.purebilibili.core.ui.ModalWindowBlurBehindEffect()
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.9f)

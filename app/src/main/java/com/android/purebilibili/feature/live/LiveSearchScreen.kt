@@ -36,6 +36,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import androidx.compose.material3.MaterialTheme
+import com.android.purebilibili.core.ui.components.appSearchElasticPress
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
@@ -281,7 +282,7 @@ fun LiveSearchScreen(
                                 userResults.clear()
                             }
                         },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f).appSearchElasticPress(),
                         singleLine = true,
                         placeholder = { AppText("搜索房间或主播") },
                         trailingIcon = {
@@ -329,6 +330,7 @@ fun LiveSearchScreen(
                         )
                     }
                     AppThemeAdaptiveTabRow(
+                        role = com.android.purebilibili.core.ui.components.AppTabRowRole.PRIMARY,
                         options = searchTabs,
                         selectedValue = selectedTab,
                         onSelectionChange = { selectedTab = it },

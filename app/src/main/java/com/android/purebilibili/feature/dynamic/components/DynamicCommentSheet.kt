@@ -778,6 +778,7 @@ fun DynamicInlineCommentHeader(
     sortMode: CommentSortMode,
     onSortModeChange: (CommentSortMode) -> Unit,
     miuixBackdrop: MiuixBackdrop? = null,
+    onShowReactions: (() -> Unit)? = null,
 ) {
     val sortModes = remember { listOf(CommentSortMode.HOT, CommentSortMode.NEWEST) }
     val sortModeLabels = remember(sortModes) { sortModes.map { it.label } }
@@ -787,11 +788,23 @@ fun DynamicInlineCommentHeader(
             .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Medium),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AppText(
-            text = resolveDynamicCommentCountLabel(totalCount),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-        )
+        Column {
+            AppText(
+                text = resolveDynamicCommentCountLabel(totalCount),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            if (onShowReactions != null) {
+                AppText(
+                    text = "赞和转发 ›",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .clickable(onClick = onShowReactions)
+                        .padding(vertical = 6.dp),
+                )
+            }
+        }
         Box(
             modifier = Modifier
                 .weight(1f)

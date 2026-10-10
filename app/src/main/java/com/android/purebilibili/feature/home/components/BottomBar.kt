@@ -69,6 +69,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.WatchLater
 import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.appSearchElasticPress
 import com.android.purebilibili.core.ui.components.appElasticPress
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -983,6 +984,7 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
     isScrolling: Boolean = false,
     materialScrollProgress: Float = 0f,
     materialMotionProgress: Float = 0f,
+    interactionState: com.android.purebilibili.core.ui.components.AppElasticPressState? = null,
     materialPressProgress: Float = 0f,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f)
 ): Modifier = composed {
@@ -1104,7 +1106,7 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                                 }
                             )
                         },
-                        layerBlock = if (renderGlassEffects) {
+                        layerBlock = interactionState?.layerBlock ?: if (renderGlassEffects) {
                             {
                                 val width = size.width.coerceAtLeast(1f)
                                 val s = lerp(1f, 1f + AppSpacingTokens.Large.toPx() / width, materialPressProgress)
@@ -1128,6 +1130,7 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                             } else {
                                 drawRect(containerColor.copy(alpha = 0.65f))
                             }
+                            interactionState?.drawHighlight(this)
                         }
                     )
                     .run {
@@ -4690,7 +4693,7 @@ internal fun BiliPaiBottomBarSearchVisualContent(
         Box(
             modifier = Modifier
                 .size(AppChromeSizeTokens.MinimumTouchTarget)
-                .appElasticPress(enabled = expanded && interactive)
+                .appSearchElasticPress(enabled = expanded && interactive)
                 .then(
                     if (expanded && interactive) {
                         Modifier.clickable(

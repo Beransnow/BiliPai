@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.audio.screen
 
+import com.android.purebilibili.core.ui.components.appSearchElasticPress
 import top.yukonga.miuix.kmp.window.WindowListPopup
 import top.yukonga.miuix.kmp.basic.ListPopupColumn
 import top.yukonga.miuix.kmp.basic.ListPopupDefaults
@@ -1634,7 +1635,7 @@ internal fun MusicPlayerContent(
                     label = { AppText("歌名") },
                     singleLine = true,
                     focusRequester = searchFocusRequester,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).appSearchElasticPress()
                 )
                 AppTextButton(onClick = { onLyricsSearch(lyricSearchText) }) {
                     AppText("搜索")
@@ -3809,6 +3810,8 @@ private fun GlassIconButton(
             .biliPaiFloatingDockShell(
                 backdrop = miuixBackdrop,
                 interactionLayerBlock = elasticState.layerBlock.takeIf { useLiquidGlass },
+                interactionState = elasticState.takeIf { useLiquidGlass },
+                tint = glassTintColor,
                 containerColor = resolveMusicGlassContainerColor(glassTintColor, isDarkEnvironment),
                 pressProgress = 0f,
                 shape = CircleShape,
@@ -3867,6 +3870,7 @@ private fun GlassTextButton(
             .biliPaiFloatingDockShell(
                 backdrop = miuixBackdrop,
                 interactionLayerBlock = elasticState.layerBlock.takeIf { useLiquidGlass },
+                interactionState = elasticState.takeIf { useLiquidGlass },
                 containerColor = containerColor,
                 pressProgress = 0f,
                 shape = shape,

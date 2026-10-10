@@ -2463,6 +2463,7 @@ private fun LivePrimaryInteractionPanel(
                 )
         ) {
             AppThemeAdaptiveTabRow(
+                role = com.android.purebilibili.core.ui.components.AppTabRowRole.SECONDARY,
                 options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
                 selectedValue = pagerState.currentPage,
                 onSelectionChange = { index ->

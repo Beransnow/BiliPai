@@ -960,6 +960,8 @@ private fun LiveAreaHomeChipRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AppThemeAdaptiveTabRow(
+            role = com.android.purebilibili.core.ui.components.AppTabRowRole.SECONDARY,
+            centerContent = false,
             options = categoryOptions,
             selectedValue = selectedCategory,
             onSelectionChange = onAreaSelected,
@@ -1029,6 +1031,8 @@ private fun LiveSortTagChipRow(
         72.dp
     }
     AppThemeAdaptiveTabRow(
+        role = com.android.purebilibili.core.ui.components.AppTabRowRole.FILTER,
+        centerContent = false,
         options = options,
         selectedValue = selectedValue,
         onSelectionChange = { value ->

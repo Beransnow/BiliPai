@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.ui.components.appSearchElasticPress
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -353,7 +354,7 @@ private fun PagesSelectorFilterBar(
             value = query,
             onValueChange = onQueryChange,
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().appSearchElasticPress(),
             placeholder = {
                 AppText(text = "搜索 P号 / 标题")
             },

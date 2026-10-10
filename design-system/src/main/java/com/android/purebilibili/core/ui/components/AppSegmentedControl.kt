@@ -375,6 +375,7 @@ fun <T> AppNativeTabRow(
     selectedValue: T,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    centerContent: Boolean = false,
     scrollable: Boolean = false,
     forceEqualWidth: Boolean = false,
     minTabWidth: Dp = 72.dp,
@@ -471,6 +472,7 @@ fun <T> AppNativeTabRow(
             selectedValue = selectedValue,
             enabled = enabled,
             scrollable = effectiveScrollable,
+            centerContent = centerContent,
             // MD3 underlines follow PiliPlus: each tab is as wide as its label.
             // Miuix keeps the touch/content floor above.
             minTabWidth = resolvePiliPlusScrollableUnderlineMinWidth(),
@@ -502,6 +504,7 @@ fun <T> AppNativeTabRow(
             },
             indicatorPositionProvider = indicatorPositionProvider,
             equalizeScrollableItemWidths = equalizeMiuixNonGlassItems,
+            centerContent = centerContent,
             contentSizedNonGlassItems = useContentSizedMiuixItems,
             contentSizedNonGlassMaxItemWidth = contentSizedMiuixNonGlassMaxItemWidth,
             drawNonGlassTrack = drawMiuixNonGlassTrack,

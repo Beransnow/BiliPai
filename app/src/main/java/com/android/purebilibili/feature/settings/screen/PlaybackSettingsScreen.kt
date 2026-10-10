@@ -139,7 +139,7 @@ fun PlaybackSettingsContent(
             widthSizeClass = windowSizeClass.widthSizeClass
         )
     }
-    LaunchedEffect(focusRequest?.token) {
+    LaunchedEffect(focusRequest?.token, page) {
         val request = focusRequest ?: return@LaunchedEffect
         val playbackFocusId = when (request.target) {
             SettingsSearchTarget.PLAYBACK -> request.focusId
@@ -148,18 +148,9 @@ fun PlaybackSettingsContent(
                 ?.focusId
         } ?: return@LaunchedEffect
         val keys = when (page) {
-            PlaybackSettingsPage.PLAYBACK -> listOf(
-                SettingsSearchFocusIds.PLAYBACK_DECODER,
-                SettingsSearchFocusIds.PLAYBACK_SPEED,
-                SettingsSearchFocusIds.PLAYBACK_MINI_PLAYER,
-                SettingsSearchFocusIds.PLAYBACK_FULLSCREEN,
-                SettingsSearchFocusIds.PLAYBACK_DEBUG,
-                SettingsSearchFocusIds.PLAYBACK_NETWORK,
-                SettingsSearchFocusIds.PLAYBACK_DATA_SAVER,
-                SettingsSearchFocusIds.PLAYBACK_INTERACTION,
-            )
+            PlaybackSettingsPage.PLAYBACK -> playbackSettingsSectionKeys
             PlaybackSettingsPage.FULLSCREEN -> listOf(SettingsSearchFocusIds.PLAYBACK_FULLSCREEN)
-            PlaybackSettingsPage.COMMENTS -> listOf(SettingsSearchFocusIds.PLAYBACK_INTERACTION)
+            PlaybackSettingsPage.COMMENTS -> listOf(SettingsSearchFocusIds.PLAYBACK_COMMENTS)
             PlaybackSettingsPage.DECODER -> listOf(SettingsSearchFocusIds.PLAYBACK_DECODER)
             PlaybackSettingsPage.DIAGNOSTICS -> listOf(SettingsSearchFocusIds.PLAYBACK_DEBUG)
         }.flatMap { listOf(it + "_title", it) }
@@ -1247,16 +1238,29 @@ SettingsItemAnchor("playback.data_saver_mode") {
             }
             }
 
-            if (page == PlaybackSettingsPage.PLAYBACK || page == PlaybackSettingsPage.COMMENTS) {
+            if (page == PlaybackSettingsPage.PLAYBACK) {
                 item(key = SettingsSearchFocusIds.PLAYBACK_INTERACTION + "_title") {
-                    AppPreferenceSectionTitle(if (page == PlaybackSettingsPage.PLAYBACK) "字幕与连播" else "评论与内容")
+                    AppPreferenceSectionTitle("字幕与连播")
                 }
                 item(key = SettingsSearchFocusIds.PLAYBACK_INTERACTION) {
                     PlaybackInteractionSettingsSection(
                         context = context,
                         state = state,
                         viewModel = viewModel,
-                        playbackControls = page == PlaybackSettingsPage.PLAYBACK,
+                        playbackControls = true,
+                    )
+                }
+            }
+            if (page == PlaybackSettingsPage.PLAYBACK || page == PlaybackSettingsPage.COMMENTS) {
+                item(key = SettingsSearchFocusIds.PLAYBACK_COMMENTS + "_title") {
+                    AppPreferenceSectionTitle("互动与评论")
+                }
+                item(key = SettingsSearchFocusIds.PLAYBACK_COMMENTS) {
+                    PlaybackInteractionSettingsSection(
+                        context = context,
+                        state = state,
+                        viewModel = viewModel,
+                        playbackControls = false,
                     )
                 }
             }
