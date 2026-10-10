@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.appElasticPress
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
@@ -354,7 +355,8 @@ private fun FloatingLiquidBottomInputBar(
             // 使用满强度 64dp 几何则会让上下 refraction 在短胶囊中线相撞。
             BottomBarMatchedReusableLiquidDock(
                 shape = shellShape,
-                modifier = if (showActionButtons) {
+                // Wrap the whole shell, not just its clickable content.
+                modifier = (if (showActionButtons) {
                     Modifier
                         .weight(0.9f)
                         .height(44.dp)
@@ -362,7 +364,7 @@ private fun FloatingLiquidBottomInputBar(
                     Modifier
                         .fillMaxWidth()
                         .height(44.dp)
-                },
+                }).appElasticPress(),
                 backdrop = backdrop,
                 reuseEnabled = true,
                 drawShellLens = true,
@@ -398,7 +400,8 @@ private fun FloatingLiquidBottomInputBar(
                     shape = shellShape,
                     modifier = Modifier
                         .weight(1.1f)
-                        .height(44.dp),
+                        .height(44.dp)
+                        .appElasticPress(),
                     backdrop = backdrop,
                     reuseEnabled = true,
                     drawShellLens = true,
@@ -412,6 +415,7 @@ private fun FloatingLiquidBottomInputBar(
                         itemSize = 32.dp,
                         iconSize = 19.dp,
                         spreadItems = true,
+                        elasticFeedbackEnabled = false,
                         favoriteIcon = rememberAppBookmarkIcon(),
                         coinIcon = rememberAppCoinIcon(),
                         likeIcon = rememberAppLikeIcon(),
@@ -462,6 +466,7 @@ private fun BottomInputBarContentRow(
             modifier = Modifier
                 .weight(1f)
                 .height(48.dp)
+                .appElasticPress()
                 .clip(AppShapes.container(ContainerLevel.Card))
                 .background(inputContainerColor)
                 .clickable(role = Role.Button) { onCommentClick() }
@@ -517,6 +522,7 @@ private fun BottomInputBarActionButtons(
     iconSize: Dp = 24.dp,
     itemSpacing: Dp = 4.dp,
     spreadItems: Boolean = false,
+    elasticFeedbackEnabled: Boolean = true,
     favoriteIcon: ImageVector,
     coinIcon: ImageVector,
     likeIcon: ImageVector,
@@ -546,6 +552,7 @@ private fun BottomInputBarActionButtons(
             tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             onClick = onLikeClick,
             itemSize = itemSize,
+            elasticFeedbackEnabled = elasticFeedbackEnabled,
             iconSize = iconSize,
             showLabel = false
         )
@@ -555,6 +562,7 @@ private fun BottomInputBarActionButtons(
             tint = if (isCoined) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             onClick = onCoinClick,
             itemSize = itemSize,
+            elasticFeedbackEnabled = elasticFeedbackEnabled,
             iconSize = iconSize,
             showLabel = false
         )
@@ -565,6 +573,7 @@ private fun BottomInputBarActionButtons(
             onClick = onFavoriteClick,
             onLongClick = onFavoriteLongClick,
             itemSize = itemSize,
+            elasticFeedbackEnabled = elasticFeedbackEnabled,
             iconSize = iconSize,
             showLabel = false
         )
@@ -574,6 +583,7 @@ private fun BottomInputBarActionButtons(
             tint = MaterialTheme.colorScheme.onSurface,
             onClick = onShareClick,
             itemSize = itemSize,
+            elasticFeedbackEnabled = elasticFeedbackEnabled,
             iconSize = iconSize,
             showLabel = false
         )
@@ -590,6 +600,7 @@ private fun IconActionButton(
     itemSize: Dp,
     iconSize: Dp,
     showLabel: Boolean = false,
+    elasticFeedbackEnabled: Boolean = true,
     onLongClick: (() -> Unit)? = null,
 ) {
     Column(
@@ -597,6 +608,10 @@ private fun IconActionButton(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
             .sizeIn(minWidth = itemSize, minHeight = itemSize)
+            .appElasticPress(
+                enabled = elasticFeedbackEnabled,
+                dragEnabled = onLongClick == null,
+            )
             .then(
                 if (onLongClick != null) {
                     Modifier.combinedClickable(

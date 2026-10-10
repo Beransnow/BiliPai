@@ -156,6 +156,7 @@ fun AppLiquidGlassBackToTopButton(
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .appElasticPress(enabled = !isDragging)
                     .then(
                         if (glassActive && effectiveBackdrop != null) {
                             Modifier.biliPaiFloatingDockShell(

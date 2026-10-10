@@ -6,7 +6,6 @@ import coil3.request.crossfade
 import com.android.purebilibili.core.ui.components.FeedVerticalStaggeredGrid
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 import com.android.purebilibili.core.ui.components.AppTextField
-import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.navigation.animatePagerSelection
 
 import com.android.purebilibili.core.ui.AppAlertDialog
@@ -37,7 +36,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import com.android.purebilibili.core.ui.rememberCompatibleStaggeredGridState
-import androidx.compose.foundation.pager.HorizontalPager
+import com.android.purebilibili.core.ui.components.AppHorizontalPager as HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -877,13 +876,9 @@ fun DynamicScreen(
                             ) {
                             HorizontalPager(
                                 state = pagerState,
-                                userScrollEnabled = false,
+                                userScrollEnabled = true,
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalPriorityHorizontalPagerSwipe(
-                                        state = pagerState,
-                                        enabled = true,
-                                    ),
+                                    .fillMaxSize(),
                                 key = { page -> resolveDynamicPagerTabKey(visibleTabs, page) }
                             ) { page ->
                                 val tab = visibleTabs.getOrNull(page) ?: return@HorizontalPager
@@ -1072,13 +1067,9 @@ fun DynamicScreen(
                         ) {
                         HorizontalPager(
                             state = pagerState,
-                            userScrollEnabled = false,
+                            userScrollEnabled = true,
                             modifier = Modifier
-                                .fillMaxSize()
-                                .verticalPriorityHorizontalPagerSwipe(
-                                    state = pagerState,
-                                    enabled = true,
-                                ),
+                                .fillMaxSize(),
                             key = { page -> resolveDynamicPagerTabKey(visibleTabs, page) }
                         ) { page ->
                             val tab = visibleTabs.getOrNull(page) ?: return@HorizontalPager

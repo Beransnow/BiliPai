@@ -30,6 +30,10 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppWindowAction
 import com.android.purebilibili.core.ui.components.AppWindowActionMenu
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.android.purebilibili.core.ui.components.LocalElasticPressEnabled
+import com.android.purebilibili.core.ui.components.appElasticPress
+import com.android.purebilibili.core.ui.components.rememberAppElasticPressState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -211,6 +215,7 @@ fun DynamicTopBarWithTabs(
                 null
             }
             val actionDockBackdrop = dockBackdrop ?: localActionDockBackdrop
+            val actionElasticState = rememberAppElasticPressState()
             Box {
                 if (liquidGlassEnabled && dockBackdrop == null && localActionDockBackdrop != null) {
                     Box(
@@ -223,10 +228,15 @@ fun DynamicTopBarWithTabs(
                 }
                 Row(
                     modifier = Modifier
+                        .appElasticPress(
+                            state = actionElasticState,
+                            transformInBackdrop = liquidGlassEnabled,
+                        )
                         .then(
                             if (liquidGlassEnabled) {
                                 Modifier.biliPaiFloatingDockShell(
                                     backdrop = requireNotNull(actionDockBackdrop),
+                                    interactionLayerBlock = actionElasticState.layerBlock,
                                     containerColor = dockColor,
                                     pressProgress = 0f,
                                     shape = dockShape,
@@ -239,107 +249,110 @@ fun DynamicTopBarWithTabs(
                         .clip(dockShape),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    AnimatedVisibility(
-                        visible = !actionDockCollapsed,
-                        enter = expandHorizontally(
-                            expandFrom = Alignment.End,
-                            animationSpec = AppMotionTokens.standardSpec(),
-                        ) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
-                        exit = shrinkHorizontally(
-                            shrinkTowards = Alignment.End,
-                            animationSpec = AppMotionTokens.standardSpec(),
-                        ) + fadeOut(animationSpec = AppMotionTokens.standardSpec()),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            AppWindowActionMenu(
-                                groups = listOf(
-                                    DynamicDisplayMode.entries.map { mode ->
-                                        AppWindowAction(
-                                            label = resolveDynamicDisplayModeLabel(mode),
-                                            selected = displayMode == mode,
-                                            onClick = { onDisplayModeChange(mode) },
-                                        )
-                                    },
-                                ),
-                            ) {
-                                AppIcon(
-                                    imageVector = if (displayMode.isHorizontalUserList())
-                                        rememberAppGridLayoutIcon() else rememberAppListLayoutIcon(),
-                                    contentDescription = "关注列表位置",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                    modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
-                                )
-                            }
-
-                            // 发布动态入口（对齐 BiliPai AppBar actions 的发布按钮）。
-                            if (onPublishClick != null) {
-                                val publishInteractionSource = remember { MutableInteractionSource() }
-                                val publishPressed by publishInteractionSource.collectIsPressedAsState()
-                                val publishIconPaths = publishSkinDecoration?.iconPaths
-                                AppIconButton(
-                                    onClick = onPublishClick,
-                                    interactionSource = publishInteractionSource,
-                                ) {
-                                    if (publishIconPaths != null) {
-                                        PageAwareAsyncImage(
-                                            model = File(publishIconPaths.pathFor(publishPressed)),
-                                            contentDescription = "发布动态",
-                                            contentScale = ContentScale.Fit,
-                                            modifier = Modifier.size(AppSpacingTokens.DoubleExtraLarge),
-                                        )
-                                    } else {
-                                        Box(
-                                            contentAlignment = Alignment.Center,
-                                            modifier = Modifier
-                                                .size(AppSpacingTokens.DoubleExtraLarge)
-                                                .then(
-                                                    if (publishSkinDecoration?.hasShade == true) {
-                                                        Modifier.background(
-                                                            brush = Brush.verticalGradient(
-                                                                listOf(
-                                                                    publishSkinDecoration.shadeTop,
-                                                                    publishSkinDecoration.shadeBottom,
-                                                                )
-                                                            ),
-                                                            shape = CircleShape,
-                                                        )
-                                                    } else {
-                                                        Modifier
-                                                    }
-                                                ),
-                                        ) {
-                                            AppIcon(
-                                                imageVector = Icons.Outlined.Edit,
-                                                contentDescription = "发布动态",
-                                                tint = publishSkinDecoration?.iconTint
-                                                    ?.takeUnless { it == Color.Unspecified }
-                                                    ?: MaterialTheme.colorScheme.onSurface,
-                                                modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
+                    // The capsule owns deformation; child click/menu targets retain their gestures.
+                    CompositionLocalProvider(LocalElasticPressEnabled provides false) {
+                        AnimatedVisibility(
+                            visible = !actionDockCollapsed,
+                            enter = expandHorizontally(
+                                expandFrom = Alignment.End,
+                                animationSpec = AppMotionTokens.standardSpec(),
+                            ) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
+                            exit = shrinkHorizontally(
+                                shrinkTowards = Alignment.End,
+                                animationSpec = AppMotionTokens.standardSpec(),
+                            ) + fadeOut(animationSpec = AppMotionTokens.standardSpec()),
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                AppWindowActionMenu(
+                                    groups = listOf(
+                                        DynamicDisplayMode.entries.map { mode ->
+                                            AppWindowAction(
+                                                label = resolveDynamicDisplayModeLabel(mode),
+                                                selected = displayMode == mode,
+                                                onClick = { onDisplayModeChange(mode) },
                                             )
+                                        },
+                                    ),
+                                ) {
+                                    AppIcon(
+                                        imageVector = if (displayMode.isHorizontalUserList())
+                                            rememberAppGridLayoutIcon() else rememberAppListLayoutIcon(),
+                                        contentDescription = "关注列表位置",
+                                        tint = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
+                                    )
+                                }
+
+                                // 发布动态入口（对齐 BiliPai AppBar actions 的发布按钮）。
+                                if (onPublishClick != null) {
+                                    val publishInteractionSource = remember { MutableInteractionSource() }
+                                    val publishPressed by publishInteractionSource.collectIsPressedAsState()
+                                    val publishIconPaths = publishSkinDecoration?.iconPaths
+                                    AppIconButton(
+                                        onClick = onPublishClick,
+                                        interactionSource = publishInteractionSource,
+                                    ) {
+                                        if (publishIconPaths != null) {
+                                            PageAwareAsyncImage(
+                                                model = File(publishIconPaths.pathFor(publishPressed)),
+                                                contentDescription = "发布动态",
+                                                contentScale = ContentScale.Fit,
+                                                modifier = Modifier.size(AppSpacingTokens.DoubleExtraLarge),
+                                            )
+                                        } else {
+                                            Box(
+                                                contentAlignment = Alignment.Center,
+                                                modifier = Modifier
+                                                    .size(AppSpacingTokens.DoubleExtraLarge)
+                                                    .then(
+                                                        if (publishSkinDecoration?.hasShade == true) {
+                                                            Modifier.background(
+                                                                brush = Brush.verticalGradient(
+                                                                    listOf(
+                                                                        publishSkinDecoration.shadeTop,
+                                                                        publishSkinDecoration.shadeBottom,
+                                                                    )
+                                                                ),
+                                                                shape = CircleShape,
+                                                            )
+                                                        } else {
+                                                            Modifier
+                                                        }
+                                                    ),
+                                            ) {
+                                                AppIcon(
+                                                    imageVector = Icons.Outlined.Edit,
+                                                    contentDescription = "发布动态",
+                                                    tint = publishSkinDecoration?.iconTint
+                                                        ?.takeUnless { it == Color.Unspecified }
+                                                        ?: MaterialTheme.colorScheme.onSurface,
+                                                    modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    AppIconButton(
-                        onClick = { onActionDockCollapsedChange(!actionDockCollapsed) },
-                    ) {
-                        AppIcon(
-                            imageVector = if (actionDockCollapsed) {
-                                rememberAppChevronDownIcon()
-                            } else {
-                                rememberAppChevronUpIcon()
-                            },
-                            contentDescription = if (actionDockCollapsed) {
-                                "展开顶部操作"
-                            } else {
-                                "折叠顶部操作"
-                            },
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro),
-                        )
+                        AppIconButton(
+                            onClick = { onActionDockCollapsedChange(!actionDockCollapsed) },
+                        ) {
+                            AppIcon(
+                                imageVector = if (actionDockCollapsed) {
+                                    rememberAppChevronDownIcon()
+                                } else {
+                                    rememberAppChevronUpIcon()
+                                },
+                                contentDescription = if (actionDockCollapsed) {
+                                    "展开顶部操作"
+                                } else {
+                                    "折叠顶部操作"
+                                },
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro),
+                            )
+                        }
                     }
                 }
             }

@@ -159,6 +159,7 @@ internal fun Modifier.biliPaiFloatingDockShell(
     drawLens: Boolean = true,
     lensIntensity: Float = 1f,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
+    interactionLayerBlock: (GraphicsLayerScope.() -> Unit)? = null,
 ): Modifier {
     val isDark = isSystemInDarkTheme()
     val density = LocalDensity.current
@@ -238,7 +239,7 @@ internal fun Modifier.biliPaiFloatingDockShell(
                 // Inline capsules (search/input) disable the shell lens and its rim highlight
                 // together; keeping the highlight alone leaves a one-pixel "shrimp line".
                 highlight = highlightBlock,
-                layerBlock = layerBlock,
+                layerBlock = interactionLayerBlock ?: layerBlock,
                 onDrawSurface = onDrawSurface,
             )
     }

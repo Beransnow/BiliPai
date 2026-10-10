@@ -1077,7 +1077,8 @@ private fun LightweightHomeTopTabs(
     isTransitionRunning: Boolean = false,
     showPartitionAction: Boolean = true,
     isViewportSyncEnabled: Boolean = true,
-    forceMaterialUnderline: Boolean = false
+    forceMaterialUnderline: Boolean = false,
+    dockHorizontalPadding: Dp = AppSpacingTokens.ExtraSmall,
 ) {
     val chromePolicy = rememberAppTopChromePolicy()
     val resolvedLiquidGlassTuning = remember(liquidGlassStyle, liquidGlassTuning) {
@@ -1295,7 +1296,47 @@ private fun LightweightHomeTopTabs(
                 containerWidth = effectiveMaxDockWidth.dp,
                 itemCount = categories.size,
                 labelMode = normalizedLabelMode,
+                shellHeight = floatingDockHeight,
             )
+            val floatingLabelFontSize = resolveFloatingDockLabelFontSize(
+                showIcon = showIcon,
+                showText = showText,
+                fontScale = density.fontScale,
+            )
+            val minimumSlotWidth = com.android.purebilibili.core.ui.components.rememberMeasuredTabMinWidth(
+                requestedMinWidth = maxOf(
+                    (floatingDockHeight - AppSpacingTokens.ExtraSmall * 2).coerceAtLeast(0.dp),
+                    if (showIcon) resolveTopTabIconSizeDp(if (showText) 0 else 1).dp +
+                        AppSpacingTokens.Small * 2 else AppChromeSizeTokens.MinimumTouchTarget,
+                ),
+                labels = if (showText) categories else emptyList(),
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = floatingLabelFontSize,
+                    fontWeight = FontWeight.Bold,
+                ),
+            )
+            val dockContentPadding = dockHorizontalPadding * 2
+            val minimumContentWidth = minimumSlotWidth * categories.size + dockContentPadding
+            val needsDockScroll = minimumContentWidth > effectiveMaxDockWidth.dp
+            val visibleSlotCount = kotlin.math.floor(
+                ((effectiveMaxDockWidth.dp - dockContentPadding) / minimumSlotWidth).toDouble(),
+            ).toInt().coerceIn(1, categories.size.coerceAtLeast(1))
+            val scrollingSlotWidth = ((effectiveMaxDockWidth.dp - dockContentPadding) /
+                visibleSlotCount).coerceAtLeast(minimumSlotWidth)
+            val fittedDockWidth = maxOf(floatingDockWidth, minimumContentWidth)
+                .coerceAtMost(effectiveMaxDockWidth.dp)
+            val dockScrollState = androidx.compose.foundation.rememberScrollState()
+            if (needsDockScroll) {
+                com.android.purebilibili.core.ui.components.KeepScrollableTabSelectionVisible(
+                    scrollState = dockScrollState,
+                    selectedIndex = selectedIndex,
+                    itemWidthPx = with(density) { scrollingSlotWidth.toPx() },
+                    contentPaddingPx = with(density) { dockHorizontalPadding.toPx() },
+                    focusPosition = currentPositionProvider,
+                    continuousFollow = pagerScrollingProvider,
+                    centerSelection = false,
+                )
+            }
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1315,12 +1356,11 @@ private fun LightweightHomeTopTabs(
                     showIcon = showIcon,
                     showText = showText,
                     iconFamily = topTabIconFamily,
-                    itemWidth = null,
-                    labelFontSize = resolveFloatingDockLabelFontSize(
-                        showIcon = showIcon,
-                        showText = showText,
-                        fontScale = density.fontScale,
-                    ),
+                    itemWidth = scrollingSlotWidth.takeIf { needsDockScroll },
+                    dockHeight = floatingDockHeight,
+                    horizontalPadding = dockHorizontalPadding,
+                    scrollState = dockScrollState.takeIf { needsDockScroll },
+                    labelFontSize = floatingLabelFontSize,
                     liquidGlassEffectsEnabled = isLiquidGlassEnabled,
                     miuixBackdrop = miuixBackdrop,
                     liquidGlassPreset = liquidGlassPreset,
@@ -1328,7 +1368,7 @@ private fun LightweightHomeTopTabs(
                     indicatorPositionProvider = currentPositionProvider,
                     isScrollInProgressProvider = pagerScrollingProvider,
                     modifier = Modifier
-                        .width(floatingDockWidth)
+                        .width(if (needsDockScroll) effectiveMaxDockWidth.dp else fittedDockWidth)
                         .height(floatingDockHeight),
                 )
             }
@@ -2798,7 +2838,8 @@ fun CategoryTabRow(
     skinPlainContentColor: Color? = null,
     topTabSkinIconPaths: Map<String, TopTabSkinIconPaths> = emptyMap(),
     partitionSkinIconPath: String? = null,
-    forceMaterialUnderline: Boolean = false
+    forceMaterialUnderline: Boolean = false,
+    dockHorizontalPadding: Dp = AppSpacingTokens.ExtraSmall,
 ) {
     val chromePolicy = rememberAppTopChromePolicy()
     val presetStyle = resolveHomeTopPresetStyle(
@@ -2833,7 +2874,8 @@ fun CategoryTabRow(
         isTransitionRunning = isTransitionRunning,
         showPartitionAction = showPartitionAction,
         isViewportSyncEnabled = isViewportSyncEnabled,
-        forceMaterialUnderline = forceMaterialUnderline
+        forceMaterialUnderline = forceMaterialUnderline,
+        dockHorizontalPadding = dockHorizontalPadding,
     )
 }
 

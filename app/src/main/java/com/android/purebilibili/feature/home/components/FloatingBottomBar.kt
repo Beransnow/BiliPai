@@ -556,6 +556,17 @@ fun FloatingBottomBar(
         shellHeightDp = shellHeight.value,
         proportionalReferenceWidthDp = proportionalIndicatorReferenceWidth?.value,
     ).dp
+    // Top navigation's inner contour is derived from the actual shell, rather
+    // than an independently sized bottom-dock pill. Other dock modes retain theirs.
+    val indicatorShape = if (geometryMode == FloatingBottomBarGeometryMode.TopNavigation) {
+        val restingInset = ((shellHeight - fittedIndicatorHeight) / 2).coerceAtLeast(0.dp)
+        RoundedCornerShape(
+            (shellHeight / 2 - restingInset)
+                .coerceIn(0.dp, minOf(fittedIndicatorWidth, fittedIndicatorHeight) / 2),
+        )
+    } else {
+        pillShape
+    }
     // Scale lens reach when a compact slot reduces the indicator's actual height.
     val indicatorLensHeightRatio = if (segmentedGeometry) {
         (fittedIndicatorHeight.value / indicatorHeight.value.coerceAtLeast(0.001f))
@@ -1073,7 +1084,7 @@ fun FloatingBottomBar(
                         }
                         .drawBackdrop(
                             backdrop = backdrop,
-                            shape = { pillShape },
+                            shape = { indicatorShape },
                             effects = {
                                 vibrancy(liquidGlassTuning.saturation)
                                 blur(
@@ -1135,7 +1146,7 @@ fun FloatingBottomBar(
                         .clearAndSetSemantics {}
                         .drawBackdrop(
                             backdrop = combinedBackdrop,
-                            shape = { pillShape },
+                            shape = { indicatorShape },
                             effects = {
                                 val progress = resolveFloatingDockRefractionProgress(
                                     pressProgress = dampedDragAnimation.pressProgress,
@@ -1183,7 +1194,7 @@ fun FloatingBottomBar(
                                 drawRect(Color.Black.copy(alpha = 0.03f * progress))
                             },
                         )
-                        .innerShadow(shape = pillShape) {
+                        .innerShadow(shape = indicatorShape) {
                             InnerShadow(
                                 radius = innerShadowRadius * dampedDragAnimation.pressProgress,
                                 color = Color.Black.copy(alpha = 0.15f),
@@ -1213,12 +1224,12 @@ fun FloatingBottomBar(
                                 clip = false
                             }
                         }
-                        .clip(pillShape)
+                        .clip(indicatorShape)
                         .then(
                             if (indicatorIdleSurfaceColorOverride != null || isLiquidGlassMode) {
                                 Modifier.background(
                                     indicatorIdleSurfaceColorOverride ?: colors.contentColor.copy(alpha = 0.1f),
-                                    pillShape,
+                                    indicatorShape,
                                 )
                             } else {
                                 Modifier

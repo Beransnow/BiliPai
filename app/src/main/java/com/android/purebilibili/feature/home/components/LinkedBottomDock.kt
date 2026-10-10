@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.appElasticPress
+import com.android.purebilibili.core.ui.components.rememberAppElasticPressState
 import androidx.compose.animation.core.EaseInCubic
 import androidx.compose.animation.core.EaseOutCubic
 import androidx.compose.ui.graphics.TransformOrigin
@@ -386,12 +388,21 @@ internal fun LinkedBottomDock(
                     navigationContent()
                 }
             }
+            val homeElasticState = rememberAppElasticPressState(
+                visualSize = with(density) { controlHeight.toDp() },
+            )
+            val homeGlassMotion = glassEnabled && backdrop != null
             Box(
                 modifier = Modifier
                     .offset { IntOffset(0, controlRowY) }
                     .size(
                         with(density) { button.toDp() },
                         with(density) { controlHeight.toDp() },
+                    )
+                    .appElasticPress(
+                        enabled = phase != LinkedDockPhase.Expanded,
+                        state = homeElasticState,
+                        transformInBackdrop = homeGlassMotion,
                     )
                     .graphicsLayer {
                         // 进入窗口（前 50%）ease-out 淡入并从 92% 缩放弹出，落定干净无过冲。
@@ -416,6 +427,7 @@ internal fun LinkedBottomDock(
                         .fillMaxSize()
                         .biliPaiFloatingDockShell(
                             backdrop = backdrop,
+                            interactionLayerBlock = homeElasticState.layerBlock.takeIf { homeGlassMotion },
                             containerColor = containerColor,
                             pressProgress = 0f,
                             shape = shape,
@@ -431,6 +443,7 @@ internal fun LinkedBottomDock(
                     } else resolveMaterialBottomBarIcon(firstItem, currentItem == firstItem),
                     contentDescription = "$firstLabel，展开底栏",
                     tint = accentColor,
+                    modifier = if (homeGlassMotion) Modifier.graphicsLayer(homeElasticState.layerBlock) else Modifier,
                 )
             }
             if (nowPlayingSlot != null) {
@@ -565,7 +578,15 @@ internal fun LinkedBottomDock(
                     },
             ) {
                 if (searchEnabled) {
-                    Box(Modifier.fillMaxSize()) {
+                    // The shell and hit target are siblings. Deform their common
+                    // parent so glass, icon and pointer feedback stay together.
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .appElasticPress(
+                                enabled = phase != LinkedDockPhase.Search && !transition.isRunning,
+                            )
+                    ) {
                         Box(
                             Modifier
                                 .fillMaxSize()

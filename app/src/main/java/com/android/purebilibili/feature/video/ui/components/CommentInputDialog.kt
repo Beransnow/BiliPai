@@ -33,7 +33,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.android.purebilibili.core.ui.components.AppLazyColumn as LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -819,7 +819,7 @@ fun CommentInputDialog(
                                         )
                                     } else if (selectedEmoteTab == -2L && skinEmojiImages.isNotEmpty()) {
                                         val emotes = skinEmojiImages.toList()
-                                        androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                                        com.android.purebilibili.core.ui.components.AppLazyVerticalGrid(
                                             columns = androidx.compose.foundation.lazy.grid.GridCells.Adaptive(60.dp),
                                             verticalArrangement = Arrangement.spacedBy(12.dp),
                                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -866,7 +866,7 @@ fun CommentInputDialog(
                                                 else -> false
                                             }
                                             val showEmoteLabels = pkg.id != 53L && !pkg.text.startsWith("热词系列")
-                                            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                                            com.android.purebilibili.core.ui.components.AppLazyVerticalGrid(
                                                 columns = if (compactEmotes) {
                                                     androidx.compose.foundation.lazy.grid.GridCells.Fixed(8)
                                                 } else {
@@ -937,7 +937,7 @@ private fun CommentKaomojiGrid(
     enabled: Boolean,
     onChoose: (String) -> Unit,
 ) {
-    androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+    com.android.purebilibili.core.ui.components.AppLazyVerticalGrid(
         columns = androidx.compose.foundation.lazy.grid.GridCells.Adaptive(100.dp),
         modifier = Modifier
             .fillMaxSize()

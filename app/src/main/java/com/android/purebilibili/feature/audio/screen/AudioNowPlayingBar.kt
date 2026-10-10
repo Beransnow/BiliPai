@@ -6,6 +6,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
+import com.android.purebilibili.core.ui.components.appElasticPress
+import com.android.purebilibili.core.ui.components.rememberAppElasticPressState
+import com.android.purebilibili.core.ui.components.LocalElasticPressEnabled
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -336,8 +340,15 @@ internal fun AudioNowPlayingBar(
         contentKey = state.coverUrl,
         playbackSpeed = state.playbackSpeed
     )
+    val elasticState = rememberAppElasticPressState()
+    val glassMotion = glassActive && miuixBackdrop != null
     Box(
         modifier = modifier
+            .appElasticPress(
+                enabled = !sourceInActiveReturn && !captureInProgress && !cancelDissolving,
+                state = elasticState,
+                transformInBackdrop = glassMotion,
+            )
             .fillMaxWidth()
             .then(if (consumeNavigationBarsPadding) Modifier.navigationBarsPadding() else Modifier)
             .padding(
@@ -358,7 +369,6 @@ internal fun AudioNowPlayingBar(
                 // start a second settle animation when the real bar is revealed.
                 alpha = if (sourceInActiveReturn || dissolveContentHidden) 0f else 1f
             }
-            .clip(shape)
             .recordNativeVideoCardLayer(
                 layer = nativeBarLayer,
                 freezeProvider = {
@@ -406,6 +416,7 @@ internal fun AudioNowPlayingBar(
                 .graphicsLayer { alpha = 1f - surfaceMergeProgress().coerceIn(0f, 1f) }
                 .biliPaiFloatingDockShell(
                     backdrop = miuixBackdrop,
+                    interactionLayerBlock = elasticState.layerBlock.takeIf { glassMotion },
                     containerColor = containerColor,
                     pressProgress = 0f,
                     shape = shape,
@@ -415,173 +426,176 @@ internal fun AudioNowPlayingBar(
                     liquidGlassTuning = liquidGlassTuning,
                 )
         )
-        AudioNowPlayingBarContentRow(
-            mergeProgress = dockMergeProgress,
-            searchProgress = iconOnlyProgress,
-            cover = {
-                AsyncImage(
-                    model = state.coverUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .onGloballyPositioned { coordinates ->
-                            coverCoordsRef[0] = coordinates
-                        }
-                        .graphicsLayer { rotationZ = coverRotationDegrees() }
-                        .clip(
-                            if (chrome.coverShapeIsCircle) {
-                                CircleShape
-                            } else {
-                                AppShapes.container(ContainerLevel.Field)
+        CompositionLocalProvider(LocalElasticPressEnabled provides false) {
+            AudioNowPlayingBarContentRow(
+                modifier = if (glassMotion) Modifier.graphicsLayer(elasticState.layerBlock).clip(shape) else Modifier.clip(shape),
+                mergeProgress = dockMergeProgress,
+                searchProgress = iconOnlyProgress,
+                cover = {
+                    AsyncImage(
+                        model = state.coverUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .onGloballyPositioned { coordinates ->
+                                coverCoordsRef[0] = coordinates
                             }
-                        ),
-                    contentScale = ContentScale.Crop
-                )
-            },
-            title = {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .graphicsLayer {
-                            alpha = resolveAudioNowPlayingPrimaryProgress(iconOnlyProgress())
-                        },
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    AppText(
-                        text = state.title,
-                        modifier = if (state.isPlaying && isLayoutStable) {
-                            Modifier.basicMarquee(iterations = Int.MAX_VALUE)
-                        } else {
-                            Modifier
-                        },
-                        maxLines = 1,
-                        overflow = TextOverflow.Clip,
-                        softWrap = false,
-                        color = immersiveContentColor
-                            ?: MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.bodyMedium
+                            .graphicsLayer { rotationZ = coverRotationDegrees() }
+                            .clip(
+                                if (chrome.coverShapeIsCircle) {
+                                    CircleShape
+                                } else {
+                                    AppShapes.container(ContainerLevel.Field)
+                                }
+                            ),
+                        contentScale = ContentScale.Crop
                     )
+                },
+                title = {
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .graphicsLayer {
+                                alpha = resolveAudioNowPlayingPrimaryProgress(iconOnlyProgress())
+                            },
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        AppText(
+                            text = state.title,
+                            modifier = if (state.isPlaying && isLayoutStable) {
+                                Modifier.basicMarquee(iterations = Int.MAX_VALUE)
+                            } else {
+                                Modifier
+                            },
+                            maxLines = 1,
+                            overflow = TextOverflow.Clip,
+                            softWrap = false,
+                            color = immersiveContentColor
+                                ?: MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Box(
+                            modifier = Modifier
+                                .audioNowPlayingArtistHeight(dockMergeProgress, iconOnlyProgress)
+                                .clipToBounds()
+                                .graphicsLayer {
+                                    alpha = resolveAudioNowPlayingSupplementalAlpha(
+                                        mergeProgress = dockMergeProgress(),
+                                        searchProgress = iconOnlyProgress(),
+                                    )
+                                },
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            ) {
+                                if (state.artistAvatarUrl.isNotBlank()) {
+                                    AsyncImage(
+                                        model = state.artistAvatarUrl,
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                                AppText(
+                                    text = state.artist,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = immersiveContentColor?.copy(alpha = 0.72f)
+                                        ?: MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                },
+                play = {
                     Box(
                         modifier = Modifier
-                            .audioNowPlayingArtistHeight(dockMergeProgress, iconOnlyProgress)
+                            .fillMaxSize()
                             .clipToBounds()
                             .graphicsLayer {
+                                val primary = resolveAudioNowPlayingPrimaryProgress(iconOnlyProgress())
+                                alpha = resolveAudioNowPlayingPrimaryAlpha(iconOnlyProgress())
+                                scaleX = primary
+                                scaleY = primary
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        AppIconButton(onClick = onPlayPause, modifier = Modifier.size(48.dp)) {
+                            AppIcon(
+                                imageVector = if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                                contentDescription = if (state.isPlaying) "暂停" else "播放",
+                                tint = immersiveContentColor ?: MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                },
+                queue = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clipToBounds()
+                            .graphicsLayer {
+                                val supplemental = resolveAudioNowPlayingSupplementalProgress(
+                                    mergeProgress = dockMergeProgress(),
+                                    searchProgress = iconOnlyProgress(),
+                                )
                                 alpha = resolveAudioNowPlayingSupplementalAlpha(
                                     mergeProgress = dockMergeProgress(),
                                     searchProgress = iconOnlyProgress(),
                                 )
+                                scaleX = supplemental
+                                scaleY = supplemental
                             },
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        ) {
-                            if (state.artistAvatarUrl.isNotBlank()) {
-                                AsyncImage(
-                                    model = state.artistAvatarUrl,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(16.dp)
-                                        .clip(CircleShape),
-                                    contentScale = ContentScale.Crop
-                                )
-                            }
-                            AppText(
-                                text = state.artist,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = immersiveContentColor?.copy(alpha = 0.72f)
-                                    ?: MaterialTheme.colorScheme.onSurfaceVariant
+                        AppIconButton(onClick = handleExpand, modifier = Modifier.size(48.dp)) {
+                            AppIcon(
+                                Icons.Outlined.QueueMusic,
+                                contentDescription = "打开$expandDestinationLabel",
+                                tint = immersiveContentColor ?: MaterialTheme.colorScheme.onSurface,
                             )
                         }
                     }
-                }
-            },
-            play = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clipToBounds()
-                        .graphicsLayer {
-                            val primary = resolveAudioNowPlayingPrimaryProgress(iconOnlyProgress())
-                            alpha = resolveAudioNowPlayingPrimaryAlpha(iconOnlyProgress())
-                            scaleX = primary
-                            scaleY = primary
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    AppIconButton(onClick = onPlayPause, modifier = Modifier.size(48.dp)) {
-                        AppIcon(
-                            imageVector = if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                            contentDescription = if (state.isPlaying) "暂停" else "播放",
-                            tint = immersiveContentColor ?: MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            },
-            queue = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clipToBounds()
-                        .graphicsLayer {
-                            val supplemental = resolveAudioNowPlayingSupplementalProgress(
-                                mergeProgress = dockMergeProgress(),
-                                searchProgress = iconOnlyProgress(),
-                            )
-                            alpha = resolveAudioNowPlayingSupplementalAlpha(
-                                mergeProgress = dockMergeProgress(),
-                                searchProgress = iconOnlyProgress(),
-                            )
-                            scaleX = supplemental
-                            scaleY = supplemental
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    AppIconButton(onClick = handleExpand, modifier = Modifier.size(48.dp)) {
-                        AppIcon(
-                            Icons.Outlined.QueueMusic,
-                            contentDescription = "打开$expandDestinationLabel",
-                            tint = immersiveContentColor ?: MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                }
-            },
-            close = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clipToBounds()
-                        .graphicsLayer {
-                            val supplemental = resolveAudioNowPlayingSupplementalProgress(
-                                mergeProgress = dockMergeProgress(),
-                                searchProgress = iconOnlyProgress(),
-                            )
-                            alpha = resolveAudioNowPlayingSupplementalAlpha(
-                                mergeProgress = dockMergeProgress(),
-                                searchProgress = iconOnlyProgress(),
-                            )
-                            scaleX = supplemental
-                            scaleY = supplemental
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    AppIconButton(
-                        onClick = handleCancelClick,
-                        enabled = !cancelDissolving,
-                        modifier = Modifier.size(48.dp),
+                },
+                close = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clipToBounds()
+                            .graphicsLayer {
+                                val supplemental = resolveAudioNowPlayingSupplementalProgress(
+                                    mergeProgress = dockMergeProgress(),
+                                    searchProgress = iconOnlyProgress(),
+                                )
+                                alpha = resolveAudioNowPlayingSupplementalAlpha(
+                                    mergeProgress = dockMergeProgress(),
+                                    searchProgress = iconOnlyProgress(),
+                                )
+                                scaleX = supplemental
+                                scaleY = supplemental
+                            },
+                        contentAlignment = Alignment.Center,
                     ) {
-                        AppIcon(
-                            Icons.Filled.Close,
-                            contentDescription = "关闭听视频条",
-                            tint = immersiveContentColor ?: MaterialTheme.colorScheme.onSurface,
-                        )
+                        AppIconButton(
+                            onClick = handleCancelClick,
+                            enabled = !cancelDissolving,
+                            modifier = Modifier.size(48.dp),
+                        ) {
+                            AppIcon(
+                                Icons.Filled.Close,
+                                contentDescription = "关闭听视频条",
+                                tint = immersiveContentColor ?: MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
                     }
-                }
-            },
-        )
+                },
+            )
+        }
     }
 }
 
@@ -605,6 +619,7 @@ private fun Modifier.audioNowPlayingSkipGesture(
 
 @Composable
 private fun AudioNowPlayingBarContentRow(
+    modifier: Modifier = Modifier,
     mergeProgress: () -> Float,
     searchProgress: () -> Float,
     cover: @Composable () -> Unit,
@@ -616,7 +631,7 @@ private fun AudioNowPlayingBarContentRow(
     // 统一 64dp：与底栏导航行同高，percent=50 共享胶囊的圆角随之严格一致。
     val height = 64.dp
     Layout(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(height),
         content = {

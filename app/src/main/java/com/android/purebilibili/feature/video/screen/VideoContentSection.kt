@@ -13,12 +13,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import com.android.purebilibili.core.ui.components.AppLazyColumn as LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.pager.HorizontalPager
+import com.android.purebilibili.core.ui.components.AppHorizontalPager as HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
@@ -924,7 +924,11 @@ internal fun VideoContentSection(
                 beyondViewportPageCount = resolveVideoDetailBeyondViewportPageCount(
                     selectedTabIndex = pagerState.currentPage
                 ),
-                userScrollEnabled = false,
+                userScrollEnabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                            currentPage = pagerState.currentPage,
+                            commentPageIndex = 1,
+                            isPagerScrollInProgress = pagerState.isScrollInProgress,
+                        ),
                 modifier = Modifier
                     .fillMaxSize()
                     .then(
@@ -934,14 +938,7 @@ internal fun VideoContentSection(
                             Modifier.videoContentTopPadding(tabBarVisibleHeightPx)
                         }
                     )
-                    .verticalPriorityHorizontalPagerSwipe(
-                        state = pagerState,
-                        enabled = shouldEnableVideoContentHorizontalPagerSwipe(
-                            currentPage = pagerState.currentPage,
-                            commentPageIndex = 1,
-                            isPagerScrollInProgress = pagerState.isScrollInProgress,
-                        ),
-                    )
+
             ) { page ->
                 when (page) {
                     0 -> VideoIntroTab(
