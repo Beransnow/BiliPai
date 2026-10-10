@@ -394,7 +394,9 @@ fun <T> AppNativeTabRow(
     val effectiveScrollable = !forceEqualWidth &&
         (equalizeMiuixNonGlassItems || scrollable || options.size > 3 ||
             (readableMinTabWidth > minTabWidth && options.size > 2))
-    val useContentSizedMiuixItems = contentSizedMiuixNonGlassItems &&
+    // Ordinary Miuix rails own each item's surface and hit target. Upstream TabRow
+    // uses one moving background with cached equal-width geometry instead.
+    val useContentSizedMiuixItems = (isMiuixNonGlassEnabled() || contentSizedMiuixNonGlassItems) &&
         miuixNonGlassItemWidthMode == MiuixNonGlassTabItemWidthMode.CONTENT &&
         effectiveScrollable
     val policy = rememberAppSegmentedControlPolicy()

@@ -31,42 +31,6 @@ fun SettingsCategoryScreen(
     mainHazeState: HazeState? = null,
     forceSinglePaneContent: Boolean = false,
 ) {
-    if (com.android.purebilibili.feature.settings.canonicalSettingsRootCategory(category) == SettingsRootCategory.HOME_RECOMMENDATION) {
-        com.android.purebilibili.feature.settings.HomeSettingsScreen(viewModel = viewModel, onBack = onBack)
-        return
-    }
-    if (category == SettingsRootCategory.GLASS_ADVANCED) {
-        com.android.purebilibili.feature.settings.AnimationSettingsScreen(
-            viewModel = viewModel,
-            onBack = onBack,
-            advancedOnly = true,
-        )
-        return
-    }
-    val playbackPage = when (com.android.purebilibili.feature.settings.canonicalSettingsRootCategory(category)) {
-        SettingsRootCategory.PLAYBACK_QUALITY -> com.android.purebilibili.feature.settings.PlaybackSettingsPage.PLAYBACK
-        SettingsRootCategory.FULLSCREEN_GESTURE -> com.android.purebilibili.feature.settings.PlaybackSettingsPage.FULLSCREEN
-        SettingsRootCategory.COMMENTS_CONTENT -> com.android.purebilibili.feature.settings.PlaybackSettingsPage.COMMENTS
-        SettingsRootCategory.VIDEO_DECODER -> com.android.purebilibili.feature.settings.PlaybackSettingsPage.DECODER
-        else -> null
-    }
-    if (playbackPage != null) {
-        com.android.purebilibili.feature.settings.PlaybackSettingsScreen(
-            viewModel = viewModel,
-            onBack = onBack,
-            page = playbackPage,
-            onOpenPage = { page ->
-                onCategoryClick(when (page) {
-                    com.android.purebilibili.feature.settings.PlaybackSettingsPage.DECODER -> SettingsRootCategory.VIDEO_DECODER
-                    com.android.purebilibili.feature.settings.PlaybackSettingsPage.DIAGNOSTICS -> SettingsRootCategory.PLAYER_DIAGNOSTICS
-                    com.android.purebilibili.feature.settings.PlaybackSettingsPage.FULLSCREEN -> SettingsRootCategory.FULLSCREEN_GESTURE
-                    com.android.purebilibili.feature.settings.PlaybackSettingsPage.COMMENTS -> SettingsRootCategory.COMMENTS_CONTENT
-                    else -> SettingsRootCategory.PLAYBACK_QUALITY
-                })
-            },
-        )
-        return
-    }
     SettingsScreen(
         viewModel = viewModel,
         onBack = onBack,

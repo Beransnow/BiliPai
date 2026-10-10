@@ -137,7 +137,6 @@ internal data class SettingsRootCategoryActions(
     val onCommentFraudHistoryClick: () -> Unit,
     val onPluginsClick: () -> Unit,
     val onExportLogsClick: () -> Unit,
-    val onDiagnosticsClick: () -> Unit = {},
     val onSettingsShareClick: () -> Unit,
     val onWebDavBackupClick: () -> Unit,
     val onDownloadPathClick: () -> Unit,
@@ -229,43 +228,33 @@ internal fun SettingsRootCategoryListSection(
     onCategoryClick: (SettingsRootCategory) -> Unit,
     onDonateClick: () -> Unit,
 ) {
-    val siblingTints = remember(categories.size) { resolveSettingsSiblingIconTints(categories.size) }
-    val groups = resolveSettingsRootGroups(categories)
-    val visualSpec = resolveSettingsVisualSpec()
-    Column {
-        groups.forEach { (title, entries) ->
-            Column {
-                if (title != null) {
-                    AppText(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(
-                            start = visualSpec.screenHorizontalPadding,
-                            top = visualSpec.sectionTopSpacing,
-                            bottom = visualSpec.sectionBottomSpacing,
-                        ),
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(visualSpec.sectionTopSpacing))
-                }
-                SettingsCardGroup {
-                    entries.forEachIndexed { index, category ->
-                        val visual = rememberSettingsEntryVisual(category.searchTarget)
-                        SettingsRootCategoryRow(
-                            title = category.title,
-                            subtitle = category.subtitle,
-                            icon = visual.icon,
-                            iconPainter = visual.iconResId?.let { painterResource(id = it) },
-                            iconTint = siblingTints[categories.indexOf(category)],
-                            iconSizeDp = visual.iconSizeDp,
-                            onClick = { onCategoryClick(category) },
-                        )
-                        if (index != entries.lastIndex) SettingsAdaptiveDivider()
-                    }
-                }
-            }
+    val siblingTints = remember(categories.size) {
+        resolveSettingsSiblingIconTints(categories.size + 1)
+    }
+    val donateVisual = rememberSettingsEntryVisual(SettingsSearchTarget.DONATE)
+    SettingsCardGroup {
+        categories.forEachIndexed { index, category ->
+            val visual = rememberSettingsEntryVisual(category.searchTarget)
+            SettingsRootCategoryRow(
+                title = category.title,
+                subtitle = category.subtitle,
+                icon = visual.icon,
+                iconPainter = visual.iconResId?.let { painterResource(id = it) },
+                iconTint = siblingTints[index],
+                iconSizeDp = visual.iconSizeDp,
+                onClick = { onCategoryClick(category) },
+            )
+            SettingsAdaptiveDivider()
         }
+        SettingsRootCategoryRow(
+            title = settingsDestinationCopy(SettingsSearchTarget.DONATE).title,
+            subtitle = settingsDestinationCopy(SettingsSearchTarget.DONATE).summary,
+            icon = donateVisual.icon,
+            iconPainter = donateVisual.iconResId?.let { painterResource(id = it) },
+            iconTint = siblingTints.last(),
+            iconSizeDp = donateVisual.iconSizeDp,
+            onClick = onDonateClick,
+        )
     }
 }
 
@@ -804,16 +793,56 @@ internal fun SettingsRootCategoryContent(
             }
             SettingsRootCategory.SYSTEM_ABOUT -> {
                 SettingsRootCategoryEntranceSection {
-                    SettingsDetailGroup(title = "帮助与工具") {
-                        SupportToolsSection(
-                            onTipsClick = actions.onTipsClick,
-                            onOpenLinksClick = actions.onOpenLinksClick,
-                            onDiagnosticsClick = actions.onDiagnosticsClick,
+                    SettingsDetailGroup(title = "问题排查") {
+                        DiagnosticsSection(
+                            crashTrackingEnabled = state.crashTrackingEnabled,
+                            analyticsEnabled = state.analyticsEnabled,
+                            enhancedDiagnosticLoggingEnabled = state.enhancedDiagnosticLoggingEnabled,
+                            onCrashTrackingChange = actions.onCrashTrackingChange,
+                            onAnalyticsChange = actions.onAnalyticsChange,
+                            onEnhancedDiagnosticLoggingChange = actions.onEnhancedDiagnosticLoggingChange,
+                            onExportLogsClick = actions.onExportLogsClick,
+                        )
+                        SettingsAdaptiveDivider()
+                        SettingsDetailEntrySection(
+                            entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.DIAGNOSTICS,
+                                    title = "播放器诊断",
+                                    value = "出现黑屏、卡顿或画质切换失败时用于排查问题",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.PLAYBACK,
+                                        SettingsSearchFocusIds.PLAYBACK_DEBUG,
+                                    ),
+                                    onClick = actions.onPlaybackClick,
+                                ),
+                            ),
                         )
                     }
                 }
                 SettingsRootCategoryEntranceSection {
-                    Column {
+                    SettingsDetailGroup(title = "帮助与工具") {
+                        SupportToolsSection(
+                            onTipsClick = actions.onTipsClick,
+                            onOpenLinksClick = actions.onOpenLinksClick,
+                        )
+                    }
+                }
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "应用信息") {
+                        var showUserAgreement by remember { mutableStateOf(false) }
+                        SettingClickableItem(
+                            icon = rememberMaterialSymbol(R.drawable.ms_gavel_24),
+                            title = "用户协议与隐私政策",
+                            value = "查看全文",
+                            onClick = { showUserAgreement = true },
+                        )
+                        SettingsAdaptiveDivider()
+                        if (showUserAgreement) {
+                            com.android.purebilibili.feature.agreement.UserAgreementReviewDialog(
+                                onDismiss = { showUserAgreement = false },
+                            )
+                        }
                         AboutSection(
                             versionName = state.versionName,
                             appIconKey = state.appIcon,
@@ -863,23 +892,12 @@ internal fun SettingsRootCategoryContent(
 fun SupportToolsSection(
     onTipsClick: () -> Unit,
     onOpenLinksClick: () -> Unit,
-    onDiagnosticsClick: () -> Unit = {},
 ) {
     val tipsVisual = rememberSettingsEntryVisual(SettingsSearchTarget.TIPS)
     val openLinksVisual = rememberSettingsEntryVisual(SettingsSearchTarget.OPEN_LINKS)
-    val diagnosticsVisual = rememberSettingsEntryVisual(SettingsSearchTarget.DIAGNOSTICS)
     val siblingTints = remember { resolveSettingsSiblingIconTints(2, paletteOffset = 1) }
 
     SettingsCardGroup {
-        SettingClickableItem(
-            icon = diagnosticsVisual.icon,
-            iconPainter = diagnosticsVisual.iconResId?.let { painterResource(id = it) },
-            title = "问题排查",
-            subtitle = "应用日志、播放信息与兼容选项",
-            onClick = onDiagnosticsClick,
-            iconTint = diagnosticsVisual.iconTint,
-        )
-        SettingsAdaptiveDivider()
         SettingClickableItem(
             icon = tipsVisual.icon,
             iconPainter = tipsVisual.iconResId?.let { painterResource(id = it) },
@@ -1847,12 +1865,6 @@ fun AboutSection(
         resolveIconOptionPreviewRes(appIconKey, appIconAppearance)
     }
     var detailDialogContent by remember { mutableStateOf<AppBuildInfoDialogContent?>(null) }
-    var showUserAgreement by remember { mutableStateOf(false) }
-    if (showUserAgreement) {
-        com.android.purebilibili.feature.agreement.UserAgreementReviewDialog(
-            onDismiss = { showUserAgreement = false },
-        )
-    }
     val easterEggTint = rememberSettingsEntryTint(AppSemanticAccentRole.TERTIARY, iOSYellow)
     val updateSiblingTints = remember { resolveSettingsSiblingIconTints(5, paletteOffset = 3) }
     val licensesVisual = rememberSettingsEntryVisual(SettingsSearchTarget.OPEN_SOURCE_LICENSES)
@@ -1945,25 +1957,6 @@ fun AboutSection(
         appIconRes = appIconRes,
     )
     Spacer(modifier = Modifier.height(12.dp))
-
-    SettingsSectionTitle(title = "应用信息")
-    SettingsCardGroup {
-        SettingClickableItem(
-            icon = infoIcon,
-            title = "版本",
-            value = versionValue,
-            onClick = onVersionClick,
-            iconTint = versionIconTint,
-            enableCopy = true,
-            onCopyRequest = rememberClipboardCopyHandler(),
-        )
-        SettingsAdaptiveDivider()
-        SettingClickableItem(
-            icon = rememberMaterialSymbol(R.drawable.ms_gavel_24),
-            title = "用户协议与隐私政策",
-            onClick = { showUserAgreement = true },
-        )
-    }
 
     SettingsSectionTitle(title = "来源与验证")
     SettingsCardGroup {
@@ -2089,6 +2082,16 @@ fun AboutSection(
 
     SettingsSectionTitle(title = "使用与反馈")
     SettingsCardGroup {
+        SettingClickableItem(
+            icon = infoIcon,
+            title = "版本",
+            value = versionValue,
+            onClick = onVersionClick,
+            iconTint = versionIconTint,
+            enableCopy = true,
+            onCopyRequest = rememberClipboardCopyHandler(),
+        )
+        SettingsAdaptiveDivider()
         SettingClickableItem(
             icon = replayOnboardingVisual.icon,
             iconPainter = replayOnboardingVisual.iconResId?.let { painterResource(id = it) },

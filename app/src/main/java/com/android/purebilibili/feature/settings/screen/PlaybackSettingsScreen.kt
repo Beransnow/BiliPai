@@ -96,17 +96,9 @@ fun PlaybackSettingsScreen(
     viewModel: SettingsViewModel = viewModel(),
     onBack: () -> Unit,
     page: PlaybackSettingsPage = PlaybackSettingsPage.PLAYBACK,
-    onOpenPage: (PlaybackSettingsPage) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val initialFocus = remember { SettingsSearchFocusController.request.value }
-    val effectivePage = if (page == PlaybackSettingsPage.PLAYBACK) when (initialFocus?.focusId) {
-        SettingsSearchFocusIds.PLAYBACK_DECODER -> PlaybackSettingsPage.DECODER
-        SettingsSearchFocusIds.PLAYBACK_DEBUG -> PlaybackSettingsPage.DIAGNOSTICS
-        SettingsSearchFocusIds.PLAYBACK_FULLSCREEN,
-        SettingsSearchFocusIds.PLAYBACK_GESTURE -> PlaybackSettingsPage.FULLSCREEN
-        else -> page
-    } else page
+    val effectivePage = page
     val screenTitle = effectivePage.title
     val backLabel = stringResource(R.string.common_back)
     val bottomContentPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -121,7 +113,7 @@ fun PlaybackSettingsScreen(
         topBarBlurEnabled = state.headerBlurEnabled,
     ) {
         CompositionLocalProvider(LocalSettingsLiquidGlassEnabled provides state.isLiquidGlassEnabled) {
-            PlaybackSettingsContent(viewModel = viewModel, state = state, page = effectivePage, onOpenPage = onOpenPage)
+            PlaybackSettingsContent(viewModel = viewModel, state = state, page = effectivePage)
         }
     }
 }
@@ -135,7 +127,6 @@ fun PlaybackSettingsContent(
     state: SettingsUiState,
     modifier: Modifier = Modifier,
     page: PlaybackSettingsPage = PlaybackSettingsPage.PLAYBACK,
-    onOpenPage: (PlaybackSettingsPage) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
     val focusRequest by SettingsSearchFocusController.request.collectAsStateWithLifecycle()
@@ -157,7 +148,16 @@ fun PlaybackSettingsContent(
                 ?.focusId
         } ?: return@LaunchedEffect
         val keys = when (page) {
-            PlaybackSettingsPage.PLAYBACK -> listOf(SettingsSearchFocusIds.PLAYBACK_SPEED, SettingsSearchFocusIds.PLAYBACK_MINI_PLAYER, SettingsSearchFocusIds.PLAYBACK_NETWORK, SettingsSearchFocusIds.PLAYBACK_DATA_SAVER, SettingsSearchFocusIds.PLAYBACK_INTERACTION)
+            PlaybackSettingsPage.PLAYBACK -> listOf(
+                SettingsSearchFocusIds.PLAYBACK_DECODER,
+                SettingsSearchFocusIds.PLAYBACK_SPEED,
+                SettingsSearchFocusIds.PLAYBACK_MINI_PLAYER,
+                SettingsSearchFocusIds.PLAYBACK_FULLSCREEN,
+                SettingsSearchFocusIds.PLAYBACK_DEBUG,
+                SettingsSearchFocusIds.PLAYBACK_NETWORK,
+                SettingsSearchFocusIds.PLAYBACK_DATA_SAVER,
+                SettingsSearchFocusIds.PLAYBACK_INTERACTION,
+            )
             PlaybackSettingsPage.FULLSCREEN -> listOf(SettingsSearchFocusIds.PLAYBACK_FULLSCREEN)
             PlaybackSettingsPage.COMMENTS -> listOf(SettingsSearchFocusIds.PLAYBACK_INTERACTION)
             PlaybackSettingsPage.DECODER -> listOf(SettingsSearchFocusIds.PLAYBACK_DECODER)
@@ -322,7 +322,7 @@ fun PlaybackSettingsContent(
         )
     ) {
 
-            if (page == PlaybackSettingsPage.DECODER) {
+            if (page == PlaybackSettingsPage.PLAYBACK || page == PlaybackSettingsPage.DECODER) {
             item(key = SettingsSearchFocusIds.PLAYBACK_DECODER + "_title") {
                 Box(modifier = Modifier.entrance()) {
                     AppPreferenceSectionTitle("视频解码")
@@ -950,7 +950,7 @@ SettingsItemAnchor("playback.music_lyrics_ui_style") {
             //  手势设置
             }
 
-            if (page == PlaybackSettingsPage.DIAGNOSTICS) {
+            if (page == PlaybackSettingsPage.PLAYBACK || page == PlaybackSettingsPage.DIAGNOSTICS) {
             item(key = SettingsSearchFocusIds.PLAYBACK_DEBUG + "_title") {
                 Box(modifier = Modifier.entrance()) {
                     AppPreferenceSectionTitle("诊断")
@@ -1260,7 +1260,7 @@ SettingsItemAnchor("playback.data_saver_mode") {
                     )
                 }
             }
-            if (page == PlaybackSettingsPage.FULLSCREEN) {
+            if (page == PlaybackSettingsPage.PLAYBACK || page == PlaybackSettingsPage.FULLSCREEN) {
                 item(key = SettingsSearchFocusIds.PLAYBACK_FULLSCREEN + "_title") {
                     AppPreferenceSectionTitle("全屏与手势")
                 }
@@ -1270,15 +1270,6 @@ SettingsItemAnchor("playback.data_saver_mode") {
                         state = state,
                         viewModel = viewModel,
                     )
-                }
-            }
-            if (page == PlaybackSettingsPage.PLAYBACK) {
-                item(key = "playback_advanced") {
-                    AppPreferenceGroup {
-                        AppPreference(title = "视频解码", onClick = { onOpenPage(PlaybackSettingsPage.DECODER) })
-                        AppPreferenceDivider()
-                        AppPreference(title = "问题排查", onClick = { onOpenPage(PlaybackSettingsPage.DIAGNOSTICS) })
-                    }
                 }
             }
             item { Spacer(modifier = Modifier.height(32.dp)) }

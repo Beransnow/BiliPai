@@ -83,17 +83,20 @@ internal fun canonicalSettingsRootCategory(category: SettingsRootCategory): Sett
         SettingsRootCategory.APPEARANCE_INTERACTION -> SettingsRootCategory.APPEARANCE_THEME
         SettingsRootCategory.CONTENT_PLAYBACK -> SettingsRootCategory.PLAYBACK_QUALITY
         SettingsRootCategory.PRIVACY_STORAGE -> SettingsRootCategory.PRIVACY_PERMISSION
+        SettingsRootCategory.FULLSCREEN_GESTURE,
+        SettingsRootCategory.COMMENTS_CONTENT,
+        SettingsRootCategory.VIDEO_DECODER -> SettingsRootCategory.PLAYBACK_QUALITY
+        SettingsRootCategory.MESSAGE_NOTIFICATION -> SettingsRootCategory.PRIVACY_PERMISSION
+        SettingsRootCategory.PLAYER_DIAGNOSTICS -> SettingsRootCategory.SYSTEM_ABOUT
+        SettingsRootCategory.GLASS_ADVANCED -> SettingsRootCategory.NAVIGATION_INTERACTION
         else -> category
     }
 
 internal fun resolveSettingsRootCategoryOrder(): List<SettingsRootCategory> = listOf(
-    SettingsRootCategory.HOME_RECOMMENDATION,
     SettingsRootCategory.APPEARANCE_THEME,
-    SettingsRootCategory.NAVIGATION_INTERACTION,
     SettingsRootCategory.PLAYBACK_QUALITY,
-    SettingsRootCategory.FULLSCREEN_GESTURE,
-    SettingsRootCategory.COMMENTS_CONTENT,
-    SettingsRootCategory.MESSAGE_NOTIFICATION,
+    SettingsRootCategory.HOME_RECOMMENDATION,
+    SettingsRootCategory.NAVIGATION_INTERACTION,
     SettingsRootCategory.PRIVACY_PERMISSION,
     SettingsRootCategory.STORAGE_BACKUP,
     SettingsRootCategory.PLUGINS_EXTENSIONS,
@@ -103,24 +106,6 @@ internal fun resolveSettingsRootCategoryOrder(): List<SettingsRootCategory> = li
 internal fun resolveTabletSettingsRootCategoryOrder(): List<SettingsRootCategory> =
     resolveSettingsRootCategoryOrder()
 
-internal data class SettingsRootGroup(
-    val title: String?,
-    val categories: List<SettingsRootCategory>,
-)
-
-internal fun resolveSettingsRootGroups(
-    categories: List<SettingsRootCategory> = resolveSettingsRootCategoryOrder(),
-): List<SettingsRootGroup> {
-    val groups = listOf(
-        SettingsRootGroup("界面", listOf(SettingsRootCategory.HOME_RECOMMENDATION, SettingsRootCategory.APPEARANCE_THEME, SettingsRootCategory.NAVIGATION_INTERACTION)),
-        SettingsRootGroup("播放与内容", listOf(SettingsRootCategory.PLAYBACK_QUALITY, SettingsRootCategory.FULLSCREEN_GESTURE, SettingsRootCategory.COMMENTS_CONTENT)),
-        SettingsRootGroup("应用管理", listOf(SettingsRootCategory.MESSAGE_NOTIFICATION, SettingsRootCategory.PRIVACY_PERMISSION, SettingsRootCategory.STORAGE_BACKUP, SettingsRootCategory.PLUGINS_EXTENSIONS)),
-        SettingsRootGroup(null, listOf(SettingsRootCategory.SYSTEM_ABOUT)),
-    )
-    return groups.map { group -> group.copy(categories = group.categories.filter { it in categories }) }
-        .filter { it.categories.isNotEmpty() }
-}
-
 internal fun resolveSettingsRootCategoryForSearchTarget(
     target: SettingsSearchTarget,
 ): SettingsRootCategory? = when (target) {
@@ -128,10 +113,9 @@ internal fun resolveSettingsRootCategoryForSearchTarget(
     SettingsSearchTarget.APPEARANCE -> SettingsRootCategory.APPEARANCE_THEME
 
     SettingsSearchTarget.PLAYBACK_QUALITY,
-    SettingsSearchTarget.PLAYBACK -> SettingsRootCategory.PLAYBACK_QUALITY
-
-    SettingsSearchTarget.FULLSCREEN_GESTURE -> SettingsRootCategory.FULLSCREEN_GESTURE
-    SettingsSearchTarget.INTERACTION_COMMENT -> SettingsRootCategory.COMMENTS_CONTENT
+    SettingsSearchTarget.PLAYBACK,
+    SettingsSearchTarget.FULLSCREEN_GESTURE,
+    SettingsSearchTarget.INTERACTION_COMMENT -> SettingsRootCategory.PLAYBACK_QUALITY
 
     SettingsSearchTarget.HOME_FEED -> SettingsRootCategory.HOME_RECOMMENDATION
 
@@ -140,10 +124,10 @@ internal fun resolveSettingsRootCategoryForSearchTarget(
 
     SettingsSearchTarget.PRIVACY_PERMISSION,
     SettingsSearchTarget.PERMISSION,
-    SettingsSearchTarget.BLOCKED_LIST -> SettingsRootCategory.PRIVACY_PERMISSION
+    SettingsSearchTarget.BLOCKED_LIST,
+    SettingsSearchTarget.MESSAGE_NOTIFICATION -> SettingsRootCategory.PRIVACY_PERMISSION
 
-    SettingsSearchTarget.ANIMATION -> SettingsRootCategory.APPEARANCE_THEME
-    SettingsSearchTarget.MESSAGE_NOTIFICATION -> SettingsRootCategory.MESSAGE_NOTIFICATION
+    SettingsSearchTarget.ANIMATION -> SettingsRootCategory.NAVIGATION_INTERACTION
 
     SettingsSearchTarget.DATA_BACKUP,
     SettingsSearchTarget.SETTINGS_SHARE,

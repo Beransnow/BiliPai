@@ -74,7 +74,6 @@ fun AnimationSettingsScreen(
     viewModel: SettingsViewModel = viewModel(),
     onBack: () -> Unit,
     advancedOnly: Boolean = false,
-    onOpenAdvanced: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -96,7 +95,6 @@ fun AnimationSettingsScreen(
                 state = state,
                 viewModel = viewModel,
                 advancedOnly = advancedOnly,
-                onOpenAdvanced = onOpenAdvanced,
             )
         }
     }
@@ -108,7 +106,6 @@ fun AnimationSettingsContent(
     state: SettingsUiState,
     viewModel: SettingsViewModel,
     advancedOnly: Boolean = false,
-    onOpenAdvanced: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -662,16 +659,15 @@ fun AnimationSettingsContent(
             item(key = "animation_glass") {
                 Box(modifier = Modifier.entrance()) {
                     AppPreferenceGroup {
-                        if (advancedOnly) {
-                            if (!isLiquidGlassAvailable || !state.androidNativeLiquidGlassEnabled) {
-                                AppText(
-                                    text = if (!isLiquidGlassAvailable) "当前设备不支持玻璃效果，以下参数暂不生效" else "先在外观设置中启用液态玻璃，以下参数暂不生效",
-                                    modifier = Modifier.padding(16.dp),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            LiquidGlassAdjustmentPanel(
-                                alwaysShowAdvanced = true,
+                        if (!isLiquidGlassAvailable || !state.androidNativeLiquidGlassEnabled) {
+                            AppText(
+                                text = if (!isLiquidGlassAvailable) "当前设备不支持玻璃效果，以下参数暂不生效" else "先在外观设置中启用液态玻璃，以下参数暂不生效",
+                                modifier = Modifier.padding(16.dp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        LiquidGlassAdjustmentPanel(
+                                alwaysShowAdvanced = false,
                                 persistedProgress = state.liquidGlassProgress,
                                 previewImageUri = liquidGlassPreviewImageUri,
                                 persistedAdvancedSettings = liquidGlassAdvancedSettings,
@@ -740,11 +736,8 @@ fun AnimationSettingsContent(
                                     }
                                 },
                             )
-                            AppPreferenceDivider()
-                        }
-                        if (!advancedOnly) {
-                        AppPreference(title = "玻璃高级调节", onClick = onOpenAdvanced)
                         AppPreferenceDivider()
+                        if (!advancedOnly) {
                         SettingsItemAnchor("animation.skeleton_breathing_enabled") {
                             AppSwitchPreference(
                                 icon = rememberSettingsSemanticIcon(SettingsIconRole.TOP_BAR_BLUR),

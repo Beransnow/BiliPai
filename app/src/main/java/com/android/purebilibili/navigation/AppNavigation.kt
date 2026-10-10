@@ -3340,9 +3340,6 @@ fun AppNavigation(
                                 com.android.purebilibili.feature.settings.AnimationSettingsScreen(
                                     viewModel = settingsViewModel,
                                     onBack = { performSystemBackAction() },
-                                    onOpenAdvanced = {
-                                        pushNavigation3Key(BiliPaiNavKey.SettingsCategory(com.android.purebilibili.feature.settings.SettingsRootCategory.GLASS_ADVANCED))
-                                    },
                                 )
                             }
                         BiliPaiNavEntryContentRole.PLAYBACK_SETTINGS ->
@@ -3350,14 +3347,6 @@ fun AppNavigation(
                                 PlaybackSettingsScreen(
                                     viewModel = settingsViewModel,
                                     onBack = { performSystemBackAction() },
-                                    onOpenPage = { page ->
-                                        val category = when (page) {
-                                            com.android.purebilibili.feature.settings.PlaybackSettingsPage.DECODER -> com.android.purebilibili.feature.settings.SettingsRootCategory.VIDEO_DECODER
-                                            com.android.purebilibili.feature.settings.PlaybackSettingsPage.DIAGNOSTICS -> com.android.purebilibili.feature.settings.SettingsRootCategory.PLAYER_DIAGNOSTICS
-                                            else -> com.android.purebilibili.feature.settings.SettingsRootCategory.PLAYBACK_QUALITY
-                                        }
-                                        pushNavigation3Key(BiliPaiNavKey.SettingsCategory(category))
-                                    },
                                 )
                             }
                         BiliPaiNavEntryContentRole.PERMISSION_SETTINGS ->

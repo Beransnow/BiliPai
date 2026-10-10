@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +35,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.disabled
+import androidx.compose.ui.semantics.CollectionInfo
+import androidx.compose.ui.semantics.CollectionItemInfo
+import androidx.compose.ui.semantics.collectionInfo
+import androidx.compose.ui.semantics.collectionItemInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -461,7 +466,9 @@ private fun <T> AppMiuixContentSizedNonGlassTabs(
     ) {
         LazyRow(
             state = listState,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { collectionInfo = CollectionInfo(rowCount = 1, columnCount = options.size) },
             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -480,11 +487,17 @@ private fun <T> AppMiuixContentSizedNonGlassTabs(
                             color = { outlineColor },
                             cornerRadius = 8.dp,
                         )
-                        .clickable(
+                        .selectable(
+                            selected = selected,
                             enabled = enabled,
                             role = Role.Tab,
                             onClick = { onSelectionChange(option.value) },
                         )
+                        .semantics {
+                            collectionItemInfo = CollectionItemInfo(
+                                rowIndex = 0, rowSpan = 1, columnIndex = index, columnSpan = 1,
+                            )
+                        }
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center,
                 ) {

@@ -10,25 +10,34 @@ class SettingsLayoutRefinementStructureTest {
         .first { it.exists() }.readText()
 
     @Test
-    fun appearanceDoesNotRepeatSelectedStyleAndOwnsTextCopy() {
-        val appearance = source("src/main/java/com/android/purebilibili/feature/settings/screen/AppearanceSettingsScreen.kt")
-        val animation = source("src/main/java/com/android/purebilibili/feature/settings/screen/AnimationSettingsScreen.kt")
-        assertFalse(appearance.contains("AppearanceUiPresetDescriptionCard"))
-        assertFalse(appearance.contains("appearance_animation_entry"))
-        assertTrue(appearance.contains("SettingsTextCopyPreference()"))
-        assertFalse(animation.contains("animation.global_text_tap_copy_enabled"))
+    fun settingsRootReturnsToFlatCategoryCardAndKeepsCurrentCopy() {
+        val sections = source("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
+        val rootList = sections.substringAfter("internal fun SettingsRootCategoryListSection(")
+            .substringBefore("@Composable\nprivate fun SettingsRootCategoryRow")
+        assertFalse(rootList.contains("resolveSettingsRootGroups(categories)"))
+        assertTrue(rootList.contains("SettingsCardGroup"))
+        assertTrue(rootList.contains("settingsDestinationCopy(SettingsSearchTarget.DONATE)"))
+        assertTrue(sections.contains("SettingsSectionTitle(title = \"来源与验证\")"))
+        assertTrue(sections.contains("SettingsSectionTitle(title = \"使用与反馈\")"))
     }
 
     @Test
-    fun helpGroupsVersionWithAppInformationAndKeepsActions() {
-        val sections = source("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
-        val information = sections.substringAfter("SettingsSectionTitle(title = \"应用信息\")")
-            .substringBefore("SettingsSectionTitle(title = \"来源与验证\")")
-        assertTrue(information.contains("title = \"版本\""))
-        assertTrue(information.contains("onClick = onVersionClick"))
-        assertTrue(information.contains("用户协议与隐私政策"))
-        assertFalse(sections.contains("SettingsSectionTitle(title = \"辅助\")"))
-        assertFalse(sections.contains("SettingsDetailGroup(title = \"问题排查\")"))
-        assertTrue(sections.contains("onClick = onDiagnosticsClick"))
+    fun categoryAndTabletShellUseThePreviousSettingsLayout() {
+        val category = source("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsCategoryScreen.kt")
+        val tablet = source("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsTabletShell.kt")
+        assertFalse(category.contains("PlaybackSettingsPage"))
+        assertTrue(tablet.contains("ThreePaneScaffoldValue("))
+        assertTrue(tablet.contains("extraPane = if (useThreePaneLayout && !isSearchActive) detailPane else null"))
+    }
+
+    @Test
+    fun playbackAndGlassControlsRemainOnTheirOriginalSettingsPages() {
+        val playback = source("src/main/java/com/android/purebilibili/feature/settings/screen/PlaybackSettingsScreen.kt")
+        val animation = source("src/main/java/com/android/purebilibili/feature/settings/screen/AnimationSettingsScreen.kt")
+        assertTrue(playback.contains("page == PlaybackSettingsPage.PLAYBACK || page == PlaybackSettingsPage.DECODER"))
+        assertTrue(playback.contains("page == PlaybackSettingsPage.PLAYBACK || page == PlaybackSettingsPage.FULLSCREEN"))
+        assertFalse(playback.contains("item(key = \"playback_advanced\")"))
+        assertTrue(animation.contains("LiquidGlassAdjustmentPanel("))
+        assertFalse(animation.contains("AppPreference(title = \"玻璃高级调节\""))
     }
 }
