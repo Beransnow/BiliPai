@@ -1,6 +1,8 @@
 // 文件路径: feature/video/VideoPlayerSection.kt
 package com.android.purebilibili.feature.video.ui.section
 
+import com.android.purebilibili.feature.video.ui.overlay.NextWatchOverlay
+
 import coil3.request.crossfade
 
 import androidx.compose.foundation.focusGroup
@@ -5028,6 +5030,16 @@ private fun VideoPlayerSectionContent(
                 }
             }
         }
+
+        NextWatchOverlay(
+            player = playerState.player,
+            mediaKey = "$bvid:${(uiState as? VideoPlaybackUiState.Success)?.info?.cid}",
+            eligible = uiState is VideoPlaybackUiState.Success && danmakuHostActive && !isInPipMode && !isAudioOnly && !isScreenLocked &&
+                !state.forceCoverOnly && !state.liveBackPreview && !suppressTransientOverlaysForTransition &&
+                !showControls && !isGestureVisible && !landscapeCommentPanelVisible && !danmakuComposerVisible,
+            resolve = actions.resolveNextWatch,
+            play = actions.playNextWatch,
+        )
 
         // 主题原生的音量/亮度反馈。
         GestureLevelOverlayHost(

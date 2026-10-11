@@ -1298,6 +1298,8 @@ private fun PlaybackInteractionSettingsSection(
     //  [新增] 自动播放下一个
     val autoPlayEnabled by com.android.purebilibili.core.store.SettingsManager
         .getAutoPlay(context).collectAsStateWithLifecycle(initialValue = true)
+    val nextWatchHintEnabled by SettingsManager.getNextWatchHintEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val externalPlaylistAutoContinueEnabled by com.android.purebilibili.core.store.SettingsManager
         .getExternalPlaylistAutoContinue(context).collectAsStateWithLifecycle(initialValue = true)
     val resumePlaybackPromptEnabled by com.android.purebilibili.core.store.SettingsManager
@@ -1422,6 +1424,19 @@ private fun PlaybackInteractionSettingsSection(
                         com.android.purebilibili.core.store.SettingsManager
                             .setSpacePlayedVideoLocatePromptEnabled(context, it)
                     }
+                },
+                iconTint = iOSTeal
+            )
+        }
+        AppPreferenceDivider()
+        SettingsItemAnchor("playback.next_watch_hint_enabled") {
+            AppSwitchPreference(
+                icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_PLAY_NEXT),
+                title = playbackSettingTitle("playback.next_watch_hint_enabled"),
+                subtitle = "最后 5 秒提示下一集或相关推荐，关闭不影响自动续播",
+                checked = nextWatchHintEnabled,
+                onCheckedChange = { enabled ->
+                    scope.launch { SettingsManager.setNextWatchHintEnabled(context, enabled) }
                 },
                 iconTint = iOSTeal
             )

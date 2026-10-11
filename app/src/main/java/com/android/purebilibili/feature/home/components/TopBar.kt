@@ -1108,7 +1108,8 @@ private fun LightweightHomeTopTabs(
     val showIcon = shouldShowTopTabIcon(normalizedLabelMode)
     val showText = shouldShowTopTabText(normalizedLabelMode)
     val effectivePresentation = when {
-        skinPlainStyle || forceMaterialUnderline -> AppTopTabPresentation.MATERIAL_UNDERLINE
+        skinPlainStyle || forceMaterialUnderline || LocalAppUiStyle.current == AppUiStyle.MATERIAL3 ->
+            AppTopTabPresentation.MATERIAL_UNDERLINE
         // Retired Miuix TONAL_CAPSULE callers must not revive the old per-item fill.
         presentation == AppTopTabPresentation.TONAL_CAPSULE ->
             AppTopTabPresentation.MATERIAL_UNDERLINE
@@ -1123,7 +1124,7 @@ private fun LightweightHomeTopTabs(
         selectionIndicatorStyle = resolveHomeSelectionIndicatorStyle(
             uiStyle = LocalAppUiStyle.current,
             liquidGlassEnabled = isLiquidGlassEnabled,
-            forceMaterialUnderline = forceMaterialUnderline,
+            forceMaterialUnderline = forceMaterialUnderline || LocalAppUiStyle.current == AppUiStyle.MATERIAL3,
         ),
     )
     val topTabMotionSpec = remember { resolveSegmentedControlMotionSpec() }
@@ -1641,11 +1642,11 @@ private fun LightweightHomeTopTabs(
         val homeSelectionIndicatorStyle = resolveHomeSelectionIndicatorStyle(
             uiStyle = LocalAppUiStyle.current,
             liquidGlassEnabled = isLiquidGlassEnabled,
-            forceMaterialUnderline = forceMaterialUnderline,
+            forceMaterialUnderline = forceMaterialUnderline || LocalAppUiStyle.current == AppUiStyle.MATERIAL3,
         )
         val shouldUseHomeCapsule =
             homeSelectionIndicatorStyle == HomeSelectionIndicatorStyle.CAPSULE
-        // 玻璃开启或 Miuix 主题使用胶囊；仅 Material3 的非玻璃路径使用短下划线。
+        // MD3 首页始终使用下划线；Miuix 保留原胶囊策略。
         val shouldUseMd3LiquidCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
             !skinPlainStyle &&
             !hasSkinStickerIcons &&
@@ -1756,7 +1757,9 @@ private fun LightweightHomeTopTabs(
             indicatorWidthPx = targetIndicatorWidthPx,
             contentPaddingPx = with(density) { md3ContentPadding.toPx() }
         )
-        val shouldAnimateMd3Tap = shouldUseMd3NativeUnderline && shouldAnimateMd3TopTabUnderline(
+        val shouldAnimateMd3Tap = shouldUseMd3NativeUnderline &&
+            !com.android.purebilibili.core.ui.LocalSystemReduceMotion.current &&
+            shouldAnimateMd3TopTabUnderline(
             pagerIsDragging = pagerIsDragging,
             topTabIndicatorOwnsPosition = topTabIndicatorOwnsPosition
         )
@@ -2908,7 +2911,7 @@ fun CategoryTabRow(
         isTransitionRunning = isTransitionRunning,
         showPartitionAction = showPartitionAction,
         isViewportSyncEnabled = isViewportSyncEnabled,
-        forceMaterialUnderline = forceMaterialUnderline,
+        forceMaterialUnderline = forceMaterialUnderline || LocalAppUiStyle.current == AppUiStyle.MATERIAL3,
         dockHorizontalPadding = dockHorizontalPadding,
     )
 }

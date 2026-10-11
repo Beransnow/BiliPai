@@ -159,7 +159,13 @@ fun AppLiquidGlassBackToTopButton(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .appElasticPress(enabled = !isDragging, state = elasticState, transformInBackdrop = glassMotion)
+                    // Keep the observer mounted through long-press drag so release can settle
+                    // its state. Position dragging belongs to the handler below, not elastic stretch.
+                    .appElasticPress(
+                        dragEnabled = false,
+                        state = elasticState,
+                        transformInBackdrop = glassMotion,
+                    )
                     .then(
                         if (glassActive && effectiveBackdrop != null) {
                             Modifier.biliPaiFloatingDockShell(

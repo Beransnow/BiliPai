@@ -32,8 +32,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.animation.core.CubicBezierEasing
-import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.snap
@@ -116,14 +114,10 @@ import top.yukonga.miuix.kmp.basic.ButtonColors as MiuixButtonColors
 import top.yukonga.miuix.kmp.basic.ButtonDefaults as MiuixButtonDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private const val APP_TAB_INDICATOR_DURATION_MILLIS = 300
-private val flutterEase = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
-private val PiliPlusIndicatorDecelerate = Easing { fraction ->
-    kotlin.math.sin(flutterEase.transform(fraction) * Math.PI.toFloat() / 2f)
-}
-private val PiliPlusIndicatorAccelerate = Easing { fraction ->
-    1f - kotlin.math.cos(flutterEase.transform(fraction) * Math.PI.toFloat() / 2f)
-}
+private const val APP_TAB_INDICATOR_DURATION_MILLIS =
+    com.android.purebilibili.core.ui.motion.AppTabIndicatorMotion.DurationMillis
+private val PiliPlusIndicatorDecelerate = com.android.purebilibili.core.ui.motion.AppTabIndicatorMotion.decelerate
+private val PiliPlusIndicatorAccelerate = com.android.purebilibili.core.ui.motion.AppTabIndicatorMotion.accelerate
 
 internal data class ElasticTabIndicatorBounds(
     val leftDp: Float,
@@ -202,7 +196,7 @@ private fun AppElasticTabIndicator(
     indicatorPositionProvider: (() -> Float)? = null,
 ) {
     if (tabSlots.isEmpty()) return
-    val animateIndicator = com.android.purebilibili.core.ui.LocalComponentMotionEnabled.current &&
+    val animateIndicator = !com.android.purebilibili.core.ui.LocalSystemReduceMotion.current &&
         indicatorPositionProvider == null
     val followPosition = indicatorPositionProvider?.invoke()
     val safeIndex = selectedTabIndex.coerceIn(tabSlots.indices)

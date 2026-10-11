@@ -545,6 +545,8 @@ private fun LargeScreenPlayerHost(
                     viewportWidthDpOverride = viewportWidthDpOverride,
                 ),
                 actions = VideoPlayerSectionActions(
+                    resolveNextWatch = playbackActions.resolveNextWatch,
+                    playNextWatch = playbackActions.playNextWatch,
                     onToggleFullscreen = onToggleFullscreen,
                     onQualityChange = playbackActions.changeQuality,
                     onBack = onBack,

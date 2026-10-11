@@ -612,6 +612,8 @@ internal fun VideoDetailScreenStateHolder(
     }
     val playbackActions = remember(viewModel, context, presentationState) {
         VideoDetailPlaybackActions(
+            resolveNextWatch = viewModel::resolveNextWatchSuggestion,
+            playNextWatch = viewModel::playNextWatchSuggestion,
             changeQuality = viewModel::changeQuality,
             reloadVideo = viewModel::reloadVideo,
             switchCdn = viewModel::switchCdn,
@@ -3772,6 +3774,8 @@ internal fun VideoDetailScreenStateHolder(
                         currentAudioQuality = audioQualityPreference,
                     ),
                     actions = VideoPlayerSectionActions(
+                        resolveNextWatch = viewModel::resolveNextWatchSuggestion,
+                        playNextWatch = viewModel::playNextWatchSuggestion,
                         onToggleFullscreen = { toggleFullscreen() },
                         onQualityChange = { qid -> viewModel.changeQuality(qid) },
                         onBack = { toggleFullscreen() },
