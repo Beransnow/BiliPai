@@ -1,8 +1,8 @@
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.ui.motion.AppMotionEasing
 import com.android.purebilibili.core.ui.AppContentColors
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 
 import androidx.compose.foundation.background
@@ -201,7 +201,7 @@ internal fun BottomBarFloatingSegmentedControl(
         measuredIndicatorContentWidths?.map { width ->
             animateDpAsState(
                 targetValue = width,
-                animationSpec = tween(180, easing = FastOutSlowInEasing),
+                animationSpec = tween(180, easing = AppMotionEasing.M1Standard),
                 label = "glassAsyncBadgeIndicatorWidth",
             ).value
         }

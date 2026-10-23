@@ -308,15 +308,14 @@ internal fun BiliPaiNavDisplayHost(
             }
         }
     }
-    val videoFallbackTransition = if (cardTransitionEnabled) {
-        // 卡片形变开启时，fallback 只负责接住源卡片不可用等降级场景，避免再接管
-        // Miuix 预测返回进度。
-        predictiveBackExcludedTransition
-    } else {
-        // 关闭卡片形变后，视频页完整沿用“全局导航动画”：Miuix、AOSP、缩放、
-        // 经典与无动画都由同一个 Miuix NavDisplay 驱动，不叠加 Compose 转场。
-        globalTransition
-    }
+    // 卡片开关同时覆盖玻璃与原生视频页。关闭后，默认样式直接使用导航预设，
+    // 不附加卡片进度限制或背景模糊；显式选择的其他全局样式及减弱动效仍然生效。
+    val videoFallbackTransition = resolveVideoCardFallbackTransition(
+        cardTransitionEnabled = cardTransitionEnabled,
+        animationStyle = style,
+        globalTransition = globalTransition,
+        cardEnabledFallback = predictiveBackExcludedTransition,
+    )
     val observedVideoFallbackTransition = remember(
         videoFallbackTransition,
         videoCardTransitionProgress,

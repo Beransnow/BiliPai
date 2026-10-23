@@ -4504,7 +4504,8 @@ fun AppNavigation(
                                     key = audioModeKey,
                                     hasDisplayState =
                                         viewModel.uiState.value is
-                                            com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState.Success
+                                            com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState.Success &&
+                                            viewModel.currentPlayer != null
                                 )
                                 val renderAudioPlayer: @Composable (String, Long) -> Unit = { bvid, cid ->
                                     com.android.purebilibili.feature.video.screen.AudioModeScreen(
@@ -5190,7 +5191,7 @@ fun AppNavigation(
                                     // 共享过渡驱动的开关（点条进详情/返回落位）瞬时切换小横条
                                     // presence，morph 是唯一几何时间轴；仅会话起止播放动画。
                                     animateNowPlayingPresence = !driveBottomBarByProgress,
-                                    onToggleSidebar = if (tabletUseSidebar) {
+                                    onToggleSidebar = if (windowSizeClass.shouldUseSideNavigation) {
                                         {
                                             coroutineScope.launch {
                                                 SettingsManager.setTabletUseSidebar(context, true)
@@ -5245,7 +5246,7 @@ fun AppNavigation(
                                 onLinkedDockPhaseChange = { linkedDockPhase = it },
                                 isTopLevelDestination = currentNavigation3Key == BiliPaiNavKey.MainHost,
                                 animateNowPlayingPresence = !driveBottomBarByProgress,
-                                onToggleSidebar = if (tabletUseSidebar) {
+                                onToggleSidebar = if (windowSizeClass.shouldUseSideNavigation) {
                                     {
                                         coroutineScope.launch {
                                             SettingsManager.setTabletUseSidebar(context, true)
