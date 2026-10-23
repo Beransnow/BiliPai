@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.delay
@@ -453,7 +454,7 @@ fun AppNavigation(
     val uriHandler = LocalUriHandler.current
     // Resolve once before mounting navigation chrome. A default settings object can
     // otherwise publish the wrong glass tuning for the first frame after cold start.
-    val resolvedHomeSettings by SettingsManager.getHomeSettings(context)
+    val resolvedHomeSettings by remember(context) { SettingsManager.getHomeSettings(context) }
         .collectAsStateWithLifecycle<com.android.purebilibili.core.store.HomeSettings?>(
             initialValue = null,
             context = kotlin.coroutines.EmptyCoroutineContext,
@@ -735,7 +736,7 @@ fun AppNavigation(
         val sidebarAccounts = sidebarAccountSnapshot.accounts
         val sidebarActiveAccountMid = sidebarAccountSnapshot.activeAccountMid
         val sidebarPlaybackAccountMid = sidebarAccountSnapshot.playbackAccountMid
-        val playerInteractionSettings by SettingsManager.getPlayerInteractionSettings(context)
+        val playerInteractionSettings by remember(context) { SettingsManager.getPlayerInteractionSettings(context) }
             .collectAsStateWithLifecycle(
                 initialValue = com.android.purebilibili.core.store.PlayerInteractionSettings(),
                 context = kotlin.coroutines.EmptyCoroutineContext
@@ -874,6 +875,9 @@ fun AppNavigation(
             tabletUseSidebar = tabletUseSidebar,
             foldPosture = appWindowAdaptiveInfo.posture,
         )
+        // 独立听视频横条按实际内容区定位，随侧栏展开、收起与窗口变化重新测量。
+        // 宽度仅在测量阶段读取，玻璃、MD3 与 Miuix 共用相同的避让边界。
+        var navigationContentWidthPx by remember { mutableIntStateOf(0) }
         // 由所有入口共用的底栏内部显隐状态。进视频前先置为隐藏，避免返回到主入口后再补一次隐藏动画。
         var isBottomBarVisible by remember(launchToPortraitFeedOnStartupAtInit) {
             mutableStateOf(!launchToPortraitFeedOnStartupAtInit)
@@ -2143,6 +2147,9 @@ fun AppNavigation(
             systemReduceMotion = systemReduceMotion,
         )
         CompositionLocalProvider(
+            com.android.purebilibili.feature.settings.LocalSettingsHomeConfiguration provides homeSettings,
+            com.android.purebilibili.feature.settings.LocalSettingsNavigationConfiguration provides appNavigationSettings,
+            com.android.purebilibili.feature.settings.LocalSettingsPlayerConfiguration provides playerInteractionSettings,
             com.android.purebilibili.core.ui.LocalComponentMotionEnabled provides componentMotionEnabled,
             com.android.purebilibili.core.ui.animation.LocalLiquidIndicatorWobbleEnabled provides
                 appNavigationSettings.liquidIndicatorWobbleEnabled,
@@ -2387,7 +2394,7 @@ fun AppNavigation(
                 // 强制该节点每次都 measure 两遍（一次拿目标尺寸、一次按动画插值），
                 // 并隐式加上 clipToBounds。而这个 Box 的尺寸只随键盘/系统栏/旋转变化，
                 // 对这类变化做尺寸补间没有观感价值，代价却压在每一帧的测量上。
-                Box {
+                Box(modifier = Modifier.onSizeChanged { navigationContentWidthPx = it.width }) {
                 // ===== 内容层 (hazeSource) =====
                 // 这个 Box 包裹全局壁纸和所有导航内容，作为底栏模糊/折射的源
                 // [LayerBackdrop] Apply layerBackdrop before the bottom bar sibling so the dock
@@ -4036,6 +4043,7 @@ fun AppNavigation(
                         BiliPaiNavEntryContentRole.BOTTOM_BAR_SETTINGS ->
                             SettingsTabletEntry {
                                 com.android.purebilibili.feature.settings.BottomBarSettingsScreen(
+                                    viewModel = settingsViewModel,
                                     onBack = { performSystemBackAction() }
                                 )
                             }
@@ -5173,6 +5181,8 @@ fun AppNavigation(
                                     isPagerScrollInProgressProvider =
                                         mainBottomPagerState.scrollInProgressProvider,
                                     isPagerDraggingProvider = bottomPagerDraggingProvider,
+                                    pagerTargetPositionProvider = mainBottomPagerState.targetPositionProvider,
+                                    isPagerNavigatingProvider = mainBottomPagerState.programmaticNavigationProvider,
                                     uiSkinDecoration = bottomBarUiSkinDecoration,
                                     linkedDockPhase = linkedDockPhase,
                                     onLinkedDockPhaseChange = { linkedDockPhase = it },
@@ -5228,6 +5238,8 @@ fun AppNavigation(
                                 isPagerScrollInProgressProvider =
                                     mainBottomPagerState.scrollInProgressProvider,
                                 isPagerDraggingProvider = bottomPagerDraggingProvider,
+                                pagerTargetPositionProvider = mainBottomPagerState.targetPositionProvider,
+                                isPagerNavigatingProvider = mainBottomPagerState.programmaticNavigationProvider,
                                 uiSkinDecoration = bottomBarUiSkinDecoration,
                                 linkedDockPhase = linkedDockPhase,
                                 onLinkedDockPhaseChange = { linkedDockPhase = it },
@@ -5275,7 +5287,28 @@ fun AppNavigation(
                     animatePresence = !driveBottomBarByProgress && !isReturningSameAudioVideo,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .zIndex(2f),
+                        .zIndex(2f)
+                        .layout { measurable, constraints ->
+                            val windowWidth = constraints.maxWidth
+                            val contentWidth = navigationContentWidthPx
+                                .takeIf { it > 0 }
+                                ?.coerceAtMost(windowWidth) ?: windowWidth
+                            // 大屏独立横条沿用悬浮底栏 600dp 上限，手机保留原有宽度。
+                            val barWidth = if (isTabletLayout) {
+                                contentWidth.coerceAtMost(600.dp.roundToPx())
+                            } else {
+                                contentWidth
+                            }
+                            val placeable = measurable.measure(
+                                constraints.copy(minWidth = barWidth, maxWidth = barWidth)
+                            )
+                            layout(windowWidth, placeable.height) {
+                                placeable.placeRelative(
+                                    windowWidth - contentWidth + (contentWidth - barWidth) / 2,
+                                    0,
+                                )
+                            }
+                        },
                 ) {
                     if (immersiveBarEnabled && immersiveBarHidden) {
                         // 沉浸态把柄：低调的居中小胶囊，点击唤回标题横条。
