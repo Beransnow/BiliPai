@@ -544,7 +544,7 @@ fun DynamicCommentSheet(
                                             isHated = reply.action == 2,
                                             onDeleteClick = if (actionCapabilities.canDelete) ({ onDelete(reply) }) else null,
                                             onReportClick = { reason -> onReport(reply, reason) },
-                                            canToggleTop = dynamicAuthorMid > 0L,
+                                            canToggleTop = actionCapabilities.canToggleTop,
                                             onToggleTopClick = { onToggleTop(reply) },
                                             onAvatarClick = { mid -> mid.toLongOrNull()?.let(onUserClick) },
                                             onImagePreview = { images, index, rect, textContent ->
@@ -885,7 +885,7 @@ fun LazyListScope.dynamicInlineCommentItems(
                 isHated = reply.action == 2,
                 onDeleteClick = if (actionCapabilities.canDelete) ({ onDelete(reply) }) else null,
                 onReportClick = { reason -> onReport(reply, reason) },
-                canToggleTop = dynamicAuthorMid > 0L,
+                canToggleTop = actionCapabilities.canToggleTop,
                 onToggleTopClick = { onToggleTop(reply) },
                 onAvatarClick = { mid -> mid.toLongOrNull()?.let(onUserClick) },
                 onImagePreview = onImagePreview,
@@ -905,4 +905,3 @@ fun LazyListScope.dynamicInlineCommentItems(
         }
     }
 }
-

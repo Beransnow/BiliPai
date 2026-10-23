@@ -771,6 +771,7 @@ private fun PortraitVideoInfo(
                 color = Color.White,
                 fontSize = layoutPolicy.authorNameFontSp.sp,
                 fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f, fill = false),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -798,14 +799,14 @@ private fun PortraitVideoInfo(
                 enabled = true,
                 shape = RoundedCornerShape(layoutPolicy.followButtonCornerRadiusDp.dp),
                 modifier = Modifier
-                    .height(layoutPolicy.followButtonHeightDp.dp)
+                    .heightIn(min = layoutPolicy.followButtonHeightDp.dp)
                     .followActionAnchor(),
             ) {
                 AppSurface(
                     shape = RoundedCornerShape(layoutPolicy.followButtonCornerRadiusDp.dp),
                     color = if (LocalPlayerControlGlassEnabled.current) Color.Transparent else buttonColor,
                     modifier = Modifier
-                        .fillMaxHeight()
+                        .heightIn(min = layoutPolicy.followButtonHeightDp.dp)
                         .clickable(
                             onClickLabel = if (followStatusKnown) null else "重新确认状态并关注",
                             onClick = rememberFollowActionWithConfirmation(
@@ -831,6 +832,8 @@ private fun PortraitVideoInfo(
                         }
                         AppText(
                             text = buttonText,
+                            maxLines = 1,
+                            softWrap = false,
                             color = contentColor,
                             fontSize = layoutPolicy.followTextFontSp.sp,
                             fontWeight = FontWeight.Bold
@@ -1008,6 +1011,8 @@ private fun PortraitStaffSheet(
                     ) {
                         AppText(
                             text = if (isFollowing) "已关注" else "关注",
+                            maxLines = 1,
+                            softWrap = false,
                             style = MaterialTheme.typography.labelMedium,
                             color = if (isFollowing) {
                                 AppContentColors.primaryText().copy(alpha = 0.72f)

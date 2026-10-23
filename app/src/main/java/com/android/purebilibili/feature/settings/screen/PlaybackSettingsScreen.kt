@@ -53,6 +53,7 @@ import com.android.purebilibili.core.store.LONG_PRESS_SPEED_HINT_STEP
 import com.android.purebilibili.core.store.player.PlayerSettingsStore
 import com.android.purebilibili.core.store.player.DEFAULT_AUDIO_QUALITY_FOLLOW_LAST
 import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
+import com.android.purebilibili.core.store.ChapterDisplayMode
 import com.android.purebilibili.core.store.BottomProgressBehavior
 import com.android.purebilibili.core.store.FullscreenAspectRatio
 import com.android.purebilibili.core.store.PlaybackCompletionBehavior
@@ -2126,11 +2127,9 @@ SettingsItemAnchor("playback.portrait_player_collapse_mode") {
                 icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_HEADER_COLLAPSE),
                 title = playbackSettingTitle("playback.video_detail_chrome_scroll_hide_enabled"),
                 subtitle = if (videoDetailChromeScrollHideEnabled) {
-                    "浏览下方评论时收起顶栏，回到顶部恢复"
-                } else if (com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled) {
-                    "顶栏始终显示，玻璃评论栏仍随滚动收起"
+                    "收起最热／最新排序与搜索入口，回到列表顶部恢复；最热评论标题始终随下滑收起"
                 } else {
-                    "顶栏和评论排序始终显示"
+                    "排序与搜索入口始终显示；最热评论标题仍随下滑收起、回顶出现"
                 },
                 checked = videoDetailChromeScrollHideEnabled,
                 onCheckedChange = { enabled ->
@@ -2447,6 +2446,8 @@ SettingsItemAnchor("playback.fullscreen_swipe_seek_seconds") {
         val showFullscreenTime by remember(context) { com.android.purebilibili.core.store.SettingsManager.getShowFullscreenTime(context) }.collectAsStateWithLifecycle(initialValue = true)
         val showFullscreenActionItems by remember(context) { com.android.purebilibili.core.store.SettingsManager.getShowFullscreenActionItems(context) }.collectAsStateWithLifecycle(initialValue = true)
         val showOnlineCount by remember(context) { com.android.purebilibili.core.store.SettingsManager.getShowOnlineCount(context) }.collectAsStateWithLifecycle(initialValue = false)
+        val chapterDisplayMode by remember(context) { SettingsManager.getChapterDisplayMode(context) }
+            .collectAsStateWithLifecycle(initialValue = ChapterDisplayMode.WITH_CONTROLS)
         val bottomProgressBehavior by remember(context) { com.android.purebilibili.core.store.SettingsManager.getBottomProgressBehavior(context) }
             .collectAsStateWithLifecycle(initialValue = BottomProgressBehavior.ALWAYS_HIDE)
         val progressPeakDanmakuEnabled by remember(context) { SettingsManager.getProgressPeakDanmakuEnabled(context) }
@@ -2953,6 +2954,18 @@ SettingsItemAnchor("playback.app_screenshot_capture_mode") {
             }
         AppPreferenceDivider()
 
+        SettingsItemAnchor("playback.chapter_display_mode") {
+            SettingsSingleChoicePreference(
+                title = playbackSettingTitle("playback.chapter_display_mode"),
+                subtitle = chapterDisplayMode.description,
+                options = ChapterDisplayMode.entries.map { AppSegmentOption(it, it.label) },
+                selectedValue = chapterDisplayMode,
+                onSelectionChange = { mode ->
+                    scope.launch { SettingsManager.setChapterDisplayMode(context, mode) }
+                },
+            )
+        }
+        AppPreferenceDivider()
 SettingsItemAnchor("playback.bottom_progress_behavior") {
         SettingsSingleChoicePreference(
             title = settingItemTitle("playback.bottom_progress_behavior"),

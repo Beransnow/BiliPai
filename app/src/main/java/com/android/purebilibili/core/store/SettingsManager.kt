@@ -468,6 +468,18 @@ enum class FullscreenAspectRatio(val value: Int, val label: String, val descript
     }
 }
 
+/** 章节可视层的展示方式；隐藏时仍保留章节列表入口。 */
+enum class ChapterDisplayMode(val value: Int, val label: String, val description: String) {
+    HIDDEN(0, "彻底隐藏", "隐藏章节分段条和当前章节标题，仍可打开章节列表"),
+    WITH_CONTROLS(1, "随控制栏显示", "仅在控制栏展开时显示章节，收起后不遮挡画面字幕"),
+    PERSISTENT(2, "底部常驻", "横屏全屏收起控制栏后仍显示章节条，可能遮挡视频自带字幕");
+
+    companion object {
+        fun fromValue(value: Int): ChapterDisplayMode =
+            entries.find { it.value == value } ?: WITH_CONTROLS
+    }
+}
+
 enum class BottomProgressBehavior(
     val value: Int,
     val label: String,
@@ -7479,6 +7491,7 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
     private val KEY_QUALITY_SWITCH_FAILURE_DIALOG_SHOWN =
         booleanPreferencesKey("quality_switch_failure_dialog_shown")
     private val KEY_SUBTITLE_AUTO_PREFERENCE = intPreferencesKey("subtitle_auto_preference")
+    private val KEY_CHAPTER_DISPLAY_MODE = intPreferencesKey("chapter_display_mode")
     private val KEY_BOTTOM_PROGRESS_BEHAVIOR = intPreferencesKey("bottom_progress_behavior")
     private val KEY_PROGRESS_PEAK_DANMAKU_ENABLED =
         booleanPreferencesKey("progress_peak_danmaku_enabled")
@@ -8028,6 +8041,19 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
     suspend fun setSubtitleAutoPreference(context: Context, preference: SubtitleAutoPreference) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_SUBTITLE_AUTO_PREFERENCE] = preference.ordinal
+        }
+    }
+
+    fun getChapterDisplayMode(context: Context): Flow<ChapterDisplayMode> =
+        context.settingsDataStore.data.map { preferences ->
+            ChapterDisplayMode.fromValue(
+                preferences[KEY_CHAPTER_DISPLAY_MODE] ?: ChapterDisplayMode.WITH_CONTROLS.value
+            )
+        }
+
+    suspend fun setChapterDisplayMode(context: Context, mode: ChapterDisplayMode) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_CHAPTER_DISPLAY_MODE] = mode.value
         }
     }
 
@@ -8698,6 +8724,7 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
             IntShareablePreferenceDefinition(KEY_FULLSCREEN_MODE, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_FULLSCREEN_ASPECT_RATIO, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_SUBTITLE_AUTO_PREFERENCE, SettingsShareSection.PLAYBACK),
+            IntShareablePreferenceDefinition(KEY_CHAPTER_DISPLAY_MODE, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_BOTTOM_PROGRESS_BEHAVIOR, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(
                 KEY_PROGRESS_PEAK_DANMAKU_ENABLED,

@@ -3,6 +3,10 @@ package com.android.purebilibili.feature.video.ui.components.glass
 
 import com.android.purebilibili.feature.video.ui.components.*
 
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.feature.settings.SettingsSingleChoicePreference
+import com.android.purebilibili.core.store.ChapterDisplayMode
+import com.android.purebilibili.feature.settings.playbackSettingTitle
 import com.android.purebilibili.core.ui.AppContentColors
 import com.android.purebilibili.feature.video.screen.AudioModeSleepTimerDialog
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -336,6 +340,8 @@ fun VideoSettingsPanel(
     onCaptureScreenshot: () -> Unit = {},
     onDownloadAudio: () -> Unit = {},
 
+    chapterDisplayMode: ChapterDisplayMode = ChapterDisplayMode.WITH_CONTROLS,
+    onChapterDisplayModeChange: ((ChapterDisplayMode) -> Unit)? = null,
     // 关闭面板
     onDismiss: () -> Unit
 ) {
@@ -458,6 +464,19 @@ fun VideoSettingsPanel(
             )
         ) {
             val groups = VideoControlCenterGroups(this, controlCenterMotion)
+
+            if (onChapterDisplayModeChange != null) {
+                groups.item {
+                    SettingsSingleChoicePreference(
+                        title = playbackSettingTitle("playback.chapter_display_mode"),
+                        subtitle = chapterDisplayMode.description,
+                        options = ChapterDisplayMode.entries.map { AppSegmentOption(it, it.label) },
+                        selectedValue = chapterDisplayMode,
+                        onSelectionChange = onChapterDisplayModeChange,
+                    )
+                    SettingsDivider()
+                }
+            }
 
             //  定时关闭 - 垂直布局，选项在下一行
             groups.item {

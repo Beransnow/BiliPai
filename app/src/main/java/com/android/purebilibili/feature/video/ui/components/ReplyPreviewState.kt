@@ -18,7 +18,7 @@ internal data class ReplyPreviewState(
     val replies: List<ReplyItem>,
 )
 
-/** Shared by video, dynamic and other root-comment rows; offscreen rows do not fetch. */
+/** 视频与动态共用：进入组合且预览不足时补齐，离开组合时取消当前请求。 */
 @Composable
 internal fun rememberReplyPreviewState(
     item: ReplyItem,

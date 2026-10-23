@@ -462,6 +462,8 @@ fun BottomControlBar(
     // Features
     videoshotData: com.android.purebilibili.data.model.response.VideoshotData? = null,
     viewPoints: List<com.android.purebilibili.data.model.response.ViewPoint> = emptyList(),
+    showViewPoints: Boolean? = null,
+    onViewPointsToggle: (() -> Unit)? = null,
     sponsorMarkers: List<SponsorProgressMarker> = emptyList(),
     pbpRidgeSamples: List<PbpRidgeSample> = emptyList(),
     currentChapter: String? = null,
@@ -746,10 +748,11 @@ fun BottomControlBar(
         progressLayoutPolicy
     }
     var heatmapVisible by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
-    var chaptersVisible by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
-    // 开关只控制玻璃横屏的可视数据，不更改请求、缓存与原生播放器路径。
+    var localChaptersVisible by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(true) }
+    val chaptersVisible = showViewPoints ?: localChaptersVisible
+    // 章节开关控制所有材质的可视数据；弹幕热度开关仅作用于玻璃进度条。
     val visibleRidgeSamples = if (glassProgressDock && !heatmapVisible) emptyList() else pbpRidgeSamples
-    val visibleViewPoints = if (glassProgressDock && !chaptersVisible) emptyList() else viewPoints
+    val visibleViewPoints = if (!chaptersVisible) emptyList() else viewPoints
     val progressBarContent: @Composable () -> Unit = {
         val renderProgress: @Composable (Modifier) -> Unit = { progressModifier ->
             PlayerControlProgressBar(
@@ -767,7 +770,7 @@ fun BottomControlBar(
                 viewPoints = visibleViewPoints,
                 sponsorMarkers = sponsorMarkers,
                 pbpRidgeSamples = visibleRidgeSamples,
-                currentChapterProvider = currentChapterProvider,
+                currentChapterProvider = { if (chaptersVisible) currentChapterProvider() else null },
                 onChapterClick = onChapterClick,
                 modifier = progressModifier
                     .semantics { testTagsAsResourceId = true }
@@ -1200,7 +1203,9 @@ fun BottomControlBar(
                                             if (liquidGlassEnabled && viewPoints.isNotEmpty()) AppWindowAction(
                                                 label = "显示章节标记",
                                                 selected = chaptersVisible,
-                                                onClick = { chaptersVisible = !chaptersVisible },
+                                                onClick = {
+                                                    onViewPointsToggle?.invoke() ?: run { localChaptersVisible = !localChaptersVisible }
+                                                },
                                             ) else null,
                                             if (liquidGlassEnabled) AppWindowAction(
                                                 label = "字幕",

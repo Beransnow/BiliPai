@@ -95,7 +95,6 @@ import com.android.purebilibili.feature.video.playback.audio.resolveAudioQuality
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.plugin.skin.LocalUiSkinState
 import com.android.purebilibili.core.plugin.skin.UiSkinAnimatedAsset
 import com.android.purebilibili.core.plugin.skin.UiSkinSurface
@@ -176,6 +175,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.currentStateAsState
 import com.android.purebilibili.feature.video.playback.session.PendingPlaybackUserAction
 import dev.chrisbanes.haze.HazeState
+import com.android.purebilibili.core.store.ChapterDisplayMode
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -514,7 +514,11 @@ internal fun resolveDisplayedOnlineCount(
 }
 
 @Composable
-private fun SkinAwareLoadingIndicator(color: Color) {
+private fun SkinAwareLoadingIndicator(
+    color: Color,
+    standalone: Boolean = false,
+    bufferedProvider: () -> Long = { 0L },
+) {
     val skinPath = LocalUiSkinState.current.assetPath(UiSkinSurface.LOADING_INDICATOR) {
         it.loadingAnimation ?: it.loadingFrame
     }
@@ -524,8 +528,11 @@ private fun SkinAwareLoadingIndicator(color: Color) {
             size = 48.dp,
             contentDescription = "加载中",
         )
+    } else if (standalone) {
+        // 居中缓冲：暗色圆底 + 小电视动画 + 文案（已缓冲时显示已缓冲位置），动画随主题主色染色。
+        BiliTvBufferingIndicator(tint = color, bufferedProvider = bufferedProvider)
     } else {
-        AdaptiveLoadingIndicator(color = color)
+        BiliTvAnimatedBufferingIndicator(tint = color, size = 32.dp)
     }
 }
 
@@ -1122,6 +1129,19 @@ private fun VideoPlayerOverlayContent(
         .getShowOnlineCount(context)
         .collectAsStateWithLifecycle(initialValue = false
         )
+    val chapterDisplayMode by remember(context) { SettingsManager.getChapterDisplayMode(context) }
+        .collectAsStateWithLifecycle(initialValue = ChapterDisplayMode.WITH_CONTROLS)
+    val showViewPointMarkers = chapterDisplayMode != ChapterDisplayMode.HIDDEN
+    val onChapterVisibilityChange: (Boolean) -> Unit = { visible ->
+        scope.launch {
+            SettingsManager.setChapterDisplayMode(
+                context,
+                if (!visible) ChapterDisplayMode.HIDDEN
+                else if (chapterDisplayMode == ChapterDisplayMode.HIDDEN) ChapterDisplayMode.WITH_CONTROLS
+                else chapterDisplayMode,
+            )
+        }
+    }
     val bottomProgressBehavior by SettingsManager
         .getBottomProgressBehavior(context)
         .collectAsStateWithLifecycle(initialValue = BottomProgressBehavior.ALWAYS_HIDE
@@ -1520,6 +1540,27 @@ private fun VideoPlayerOverlayContent(
             )
         }
 
+        // 两条材质路径共用显示策略；仅显式选择常驻时在控制栏收起后保留章节。
+        val chapterViewportIsLandscape = configuration.screenWidthDp > configuration.screenHeightDp
+        if (chapterDisplayMode == ChapterDisplayMode.PERSISTENT &&
+            isFullscreen && chapterViewportIsLandscape && (!isVisible || isScreenLocked) &&
+            !danmakuComposerVisible && showViewPointMarkers && viewPoints.isNotEmpty()
+        ) {
+            com.android.purebilibili.feature.video.ui.overlay.OverlayPersistentChapterBar(
+                progressProvider = displayedProgressProvider,
+                viewPoints = viewPoints,
+                onChapterClick = { showChapterList = true },
+                enabled = !isScreenLocked,
+                onHeightChanged = actions.onPersistentChapterBarHeightChanged,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .landscapeEndDrawerPadding(endDrawerReservedWidthProvider)
+                    // 常驻条贴住播放器底边，仅保留左右安全区，不添加底部间距。
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    .padding(horizontal = 20.dp),
+            )
+        }
+
         // --- 3. 控制栏内容 (锁定时隐藏) ---
         val showPlayerChrome = isVisible && !isScreenLocked && !danmakuComposerVisible
         AnimatedVisibility(
@@ -1680,9 +1721,11 @@ private fun VideoPlayerOverlayContent(
                     videoshotData = videoshotData,
                     // 📖 [新增] 视频章节数据
                     viewPoints = viewPoints,
+                    showViewPoints = showViewPointMarkers,
+                    onViewPointsToggle = { onChapterVisibilityChange(!showViewPointMarkers) },
                     sponsorMarkers = sponsorMarkers,
                     pbpRidgeSamples = pbpRidgeSamples,
-                    currentChapterProvider = currentChapterProvider,
+                    currentChapterProvider = { if (showViewPointMarkers) currentChapterProvider() else null },
                     onChapterClick = { showChapterList = true },
                     // 📱 [新增] 竖屏全屏模式
                     isVerticalVideo = isVerticalVideo,
@@ -1988,7 +2031,11 @@ private fun VideoPlayerOverlayContent(
             enter = EnterTransition.None,
             exit = fadeOut(OverlayControlFadeSpec)
         ) {
-            SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
+            SkinAwareLoadingIndicator(
+                color = centerLoadingVisualState.indicatorColor,
+                standalone = true,
+                bufferedProvider = { progressProvider().buffered },
+            )
         }
 
         AnimatedVisibility(
@@ -2258,6 +2305,10 @@ private fun VideoPlayerOverlayContent(
 
         if (showVideoSettings) {
             VideoSettingsPanel(
+                chapterDisplayMode = chapterDisplayMode,
+                onChapterDisplayModeChange = { mode ->
+                    scope.launch { SettingsManager.setChapterDisplayMode(context, mode) }
+                },
                 isFullscreen = isFullscreen,
                 sleepTimerMinutes = sleepTimerMinutes,
                 onSleepTimerChange = onSleepTimerChange,
@@ -2380,7 +2431,9 @@ private fun VideoPlayerOverlayContent(
                 viewPoints = viewPoints,
                 progressProvider = displayedProgressProvider,
                 onSeek = commitSeek,
-                onDismiss = { showChapterList = false }
+                onDismiss = { showChapterList = false },
+                showViewPoints = showViewPointMarkers,
+                onShowViewPointsChange = onChapterVisibilityChange,
             )
         }
 
@@ -3098,12 +3151,14 @@ fun LandscapeEndDrawer(
                                     horizontal = layoutPolicy.followButtonHorizontalPaddingDp.dp,
                                     vertical = 0.dp
                                 ),
-                                modifier = Modifier.height(layoutPolicy.followButtonHeightDp.dp),
+                                modifier = Modifier.heightIn(min = layoutPolicy.followButtonHeightDp.dp),
                                 shape = AppShapes.container(ContainerLevel.Card)
                             ) {
                                 AppText(
                                     if (!followStatusKnown) "—" else if (isFollowed) "已关注" else "+ 关注",
-                                    fontSize = layoutPolicy.followButtonFontSp.sp
+                                    fontSize = layoutPolicy.followButtonFontSp.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
                                 )
                             }
                         }
@@ -3197,7 +3252,8 @@ fun LandscapeEndDrawer(
                             }
                             LaunchedEffect(visible, selectedTab, currentLazyIndex) {
                                 if (visible && selectedTab == 1 && currentLazyIndex >= 0) {
-                                    collectionListState.scrollToItem(currentLazyIndex)
+                                    // 面板展开后动画定位当前集，与面板入场衔接。
+                                    collectionListState.animateScrollToItem(currentLazyIndex)
                                 }
                             }
                             LazyColumn(
