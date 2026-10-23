@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.LocalBottomBarVisible
-import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
+import com.android.purebilibili.core.ui.animation.LocalAppNavigationEntranceReady
 import com.android.purebilibili.core.ui.animation.EntranceGroup
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.feature.settings.SettingsPageScrollHost
@@ -63,7 +63,7 @@ fun SettingsSearchScreen(
     val windowSizeClass = LocalWindowSizeClass.current
     val bottomBarVisible = LocalBottomBarVisible.current
     val navigationTransitionRunning =
-        LocalAnimatedVisibilityScope.current?.transition?.isRunning == true
+        !LocalAppNavigationEntranceReady.current.value
     val rootEntranceStartWhen = shouldStartSettingsEntrance(
         entranceEnabled = true,
         navigationTransitionRunning = navigationTransitionRunning,
