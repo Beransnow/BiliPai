@@ -8171,17 +8171,11 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         val savedVisibility = BottomBarVisibilityMode.fromValue(
             preferences[KEY_BOTTOM_BAR_VISIBILITY_MODE] ?: BottomBarVisibilityMode.ALWAYS_VISIBLE.value
         )
-        // Compact navigation replaces scroll hiding only for floating bottom bars.
-        // The saved preference remains intact for switching this feature off.
-        val effectiveVisibility = if (
-            (preferences[KEY_BOTTOM_BAR_SCROLL_COMPACT_ENABLED] ?: true) &&
-            (preferences[KEY_BOTTOM_BAR_FLOATING] ?: true) &&
-            savedVisibility == BottomBarVisibilityMode.SCROLL_HIDE
-        ) BottomBarVisibilityMode.ALWAYS_VISIBLE else savedVisibility
+        // 用户选择的整栏显隐策略优先；Dock 收缩不能将下滑隐藏改成始终显示。
         return AppNavigationSettings(
             liquidIndicatorWobbleEnabled =
                 preferences[com.android.purebilibili.core.store.navigation.liquidIndicatorWobblePreferencesKey] ?: true,
-            bottomBarVisibilityMode = effectiveVisibility,
+            bottomBarVisibilityMode = savedVisibility,
             savedBottomBarVisibilityMode = savedVisibility,
             bottomBarOrder = order,
             bottomBarVisibleTabs = visible.toSet(),

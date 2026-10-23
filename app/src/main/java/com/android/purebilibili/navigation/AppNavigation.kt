@@ -742,6 +742,10 @@ fun AppNavigation(
                 context = kotlin.coroutines.EmptyCoroutineContext
             )
         val bottomBarVisibilityMode = appNavigationSettings.bottomBarVisibilityMode
+        // 玻璃、MD3 与 Miuix 共用优先级：整栏隐藏时不再响应 Dock 下滑收缩。
+        val bottomBarHomeSettings = remember(effectiveHomeSettings, bottomBarVisibilityMode) {
+            resolveBottomBarScrollSettings(effectiveHomeSettings, bottomBarVisibilityMode)
+        }
         val orderedVisibleTabIds = appNavigationSettings.orderedVisibleTabIds
         val visibleBottomBarItems = remember(orderedVisibleTabIds) {
             resolveVisibleBottomBarItems(orderedVisibleTabIds)
@@ -1721,25 +1725,22 @@ fun AppNavigation(
         val scrollOffsetState = remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
         val finalBottomBarVisible = showBottomBar &&
             (driveBottomBarByProgress || videoCardSourceChromeVisible) &&
-            bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN &&
-            (
-                bottomBarVisibilityMode == SettingsManager.BottomBarVisibilityMode.ALWAYS_VISIBLE ||
-                    isBottomBarVisible ||
-                    (isBottomBarFloating && audioNowPlayingBarEnabled && audioNowPlayingActive &&
-                        audioNowPlayingItem != null)
+            resolveBottomBarVisibleForMode(
+                mode = bottomBarVisibilityMode,
+                scrollVisible = isBottomBarVisible,
             )
-        // This raw signal is intentionally independent from the user's bottom-bar visibility
-        // mode: the linked playback strip still compacts on downward browsing when the bar itself
-        // is configured to remain visible.
+        // 始终显示时允许播放条随下滑收缩；下滑隐藏时由整栏可见性统一处理。
         val collapseLinkedPlaybackDock by remember(
             isBottomBarVisible,
             currentBottomNavItem,
             scrollOffsetState,
+            bottomBarVisibilityMode,
         ) {
             // 根导航只关心是否越过折叠阈值，不读取每一帧的滚动距离。
             derivedStateOf {
-                !isBottomBarVisible ||
-                    (currentBottomNavItem == BottomNavItem.DYNAMIC && scrollOffsetState.floatValue > 50f)
+                bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.SCROLL_HIDE &&
+                    (!isBottomBarVisible ||
+                        (currentBottomNavItem == BottomNavItem.DYNAMIC && scrollOffsetState.floatValue > 50f))
             }
         }
         val bottomBarVisibilityState = remember { MutableTransitionState(finalBottomBarVisible) }
@@ -2470,10 +2471,9 @@ fun AppNavigation(
 
                 fun resolveMainHostBottomBarVisible(): Boolean {
                     return shouldShowMainHostBottomBar() &&
-                        bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN &&
-                        (
-                            bottomBarVisibilityMode == SettingsManager.BottomBarVisibilityMode.ALWAYS_VISIBLE ||
-                                isBottomBarVisible
+                        resolveBottomBarVisibleForMode(
+                            mode = bottomBarVisibilityMode,
+                            scrollVisible = isBottomBarVisible,
                         )
                 }
 
@@ -5167,7 +5167,7 @@ fun AppNavigation(
                                     itemColorIndices = bottomBarItemColors,
                                     itemLabels = bottomBarItemLabels,
                                     dynamicUnreadCount = dynamicUnreadCount,
-                                    homeSettings = effectiveHomeSettings,
+                                    homeSettings = bottomBarHomeSettings,
                                     miuixBackdrop = bottomBarBackdrop,
                                     motionTier = com.android.purebilibili.core.ui.adaptive.MotionTier.Normal,
                                     isTransitionRunning = bottomPagerRenderBudget.isTransitionRunning,
@@ -5225,7 +5225,7 @@ fun AppNavigation(
                                 itemColorIndices = bottomBarItemColors,
                                 itemLabels = bottomBarItemLabels,
                                 dynamicUnreadCount = dynamicUnreadCount,
-                                homeSettings = effectiveHomeSettings,
+                                homeSettings = bottomBarHomeSettings,
                                 miuixBackdrop = bottomBarBackdrop,
                                 motionTier = com.android.purebilibili.core.ui.adaptive.MotionTier.Normal,
                                 isTransitionRunning = bottomPagerRenderBudget.isTransitionRunning,
