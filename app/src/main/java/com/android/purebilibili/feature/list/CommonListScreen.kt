@@ -1564,8 +1564,11 @@ fun CommonListScreen(
                             onCollectionClick = onCollectionClick,
                             onRetry = { viewModel.loadData() },
                             loadMoreError = state.loadMoreError,
-                            onRetryLoadMore = seasonSeriesDetailViewModel?.let { detailVm ->
-                                { detailVm.retryLoadMore() }
+                            onRetryLoadMore = when {
+                                favoriteViewModel != null -> ({ favoriteViewModel.retrySelectedFolder() })
+                                likedVideosViewModel != null -> ({ likedVideosViewModel.loadMore(retry = true) })
+                                seasonSeriesDetailViewModel != null -> ({ seasonSeriesDetailViewModel.retryLoadMore() })
+                                else -> null
                             },
                             onLoadMore = {
                                 when (loadMoreOwner) {
