@@ -2,6 +2,8 @@
 
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.Surface
@@ -101,7 +103,7 @@ internal fun rememberPortraitVideoEnhancementSession(
     val scope = rememberCoroutineScope()
     val session = remember(player, mediaIdentity) { PortraitVideoEnhancementSession(player) }
     val plugins by PluginManager.pluginsFlow.collectAsStateWithLifecycle()
-    val info = plugins.firstOrNull { it.plugin.id == Anime4KPlugin.PLUGIN_ID }
+    val info = plugins.firstOrNull { it.plugin.id == BuiltinPluginIds.VIDEO_ENHANCEMENT }
     val plugin = info?.plugin as? Anime4KPlugin
     val config = if (plugin != null) plugin.configState.collectAsStateWithLifecycle().value else Anime4KConfig()
     val glesAvailable = remember(context) { isAnime4KGles3Available(context) }
@@ -150,7 +152,7 @@ internal fun rememberPortraitVideoEnhancementSession(
             session.requested = value
             session.failed = false
             scope.launch {
-                if (value && info?.enabled != true) PluginManager.setEnabled(Anime4KPlugin.PLUGIN_ID, true)
+                if (value && info?.enabled != true) PluginManager.setEnabled(BuiltinPluginIds.VIDEO_ENHANCEMENT, true)
                 Anime4KPlugin.getInstance()?.rememberCurrentVideoEnabled(value)
             }
         }

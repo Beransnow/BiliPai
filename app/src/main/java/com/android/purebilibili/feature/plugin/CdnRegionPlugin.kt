@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
@@ -30,9 +32,9 @@ import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
 import com.android.purebilibili.core.coroutines.AppScope
 import com.android.purebilibili.core.network.NetworkModule
-import com.android.purebilibili.core.plugin.Plugin
-import com.android.purebilibili.core.plugin.PluginCapability
-import com.android.purebilibili.core.plugin.PluginCapabilityManifest
+import com.android.purebilibili.core.plugin.BuiltinPlugin
+import com.android.purebilibili.plugin.sdk.PluginCapability
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
 import com.android.purebilibili.core.util.Logger
@@ -51,7 +53,6 @@ import okhttp3.Request
 import java.net.InetSocketAddress
 import java.net.Socket
 
-const val CDN_REGION_PLUGIN_ID = "cdn_region"
 private const val TAG = "CdnRegionPlugin"
 private const val CDN_PROBE_SAMPLE_BYTES = 32 * 1024
 private const val CDN_ACTIVE_PLAYBACK_SESSION_TTL_MS = 10 * 60_000L
@@ -86,7 +87,7 @@ private data class CdnActivePlaybackSession(
     val updatedAtMs: Long
 )
 
-interface PlaybackCdnPlugin : Plugin {
+interface PlaybackCdnPlugin : BuiltinPlugin {
     fun rewritePlaybackCandidates(
         videoUrls: List<String>,
         audioUrls: List<String>
@@ -111,7 +112,7 @@ interface PlaybackCdnPlugin : Plugin {
 }
 
 class CdnRegionPlugin : PlaybackCdnPlugin {
-    override val id: String = CDN_REGION_PLUGIN_ID
+    override val id: String = BuiltinPluginIds.PLAYBACK_CDN
     override val name: String = "CDN 智能选线"
     override val description: String = "在 B 站当前授权的签名 CDN 候选中选线，并可选预缓存未来 DASH 分片"
     override val version: String = "1.5.0"
@@ -865,7 +866,7 @@ internal object CdnRegionPluginStore {
     }
 
     suspend fun read(context: Context): CdnRegionPluginCache {
-        val raw = PluginStore.getConfigJson(context, CDN_REGION_PLUGIN_ID) ?: return CdnRegionPluginCache()
+        val raw = PluginStore.getConfigJson(context, BuiltinPluginIds.PLAYBACK_CDN) ?: return CdnRegionPluginCache()
         val stored = runCatching { json.decodeFromString<CdnRegionPluginCache>(raw) }
             .getOrDefault(CdnRegionPluginCache())
         val now = System.currentTimeMillis()
@@ -875,7 +876,7 @@ internal object CdnRegionPluginStore {
     suspend fun write(context: Context, cache: CdnRegionPluginCache) {
         PluginStore.setConfigJson(
             context = context,
-            pluginId = CDN_REGION_PLUGIN_ID,
+            pluginId = BuiltinPluginIds.PLAYBACK_CDN,
             configJson = json.encodeToString(cache)
         )
     }

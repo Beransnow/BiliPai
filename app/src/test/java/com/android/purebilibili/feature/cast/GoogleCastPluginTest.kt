@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.plugin.googlecast
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Cast
 import com.android.purebilibili.core.plugin.CastPluginApi
@@ -29,8 +31,7 @@ class GoogleCastPluginTest {
 
     @Test
     fun `plugin id is google_cast`() {
-        assertEquals("google_cast", plugin.id)
-        assertEquals(GOOGLE_CAST_PLUGIN_ID, plugin.id)
+        assertEquals(BuiltinPluginIds.GOOGLE_CAST, plugin.id)
     }
 
     @Test
@@ -60,7 +61,7 @@ class GoogleCastPluginTest {
     @Test
     fun `capability manifest includes expected capabilities`() {
         val manifest = plugin.capabilityManifest
-        assertEquals("google_cast", manifest.pluginId)
+        assertEquals(BuiltinPluginIds.GOOGLE_CAST, manifest.pluginId)
         assertEquals("Google Cast", manifest.displayName)
         assertEquals("0.1.1", manifest.version)
         assertEquals(1, manifest.apiVersion)

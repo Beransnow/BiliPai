@@ -1,11 +1,12 @@
 package com.android.purebilibili.core.plugin.feed
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import android.content.Context
-import com.android.purebilibili.core.plugin.PluginCapability
+import com.android.purebilibili.plugin.sdk.PluginCapability
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.js.BiliPaiJsPluginInstallStore
 import com.android.purebilibili.feature.plugin.js.resolveBiliPaiJsInitialParamValues
-import com.android.purebilibili.feature.plugin.SubscriptionFeedPlugin
 
 fun isSubscriptionPluginOrFeedEnabled(
     context: Context,
@@ -15,9 +16,9 @@ fun isSubscriptionPluginOrFeedEnabled(
     if (isPluginPersistedEnabled) return true
 
     val builtinPluginEnabled = installedPlugins.any {
-        it.enabled && it.plugin.id == SubscriptionFeedPlugin.PLUGIN_ID
+        it.enabled && it.plugin.id == BuiltinPluginIds.SUBSCRIPTION_FEED
     } || PluginManager.plugins.any {
-        it.enabled && it.plugin.id == SubscriptionFeedPlugin.PLUGIN_ID
+        it.enabled && it.plugin.id == BuiltinPluginIds.SUBSCRIPTION_FEED
     }
     if (builtinPluginEnabled) return true
 
@@ -35,7 +36,7 @@ fun isSubscriptionPluginOrFeedEnabled(
 }
 
 fun loadEnabledFeedSources(context: Context): List<FeedSource> {
-    val builtin = if (PluginManager.plugins.any { it.enabled && it.plugin.id == SubscriptionFeedPlugin.PLUGIN_ID }) {
+    val builtin = if (PluginManager.plugins.any { it.enabled && it.plugin.id == BuiltinPluginIds.SUBSCRIPTION_FEED }) {
         SubscriptionFeedStore.listBlocking(context)
             .filter { it.enabled && isHttpFeedUrl(it.url) }
             .map {

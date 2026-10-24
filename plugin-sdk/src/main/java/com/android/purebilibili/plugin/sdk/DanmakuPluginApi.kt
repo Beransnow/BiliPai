@@ -1,7 +1,6 @@
 package com.android.purebilibili.plugin.sdk
 
-interface DanmakuPluginApi {
-    val capabilityManifest: PluginCapabilityManifest
+interface DanmakuPluginApi : Plugin {
 
     fun filterDanmaku(danmaku: DanmakuItem): DanmakuItem?
 

@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import androidx.compose.animation.core.animateFloatAsState
@@ -51,7 +53,7 @@ fun EyeProtectionOverlay(
     playbackActive: Boolean = false
 ) {
     val plugins by PluginManager.pluginsFlow.collectAsStateWithLifecycle()
-    val pluginInfo = plugins.find { it.plugin.id == EYE_PROTECTION_PLUGIN_ID } ?: return
+    val pluginInfo = plugins.find { it.plugin.id == BuiltinPluginIds.EYE_PROTECTION } ?: return
     val plugin = pluginInfo.plugin as? EyeProtectionPlugin ?: return
     val pluginEnabled = pluginInfo.enabled
     val settingsPreviewEnabled by plugin.settingsPreviewEnabled.collectAsStateWithLifecycle()

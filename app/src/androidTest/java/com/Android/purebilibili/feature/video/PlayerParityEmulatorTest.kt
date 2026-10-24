@@ -2,6 +2,8 @@
 
 package com.android.purebilibili.feature.video
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import android.content.Intent
 import android.content.res.Configuration
 import androidx.compose.ui.geometry.Rect
@@ -22,7 +24,6 @@ import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.decodeVideoEnhancementConfig
-import com.android.purebilibili.feature.plugin.Anime4KPlugin
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -44,7 +45,7 @@ class PlayerParityEmulatorTest {
     @Before
     fun launchLocalPlayer() {
         runBlocking {
-            originalEnhancement = PluginStore.getConfigJson(context, Anime4KPlugin.PLUGIN_ID) ?: "{}"
+            originalEnhancement = PluginStore.getConfigJson(context, BuiltinPluginIds.VIDEO_ENHANCEMENT) ?: "{}"
             originalSpeed = SettingsManager.getLastPlaybackSpeed(context).first()
         }
         scenario = ActivityScenario.launch(Intent(context, PlayerParityTestActivity::class.java))
@@ -55,7 +56,7 @@ class PlayerParityEmulatorTest {
     fun releaseAndRestorePreferences() {
         if (::scenario.isInitialized) scenario.close()
         runBlocking {
-            PluginStore.setConfigJson(context, Anime4KPlugin.PLUGIN_ID, originalEnhancement)
+            PluginStore.setConfigJson(context, BuiltinPluginIds.VIDEO_ENHANCEMENT, originalEnhancement)
             SettingsManager.setLastPlaybackSpeed(context, originalSpeed)
         }
     }
@@ -195,7 +196,7 @@ class PlayerParityEmulatorTest {
                 }
                 rule.waitUntil(10_000) {
                     runBlocking {
-                        val json = PluginStore.getConfigJson(context, Anime4KPlugin.PLUGIN_ID) ?: return@runBlocking false
+                        val json = PluginStore.getConfigJson(context, BuiltinPluginIds.VIDEO_ENHANCEMENT) ?: return@runBlocking false
                         val stored = decodeVideoEnhancementConfig(json)
                         stored.algorithm == VideoEnhancementAlgorithm.ANIME4K &&
                             stored.preset == preset && stored.rememberedEnabled

@@ -2,6 +2,8 @@
 
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import androidx.compose.foundation.layout.Arrangement
@@ -67,7 +69,7 @@ internal fun EyeProtectionSettings(
     val isActive by plugin.isNightModeActive.collectAsStateWithLifecycle()
     val usageMinutes by plugin.usageMinutesFlow.collectAsStateWithLifecycle()
     val pluginEnabled = PluginManager.plugins.any {
-        it.plugin.id == EYE_PROTECTION_PLUGIN_ID && it.enabled
+        it.plugin.id == BuiltinPluginIds.EYE_PROTECTION && it.enabled
     }
 
     LaunchedEffect(Unit) {

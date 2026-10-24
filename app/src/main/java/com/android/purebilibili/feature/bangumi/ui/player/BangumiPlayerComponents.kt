@@ -1,6 +1,8 @@
 // 文件路径: feature/bangumi/ui/player/BangumiPlayerComponents.kt
 package com.android.purebilibili.feature.bangumi.ui.player
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
@@ -219,7 +221,7 @@ fun BangumiPlayerView(
     val lifecycleState by lifecycleOwner.lifecycle.currentStateAsState()
     val hostLifecycleStarted = lifecycleState.isAtLeast(Lifecycle.State.STARTED)
     val registeredPlugins by PluginManager.pluginsFlow.collectAsStateWithLifecycle()
-    val anime4kPluginInfo = registeredPlugins.firstOrNull { it.plugin.id == Anime4KPlugin.PLUGIN_ID }
+    val anime4kPluginInfo = registeredPlugins.firstOrNull { it.plugin.id == BuiltinPluginIds.VIDEO_ENHANCEMENT }
     val anime4kPlugin = anime4kPluginInfo?.plugin as? Anime4KPlugin
     val anime4kConfig = if (anime4kPlugin == null) {
         Anime4KConfig()
@@ -944,7 +946,7 @@ fun BangumiPlayerView(
                 videoEnhancementSessionOverride = enabled
                 scope.launch {
                     if (enabled && anime4kPluginInfo?.enabled != true) {
-                        PluginManager.setEnabled(Anime4KPlugin.PLUGIN_ID, true)
+                        PluginManager.setEnabled(BuiltinPluginIds.VIDEO_ENHANCEMENT, true)
                     }
                     Anime4KPlugin.getInstance()?.rememberCurrentVideoEnabled(enabled)
                 }

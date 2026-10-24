@@ -1,5 +1,7 @@
 package com.android.purebilibili.core.plugin
 
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
+
 import com.android.purebilibili.data.model.response.VideoItem
 import kotlinx.serialization.Serializable
 
@@ -85,7 +87,7 @@ data class RecommendationResult(
     val generatedAt: Long = System.currentTimeMillis()
 )
 
-interface RecommendationPluginApi : Plugin {
+interface RecommendationPluginApi : BuiltinPlugin {
     override val capabilityManifest: PluginCapabilityManifest
 
     fun buildRecommendations(request: RecommendationRequest): RecommendationResult

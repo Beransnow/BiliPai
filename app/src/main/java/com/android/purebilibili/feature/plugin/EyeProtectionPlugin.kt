@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DarkMode
@@ -7,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.android.purebilibili.core.plugin.PLUGIN_EFFECT_HINT_EYE_COOLDOWN_MS
-import com.android.purebilibili.core.plugin.Plugin
+import com.android.purebilibili.core.plugin.BuiltinPlugin
 import com.android.purebilibili.core.plugin.PluginEffectHintBus
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
@@ -91,9 +93,9 @@ data class EyeProtectionConfig(
     val showEffectHint: Boolean = true
 )
 
-class EyeProtectionPlugin : Plugin {
+class EyeProtectionPlugin : BuiltinPlugin {
 
-    override val id = EYE_PROTECTION_PLUGIN_ID
+    override val id = BuiltinPluginIds.EYE_PROTECTION
     override val name = "夜间护眼"
     override val description = "柔和降蓝光、定时护眼与休息提醒"
     override val version = "2.2.0"
@@ -391,7 +393,7 @@ class EyeProtectionPlugin : Plugin {
     companion object {
         fun getInstance(): EyeProtectionPlugin? {
             return PluginManager.plugins.find {
-                it.plugin.id == EYE_PROTECTION_PLUGIN_ID
+                it.plugin.id == BuiltinPluginIds.EYE_PROTECTION
             }?.plugin as? EyeProtectionPlugin
         }
     }

@@ -110,8 +110,7 @@ data class RecommendationResult(
     val generatedAt: Long = 0L
 )
 
-interface RecommendationPluginApi {
-    val capabilityManifest: PluginCapabilityManifest
+interface RecommendationPluginApi : Plugin {
 
     fun buildRecommendations(request: RecommendationRequest): RecommendationResult
 }

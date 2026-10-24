@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.purebilibili.core.plugin.Plugin
-import com.android.purebilibili.core.plugin.PluginCapabilityManifest
+import com.android.purebilibili.core.plugin.BuiltinPlugin
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
 import com.android.purebilibili.core.ui.AppAlertDialog
@@ -54,9 +56,9 @@ private const val TAG = "Anime4KPlugin"
 /**
  * Anime4K 是内置插件：插件层负责配置和可见性，播放器输出仍由 VideoOutputRouter 管理。
  */
-class Anime4KPlugin : Plugin {
+class Anime4KPlugin : BuiltinPlugin {
 
-    override val id: String = PLUGIN_ID
+    override val id: String = BuiltinPluginIds.VIDEO_ENHANCEMENT
     override val name: String = "画质增强"
     override val description: String = "提供 Anime4K 与 AMD FSR 1.0 实时画质增强"
     override val version: String = "0.4.0"
@@ -262,11 +264,10 @@ class Anime4KPlugin : Plugin {
     }
 
     companion object {
-        const val PLUGIN_ID: String = "anime4k"
 
         fun getInstance(): Anime4KPlugin? {
             return PluginManager.plugins
-                .firstOrNull { it.plugin.id == PLUGIN_ID }
+                .firstOrNull { it.plugin.id == BuiltinPluginIds.VIDEO_ENHANCEMENT }
                 ?.plugin as? Anime4KPlugin
         }
     }

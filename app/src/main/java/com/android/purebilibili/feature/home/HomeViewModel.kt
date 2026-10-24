@@ -1,6 +1,8 @@
 // 文件路径: feature/home/HomeViewModel.kt
 package com.android.purebilibili.feature.home
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,8 +20,6 @@ import com.android.purebilibili.core.plugin.RecommendationRequest
 import com.android.purebilibili.core.plugin.RecommendationResult
 import com.android.purebilibili.core.plugin.RecommendationSceneSignals
 import com.android.purebilibili.core.plugin.RecommendationStrategy
-import com.android.purebilibili.feature.plugin.ADFILTER_PLUGIN_ID
-import com.android.purebilibili.feature.plugin.BILIPAI_FEED_FILTER_PLUGIN_ID
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TodayWatchDislikedVideoSnapshot
 import com.android.purebilibili.core.store.TodayWatchFeedbackStore
@@ -508,16 +508,16 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
         syncTodayWatchFeedbackFromStore()
         viewModelScope.launch {
-            PluginManager.awaitPluginReady(ADFILTER_PLUGIN_ID)
+            PluginManager.awaitPluginReady(BuiltinPluginIds.AD_FILTER)
             //  推荐流过滤插件的「启用态 + 配置」是在注册协程里异步回填的(DataStore)。
             //  若不等待就重过滤, 冷启动的首个请求会在“无规则”状态下被过滤, 表现为
             //  首次展示漏过滤、必须手动刷新一次才生效。
-            PluginManager.awaitPluginReady(BILIPAI_FEED_FILTER_PLUGIN_ID)
+            PluginManager.awaitPluginReady(BuiltinPluginIds.FEED_FILTER)
             reFilterAllContent()
         }
         viewModelScope.launch {
             PluginManager.pluginsFlow.collect { plugins ->
-                val plugin = plugins.find { it.plugin.id == TodayWatchPlugin.PLUGIN_ID }?.plugin as? TodayWatchPlugin
+                val plugin = plugins.find { it.plugin.id == BuiltinPluginIds.TODAY_WATCH }?.plugin as? TodayWatchPlugin
                 if (plugin !== observedTodayWatchPlugin) {
                     todayWatchPluginObserverJob?.cancel()
                     observedTodayWatchPlugin = plugin
@@ -623,7 +623,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun syncTodayWatchPluginState(clearWhenDisabled: Boolean): TodayWatchRuntimeConfig {
-        val info = PluginManager.plugins.find { it.plugin.id == TodayWatchPlugin.PLUGIN_ID }
+        val info = PluginManager.plugins.find { it.plugin.id == BuiltinPluginIds.TODAY_WATCH }
         val pluginEnabled = info?.enabled == true
         val plugin = info?.plugin as? TodayWatchPlugin
         val config = plugin?.configState?.value ?: TodayWatchPluginConfig()
@@ -658,7 +658,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun switchTodayWatchMode(mode: TodayWatchMode) {
-        val info = PluginManager.plugins.find { it.plugin.id == TodayWatchPlugin.PLUGIN_ID }
+        val info = PluginManager.plugins.find { it.plugin.id == BuiltinPluginIds.TODAY_WATCH }
         if (info?.enabled != true) return
 
         val plugin = info.plugin as? TodayWatchPlugin
@@ -670,7 +670,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setTodayWatchCollapsed(collapsed: Boolean) {
-        val info = PluginManager.plugins.find { it.plugin.id == TodayWatchPlugin.PLUGIN_ID }
+        val info = PluginManager.plugins.find { it.plugin.id == BuiltinPluginIds.TODAY_WATCH }
         val plugin = info?.plugin as? TodayWatchPlugin
         plugin?.updateConfig { current -> current.copy(collapsed = collapsed) }
 
@@ -774,7 +774,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             EyeProtectionPlugin.getInstance()?.isNightModeActive?.value == true
 
         val recommendationPlugin = PluginManager.plugins
-            .firstOrNull { it.enabled && it.plugin.id == TodayWatchPlugin.PLUGIN_ID }
+            .firstOrNull { it.enabled && it.plugin.id == BuiltinPluginIds.TODAY_WATCH }
             ?.plugin as? RecommendationPluginApi
         if (recommendationPlugin == null) {
             _uiState.value = _uiState.value.copy(

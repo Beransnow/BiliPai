@@ -1,6 +1,8 @@
 // 文件路径: feature/plugin/DanmakuEnhancePlugin.kt
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import android.content.Context
@@ -22,8 +24,8 @@ import com.android.purebilibili.core.plugin.DanmakuItem
 import com.android.purebilibili.core.plugin.DanmakuPluginApi
 import com.android.purebilibili.core.plugin.DanmakuStyle
 import com.android.purebilibili.core.plugin.PLUGIN_EFFECT_HINT_DANMAKU_COOLDOWN_MS
-import com.android.purebilibili.core.plugin.PluginCapability
-import com.android.purebilibili.core.plugin.PluginCapabilityManifest
+import com.android.purebilibili.plugin.sdk.PluginCapability
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginEffectHintBus
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
@@ -46,7 +48,7 @@ private const val TAG = "DanmakuEnhancePlugin"
  */
 class DanmakuEnhancePlugin : DanmakuPluginApi {
 
-    override val id = "danmaku_enhance"
+    override val id = BuiltinPluginIds.DANMAKU_ENHANCE
     override val name = "弹幕增强"
     override val description = "关键词屏蔽、按用户ID屏蔽、同传弹幕高亮"
     override val version = "1.1.1"

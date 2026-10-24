@@ -1,6 +1,8 @@
 // 文件路径: feature/plugin/BiliPaiFeedFilterPlugin.kt
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import android.util.Log
@@ -43,9 +45,6 @@ import kotlinx.serialization.json.Json
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 
-/** 插件 ID: 供启动阶段等待启用态与配置回填, 避免冷启动首次展示漏过滤 */
-internal const val BILIPAI_FEED_FILTER_PLUGIN_ID = "bilipai_feed_filter"
-
 /**
  * 推荐流过滤插件(移植自 BiliPai 的「推荐流设置」RecommendFilter)。
  *
@@ -56,7 +55,7 @@ internal const val BILIPAI_FEED_FILTER_PLUGIN_ID = "bilipai_feed_filter"
  */
 class BiliPaiFeedFilterPlugin : FeedPlugin {
 
-    override val id = BILIPAI_FEED_FILTER_PLUGIN_ID
+    override val id = BuiltinPluginIds.FEED_FILTER
     override val name = "推荐流过滤"
     override val description = "移植自 BiliPai 的推荐流过滤: 时长/播放量/点赞率/标题关键词/屏蔽用户/白名单"
     override val version = "1.0.0"

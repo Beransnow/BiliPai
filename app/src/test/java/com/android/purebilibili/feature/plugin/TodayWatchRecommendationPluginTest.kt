@@ -1,6 +1,8 @@
 package com.android.purebilibili.feature.plugin
 
-import com.android.purebilibili.core.plugin.PluginCapability
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
+import com.android.purebilibili.plugin.sdk.PluginCapability
 import com.android.purebilibili.core.plugin.RecommendationCreatorSignal
 import com.android.purebilibili.core.plugin.RecommendationFeedbackSignals
 import com.android.purebilibili.core.plugin.RecommendationMode
@@ -70,7 +72,7 @@ class TodayWatchRecommendationPluginTest {
 
         val result = plugin.buildRecommendations(request)
 
-        assertEquals("today_watch", result.sourcePluginId)
+        assertEquals(BuiltinPluginIds.TODAY_WATCH, result.sourcePluginId)
         assertEquals("candidate_a", result.items.first().video.bvid)
         assertTrue(result.items.first().score in 0.0..1.0)
         assertTrue(result.items.first().confidence in 0f..1f)

@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.plugin.FeedKind
 import com.android.purebilibili.data.model.response.Owner
 import com.android.purebilibili.data.model.response.Stat
@@ -205,10 +207,10 @@ class BiliPaiFeedFilterPluginTest {
 
     @Test
     fun `plugin id matches the startup await constant`() {
-        // HomeViewModel 通过 awaitPluginReady(BILIPAI_FEED_FILTER_PLUGIN_ID) 等本插件的
+        // HomeViewModel 通过 awaitPluginReady(BuiltinPluginIds.FEED_FILTER) 等本插件的
         // 启用态与配置回填完成后再重过滤首页。若常量与插件实际 id 不一致, 该等待永远不会
         // 完成, 首页将不再自动重过滤(只能手动刷新)。此处锁定二者一致。
-        assertEquals(BILIPAI_FEED_FILTER_PLUGIN_ID, BiliPaiFeedFilterPlugin().id)
+        assertEquals(BuiltinPluginIds.FEED_FILTER, BiliPaiFeedFilterPlugin().id)
     }
 
     // ==================== 工具函数 ====================

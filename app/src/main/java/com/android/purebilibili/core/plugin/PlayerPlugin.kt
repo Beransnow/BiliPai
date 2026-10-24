@@ -9,7 +9,7 @@ package com.android.purebilibili.core.plugin
  * - 自动跳过片头片尾
  * - 播放统计
  */
-interface PlayerPlugin : Plugin {
+interface PlayerPlugin : BuiltinPlugin {
     
     /**
      * 视频加载时回调

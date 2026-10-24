@@ -45,7 +45,7 @@ enum class CastDiscoveryRequirement {
     RAW_LOCAL_NETWORK
 }
 
-interface CastPluginApi : Plugin {
+interface CastPluginApi : BuiltinPlugin {
     val routes: StateFlow<List<CastPluginRoute>>
     val discoveryRequirement: CastDiscoveryRequirement
         get() = CastDiscoveryRequirement.NONE

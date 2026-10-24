@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.ui.AppContentColors
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
@@ -33,8 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.purebilibili.core.plugin.PluginCapability
-import com.android.purebilibili.core.plugin.PluginCapabilityManifest
+import com.android.purebilibili.plugin.sdk.PluginCapability
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
 import com.android.purebilibili.core.plugin.RecommendationAction
@@ -111,7 +113,7 @@ data class TodayWatchPluginConfig(
 
 class TodayWatchPlugin : RecommendationPluginApi {
 
-    override val id: String = PLUGIN_ID
+    override val id: String = BuiltinPluginIds.TODAY_WATCH
     override val name: String = "今日推荐单"
     override val description: String = "本地分析观看历史，生成可定制推荐队列"
     override val version: String = "1.1.0"
@@ -554,11 +556,10 @@ class TodayWatchPlugin : RecommendationPluginApi {
     }
 
     companion object {
-        const val PLUGIN_ID: String = "today_watch"
 
         fun getInstance(): TodayWatchPlugin? {
             return PluginManager.plugins
-                .find { it.plugin.id == PLUGIN_ID }
+                .find { it.plugin.id == BuiltinPluginIds.TODAY_WATCH }
                 ?.plugin as? TodayWatchPlugin
         }
     }

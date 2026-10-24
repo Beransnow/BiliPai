@@ -3,37 +3,19 @@ package com.android.purebilibili.core.plugin
 
 import android.content.Context
 import com.android.purebilibili.core.util.Logger
+import com.android.purebilibili.plugin.sdk.Plugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlin.reflect.KClass
 
 private const val TAG = "PluginManager"
 
-internal fun consumePendingPluginEnabledState(
-    pluginId: String,
-    storedEnabled: Boolean,
-    pendingEnabledOverrides: MutableMap<String, Boolean>
-): Boolean {
-    return pendingEnabledOverrides.remove(pluginId) ?: storedEnabled
-}
-
-internal fun updatePluginEnabledState(
-    plugins: List<PluginInfo>,
-    pluginId: String,
-    enabled: Boolean
-): List<PluginInfo> = plugins.map { info ->
-    if (info.plugin.id == pluginId) info.copy(enabled = enabled) else info
-}
 
 /**
  *  插件管理器
@@ -44,16 +26,24 @@ internal fun updatePluginEnabledState(
 object PluginManager {
     
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val pluginStateMutex = Mutex()
-    private val pendingEnabledOverrides = mutableMapOf<String, Boolean>()
+    private val registry = BuiltinPluginRegistry(
+        readEnabled = { PluginStore.isEnabled(appContext, it) },
+        writeEnabled = { id, enabled -> PluginStore.setEnabled(appContext, id, enabled) },
+        onFailure = { id, error -> Logger.e(TAG, "Plugin state failed: $id", error) },
+        onEnabledChanged = { plugin, enabled ->
+            if (enabled) {
+                PluginEffectHintBus.tryEmit(
+                    resolvePluginEnabledEffectHint(plugin.id, plugin.name),
+                    cooldownMs = PLUGIN_EFFECT_HINT_ENABLED_COOLDOWN_MS
+                )
+            }
+            if (plugin is DanmakuPlugin) notifyDanmakuPluginsUpdated()
+        }
+    )
 
-    /** 插件列表状态流 (用于 Compose 监听) */
-    private val _pluginsFlow = MutableStateFlow<List<PluginInfo>>(emptyList())
-    val pluginsFlow: StateFlow<List<PluginInfo>> = _pluginsFlow.asStateFlow()
-    /** 所有已注册插件的不变快照，可安全从后台线程读取。 */
-    val plugins: List<PluginInfo> get() = _pluginsFlow.value
-
-    private val _readyPluginIds = MutableStateFlow<Set<String>>(emptySet())
+    val pluginsFlow: StateFlow<List<PluginInfo>> = registry.pluginsFlow
+    /** Immutable execution-state snapshot; lifecycle effects complete before publication. */
+    val plugins: List<PluginInfo> get() = pluginsFlow.value
 
     /** 弹幕插件更新信号（用于播放中热刷新当前弹幕） */
     private val _danmakuPluginUpdateToken = MutableStateFlow(0L)
@@ -85,109 +75,36 @@ object PluginManager {
      * 注册插件
      * 内置插件在 Application 中注册
      */
-    fun register(plugin: Plugin) {
-        scope.launch {
-            try {
-                val storedEnabled = PluginStore.isEnabled(appContext, plugin.id)
-                val info = pluginStateMutex.withLock {
-                    if (_pluginsFlow.value.any { it.plugin.id == plugin.id }) {
-                        null
-                    } else {
-                        PluginInfo(
-                            plugin = plugin,
-                            enabled = consumePendingPluginEnabledState(
-                                pluginId = plugin.id,
-                                storedEnabled = storedEnabled,
-                                pendingEnabledOverrides = pendingEnabledOverrides
-                            )
-                        ).also { registered ->
-                            _pluginsFlow.value = _pluginsFlow.value + registered
-                        }
-                    }
-                }
-                if (info == null) {
-                    Logger.w(TAG, " Plugin already registered: ${plugin.id}")
-                    return@launch
-                }
-
-                if (info.enabled) {
-                    try {
-                        plugin.onEnable()
-                        Logger.d(TAG, " Plugin enabled on start: ${plugin.name}")
-                    } catch (e: Exception) {
-                        Logger.e(TAG, " Failed to enable plugin: ${plugin.name}", e)
-                    }
-                }
-
-                Logger.d(TAG, " Plugin registered: ${plugin.name} (enabled=${info.enabled})")
-            } catch (e: Exception) {
-                Logger.e(TAG, " Failed to register plugin: ${plugin.name}", e)
-            } finally {
-                _readyPluginIds.update { it + plugin.id }
-            }
-        }
+    fun register(plugin: BuiltinPlugin) {
+        scope.launch { registry.register(plugin) }
     }
 
     /** Wait until a built-in plugin has finished restoring its persisted configuration. */
-    suspend fun awaitPluginReady(pluginId: String) {
-        _readyPluginIds.first { pluginId in it }
-    }
+    suspend fun awaitPluginReady(pluginId: String) = registry.awaitPluginReady(pluginId)
     
     /**
      * 启用/禁用插件
      */
-    suspend fun setEnabled(pluginId: String, enabled: Boolean) {
-        pluginStateMutex.withLock {
-            val info = _pluginsFlow.value.firstOrNull { it.plugin.id == pluginId }
-            if (info == null) {
-                pendingEnabledOverrides[pluginId] = enabled
-                PluginStore.setEnabled(appContext, pluginId, enabled)
-                Logger.d(TAG, " Deferring plugin enabled change until registration: $pluginId -> $enabled")
-                return@withLock
-            }
+    suspend fun setEnabled(pluginId: String, enabled: Boolean) =
+        registry.setEnabled(pluginId, enabled)
 
-            val plugin = info.plugin
-            if (info.enabled == enabled) return@withLock
+    fun isEnabled(pluginId: String): Boolean =
+        plugins.firstOrNull { it.plugin.id == pluginId }?.enabled == true
 
-            try {
-                if (enabled) {
-                    plugin.onEnable()
-                    Logger.d(TAG, " Plugin enabled: ${plugin.name}")
-                    PluginEffectHintBus.tryEmit(
-                        resolvePluginEnabledEffectHint(plugin.id, plugin.name),
-                        cooldownMs = PLUGIN_EFFECT_HINT_ENABLED_COOLDOWN_MS
-                    )
-                } else {
-                    plugin.onDisable()
-                    Logger.d(TAG, "🔴 Plugin disabled: ${plugin.name}")
-                }
+    fun <T : Plugin> getPlugins(type: KClass<T>): List<T> =
+        plugins.mapNotNull { if (type.isInstance(it.plugin)) type.java.cast(it.plugin) else null }
 
-                _pluginsFlow.value = updatePluginEnabledState(
-                    plugins = _pluginsFlow.value,
-                    pluginId = pluginId,
-                    enabled = enabled
-                )
-
-                if (plugin is DanmakuPlugin) {
-                    notifyDanmakuPluginsUpdated()
-                }
-
-                PluginStore.setEnabled(appContext, pluginId, enabled)
-            } catch (e: Exception) {
-                Logger.e(TAG, " Failed to toggle plugin: ${plugin.name}", e)
-            }
+    fun <T : Plugin> getEnabledPlugins(type: KClass<T>): List<T> =
+        plugins.mapNotNull {
+            if (it.enabled && type.isInstance(it.plugin)) type.java.cast(it.plugin) else null
         }
-    }
-    
-    /**
-     * 获取指定类型的所有已启用插件
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun <T : Plugin> getEnabledPlugins(type: KClass<T>): List<T> {
-        return _pluginsFlow.value
-            .filter { it.enabled && type.isInstance(it.plugin) }
-            .map { it.plugin as T }
-    }
+
+    fun <T : Plugin> getPlugin(type: KClass<T>): T? =
+        plugins.firstOrNull { type.isInstance(it.plugin) }?.let { type.java.cast(it.plugin) }
+
+    fun <T : Plugin> getEnabledPlugin(type: KClass<T>): T? =
+        plugins.firstOrNull { it.enabled && type.isInstance(it.plugin) }
+            ?.let { type.java.cast(it.plugin) }
     
     /**
      * 获取所有 PlayerPlugin
@@ -254,7 +171,7 @@ object PluginManager {
     /**
      * 获取已启用插件数量
      */
-    fun getEnabledCount(): Int = _pluginsFlow.value.count { it.enabled }
+    fun getEnabledCount(): Int = plugins.count { it.enabled }
 
     fun notifyDanmakuPluginsUpdated() {
         _danmakuPluginUpdateToken.value = System.currentTimeMillis()
@@ -279,6 +196,6 @@ internal fun applyFeedTransformPlugins(
  * 插件信息包装类
  */
 data class PluginInfo(
-    val plugin: Plugin,
+    val plugin: BuiltinPlugin,
     val enabled: Boolean
 )

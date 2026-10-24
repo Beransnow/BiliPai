@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.plugin.dlna
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Tv
@@ -8,8 +10,8 @@ import com.android.purebilibili.core.plugin.CastDiscoveryRequirement
 import com.android.purebilibili.core.plugin.CastPluginMediaRequest
 import com.android.purebilibili.core.plugin.CastPluginPlaybackState
 import com.android.purebilibili.core.plugin.CastPluginRoute
-import com.android.purebilibili.core.plugin.PluginCapability
-import com.android.purebilibili.core.plugin.PluginCapabilityManifest
+import com.android.purebilibili.plugin.sdk.PluginCapability
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.feature.cast.associateNotNullBy
 import com.android.purebilibili.feature.cast.hasRawLocalNetworkAccess
@@ -27,11 +29,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-const val DLNA_CAST_PLUGIN_ID = "dlna_cast"
 
 class DlnaCastPlugin : CastPluginApi {
 
-    override val id = DLNA_CAST_PLUGIN_ID
+    override val id = BuiltinPluginIds.DLNA_CAST
     override val name = "DLNA"
     override val description = "通过 DLNA 协议将视频投屏到智能电视等设备"
     override val version = "0.1.1"

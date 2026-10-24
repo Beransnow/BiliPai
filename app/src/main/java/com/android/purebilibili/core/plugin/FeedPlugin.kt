@@ -11,7 +11,7 @@ import com.android.purebilibili.data.model.response.VideoItem
  * - 过滤推广内容
  * - 自定义过滤规则
  */
-interface FeedPlugin : Plugin {
+interface FeedPlugin : BuiltinPlugin {
     
     /**
      * 判断是否显示该推荐项
@@ -30,7 +30,7 @@ interface FeedPlugin : Plugin {
 }
 
 /** Reorders or decorates feed items after all [FeedPlugin] filters have run. */
-interface FeedTransformPlugin : Plugin {
+interface FeedTransformPlugin : BuiltinPlugin {
     fun transformFeedItems(items: List<VideoItem>, feedKind: FeedKind): List<VideoItem>
 }
 

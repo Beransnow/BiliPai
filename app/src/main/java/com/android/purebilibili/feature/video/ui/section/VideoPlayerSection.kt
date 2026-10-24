@@ -1,6 +1,8 @@
 // 文件路径: feature/video/VideoPlayerSection.kt
 package com.android.purebilibili.feature.video.ui.section
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import com.android.purebilibili.feature.video.ui.overlay.NextWatchOverlay
@@ -889,7 +891,7 @@ private fun VideoPlayerSectionContent(
     val lifecycleState by lifecycleOwner.lifecycle.currentStateAsState()
     val hostLifecycleStarted = lifecycleState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)
     val registeredPlugins by PluginManager.pluginsFlow.collectAsStateWithLifecycle()
-    val anime4kPluginInfo = registeredPlugins.firstOrNull { it.plugin.id == Anime4KPlugin.PLUGIN_ID }
+    val anime4kPluginInfo = registeredPlugins.firstOrNull { it.plugin.id == BuiltinPluginIds.VIDEO_ENHANCEMENT }
     val anime4kPlugin = anime4kPluginInfo?.plugin as? Anime4KPlugin
     val anime4kConfig = if (anime4kPlugin == null) {
         Anime4KConfig()
@@ -6292,7 +6294,7 @@ private fun VideoPlayerSectionContent(
                         videoEnhancementSessionOverride = enabled
                         settingsScope.launch {
                             if (enabled && anime4kPluginInfo?.enabled != true) {
-                                PluginManager.setEnabled(Anime4KPlugin.PLUGIN_ID, true)
+                                PluginManager.setEnabled(BuiltinPluginIds.VIDEO_ENHANCEMENT, true)
                             }
                             Anime4KPlugin.getInstance()?.rememberCurrentVideoEnabled(enabled)
                         }

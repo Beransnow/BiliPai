@@ -1,6 +1,8 @@
 // 文件路径: feature/plugin/SponsorBlockPlugin.kt
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import coil3.request.crossfade
@@ -45,8 +47,8 @@ import androidx.core.content.FileProvider
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.android.purebilibili.core.plugin.PlayerPluginApi
-import com.android.purebilibili.core.plugin.PluginCapability
-import com.android.purebilibili.core.plugin.PluginCapabilityManifest
+import com.android.purebilibili.plugin.sdk.PluginCapability
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
 import com.android.purebilibili.core.plugin.SkipAction
@@ -75,7 +77,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 
 private const val TAG = "SponsorBlockPlugin"
-const val SPONSOR_BLOCK_PLUGIN_ID = "sponsor_block"
 private const val SPONSOR_BLOCK_RECENT_COVER_ASPECT_RATIO = 16f / 10f
 private val PLUGIN_EVENT_TIME_FORMATTER: DateTimeFormatter =
     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
@@ -166,7 +167,7 @@ internal fun resolveSponsorBlockAboutItemModel(): SponsorBlockAboutItemModel {
  */
 class SponsorBlockPlugin : PlayerPluginApi {
 
-    override val id = SPONSOR_BLOCK_PLUGIN_ID
+    override val id = BuiltinPluginIds.SPONSOR_BLOCK
     override val name = "空降助手"
     override val description = "自动跳过视频中的广告、赞助、片头片尾等片段"
     override val version = "1.1.1"

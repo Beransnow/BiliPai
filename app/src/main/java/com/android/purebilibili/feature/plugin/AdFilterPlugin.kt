@@ -1,6 +1,8 @@
 // 文件路径: feature/plugin/AdFilterPlugin.kt
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import coil3.request.crossfade
@@ -34,8 +36,8 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.android.purebilibili.core.plugin.FeedPlugin
-import com.android.purebilibili.core.plugin.PluginCapability
-import com.android.purebilibili.core.plugin.PluginCapabilityManifest
+import com.android.purebilibili.plugin.sdk.PluginCapability
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
 import com.android.purebilibili.core.network.NetworkModule
@@ -61,7 +63,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 
 private const val TAG = "AdFilterPlugin"
-internal const val ADFILTER_PLUGIN_ID = "adfilter"
 private const val AD_FILTER_CUSTOM_LIST_PREVIEW_LIMIT = 3
 private const val AD_FILTER_PROFILE_REFRESH_LIMIT = 10
 private val AD_FILTER_EVENT_TIME_FORMATTER: DateTimeFormatter =
@@ -119,7 +120,7 @@ internal fun removeAdFilterCustomListItem(
  */
 class AdFilterPlugin : FeedPlugin {
 
-    override val id = ADFILTER_PLUGIN_ID
+    override val id = BuiltinPluginIds.AD_FILTER
     override val name = "去广告增强"
     override val description = "过滤广告、拉黑UP主、屏蔽关键词"
     override val version = "2.0.1"

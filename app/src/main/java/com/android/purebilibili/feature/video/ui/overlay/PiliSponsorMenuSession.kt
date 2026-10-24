@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.video.ui.overlay
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.Composable
@@ -12,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.android.purebilibili.core.plugin.PluginStore
 import com.android.purebilibili.data.repository.SponsorBlockRepository
-import com.android.purebilibili.feature.plugin.SPONSOR_BLOCK_PLUGIN_ID
 import com.android.purebilibili.feature.plugin.SponsorBlockConfig
 import com.android.purebilibili.feature.plugin.SponsorBlockSegmentBehavior
 import kotlinx.coroutines.CancellationException
@@ -40,11 +41,11 @@ internal fun decodePiliSponsorMenuConfig(raw: String?): SponsorBlockConfig =
 
 /** Use the same persisted configuration/identity migration as SponsorBlockPlugin.loadConfigSuspend. */
 private suspend fun loadPiliSponsorMenuConfig(context: Context): SponsorBlockConfig = SponsorMenuConfigMutex.withLock {
-    val raw = PluginStore.getConfigJson(context, SPONSOR_BLOCK_PLUGIN_ID)
+    val raw = PluginStore.getConfigJson(context, BuiltinPluginIds.SPONSOR_BLOCK)
     val decoded = decodePiliSponsorMenuConfig(raw)
     val normalized = decoded.normalized()
     if (raw == null || decoded.userId.isBlank()) {
-        PluginStore.setConfigJson(context, SPONSOR_BLOCK_PLUGIN_ID, SponsorMenuConfigJson.encodeToString(normalized))
+        PluginStore.setConfigJson(context, BuiltinPluginIds.SPONSOR_BLOCK, SponsorMenuConfigJson.encodeToString(normalized))
     }
     normalized
 }

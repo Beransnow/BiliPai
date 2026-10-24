@@ -11,7 +11,7 @@ import androidx.compose.ui.graphics.Color
  * - 同传弹幕高亮
  * - 弹幕翻译
  */
-interface DanmakuPlugin : Plugin {
+interface DanmakuPlugin : BuiltinPlugin {
     
     /**
      * 过滤弹幕

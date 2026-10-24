@@ -1,7 +1,6 @@
 package com.android.purebilibili.plugin.sdk
 
-interface PlayerPluginApi {
-    val capabilityManifest: PluginCapabilityManifest
+interface PlayerPluginApi : Plugin {
 
     suspend fun onVideoLoad(bvid: String, cid: Long)
 
