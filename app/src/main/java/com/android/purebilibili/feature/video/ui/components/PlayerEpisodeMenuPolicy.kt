@@ -28,7 +28,7 @@ internal data class PlayerEpisodeMenuContent(
     val currentEntryIndex: Int = -1,
 )
 
-/** Player panel projection; below-video collection and part selectors remain independent. */
+/** Shared projection for detail, audio-mode and player episode menus. */
 internal fun resolvePlayerEpisodeMenuContent(
     pages: List<Page>,
     currentPageIndex: Int,

@@ -2377,7 +2377,6 @@ private fun VideoPlayerOverlayContent(
                 ugcSeason = ugcSeason,
                 currentBvid = bvid,
                 currentCid = cid,
-                anchorBounds = actionAnchorBounds[PlayerControlAnchor.EPISODES],
                 isFullscreen = isFullscreen,
                 playerBounds = playerBoundsInWindow,
                 cover = coverUrl,
