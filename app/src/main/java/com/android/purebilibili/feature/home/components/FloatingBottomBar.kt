@@ -708,6 +708,16 @@ fun FloatingBottomBar(
                     pressProgressProvider = if (isLiquidGlassMode) null else {
                         { holder.instance?.pressProgress ?: 0f }
                     },
+                    // 页面横滑没有 dock 指针事件，也需要为放大的指示器提供可折射亮光。
+                    // 在绘制阶段读取分页进度；点按仍由原来的触摸亮光负责。
+                    motionProgressProvider = if (isLiquidGlassMode) {
+                        {
+                            val animation = holder.instance
+                            if (externalPagerMotionEffectsLatest && glassTapTarget == null &&
+                                isScrollInProgressLatest() && animation?.isDragging == false
+                            ) animation.pressProgress else 0f
+                        }
+                    } else null,
                 )
             }
         } else {
