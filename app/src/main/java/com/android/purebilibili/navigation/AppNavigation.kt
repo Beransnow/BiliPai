@@ -1,6 +1,7 @@
 // 文件路径: navigation/AppNavigation.kt
 package com.android.purebilibili.navigation
 
+import kotlinx.coroutines.flow.first
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -348,6 +349,14 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 }
 
 internal fun shouldAutoEnterPortraitForStandardVideoNavigation(): Boolean = false
+
+/**
+ * 官方 H5 赛事主页（与客户端赛事页一致）。navhide 隐藏页面自带导航。
+ * 页面主题只认 URL 中的 live_night=1（或 UA 内 themeId/2），默认浅色。
+ */
+internal fun buildEsportsMatchHomeUrl(dark: Boolean): String =
+    "https://www.bilibili.com/h5/match/data/home?navhide=1" +
+        if (dark) "&live_night=1" else ""
 
 internal fun resolveStandardVideoRoute(
     bvid: String,
@@ -1550,6 +1559,13 @@ fun AppNavigation(
         val homeCoverPrefetchWork = remember {
             object { var job: kotlinx.coroutines.Job? = null }
         }
+        LaunchedEffect(currentNavigation3Key) {
+            // 返回首页的预热可继续；重新打开视频后不再解码上一次的历史封面。
+            if (currentNavigation3Key is BiliPaiNavKey.VideoDetail) {
+                homeCoverPrefetchWork.job?.cancel()
+                homeCoverPrefetchWork.job = null
+            }
+        }
         fun maybePrefetchHomeCoversForVideoReturn() {
             if (homeCoverPrefetchTriggered.value) return
             homeCoverPrefetchTriggered.value = true
@@ -1799,6 +1815,16 @@ fun AppNavigation(
             kotlinx.coroutines.channels.Channel<String>(kotlinx.coroutines.channels.Channel.CONFLATED)
         }
         var dynamicUnreadCount by remember { mutableIntStateOf(0) }
+        val dynamicBadgeContext = androidx.compose.ui.platform.LocalContext.current
+        val dynamicBadgeMode by com.android.purebilibili.core.store.MessageCenterPreferences.dynamicBadgeMode(dynamicBadgeContext)
+            .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.UnreadBadgeMode.NUMBER)
+        // 未读标记形态只作用于展示层：隐藏整体关闭，红点模式用哨兵值替换计数，数字模式原样透传。
+        val dynamicUnreadDisplay = when (dynamicBadgeMode) {
+            com.android.purebilibili.core.store.UnreadBadgeMode.HIDDEN -> 0
+            com.android.purebilibili.core.store.UnreadBadgeMode.DOT ->
+                if (dynamicUnreadCount > 0) com.android.purebilibili.feature.home.components.BOTTOM_BAR_DYNAMIC_BADGE_DOT else 0
+            com.android.purebilibili.core.store.UnreadBadgeMode.NUMBER -> dynamicUnreadCount
+        }
         val dynamicUnreadPollingEnabled = visibleBottomBarItems.contains(BottomNavItem.DYNAMIC)
         LaunchedEffect(currentBottomNavItem, dynamicUnreadPollingEnabled) {
             if (!dynamicUnreadPollingEnabled || currentBottomNavItem == BottomNavItem.DYNAMIC) {
@@ -1843,43 +1869,13 @@ fun AppNavigation(
         }
 
         fun openBilibiliNativeTargetInNavigation3(target: BilibiliNavigationTarget): Boolean {
-            when (target) {
-                is BilibiliNavigationTarget.Video -> navigateToVideoInNavigation3(
-                    target.videoId, 0L, "", useRecordedCardSource = false,
-                )
-                is BilibiliNavigationTarget.Dynamic -> {
-                    pushNavigation3Key(BiliPaiNavKey.DynamicDetail(target.dynamicId))
-                }
-                is BilibiliNavigationTarget.Search -> pushSearchRouteInNavigation3(target.keyword)
-                is BilibiliNavigationTarget.Space -> {
-                    if (target.mid <= 0L) return false
-                    pushNavigation3Key(BiliPaiNavKey.Space(target.mid))
-                }
-                is BilibiliNavigationTarget.Live -> {
-                    pushNavigation3Key(BiliPaiNavKey.Live(roomId = target.roomId.toString()))
-                }
-                is BilibiliNavigationTarget.BangumiSeason -> {
-                    pushNavigation3Key(
-                        BiliPaiNavKey.BangumiDetail(
-                            seasonId = target.seasonId,
-                            mediaId = target.mediaId
-                        )
-                    )
-                }
-                is BilibiliNavigationTarget.BangumiEpisode -> {
-                    pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = 0L, epId = target.epId))
-                }
-                is BilibiliNavigationTarget.Music -> {
-                    pushNavigation3Route(ScreenRoutes.createMusicRoute(target.musicId) ?: return false)
-                }
-                is BilibiliNavigationTarget.Article -> {
-                    pushNavigation3Key(BiliPaiNavKey.ArticleDetail(target.articleId))
-                }
-                is BilibiliNavigationTarget.PopularFeed -> {
-                    if (target.subCategoryKey == "weekly") {
-                        pushNavigation3Key(BiliPaiNavKey.WeeklySeries(target.weeklyNumber))
-                        return true
-                    }
+            return dispatchNativeLinkNavigation(
+                target = target,
+                onVideo = { navigateToVideoInNavigation3(it, 0L, "", useRecordedCardSource = false) },
+                onSearch = { pushSearchRouteInNavigation3(it) },
+                onKey = { pushNavigation3Key(it) },
+                onRoute = { pushNavigation3Route(it) },
+                onPopularFeed = { target ->
                     // 热门榜单(排行榜/入站必刷/综合热门):切回首页 POPULAR
                     // 子分类的原生 feed,并弹回主宿主,与底栏点首页一致。
                     // 注意顺序:先切子分类(同步写状态),再切大类(其状态更新在协程中,
@@ -1900,9 +1896,8 @@ fun AppNavigation(
                     replaceNavigation3BackStack(
                         popBiliPaiNavKeyToRoot(navigation3BackStack)
                     )
-                }
-            }
-            return true
+                },
+            )
         }
         val submitSearchKeywordInNavigation3: (String) -> Unit = { keyword ->
             when (val action = resolveSearchSubmitAction(keyword)) {
@@ -1990,76 +1985,16 @@ fun AppNavigation(
             }
         }
         fun openMessageLinkInNavigation3(rawLink: String) {
-            when (val action = resolveMessageLinkNavigationAction(rawLink)) {
-                is MessageLinkNavigationAction.Video -> {
-                    navigateToVideoInNavigation3(action.videoId, 0L, "")
-                }
-                is MessageLinkNavigationAction.CommentDetail -> {
-                    pushNavigation3Key(
-                        BiliPaiNavKey.CommentDetail(
-                            oid = action.oid,
-                            rootId = action.rootReplyId,
-                            targetId = action.targetReplyId,
-                            type = action.businessId,
-                            enterUri = action.enterUri
-                        )
-                    )
-                }
-                is MessageLinkNavigationAction.VideoComment -> {
-                    navigateToVideoRouteInNavigation3(
-                        route = VideoRoute.createRoute(
-                            bvid = action.videoId,
-                            cid = 0L,
-                            coverUrl = "",
-                            commentRootRpid = action.rootReplyId,
-                            commentTargetRpid = action.targetReplyId
-                        ),
-                        sourceRoute = currentRoute
-                    )
-                }
-                is MessageLinkNavigationAction.Dynamic -> {
-                    pushNavigation3Key(BiliPaiNavKey.DynamicDetail(action.dynamicId))
-                }
-                is MessageLinkNavigationAction.DynamicComment -> {
-                    pushNavigation3Key(
-                        BiliPaiNavKey.DynamicDetail(
-                            dynamicId = action.dynamicId,
-                            commentRootRpid = action.rootReplyId,
-                            commentTargetRpid = action.targetReplyId
-                        )
-                    )
-                }
-                is MessageLinkNavigationAction.Space -> {
-                    pushNavigation3Key(BiliPaiNavKey.Space(action.mid))
-                }
-                is MessageLinkNavigationAction.Live -> {
-                    pushNavigation3Key(BiliPaiNavKey.Live(roomId = action.roomId.toString()))
-                }
-                is MessageLinkNavigationAction.BangumiSeason -> {
-                    pushNavigation3Key(
-                        BiliPaiNavKey.BangumiDetail(
-                            seasonId = action.seasonId,
-                            mediaId = action.mediaId
-                        )
-                    )
-                }
-                is MessageLinkNavigationAction.BangumiEpisode -> {
-                    pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = 0L, epId = action.epId))
-                }
-                is MessageLinkNavigationAction.Music -> {
-                    ScreenRoutes.createMusicRoute(action.musicId)?.let { pushNavigation3Route(it) }
-                        ?: pushNavigation3Key(BiliPaiNavKey.Web(rawLink))
-                }
-                is MessageLinkNavigationAction.Article -> {
-                    pushNavigation3Key(BiliPaiNavKey.ArticleDetail(action.articleId))
-                }
-                is MessageLinkNavigationAction.Web -> {
-                    val url = action.url.trim()
-                    if (url.startsWith("http://", ignoreCase = true) || url.startsWith("https://", ignoreCase = true)) {
-                        pushNavigation3Key(BiliPaiNavKey.Web(url))
-                    }
-                }
-            }
+            dispatchMessageLinkNavigation(
+                rawLink = rawLink,
+                currentRoute = currentRoute,
+                onVideo = { navigateToVideoInNavigation3(it, 0L, "") },
+                onVideoRoute = { route, source ->
+                    navigateToVideoRouteInNavigation3(route = route, sourceRoute = source)
+                },
+                onKey = { pushNavigation3Key(it) },
+                onRoute = { pushNavigation3Route(it) },
+            )
         }
         LaunchedEffect(pendingVideoId) {
             pendingVideoId?.let { videoId ->
@@ -2249,7 +2184,8 @@ fun AppNavigation(
                 popAction()
             }
 
-            val performSystemBackAction = {
+            var liveNavigationExitPending by remember { mutableStateOf(false) }
+            val performSystemBackAction: () -> Unit = {
                 when (systemBackAction) {
                     AppSystemBackAction.RETURN_TO_HOME_TAB -> {
                         val homeIndex = visibleBottomBarItems.indexOf(BottomNavItem.HOME)
@@ -2260,7 +2196,29 @@ fun AppNavigation(
                     AppSystemBackAction.NAVIGATE_UP -> {
                         val previousKey = navigation3BackStack.getOrNull(navigation3BackStack.lastIndex - 1)
                         val currentVideoKey = navigation3BackStack.lastOrNull() as? BiliPaiNavKey.VideoDetail
-                        if (currentVideoKey != null) {
+                        val currentLiveKey = navigation3BackStack.lastOrNull() as? BiliPaiNavKey.Live
+                        if (currentLiveKey != null) {
+                            if (!liveNavigationExitPending) {
+                                liveNavigationExitPending = true
+                                coroutineScope.launch {
+                                    try {
+                                        // 在返回时读取持久化值，避免首帧默认开启覆盖用户已关闭的偏好。
+                                        val enabled = SettingsManager.getLiveAutoMiniPlayerEnabled(context).first()
+                                        if (navigation3BackStack.lastOrNull() == currentLiveKey) {
+                                            val manager = miniPlayerManager
+                                            val roomId = currentLiveKey.roomId.toLongOrNull() ?: 0L
+                                            val retained = manager?.prepareLiveMiniPlayerOnExit(roomId, enabled) == true
+                                            if (!retained && manager?.isLiveMode == true && manager.currentRoomId == roomId) {
+                                                manager.markLeavingByNavigation(forceStop = true)
+                                            }
+                                            replaceNavigation3BackStack(popBiliPaiNavKey(navigation3BackStack))
+                                        }
+                                    } finally {
+                                        liveNavigationExitPending = false
+                                    }
+                                }
+                            }
+                        } else if (currentVideoKey != null) {
                             popVideoDetailWithSharedReturnState(
                                 videoKey = currentVideoKey,
                                 targetKey = previousKey
@@ -2607,6 +2565,9 @@ fun AppNavigation(
                                 )
                             },
                             onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) },
+                            onMatchClick = { contestId ->
+                                pushNavigation3Key(BiliPaiNavKey.MatchInfo(contestId))
+                            },
                             onTopicClick = { topicId ->
                                 if (topicId > 0L) {
                                     pushNavigation3Key(BiliPaiNavKey.TopicDetail(topicId))
@@ -2685,6 +2646,9 @@ fun AppNavigation(
                         },
                         onAudioClick = { sid ->
                             pushNavigation3Key(BiliPaiNavKey.MusicDetail(sid))
+                        },
+                        onMatchClick = { contestId ->
+                            pushNavigation3Key(BiliPaiNavKey.MatchInfo(contestId))
                         },
                         onBangumiClick = { seasonId ->
                             if (seasonId > 0L) {
@@ -3033,6 +2997,7 @@ fun AppNavigation(
                                 onLikedVideosClick = { pushNavigation3Route(ScreenRoutes.LikedVideos.route) },
                                 onLiveListClick = { pushNavigation3Route(ScreenRoutes.LiveList.route) },
                                 onLiveSearchClick = { pushNavigation3Key(BiliPaiNavKey.LiveSearch) },
+                                onLiveMatchClick = { pushNavigation3Key(BiliPaiNavKey.LiveMatch) },
                                 onLiveAreaClick = { pushNavigation3Key(BiliPaiNavKey.LiveArea) },
                                 onLiveFollowingClick = { pushNavigation3Key(BiliPaiNavKey.LiveFollowing) },
                                 onLiveAreaDetailClick = { parentAreaId, areaId, title ->
@@ -3513,6 +3478,9 @@ fun AppNavigation(
                                         }
                                     },
                                     onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) },
+                                    onMatchClick = { contestId ->
+                                        pushNavigation3Key(BiliPaiNavKey.MatchInfo(contestId))
+                                    },
                                     onTopicClick = { nestedTopicId ->
                                         if (nestedTopicId > 0L) {
                                             pushNavigation3Key(BiliPaiNavKey.TopicDetail(nestedTopicId))
@@ -4184,8 +4152,15 @@ fun AppNavigation(
                                     onBack = { performSystemBackAction() }
                                 )
                             }
-                        BiliPaiNavEntryContentRole.LIVE_LIST ->
+                        BiliPaiNavEntryContentRole.LIVE_LIST -> {
+                            val liveHeaderUser by homeViewModel.user.collectAsStateWithLifecycle()
                             com.android.purebilibili.feature.live.LiveListScreen(
+                                user = liveHeaderUser,
+                                onAvatarClick = {
+                                    pushNavigation3Key(
+                                        if (liveHeaderUser.isLogin) BiliPaiNavKey.Profile else BiliPaiNavKey.Login
+                                    )
+                                },
                                 onBack = { performSystemBackAction() },
                                 // 底栏/顶栏进入的主直播首页：无返回箭头，与 BiliPai 主 tab 一致。
                                 showNavigationBack = false,
@@ -4194,14 +4169,7 @@ fun AppNavigation(
                                     pushNavigation3Key(BiliPaiNavKey.Live(roomId = roomId.toString(), title = title, uname = uname))
                                 },
                                 onSearchClick = { pushNavigation3Key(BiliPaiNavKey.LiveSearch) },
-                                onMatchClick = {
-                                    pushNavigation3Key(
-                                        BiliPaiNavKey.Web(
-                                            url = "https://www.bilibili.com/match/",
-                                            title = "电竞赛事"
-                                        )
-                                    )
-                                },
+                                onMatchClick = { pushNavigation3Key(BiliPaiNavKey.LiveMatch) },
                                 onAreaListClick = { pushNavigation3Key(BiliPaiNavKey.LiveArea) },
                                 onFollowingClick = { pushNavigation3Key(BiliPaiNavKey.LiveFollowing) },
                                 onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) },
@@ -4216,6 +4184,7 @@ fun AppNavigation(
                                 },
                                 globalHazeState = mainHazeState
                             )
+                        }
                         BiliPaiNavEntryContentRole.LIVE_SEARCH ->
                             com.android.purebilibili.feature.live.LiveSearchScreen(
                                 onBack = { performSystemBackAction() },
@@ -4259,6 +4228,30 @@ fun AppNavigation(
                                     }
                                 )
                             }
+                        BiliPaiNavEntryContentRole.LIVE_MATCH -> {
+                            // 组合期读取明暗主题，点击回调内不能再调用 @Composable。
+                            val liveMatchH5DarkTheme = androidx.compose.foundation.isSystemInDarkTheme()
+                            com.android.purebilibili.feature.live.LiveMatchScreen(
+                                onBack = { performSystemBackAction() },
+                                onLiveClick = { roomId, title, uname ->
+                                    pushNavigation3Key(BiliPaiNavKey.Live(roomId = roomId.toString(), title = title, uname = uname))
+                                },
+                                onVideoClick = { bvid -> pushNavigation3Key(BiliPaiNavKey.VideoDetail(bvid = bvid)) },
+                                onLoginClick = { pushNavigation3Key(BiliPaiNavKey.Login) },
+                                onCommentClick = { aid, root ->
+                                    pushNavigation3Key(BiliPaiNavKey.CommentDetail(oid = aid, rootId = root, type = 1))
+                                },
+                                onEsportsHomeClick = {
+                                    pushNavigation3Key(
+                                        BiliPaiNavKey.Web(
+                                            url = buildEsportsMatchHomeUrl(dark = liveMatchH5DarkTheme),
+                                            title = "游戏赛事",
+                                            mobileUserAgent = true,
+                                        )
+                                    )
+                                },
+                            )
+                        }
                         BiliPaiNavEntryContentRole.LIVE_FOLLOWING ->
                             com.android.purebilibili.feature.live.LiveFollowingScreen(
                                 onBack = { performSystemBackAction() },
@@ -4764,6 +4757,7 @@ fun AppNavigation(
                                 } else com.android.purebilibili.feature.web.WebViewScreen(
                                     url = webKey.url,
                                     title = webKey.title.ifEmpty { null },
+                                    mobileUserAgent = webKey.mobileUserAgent,
                                     onBack = { performSystemBackAction() },
                                     onVideoClick = { bvid ->
                                         replaceNavigation3BackStack(
@@ -4798,9 +4792,27 @@ fun AppNavigation(
                                                 popBiliPaiNavKey(navigation3BackStack)
                                             )
                                         }
+                                    },
+                                    onMatchClick = { contestId ->
+                                        replaceNavigation3TopWithKey(BiliPaiNavKey.MatchInfo(contestId))
                                     }
                                 )
                             }
+                        BiliPaiNavEntryContentRole.MATCH_INFO -> {
+                            val matchKey = key as BiliPaiNavKey.MatchInfo
+                            com.android.purebilibili.feature.matchinfo.MatchInfoScreen(
+                                cid = matchKey.cid,
+                                onBack = { performSystemBackAction() },
+                                onLiveClick = { roomId ->
+                                    pushNavigation3Key(BiliPaiNavKey.Live(roomId = roomId.toString()))
+                                },
+                                onVideoClick = { bvid ->
+                                    pushNavigation3Key(BiliPaiNavKey.VideoDetail(bvid = bvid))
+                                },
+                                onOpenLink = { link -> openBilibiliLinkInNavigation3(link) },
+                                onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) }
+                            )
+                        }
                         BiliPaiNavEntryContentRole.COMMENT_DETAIL -> {
                             val commentKey = key as BiliPaiNavKey.CommentDetail
                             com.android.purebilibili.feature.comment.CommentDetailScreen(
@@ -4846,8 +4858,14 @@ fun AppNavigation(
                                 DisposableEffect(liveKey.roomId, miniPlayerManager) {
                                     onDispose {
                                         val isChangingConfigurations = activity?.isChangingConfigurations == true
-                                        if (shouldStopLivePlaybackOnRouteDispose(isChangingConfigurations)) {
-                                            miniPlayerManager?.markLeavingByNavigation(forceStop = true)
+                                        val manager = miniPlayerManager
+                                        // 只清理当前直播会话；已转入小窗的播放器继续由管理器持有。
+                                        if (shouldStopLivePlaybackOnRouteDispose(isChangingConfigurations) &&
+                                            manager?.isLiveMode == true &&
+                                            manager.currentRoomId == liveKey.roomId.toLongOrNull() &&
+                                            !manager.isMiniMode
+                                        ) {
+                                            manager.markLeavingByNavigation(forceStop = true)
                                         }
                                     }
                                 }
@@ -4857,10 +4875,7 @@ fun AppNavigation(
                                     title = liveKey.title,
                                     uname = liveKey.uname,
                                     siteId = liveKey.siteId,
-                                    onBack = {
-                                        miniPlayerManager?.markLeavingByNavigation(forceStop = true)
-                                        performSystemBackAction()
-                                    },
+                                    onBack = { performSystemBackAction() },
                                     onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) }
                                 )
                             }
@@ -5167,7 +5182,7 @@ fun AppNavigation(
                                     visibleItems = visibleBottomBarItems,
                                     itemColorIndices = bottomBarItemColors,
                                     itemLabels = bottomBarItemLabels,
-                                    dynamicUnreadCount = dynamicUnreadCount,
+                                    dynamicUnreadCount = dynamicUnreadDisplay,
                                     homeSettings = bottomBarHomeSettings,
                                     miuixBackdrop = bottomBarBackdrop,
                                     motionTier = com.android.purebilibili.core.ui.adaptive.MotionTier.Normal,
@@ -5225,7 +5240,7 @@ fun AppNavigation(
                                 visibleItems = visibleBottomBarItems,
                                 itemColorIndices = bottomBarItemColors,
                                 itemLabels = bottomBarItemLabels,
-                                dynamicUnreadCount = dynamicUnreadCount,
+                                dynamicUnreadCount = dynamicUnreadDisplay,
                                 homeSettings = bottomBarHomeSettings,
                                 miuixBackdrop = bottomBarBackdrop,
                                 motionTier = com.android.purebilibili.core.ui.adaptive.MotionTier.Normal,

@@ -427,6 +427,9 @@ fun BottomBarLiquidSegmentedControl(
     onIndicatorDragStateChanged: ((Boolean) -> Unit)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
     externalPagerMotionEffectsEnabled: Boolean = false,
+    // Glass pager release and landing signals; native branches keep their existing motion.
+    isPagerDraggingProvider: (() -> Boolean)? = null,
+    pagerTargetPositionProvider: (() -> Float)? = null,
     liquidGlassTuningOverride: LiquidGlassTuning? = null,
     geometryMode: FloatingBottomBarGeometryMode = FloatingBottomBarGeometryMode.Segmented,
     centerGlassContent: Boolean = false,
@@ -630,6 +633,8 @@ fun BottomBarLiquidSegmentedControl(
             isScrollInProgressProvider = isScrollInProgressProvider,
             onIndicatorDragStateChanged = onIndicatorDragStateChanged,
             externalPagerMotionEffectsEnabled = externalPagerMotionEffectsEnabled,
+            isPagerDraggingProvider = isPagerDraggingProvider,
+            pagerTargetPositionProvider = pagerTargetPositionProvider,
             liquidGlassTuningOverride = liquidGlassTuningOverride,
             geometryMode = geometryMode,
             scrollState = scrollState,

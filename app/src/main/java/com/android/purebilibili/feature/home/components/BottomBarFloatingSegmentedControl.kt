@@ -32,6 +32,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.layout.layout
+import kotlin.math.roundToInt
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -190,7 +192,7 @@ internal fun BottomBarFloatingSegmentedControl(
                 (textMeasurer.measure(AnnotatedString(label), labelStyle, maxLines = 1,
                     softWrap = false).size.width.toDp() +
                     labelHorizontalPadding * 2)
-                    .coerceAtLeast(effectiveIndicatorHeight)
+                    .coerceAtLeast(effectiveIndicatorHeight * FLOATING_DOCK_MIN_INDICATOR_ASPECT)
             }
         }
     }
@@ -289,6 +291,21 @@ internal fun BottomBarFloatingSegmentedControl(
                     .align(Alignment.Center)
                     .fillMaxWidth()
                     .height(effectiveHeight)
+                    .layout { measurable, constraints ->
+                        // 可滚动外壳与内容自适应胶囊共用首尾边界，原生路径不裁减槽位。
+                        val slotWidthPx = with(density) { fittedSegmentedIndicatorWidth.toPx() }
+                        fun inset(width: Dp?, distancePx: Int): Int = if (!contentAdaptiveIndicatorEnabled || width == null) 0 else
+                            resolveFloatingDockScrollableShellInsetPx(
+                                slotWidthPx, with(density) { width.toPx() }, distancePx.toFloat(),
+                            ).roundToInt()
+                        val leading = inset(indicatorContentWidths?.firstOrNull(), scrollState.value)
+                        val trailing = inset(indicatorContentWidths?.lastOrNull(), scrollState.maxValue - scrollState.value)
+                        val shellWidth = (constraints.maxWidth - leading - trailing).coerceAtLeast(0)
+                        val placeable = measurable.measure(constraints.copy(minWidth = shellWidth, maxWidth = shellWidth))
+                        layout(constraints.maxWidth, placeable.height) {
+                            placeable.placeRelative(leading, 0)
+                        }
+                    }
                     // The viewport shell is outside the scrolling labels, but shares
                     // their actual dock gesture spring rather than a refresh offset.
                     .graphicsLayer { translationY = dockTranslationProvider.value() },

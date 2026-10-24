@@ -62,6 +62,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.drawWithContent
@@ -1140,11 +1141,10 @@ fun FloatingBottomBar(
         }
     }
     val baseContentAlphaProvider: (Int) -> Float = { itemIndex ->
-        // Fade the dock copy of the selected label in every mode. Leaving it opaque
-        // under a clamped right-edge indicator stacks two glyphs (重影).
+        // 原生模式只绘制一份前景；玻璃模式由捕获副本承接指示器覆盖区的文字。
         val coverage = (1f - abs(itemIndex.toFloat() - visualIndicatorPositionProvider()))
             .coerceIn(0f, 1f)
-        1f - coverage
+        resolveFloatingDockBaseContentAlpha(isLiquidGlassMode, coverage)
     }
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
@@ -1278,7 +1278,7 @@ fun FloatingBottomBar(
             // not leave a route-selected accent behind while the capsule is dragged.
             LocalFloatingBottomBarSelectedContentColor provides if (isLiquidGlassMode) {
                 Color.Unspecified
-            } else LocalFloatingBottomBarSelectedContentColor.current,
+            } else colors.activeContentColor,
             LocalFloatingBottomBarTapFeedback provides selectionTapFeedback,
             LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
             LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
@@ -1382,7 +1382,8 @@ fun FloatingBottomBar(
             } else {
                 Modifier
             }
-            if (drawShell && contentIndicatorWidthsPx.isNotEmpty()) {
+            // 原生背景与文字分层，让指示器处于背景之上、前景文字之下。
+            if (drawShell && (!isLiquidGlassMode || contentIndicatorWidthsPx.isNotEmpty())) {
                 Box(
                     Modifier
                         .matchParentSize()
@@ -1406,6 +1407,8 @@ fun FloatingBottomBar(
             }
             Row(
                 Modifier
+                    // 原生文字位于指示器之上，避免选中文字被填色遮住。
+                    .zIndex(if (isLiquidGlassMode) 0f else 1f)
                     // Observe visible-row touches without giving the optical copy a hit target.
                     .then(if (isLiquidGlassMode) interactiveHighlight?.gestureModifier ?: Modifier else Modifier)
                     .onGloballyPositioned { coords ->
@@ -1424,7 +1427,7 @@ fun FloatingBottomBar(
                             clip = false
                         }
                     }
-                    .then(if (contentIndicatorWidthsPx.isEmpty()) shellModifier else Modifier)
+                    .then(if (isLiquidGlassMode && contentIndicatorWidthsPx.isEmpty()) shellModifier else Modifier)
                     .drawWithContent {
                         val scroll = dragScrollState
                         val viewportWidth = dragScrollViewportWidthLatest.value()
@@ -1638,53 +1641,52 @@ fun FloatingBottomBar(
                             } else Modifier
                         )
                         .clip(indicatorShape)
-                        .then(
-                            if (indicatorIdleSurfaceColorOverride != null || isLiquidGlassMode) {
-                                Modifier.background(
-                                    indicatorIdleSurfaceColorOverride ?: colors.contentColor.copy(alpha = 0.1f),
-                                    indicatorShape,
-                                )
-                            } else {
-                                Modifier
-                            }
+                        .background(
+                            indicatorIdleSurfaceColorOverride ?: if (isLiquidGlassMode) {
+                                colors.contentColor.copy(alpha = 0.1f)
+                            } else colors.indicatorColor.copy(alpha = 0.14f),
+                            indicatorShape,
                         )
                         .height(fittedIndicatorHeight)
                         .then(indicatorWidthModifier),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    CompositionLocalProvider(
-                        LocalFloatingBottomBarContentColor provides colors.activeContentColor,
-                        LocalFloatingBottomBarActiveContent provides true,
-                        LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
-                        LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
-                    ) {
-                        Row(
-                            Modifier
-                                .clearAndSetSemantics {}
-                                .wrapContentWidth(align = Alignment.Start, unbounded = true)
-                                .requiredWidth(
-                                    with(density) {
-                                        (totalWidthPx - (horizontalPadding * 2).toPx()).coerceAtLeast(0f).toDp()
-                                    }
-                                )
-                                .requiredHeight(capturedContentHeight)
-                                .graphicsLayer {
-                                    val contentTranslationPx =
-                                        resolveFloatingDockClippedContentTranslationPx(
-                                            position = visualIndicatorPositionProvider(),
-                                            tabWidthPx = tabWidthPx,
-                                            tabsCount = safeTabsCount,
-                                            indicatorWidthPx = indicatorWidthPxProvider(),
-                                        )
-                                    translationX = if (isLtr) {
-                                        contentTranslationPx
-                                    } else {
-                                        -contentTranslationPx
-                                    }
-                                },
-                            verticalAlignment = Alignment.CenterVertically,
-                            content = { content(this) }
-                        )
+                    // 原生前景不再依赖经过裁切与平移的副本；仅保留玻璃回退副本。
+                    if (isLiquidGlassMode) {
+                        CompositionLocalProvider(
+                            LocalFloatingBottomBarContentColor provides colors.activeContentColor,
+                            LocalFloatingBottomBarActiveContent provides true,
+                            LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
+                            LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
+                        ) {
+                            Row(
+                                Modifier
+                                    .clearAndSetSemantics {}
+                                    .wrapContentWidth(align = Alignment.Start, unbounded = true)
+                                    .requiredWidth(
+                                        with(density) {
+                                            (totalWidthPx - (horizontalPadding * 2).toPx()).coerceAtLeast(0f).toDp()
+                                        }
+                                    )
+                                    .requiredHeight(capturedContentHeight)
+                                    .graphicsLayer {
+                                        val contentTranslationPx =
+                                            resolveFloatingDockClippedContentTranslationPx(
+                                                position = visualIndicatorPositionProvider(),
+                                                tabWidthPx = tabWidthPx,
+                                                tabsCount = safeTabsCount,
+                                                indicatorWidthPx = indicatorWidthPxProvider(),
+                                            )
+                                        translationX = if (isLtr) {
+                                            contentTranslationPx
+                                        } else {
+                                            -contentTranslationPx
+                                        }
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                content = { content(this) }
+                            )
+                        }
                     }
                 }
             }
@@ -1694,6 +1696,7 @@ fun FloatingBottomBar(
             // overflow cannot steal taps from neighbouring destinations.
             Box(
                 modifier = Modifier
+                    .zIndex(if (isLiquidGlassMode) 0f else 2f)
                     .graphicsLayer {
                         val slotOffsetPx = visualIndicatorPositionProvider() * tabWidthPx
                         translationX = if (isLtr) {

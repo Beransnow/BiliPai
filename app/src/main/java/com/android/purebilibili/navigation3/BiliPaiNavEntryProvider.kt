@@ -82,6 +82,8 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.LiveSearch>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.LiveArea>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.LiveAreaDetail>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.LiveMatch>(swipeDismiss = NavSwipeDirection.None, content = content)
+    entry<BiliPaiNavKey.MatchInfo>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.LiveFollowing>(swipeDismiss = NavSwipeDirection.None, content = content)
     entry<BiliPaiNavKey.Inbox>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.ReplyMe>(swipeDismiss = swipeBackDirection, content = content)

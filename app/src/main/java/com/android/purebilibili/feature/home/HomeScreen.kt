@@ -271,6 +271,7 @@ fun HomeScreen(
     onLikedVideosClick: () -> Unit = {},  // 点赞视频页面
     onLiveListClick: () -> Unit = {},  // 底栏直播全屏页
     onLiveSearchClick: () -> Unit = {},
+    onLiveMatchClick: () -> Unit = {},
     onLiveAreaClick: () -> Unit = {},
     onLiveFollowingClick: () -> Unit = {},
     onLiveAreaDetailClick: (Int, Int, String) -> Unit = { _, _, _ -> },
@@ -314,6 +315,15 @@ fun HomeScreen(
     val undoAvailable by viewModel.undoAvailable.collectAsStateWithLifecycle()
 // val pullRefreshState = rememberPullToRefreshState() // [Removed] Moved inside HorizontalPager
     val context = LocalContext.current
+    val messageBadgeMode by com.android.purebilibili.core.store.MessageCenterPreferences.messageBadgeMode(context)
+        .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.UnreadBadgeMode.NUMBER)
+    // 顶栏消息入口的未读标记形态：隐藏置零，红点用哨兵值，数字模式保留真实计数。
+    val messageUnreadDisplay = when (messageBadgeMode) {
+        com.android.purebilibili.core.store.UnreadBadgeMode.HIDDEN -> 0
+        com.android.purebilibili.core.store.UnreadBadgeMode.DOT ->
+            if (messageUnreadCount > 0) com.android.purebilibili.feature.home.components.HOME_TOP_RIGHT_BADGE_DOT else 0
+        com.android.purebilibili.core.store.UnreadBadgeMode.NUMBER -> messageUnreadCount
+    }
     val uiSkinState by rememberUiSkinState(context)
     val homeUiSkinDecoration = rememberHomeUiSkinDecoration(uiSkinState)
     val overlayMotionSpec = remember { resolveHomeOverlayMotionSpec() }
@@ -1747,6 +1757,11 @@ fun HomeScreen(
     val collapseSearchOnScroll = headerCollapseMode.collapseSearch
     val collapseTabsOnScroll = headerCollapseMode.collapseTabs
     val isAnyHeaderCollapseEnabled = headerCollapseMode.hasAnyCollapse
+    // 模式变化立即清理旧偏移，始终显示不依赖下一次滚动才能恢复。
+    LaunchedEffect(headerCollapseMode) {
+        setHeaderOffsetImmediate(0f)
+        topTabsAutoCollapsedByScroll = false
+    }
     val headerAutoCollapseDistancePx = if (isAnyHeaderCollapseEnabled) {
         searchCollapseDistancePx
     } else {
@@ -2085,6 +2100,7 @@ fun HomeScreen(
                                     onBack = {},
                                     onLiveClick = onLiveClick,
                                     onSearchClick = onLiveSearchClick,
+                                    onMatchClick = onLiveMatchClick,
                                     onAreaListClick = onLiveAreaClick,
                                     onFollowingClick = onLiveFollowingClick,
                                     onUserClick = onSpaceClick,
@@ -2734,8 +2750,13 @@ fun HomeScreen(
             },
             onSettingsClick = onSettingsClick,
             onInboxClick = onInboxClick,
-            topRightUnreadCount = messageUnreadCount,
-            onSearchClick = onSearchClick,
+            topRightUnreadCount = messageUnreadDisplay,
+            onSearchClick = {
+                val searchEntry = resolveHomeTopTabEntryOrNull(topTabEntries, pagerState.currentPage)
+                if (searchEntry is HomeTopTabEntry.Category && shouldEmbedLivePageInHomeTopTab(searchEntry.category)) {
+                    onLiveSearchClick()
+                } else onSearchClick()
+            },
             topCategories = localizedTopTabLabels,
             topCategoryKeys = topTabKeys,
             categoryIndex = displayedTabIndex,

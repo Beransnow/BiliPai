@@ -299,34 +299,22 @@ private fun MiuixSideBar(
             }
         }
 
+        Spacer(modifier = Modifier.weight(1f))
         if (onAccountSwitchClick != null) {
-            Spacer(modifier = Modifier.weight(1f))
-            SideBarAccountSwitchButton(
-                onClick = onAccountSwitchClick,
-                tint = AppSurfaceTokens.onSurfaceVariantSummary(),
+            AppPlatformNavigationRailItem(
+                selected = false,
+                onClick = { haptic(HapticType.LIGHT); onAccountSwitchClick() },
+                icon = Icons.Outlined.SwapHoriz,
+                label = "切换账号",
             )
         }
-
         if (onToggleSidebar != null) {
-            Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
-            val sidebarLabel = stringResource(R.string.sidebar_toggle)
-            Box(
-                modifier = Modifier
-                    .size(AppChromeSizeTokens.MinimumTouchTarget)
-                    .clip(AppShapes.container(ContainerLevel.Card))
-                    .clickable {
-                        haptic(HapticType.LIGHT)
-                        onToggleSidebar()
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                AppIcon(
-                    Icons.Outlined.ViewSidebar,
-                    contentDescription = sidebarLabel,
-                    tint = AppSurfaceTokens.onSurfaceVariantSummary(),
-                    modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
-                )
-            }
+            AppPlatformNavigationRailItem(
+                selected = false,
+                onClick = { haptic(HapticType.LIGHT); onToggleSidebar() },
+                icon = Icons.Outlined.ViewSidebar,
+                label = "切换到底栏",
+            )
         }
     }
 }

@@ -3,7 +3,7 @@
 package com.android.purebilibili.feature.home.components
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SwapHoriz
@@ -55,12 +55,12 @@ internal fun MaterialExpressiveSideBar(
         state = state,
         header = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.wrapContentWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 AdaptivePlainTooltipBox(text = if (expanded) "收起导航" else "展开导航") {
                     AppIconButton(onClick = {
-                        if (onToggleSidebar != null) onToggleSidebar() else onExpandedChange(!expanded)
+                        onExpandedChange(!expanded)
                     }) {
                         AppIcon(Icons.Outlined.ViewSidebar, contentDescription = if (expanded) "收起导航" else "展开导航")
                     }

@@ -646,7 +646,7 @@ object VideoRepository {
             when (feedApiType) {
                 com.android.purebilibili.core.store.SettingsManager.FeedApiType.MOBILE -> {
                     // 尝试使用移动端 API
-                    val mobileResult = fetchMobileFeed(idx = idx, refreshCount = refreshCount)
+                    val mobileResult = fetchMobileFeed(idx = idx)
                     if (mobileResult.isSuccess && mobileResult.getOrNull()?.isNotEmpty() == true) {
                         return mobileResult
                     } else {
@@ -733,55 +733,13 @@ object VideoRepository {
         }
     }
     
-    //  移动端推荐流 (appkey + sign 签名)
-    private suspend fun fetchMobileFeed(idx: Int, refreshCount: Int): Result<List<VideoItem>> {
-        try {
-            val accessToken = TokenManager.accessTokenCache
-            if (accessToken.isNullOrEmpty()) {
-                com.android.purebilibili.core.util.Logger.d("VideoRepo", " No access_token, fallback to Web API")
-                return Result.failure(Exception("需要登录才能使用移动端推荐流"))
-            }
-            
-            val params = mapOf(
-                "idx" to idx.toString(),
-                "pull" to if (idx == 0) "1" else "0",  // 1=刷新, 0=加载更多
-                "column" to "4",  // 4列布局
-                "flush" to "5",   // 刷新间隔
-                "autoplay_card" to "11",
-                "ps" to refreshCount.toString(),
-                "access_key" to accessToken,
-                "appkey" to AppSignUtils.TV_APP_KEY,
-                "ts" to AppSignUtils.getTimestamp().toString(),
-                "mobi_app" to "android",
-                "device" to "android",
-                "build" to "8130300"
-            )
-            
-            val signedParams = AppSignUtils.signForTvLogin(params)
-            
-            com.android.purebilibili.core.util.Logger.d("VideoRepo", " Mobile feed request: idx=$idx")
-            val feedResp = api.getMobileFeed(signedParams)
-            
-            if (feedResp.code != 0) {
-                com.android.purebilibili.core.util.Logger.d("VideoRepo", " Mobile feed error: code=${feedResp.code}, msg=${feedResp.message}")
-                return Result.failure(Exception(feedResp.message))
-            }
-            
-            val list = feedResp.data?.items
-                ?.filter { it.isSupportedRecommendation }
-                ?.map { it.toVideoItem() }
-                ?.filter { it.bvid.isNotEmpty() }
-                ?: emptyList()
-            
-            com.android.purebilibili.core.util.Logger.d("VideoRepo", " Mobile推荐: total=${list.size}")
-            
-            return Result.success(list)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            com.android.purebilibili.core.util.Logger.d("VideoRepo", " Mobile feed exception: ${e.message}")
-            return Result.failure(e)
+    // 推荐身份与登录授权保持一致；启动时等待凭据恢复，避免误走未登录推荐。
+    private suspend fun fetchMobileFeed(idx: Int): Result<List<VideoItem>> {
+        TokenManager.awaitRestore()
+        if (TokenManager.accessTokenCache.isNullOrBlank()) {
+            return Result.failure(IllegalStateException("需要登录才能使用移动端推荐流"))
         }
+        return fetchMergedMobileFeed(idx)
     }
     
     //  [合并模式] Web 端推荐流 - 参数对齐 PiliNara 原版合并模式(携带 cookie)
@@ -822,9 +780,8 @@ object VideoRepository {
         }
     }
 
-    //  [合并模式] App 端推荐流 - 参数对齐 PiliNara 原版合并模式
-    //  该 app 端点由 CookieJar 剥离 cookie(见 MergedAppFeedCookiePolicy), 身份由 HD 身份头承担;
-    //  已登录时补 access_key。与 App 单独模式(TV appkey + mobi_app=android)完全无关。
+    // 移动端与合并推荐共用 HD 身份参数；登录后追加 access_key。
+    // CookieJar 对此端点移除 cookie，身份由授权参数和 HD 请求头提供。
     private suspend fun fetchMergedMobileFeed(idx: Int): Result<List<VideoItem>> {
         try {
             // app 取流依赖 buvid 会话, 缺失时先通过 SPI 获取

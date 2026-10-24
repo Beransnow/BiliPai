@@ -131,6 +131,7 @@ data class DynamicCardNavigationActions(
     val onCourseClick: ((String, String) -> Unit)? = null,
     val onOpenLink: ((String) -> Unit)? = null,
     val onArticleClick: ((articleId: Long, title: String) -> Unit)? = null,
+    val onMatchClick: ((contestId: Long) -> Unit)? = null,
     val onDynamicDetailClick: ((dynamicId: String) -> Unit)? = null,
     val onUnfoldRelatedClick: ((dynamicId: String) -> Unit)? = null,
     val onPrimaryClickOverride: ((DynamicItem) -> Unit)? = null,
@@ -193,6 +194,7 @@ fun DynamicCardV2(
     val onOpenLink = actions.navigation.onOpenLink
     val onCourseClick = actions.navigation.onCourseClick
     val onArticleClick = actions.navigation.onArticleClick
+    val onMatchClick = actions.navigation.onMatchClick
     val onDynamicDetailClick = actions.navigation.onDynamicDetailClick
     val onUnfoldRelatedClick = actions.navigation.onUnfoldRelatedClick
     val onPrimaryClickOverride = actions.navigation.onPrimaryClickOverride
@@ -315,6 +317,15 @@ fun DynamicCardV2(
             )
             is DynamicOpusLinkCardAction.OpenUser -> onUserClick(action.mid)
             is DynamicOpusLinkCardAction.OpenBangumi -> onBangumiClick(action.seasonId, action.epId)
+            is DynamicOpusLinkCardAction.OpenMatch -> {
+                // 赛事卡优先走宿主注入的原生详情回调；动态宿主的 onOpenLink 也会把
+                // match 链接解析到原生页面，两者都未接线时退回原外链行为。
+                when {
+                    onMatchClick != null && action.contestId > 0L -> onMatchClick(action.contestId)
+                    onOpenLink != null -> onOpenLink(linkCard.jumpUrl)
+                    else -> openContentUrl(linkCard.jumpUrl)
+                }
+            }
             is DynamicOpusLinkCardAction.OpenExternalUrl -> openContentUrl(action.url)
             DynamicOpusLinkCardAction.None -> Unit
         }
@@ -2556,6 +2567,8 @@ private fun dispatchDynamicRichTextLinkPayload(
                                 true
                             } else false
                         }
+                        // 富文本里的赛事链接没有原生详情回调，统一落到末尾的 onLinkClick 兜底。
+                        is BilibiliNavigationTarget.Match -> false
                         is BilibiliNavigationTarget.Search -> {
                             if (onTopicKeywordClick != null) {
                                 onTopicKeywordClick(target.keyword)

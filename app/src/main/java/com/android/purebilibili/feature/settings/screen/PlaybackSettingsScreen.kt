@@ -1292,6 +1292,20 @@ private fun PlaybackInteractionSettingsSection(
         .collectAsStateWithLifecycle(initialValue = PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC)
     val subtitleFeatureEnabled = isSubtitleFeatureEnabledForUser()
     val subtitleAutoPreference = playerConfiguration.subtitleAutoPreference
+    var showSubtitleAppearance by remember { mutableStateOf(false) }
+    val subtitleAppearance by remember(context) {
+        com.android.purebilibili.feature.video.subtitle.SubtitleToolsStore.appearance(context)
+    }.collectAsStateWithLifecycle(initialValue = com.android.purebilibili.feature.video.ui.components.PlayerSubtitleAppearance())
+    if (showSubtitleAppearance) {
+        com.android.purebilibili.feature.video.ui.components.PlayerSubtitleSettingsPanel(
+            appearance = subtitleAppearance,
+            onAppearanceChange = { value -> scope.launch {
+                com.android.purebilibili.feature.video.subtitle.SubtitleToolsStore.setAppearance(context, value)
+            } },
+            onDismiss = { showSubtitleAppearance = false },
+        )
+    }
+
     val videoAiSummaryEntryEnabled by remember(context) { com.android.purebilibili.core.store.SettingsManager.getVideoAiSummaryEntryEnabled(context) }
         .collectAsStateWithLifecycle(initialValue = true)
     val videoNoteEnabled by remember(context) { com.android.purebilibili.core.store.SettingsManager.getVideoNoteEnabled(context) }
@@ -1464,6 +1478,14 @@ SettingsItemAnchor("playback.playback_completion_behavior") {
         )
 }
         if (subtitleFeatureEnabled) {
+            AppPreferenceDivider()
+            SettingsItemAnchor("playback.subtitle_appearance") {
+                com.android.purebilibili.core.ui.components.AppPreference(
+                    title = settingItemTitle("playback.subtitle_appearance"),
+                    subtitle = "字号、颜色、描边与独立字体导入",
+                    onClick = { showSubtitleAppearance = true },
+                )
+            }
             AppPreferenceDivider()
 SettingsItemAnchor("playback.subtitle_auto_preference") {
             SettingsSingleChoicePreference(
@@ -2812,6 +2834,33 @@ SettingsItemAnchor("playback.video_ambient_settings.power_saving") {
                 },
             )
         }
+        AppPreferenceDivider()
+
+        val showContinuePartNotice = com.android.purebilibili.core.store.SettingsManager
+            .getShowContinuePartNotice(context)
+            .collectAsStateWithLifecycle(
+                initialValue = com.android.purebilibili.core.store.SettingsManager
+                    .getShowContinuePartNoticeSync(context)
+            ).value
+        SettingsItemAnchor("playback.show_continue_part_notice") {
+            AppSwitchPreference(
+                icon = rememberSettingsSemanticIcon(SettingsIconRole.CONTINUE_PART_NOTICE),
+                title = playbackSettingTitle("playback.show_continue_part_notice"),
+                subtitle = if (showContinuePartNotice) {
+                    "多P视频上次看到其他分P时，播放器内提示一键跳转"
+                } else {
+                    "关闭后不再展示分P继续播放提示"
+                },
+                checked = showContinuePartNotice,
+                onCheckedChange = {
+                    scope.launch {
+                        com.android.purebilibili.core.store.SettingsManager
+                            .setShowContinuePartNotice(context, it)
+                    }
+                },
+                iconTint = AppContentColors.secondaryText()
+            )
+            }
         AppPreferenceDivider()
             SettingsItemAnchor("playback.show_fullscreen_lock_button") {
                 AppSwitchPreference(
