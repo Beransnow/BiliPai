@@ -39,16 +39,18 @@ import com.android.purebilibili.plugin.sdk.PluginCapability
 import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
-import com.android.purebilibili.core.plugin.RecommendationAction
-import com.android.purebilibili.core.plugin.RecommendationCreatorSignal
-import com.android.purebilibili.core.plugin.RecommendationGroup
-import com.android.purebilibili.core.plugin.RecommendationGroupItem
-import com.android.purebilibili.core.plugin.RecommendationMode
-import com.android.purebilibili.core.plugin.RecommendationPluginApi
-import com.android.purebilibili.core.plugin.RecommendationRequest
-import com.android.purebilibili.core.plugin.RecommendationResult
-import com.android.purebilibili.core.plugin.RecommendationStrategy
-import com.android.purebilibili.core.plugin.RecommendedVideo
+import com.android.purebilibili.core.plugin.BuiltinPlugin
+import com.android.purebilibili.plugin.sdk.RecommendationAction
+import com.android.purebilibili.plugin.sdk.RecommendationCreatorSignal
+import com.android.purebilibili.plugin.sdk.RecommendationGroup
+import com.android.purebilibili.plugin.sdk.RecommendationGroupItem
+import com.android.purebilibili.plugin.sdk.RecommendationMode
+import com.android.purebilibili.plugin.sdk.RecommendationPluginApi
+import com.android.purebilibili.plugin.sdk.RecommendationRequest
+import com.android.purebilibili.plugin.sdk.RecommendationResult
+import com.android.purebilibili.plugin.sdk.RecommendationStrategy
+import com.android.purebilibili.plugin.sdk.RecommendedVideo
+import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.store.TodayWatchFeedbackSnapshot
 import com.android.purebilibili.core.store.TodayWatchFeedbackStore
 import com.android.purebilibili.core.store.TodayWatchProfileStore
@@ -111,7 +113,7 @@ data class TodayWatchPluginConfig(
     val refreshTriggerToken: Long = 0L
 )
 
-class TodayWatchPlugin : RecommendationPluginApi {
+class TodayWatchPlugin : BuiltinPlugin, RecommendationPluginApi<VideoItem>, TodayWatchControls {
 
     override val id: String = BuiltinPluginIds.TODAY_WATCH
     override val name: String = "今日推荐单"
@@ -135,7 +137,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var config: TodayWatchPluginConfig = TodayWatchPluginConfig()
     private val _configState = MutableStateFlow(config)
-    val configState: StateFlow<TodayWatchPluginConfig> = _configState.asStateFlow()
+    override val configState: StateFlow<TodayWatchPluginConfig> = _configState.asStateFlow()
 
     override suspend fun onEnable() {
         loadConfigSuspend()
@@ -146,7 +148,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
         Logger.d(TAG, "今日推荐单插件已禁用")
     }
 
-    fun updateConfig(transform: (TodayWatchPluginConfig) -> TodayWatchPluginConfig) {
+    private fun updateConfig(transform: (TodayWatchPluginConfig) -> TodayWatchPluginConfig) {
         val updated = normalizeConfig(transform(config))
         if (updated == config) return
         config = updated
@@ -154,11 +156,15 @@ class TodayWatchPlugin : RecommendationPluginApi {
         saveConfig()
     }
 
-    fun setCurrentMode(mode: TodayWatchPluginMode) {
+    override fun setCurrentMode(mode: TodayWatchPluginMode) {
         updateConfig { it.copy(currentMode = mode) }
     }
 
-    override fun buildRecommendations(request: RecommendationRequest): RecommendationResult {
+    override fun setCollapsed(collapsed: Boolean) {
+        updateConfig { it.copy(collapsed = collapsed) }
+    }
+
+    override fun buildRecommendations(request: RecommendationRequest<VideoItem>): RecommendationResult<VideoItem> {
         val plan = buildTodayWatchPlan(
             historyVideos = request.historyVideos,
             candidateVideos = request.candidateVideos,
@@ -555,14 +561,6 @@ class TodayWatchPlugin : RecommendationPluginApi {
         }
     }
 
-    companion object {
-
-        fun getInstance(): TodayWatchPlugin? {
-            return PluginManager.plugins
-                .find { it.plugin.id == BuiltinPluginIds.TODAY_WATCH }
-                ?.plugin as? TodayWatchPlugin
-        }
-    }
 }
 
 @Composable

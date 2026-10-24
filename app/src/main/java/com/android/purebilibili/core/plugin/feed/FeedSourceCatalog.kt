@@ -17,9 +17,7 @@ fun isSubscriptionPluginOrFeedEnabled(
 
     val builtinPluginEnabled = installedPlugins.any {
         it.enabled && it.plugin.id == BuiltinPluginIds.SUBSCRIPTION_FEED
-    } || PluginManager.plugins.any {
-        it.enabled && it.plugin.id == BuiltinPluginIds.SUBSCRIPTION_FEED
-    }
+    } || PluginManager.isEnabled(BuiltinPluginIds.SUBSCRIPTION_FEED)
     if (builtinPluginEnabled) return true
 
     val scripts = runCatching {
@@ -36,7 +34,7 @@ fun isSubscriptionPluginOrFeedEnabled(
 }
 
 fun loadEnabledFeedSources(context: Context): List<FeedSource> {
-    val builtin = if (PluginManager.plugins.any { it.enabled && it.plugin.id == BuiltinPluginIds.SUBSCRIPTION_FEED }) {
+    val builtin = if (PluginManager.isEnabled(BuiltinPluginIds.SUBSCRIPTION_FEED)) {
         SubscriptionFeedStore.listBlocking(context)
             .filter { it.enabled && isHttpFeedUrl(it.url) }
             .map {

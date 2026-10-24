@@ -16,13 +16,13 @@ import com.android.purebilibili.core.ui.components.AppSwitch
 import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.plugin.DanmakuItem
-import com.android.purebilibili.core.plugin.DanmakuPluginApi
-import com.android.purebilibili.core.plugin.DanmakuStyle
+import com.android.purebilibili.core.plugin.BuiltinPlugin
+import com.android.purebilibili.plugin.sdk.DanmakuItem
+import com.android.purebilibili.plugin.sdk.DanmakuPluginApi
+import com.android.purebilibili.plugin.sdk.DanmakuStyle
 import com.android.purebilibili.core.plugin.PLUGIN_EFFECT_HINT_DANMAKU_COOLDOWN_MS
 import com.android.purebilibili.plugin.sdk.PluginCapability
 import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
@@ -46,7 +46,7 @@ private const val TAG = "DanmakuEnhancePlugin"
  * - 关键词屏蔽
  * - 同传弹幕高亮
  */
-class DanmakuEnhancePlugin : DanmakuPluginApi {
+class DanmakuEnhancePlugin : BuiltinPlugin, DanmakuPluginApi {
 
     override val id = BuiltinPluginIds.DANMAKU_ENHANCE
     override val name = "弹幕增强"
@@ -163,8 +163,8 @@ class DanmakuEnhancePlugin : DanmakuPluginApi {
 
         if (highlightKeywordsCache.any { danmaku.content.contains(it, ignoreCase = true) }) {
             return DanmakuStyle(
-                textColor = Color(0xFFFFD700),
-                backgroundColor = Color.Black.copy(alpha = 0.5f),
+                textColor = 0xFFFFD700.toInt(),
+                backgroundColor = 0x80000000.toInt(),
                 bold = true,
                 scale = 1.05f
             )

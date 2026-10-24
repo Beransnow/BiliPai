@@ -5,12 +5,13 @@ import com.android.purebilibili.core.plugin.BuiltinPluginIds
 import android.content.Context
 import android.os.Build
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.android.purebilibili.core.plugin.CastPluginApi
-import com.android.purebilibili.core.plugin.CastDiscoveryRequirement
+import com.android.purebilibili.plugin.sdk.CastPluginApi
+import com.android.purebilibili.core.plugin.BuiltinPlugin
+import com.android.purebilibili.plugin.sdk.CastDiscoveryRequirement
 import com.android.purebilibili.feature.cast.hasRawLocalNetworkAccess
-import com.android.purebilibili.core.plugin.CastPluginMediaRequest
-import com.android.purebilibili.core.plugin.CastPluginPlaybackState
-import com.android.purebilibili.core.plugin.CastPluginRoute
+import com.android.purebilibili.plugin.sdk.CastPluginMediaRequest
+import com.android.purebilibili.plugin.sdk.CastPluginPlaybackState
+import com.android.purebilibili.plugin.sdk.CastPluginRoute
 import com.android.purebilibili.plugin.sdk.PluginCapability
 import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.util.Logger
@@ -24,7 +25,7 @@ private const val TAG = "GoogleCastPlugin"
 internal fun resolveGoogleCastDiscoveryRequirement(sdkInt: Int): CastDiscoveryRequirement =
     if (sdkInt >= 37) CastDiscoveryRequirement.RAW_LOCAL_NETWORK else CastDiscoveryRequirement.NONE
 
-class GoogleCastPlugin : CastPluginApi {
+class GoogleCastPlugin : BuiltinPlugin, CastPluginApi {
 
     override val id = BuiltinPluginIds.GOOGLE_CAST
     override val name = "Google Cast"

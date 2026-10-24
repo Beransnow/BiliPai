@@ -93,7 +93,7 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.rememberNotificationPermissionState
 import com.android.purebilibili.core.plugin.resolvePluginListActivityLabel
 import com.android.purebilibili.core.plugin.BuiltinPluginIds
-import com.android.purebilibili.feature.plugin.EyeProtectionPlugin
+import com.android.purebilibili.plugin.sdk.EyeProtectionPluginApi
 import com.android.purebilibili.feature.settings.buildUiSkinImagePreviewItems
 import com.android.purebilibili.feature.settings.buildUiSkinPackagePreview
 import kotlinx.coroutines.Dispatchers
@@ -2242,7 +2242,7 @@ private fun PluginItem(
     val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
     val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val eyeActivityFlow = remember(plugin.id) {
-        (plugin as? EyeProtectionPlugin)?.isNightModeActive
+        PluginManager.getPlugin(EyeProtectionPluginApi::class)?.isNightModeActive
             ?: kotlinx.coroutines.flow.MutableStateFlow(false)
     }
     val eyeActive by eyeActivityFlow.collectAsStateWithLifecycle()

@@ -3,6 +3,14 @@ package com.android.purebilibili.core.plugin
 
 import android.content.Context
 import com.android.purebilibili.core.util.Logger
+import com.android.purebilibili.data.model.response.VideoItem
+import com.android.purebilibili.plugin.sdk.CastPluginApi
+import com.android.purebilibili.plugin.sdk.DanmakuPluginApi
+import com.android.purebilibili.plugin.sdk.PlayerPluginApi
+import com.android.purebilibili.plugin.sdk.FeedKind
+import com.android.purebilibili.plugin.sdk.FeedPlugin
+import com.android.purebilibili.plugin.sdk.FeedTransformPlugin
+import com.android.purebilibili.plugin.sdk.RecommendationPluginApi
 import com.android.purebilibili.plugin.sdk.Plugin
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +45,7 @@ object PluginManager {
                     cooldownMs = PLUGIN_EFFECT_HINT_ENABLED_COOLDOWN_MS
                 )
             }
-            if (plugin is DanmakuPlugin) notifyDanmakuPluginsUpdated()
+            if (plugin is DanmakuPluginApi) notifyDanmakuPluginsUpdated()
         }
     )
 
@@ -106,23 +114,24 @@ object PluginManager {
         plugins.firstOrNull { it.enabled && type.isInstance(it.plugin) }
             ?.let { type.java.cast(it.plugin) }
     
-    /**
-     * 获取所有 PlayerPlugin
-     */
-    fun getEnabledPlayerPlugins(): List<PlayerPlugin> = getEnabledPlugins(PlayerPlugin::class)
+    /** Enabled definitions; mutable execution is owned by each player's session host. */
+    fun getEnabledPlayerPlugins(): List<PlayerPluginApi> = getEnabledPlugins(PlayerPluginApi::class)
     
-    /**
-     * 获取所有 DanmakuPlugin
-     */
-    fun getEnabledDanmakuPlugins(): List<DanmakuPlugin> = getEnabledPlugins(DanmakuPlugin::class)
+    fun getEnabledDanmakuPlugins(): List<DanmakuPluginApi> =
+        getEnabledPlugins(DanmakuPluginApi::class)
     
-    /**
-     * 获取所有 FeedPlugin
-     */
-    fun getEnabledFeedPlugins(): List<FeedPlugin> = getEnabledPlugins(FeedPlugin::class)
+    /** Video capabilities bind directly to the host's VideoItem without DTO projections. */
+    @Suppress("UNCHECKED_CAST")
+    fun getEnabledFeedPlugins(): List<FeedPlugin<VideoItem>> =
+        getEnabledPlugins(FeedPlugin::class) as List<FeedPlugin<VideoItem>>
 
-    fun getEnabledFeedTransformPlugins(): List<FeedTransformPlugin> =
-        getEnabledPlugins(FeedTransformPlugin::class)
+    @Suppress("UNCHECKED_CAST")
+    fun getEnabledFeedTransformPlugins(): List<FeedTransformPlugin<VideoItem>> =
+        getEnabledPlugins(FeedTransformPlugin::class) as List<FeedTransformPlugin<VideoItem>>
+
+    @Suppress("UNCHECKED_CAST")
+    fun getEnabledRecommendationPlugins(): List<RecommendationPluginApi<VideoItem>> =
+        getEnabledPlugins(RecommendationPluginApi::class) as List<RecommendationPluginApi<VideoItem>>
 
     /**
      * 获取所有已启用的 CastPluginApi 插件
@@ -180,9 +189,9 @@ object PluginManager {
 
 internal fun applyFeedTransformPlugins(
     items: List<com.android.purebilibili.data.model.response.VideoItem>,
-    plugins: List<FeedTransformPlugin>,
+    plugins: List<FeedTransformPlugin<VideoItem>>,
     feedKind: FeedKind,
-    onFailure: (FeedTransformPlugin, Exception) -> Unit = { _, _ -> },
+    onFailure: (FeedTransformPlugin<VideoItem>, Exception) -> Unit = { _, _ -> },
 ): List<com.android.purebilibili.data.model.response.VideoItem> = plugins.fold(items) { current, plugin ->
     try {
         plugin.transformFeedItems(current, feedKind)

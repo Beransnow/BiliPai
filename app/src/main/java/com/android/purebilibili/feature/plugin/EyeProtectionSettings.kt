@@ -68,9 +68,7 @@ internal fun EyeProtectionSettings(
     var uiConfig by remember { mutableStateOf(plugin.snapshotConfig()) }
     val isActive by plugin.isNightModeActive.collectAsStateWithLifecycle()
     val usageMinutes by plugin.usageMinutesFlow.collectAsStateWithLifecycle()
-    val pluginEnabled = PluginManager.plugins.any {
-        it.plugin.id == BuiltinPluginIds.EYE_PROTECTION && it.enabled
-    }
+    val pluginEnabled = PluginManager.isEnabled(BuiltinPluginIds.EYE_PROTECTION)
 
     LaunchedEffect(Unit) {
         plugin.loadConfigSuspend()

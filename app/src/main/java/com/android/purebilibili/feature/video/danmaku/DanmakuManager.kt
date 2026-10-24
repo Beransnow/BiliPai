@@ -14,13 +14,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import com.android.purebilibili.core.plugin.DanmakuItem as PluginDanmakuItem
-import com.android.purebilibili.core.plugin.DanmakuPlugin
-import com.android.purebilibili.core.plugin.DanmakuStyle
+import com.android.purebilibili.plugin.sdk.DanmakuItem as PluginDanmakuItem
+import com.android.purebilibili.plugin.sdk.DanmakuPluginApi
+import com.android.purebilibili.plugin.sdk.DanmakuStyle
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.json.JsonPluginManager
 import com.android.purebilibili.core.store.DanmakuSettings
@@ -776,7 +775,7 @@ class DanmakuManager private constructor(
                 val style = collectDanmakuStyle(filtered, nativePlugins, useJsonRules)
                 val changedColor = filtered.color.takeIf { it != sourceItem.color }
                 val color = filtered.color and 0x00FFFFFF
-                val colorOverride = style?.textColor?.toArgb()?.and(0x00FFFFFF) ?: changedColor
+                val colorOverride = style?.textColor?.and(0x00FFFFFF) ?: changedColor
                 val scale = style?.scale ?: item.fontScale
                 if (filtered.content != item.source || filtered.timeMs != item.startTimeMs ||
                     color != item.color || colorOverride != item.colorOverride || scale != item.fontScale
@@ -850,7 +849,7 @@ class DanmakuManager private constructor(
                 color = filteredItem.color and 0x00FFFFFF
             )
             style?.textColor?.let { color ->
-                updated = updated.copy(color = color.toArgb() and 0x00FFFFFF)
+                updated = updated.copy(color = color and 0x00FFFFFF)
             }
             if (style != null && abs(style.scale - 1.0f) > 0.01f) {
                 updated = updated.copy(
@@ -985,7 +984,7 @@ class DanmakuManager private constructor(
         layerType = mapDanmakuTypeToLayerType(item.type)
         textColor = (item.color and 0x00FFFFFF) or 0xFF000000.toInt()
 
-        style?.textColor?.let { color -> textColor = color.toArgb() }
+        style?.textColor?.let { color -> textColor = color }
         if (style != null && abs(style.scale - 1.0f) > 0.01f) {
             val explicitSize = textSize
             if (explicitSize != null) {
@@ -999,7 +998,7 @@ class DanmakuManager private constructor(
 
     private fun runDanmakuFilters(
         item: PluginDanmakuItem,
-        nativePlugins: List<DanmakuPlugin>,
+        nativePlugins: List<DanmakuPluginApi>,
         useJsonRules: Boolean
     ): PluginDanmakuItem? {
         var current = item
@@ -1029,7 +1028,7 @@ class DanmakuManager private constructor(
 
     private fun collectDanmakuStyle(
         item: PluginDanmakuItem,
-        nativePlugins: List<DanmakuPlugin>,
+        nativePlugins: List<DanmakuPluginApi>,
         useJsonRules: Boolean
     ): DanmakuStyle? {
         var style: DanmakuStyle? = null

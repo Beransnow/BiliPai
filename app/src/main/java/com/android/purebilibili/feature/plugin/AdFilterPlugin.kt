@@ -35,7 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
-import com.android.purebilibili.core.plugin.FeedPlugin
+import com.android.purebilibili.core.plugin.BuiltinPlugin
+import com.android.purebilibili.plugin.sdk.FeedKind
+import com.android.purebilibili.plugin.sdk.FeedPlugin
 import com.android.purebilibili.plugin.sdk.PluginCapability
 import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
@@ -118,7 +120,7 @@ internal fun removeAdFilterCustomListItem(
  * 4. UP主拉黑（按名称或MID）
  * 5. 自定义关键词屏蔽
  */
-class AdFilterPlugin : FeedPlugin {
+class AdFilterPlugin : BuiltinPlugin, FeedPlugin<VideoItem> {
 
     override val id = BuiltinPluginIds.AD_FILTER
     override val name = "去广告增强"
@@ -185,7 +187,7 @@ class AdFilterPlugin : FeedPlugin {
         filteredCount = 0
     }
 
-    override fun shouldShowItem(item: VideoItem): Boolean {
+    override fun shouldShowItem(item: VideoItem, feedKind: FeedKind): Boolean {
         //  每次过滤前确保配置是最新的
         reloadConfigAsync()
 

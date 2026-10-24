@@ -33,6 +33,12 @@ import com.android.purebilibili.R
 import com.android.purebilibili.core.coroutines.AppScope
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.plugin.BuiltinPlugin
+import com.android.purebilibili.plugin.sdk.PlaybackCdnPlugin
+import com.android.purebilibili.plugin.sdk.PlaybackCdnRewriteResult
+import com.android.purebilibili.plugin.sdk.PlaybackCdnCandidate
+import com.android.purebilibili.plugin.sdk.PlaybackCdnCandidateSource
+import com.android.purebilibili.plugin.sdk.CdnHealthEvent
+import com.android.purebilibili.plugin.sdk.CdnLineDiagnostic
 import com.android.purebilibili.plugin.sdk.PluginCapability
 import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.plugin.PluginManager
@@ -57,15 +63,6 @@ private const val TAG = "CdnRegionPlugin"
 private const val CDN_PROBE_SAMPLE_BYTES = 32 * 1024
 private const val CDN_ACTIVE_PLAYBACK_SESSION_TTL_MS = 10 * 60_000L
 
-data class PlaybackCdnRewriteResult(
-    val candidates: List<PlaybackCdnCandidate>,
-    val regionLabel: String?,
-    val cacheKeysByUrl: Map<String, String> = emptyMap()
-) {
-    val videoUrls: List<String> get() = candidates.map { it.videoUrl }
-    val audioUrls: List<String> get() = candidates.map { it.audioUrl.orEmpty() }
-    val sources: List<PlaybackCdnCandidateSource> get() = candidates.map { it.source }
-}
 
 private data class CdnProbeMeasure(
     val success: Boolean,
@@ -87,31 +84,8 @@ private data class CdnActivePlaybackSession(
     val updatedAtMs: Long
 )
 
-interface PlaybackCdnPlugin : BuiltinPlugin {
-    fun rewritePlaybackCandidates(
-        videoUrls: List<String>,
-        audioUrls: List<String>
-    ): PlaybackCdnRewriteResult
 
-    fun buildPlaybackCdnDiagnostics(
-        videoUrls: List<String>,
-        sources: List<PlaybackCdnCandidateSource> = emptyList()
-    ): List<CdnLineDiagnostic> = emptyList()
-
-    suspend fun probePlaybackCdnCandidates(
-        videoUrls: List<String>,
-        sources: List<PlaybackCdnCandidateSource> = emptyList()
-    ): List<CdnLineDiagnostic> = emptyList()
-
-    fun recordPlaybackCdnEvent(
-        url: String,
-        event: CdnHealthEvent
-    ) = Unit
-
-    fun isAdaptivePrefetchEnabled(): Boolean = false
-}
-
-class CdnRegionPlugin : PlaybackCdnPlugin {
+class CdnRegionPlugin : BuiltinPlugin, PlaybackCdnPlugin, CdnTransferControls {
     override val id: String = BuiltinPluginIds.PLAYBACK_CDN
     override val name: String = "CDN 智能选线"
     override val description: String = "在 B 站当前授权的签名 CDN 候选中选线，并可选预缓存未来 DASH 分片"
@@ -284,9 +258,9 @@ class CdnRegionPlugin : PlaybackCdnPlugin {
         }
     }
 
-    internal fun canUseParallelDownload(): Boolean = running && !cache.experimentalRewriteEnabled
+    override fun canUseParallelDownload(): Boolean = running && !cache.experimentalRewriteEnabled
 
-    internal suspend fun setParallelDownloadEnabled(enabled: Boolean) {
+    override suspend fun setParallelDownloadEnabled(enabled: Boolean) {
         val next = cache.copy(parallelDownloadEnabled = enabled)
         CdnRegionPluginStore.write(PluginManager.getContext(), next)
         cache = next

@@ -5,11 +5,12 @@ import com.android.purebilibili.core.plugin.BuiltinPluginIds
 import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Tv
-import com.android.purebilibili.core.plugin.CastPluginApi
-import com.android.purebilibili.core.plugin.CastDiscoveryRequirement
-import com.android.purebilibili.core.plugin.CastPluginMediaRequest
-import com.android.purebilibili.core.plugin.CastPluginPlaybackState
-import com.android.purebilibili.core.plugin.CastPluginRoute
+import com.android.purebilibili.plugin.sdk.CastPluginApi
+import com.android.purebilibili.core.plugin.BuiltinPlugin
+import com.android.purebilibili.plugin.sdk.CastDiscoveryRequirement
+import com.android.purebilibili.plugin.sdk.CastPluginMediaRequest
+import com.android.purebilibili.plugin.sdk.CastPluginPlaybackState
+import com.android.purebilibili.plugin.sdk.CastPluginRoute
 import com.android.purebilibili.plugin.sdk.PluginCapability
 import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 import com.android.purebilibili.core.util.Logger
@@ -30,7 +31,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 
-class DlnaCastPlugin : CastPluginApi {
+class DlnaCastPlugin : BuiltinPlugin, CastPluginApi {
 
     override val id = BuiltinPluginIds.DLNA_CAST
     override val name = "DLNA"

@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.plugin
 
-import com.android.purebilibili.core.plugin.BuiltinPluginIds
+import com.android.purebilibili.plugin.sdk.EyeCareReminder
+import com.android.purebilibili.plugin.sdk.EyeProtectionPluginApi
 
 import com.android.purebilibili.core.ui.AppContentColors
 
@@ -53,9 +54,8 @@ fun EyeProtectionOverlay(
     playbackActive: Boolean = false
 ) {
     val plugins by PluginManager.pluginsFlow.collectAsStateWithLifecycle()
-    val pluginInfo = plugins.find { it.plugin.id == BuiltinPluginIds.EYE_PROTECTION } ?: return
-    val plugin = pluginInfo.plugin as? EyeProtectionPlugin ?: return
-    val pluginEnabled = pluginInfo.enabled
+    val plugin = remember(plugins) { PluginManager.getPlugin(EyeProtectionPluginApi::class) } ?: return
+    val pluginEnabled = PluginManager.isEnabled(plugin.id)
     val settingsPreviewEnabled by plugin.settingsPreviewEnabled.collectAsStateWithLifecycle()
     if (!pluginEnabled && !settingsPreviewEnabled) return
 

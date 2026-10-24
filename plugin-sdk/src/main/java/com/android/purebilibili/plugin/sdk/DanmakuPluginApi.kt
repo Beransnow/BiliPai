@@ -12,10 +12,12 @@ data class DanmakuItem(
     val content: String,
     val timeMs: Long,
     val type: Int = 1,
+    /** RRGGBB source color; alpha is supplied by the host renderer. */
     val color: Int = 0xFFFFFF,
     val userId: String = ""
 )
 
+/** Optional colors are ARGB; only null means unspecified (transparent black is a color). */
 data class DanmakuStyle(
     val textColor: Int? = null,
     val borderColor: Int? = null,

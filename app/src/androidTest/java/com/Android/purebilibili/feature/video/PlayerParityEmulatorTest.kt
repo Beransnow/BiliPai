@@ -19,10 +19,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.espresso.Espresso.pressBack
 import com.android.purebilibili.core.plugin.PluginStore
+import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.feature.anime4k.Anime4KPreset
-import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
+import com.android.purebilibili.plugin.sdk.Anime4KPreset
+import com.android.purebilibili.plugin.sdk.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.decodeVideoEnhancementConfig
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -44,6 +45,7 @@ class PlayerParityEmulatorTest {
 
     @Before
     fun launchLocalPlayer() {
+        PluginManager.initialize(context)
         runBlocking {
             originalEnhancement = PluginStore.getConfigJson(context, BuiltinPluginIds.VIDEO_ENHANCEMENT) ?: "{}"
             originalSpeed = SettingsManager.getLastPlaybackSpeed(context).first()
@@ -169,7 +171,8 @@ class PlayerParityEmulatorTest {
                 awaitPlayer { !it.player.playWhenReady }
                 scenario.onActivity { it.player.seekTo(0) }
                 rule.onNodeWithTag("player_chapter_action").performClick()
-                rule.onNodeWithText("Local chapter", substring = true).performScrollTo().performClick()
+                rule.onNode(hasText("Local chapter", substring = true) and hasClickAction())
+                    .performScrollTo().performClick()
                 awaitPlayer { it.player.currentPosition in 950L..1100L }
                 rule.onNodeWithTag("player_progress_seek_area").performTouchInput { click(percentOffset(0.6f, 0.5f)) }
                 awaitPlayer { it.player.currentPosition in 1400L..2200L }
@@ -177,15 +180,15 @@ class PlayerParityEmulatorTest {
                 val preset = if (fullscreen) Anime4KPreset.QUALITY else Anime4KPreset.FAST
                 scenario.onActivity {
                     it.enhancement.setPreset(preset)
-                    it.enhancement.setAlgorithm(VideoEnhancementAlgorithm.FSR)
+                    it.enhancement.setAlgorithm(VideoEnhancementAlgorithm.FSR_1_0)
                     it.enhancement.setRememberAcrossVideos(true, currentVideoEnabled = true)
                 }
                 awaitPlayer {
-                    it.enhancement.configState.value.algorithm == VideoEnhancementAlgorithm.FSR &&
+                    it.enhancement.configState.value.algorithm == VideoEnhancementAlgorithm.FSR_1_0 &&
                         it.enhancement.configState.value.preset == preset &&
                         it.enhancement.configState.value.rememberedEnabled
                 }
-                rule.onNodeWithContentDescription("更多").performClick()
+                rule.onNode(hasContentDescription("更多", substring = true)).performClick()
                 rule.onNodeWithText("超分辨率").performScrollTo().performClick()
                 rule.onNodeWithText(if (preset == Anime4KPreset.FAST) "效率" else "画质", useUnmergedTree = true)
                     .performScrollTo().performClick()

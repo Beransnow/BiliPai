@@ -67,7 +67,7 @@ import com.android.purebilibili.data.model.response.Page
 import com.android.purebilibili.data.model.response.VideoshotData
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.Logger
-import com.android.purebilibili.feature.anime4k.Anime4KConfig
+import com.android.purebilibili.plugin.sdk.Anime4KConfig
 import com.android.purebilibili.feature.anime4k.gl.Anime4KGLSurfaceView
 import com.android.purebilibili.feature.anime4k.isAnime4KGles3Available
 import com.android.purebilibili.feature.anime4k.resolveInitialVideoEnhancementEnabled
@@ -96,7 +96,7 @@ import com.android.purebilibili.feature.video.ui.section.shouldTriggerFullscreen
 import com.android.purebilibili.feature.video.ui.section.resolveSystemStreamVolumeFromGesture
 import com.android.purebilibili.feature.video.util.captureAndSaveVideoScreenshot
 import com.android.purebilibili.data.model.response.SponsorSegment
-import com.android.purebilibili.feature.plugin.Anime4KPlugin
+import com.android.purebilibili.plugin.sdk.VideoEnhancementPluginApi
 import com.android.purebilibili.feature.bangumi.resolveBangumiDanmakuTopInsetDp
 import com.android.purebilibili.feature.bangumi.resolveBangumiPlayerTopControlsPaddingTopDp
 import com.android.purebilibili.core.store.DEFAULT_LONG_PRESS_SPEED
@@ -222,7 +222,7 @@ fun BangumiPlayerView(
     val hostLifecycleStarted = lifecycleState.isAtLeast(Lifecycle.State.STARTED)
     val registeredPlugins by PluginManager.pluginsFlow.collectAsStateWithLifecycle()
     val anime4kPluginInfo = registeredPlugins.firstOrNull { it.plugin.id == BuiltinPluginIds.VIDEO_ENHANCEMENT }
-    val anime4kPlugin = anime4kPluginInfo?.plugin as? Anime4KPlugin
+    val anime4kPlugin = PluginManager.getPlugin(VideoEnhancementPluginApi::class)
     val anime4kConfig = if (anime4kPlugin == null) {
         Anime4KConfig()
     } else {
@@ -948,7 +948,7 @@ fun BangumiPlayerView(
                     if (enabled && anime4kPluginInfo?.enabled != true) {
                         PluginManager.setEnabled(BuiltinPluginIds.VIDEO_ENHANCEMENT, true)
                     }
-                    Anime4KPlugin.getInstance()?.rememberCurrentVideoEnabled(enabled)
+                    anime4kPlugin?.rememberCurrentVideoEnabled(enabled)
                 }
             },
             onVideoEnhancementAlgorithmChange = { algorithm ->
