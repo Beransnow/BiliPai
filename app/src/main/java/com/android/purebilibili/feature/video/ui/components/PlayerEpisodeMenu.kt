@@ -46,9 +46,9 @@ import kotlinx.coroutines.launch
 /** One bounded lazy viewport in the native page/detail region in every player mode. */
 @Composable
 fun PlayerEpisodeMenu(
-    pages: List<Page>, currentPageIndex: Int, ugcSeason: UgcSeason?,
-    currentBvid: String, currentCid: Long, anchorBounds: IntRect?,
-    onDismiss: () -> Unit, onPageSelect: (Int) -> Unit, onEpisodeSelect: (UgcEpisode) -> Unit,
+    pages: List<Page>, currentPageIndex: Int, ugcSeason: UgcSeason? = null,
+    currentBvid: String = "", currentCid: Long = 0L,
+    onDismiss: () -> Unit, onPageSelect: (Int) -> Unit, onEpisodeSelect: ((UgcEpisode) -> Unit)? = null,
     isFullscreen: Boolean = false, playerBounds: IntRect? = null,
     cover: String = "", isReversed: Boolean = false, onReverse: (() -> Unit)? = null,
     isSubscribed: Boolean? = null, onSubscriptionChange: ((Boolean) -> Unit)? = null,
@@ -123,7 +123,7 @@ fun PlayerEpisodeMenu(
                     onDismiss()
                     when (val target = part.target) {
                         is PlayerEpisodeMenuTarget.Part -> onPageSelect(target.pageIndex)
-                        is PlayerEpisodeMenuTarget.Episode -> onEpisodeSelect(target.episode)
+                        is PlayerEpisodeMenuTarget.Episode -> onEpisodeSelect?.invoke(target.episode)
                     }
                 }
                 Column {

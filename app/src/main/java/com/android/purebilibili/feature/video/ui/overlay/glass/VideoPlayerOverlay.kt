@@ -76,7 +76,7 @@ import com.android.purebilibili.feature.video.ui.components.glass.LandscapeDanma
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.ui.components.glass.AspectRatioMenu
 import com.android.purebilibili.feature.video.ui.components.glass.VideoSettingsPanel
-import com.android.purebilibili.feature.video.ui.components.PagesSelector
+import com.android.purebilibili.feature.video.ui.components.PlayerEpisodeMenu
 import com.android.purebilibili.feature.video.ui.components.resolveCurrentUgcEpisodeLazyListIndex
 import com.android.purebilibili.feature.video.ui.components.LandscapeSidePanel
 import com.android.purebilibili.feature.video.ui.components.landscapeControlCenterGroup
@@ -459,23 +459,6 @@ internal fun FullscreenLockButton(
     }
 }
 
-internal fun resolvePageSelectorSheetOuterBottomPaddingDp(
-    isFullscreen: Boolean
-): Int {
-    return if (isFullscreen) 0 else 8
-}
-
-internal fun resolvePageSelectorSheetMaxWidthDp(
-    windowWidthDp: Int,
-    isFullscreen: Boolean
-): Int? {
-    return if (isFullscreen || windowWidthDp >= 600) {
-        640
-    } else {
-        null
-    }
-}
-
 internal fun shouldShowPersistentBottomProgressBar(
     controlsVisible: Boolean,
     isFullscreen: Boolean,
@@ -797,6 +780,7 @@ private fun VideoPlayerOverlayContent(
     val ambientVideoBoundsInWindow = state.ambientVideoBoundsInWindow
     val onShowDanmakuPool = actions.onShowDanmakuPool
 
+    var playerBoundsInWindow by remember(bvid, cid) { mutableStateOf<androidx.compose.ui.unit.IntRect?>(null) }
     var showQualityMenu by remember { mutableStateOf(false) }
     var qualityMenuAnchor by remember { mutableStateOf<androidx.compose.ui.unit.IntRect?>(null) }
     var speedMenuAnchor by remember { mutableStateOf<androidx.compose.ui.unit.IntRect?>(null) }
@@ -1452,7 +1436,7 @@ private fun VideoPlayerOverlayContent(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().playerActionBounds { playerBoundsInWindow = it }) {
         if (!isFullscreen) {
             ImmersiveStatusBarBackdrop(
                 ambientFrame = statusBarAmbientFrame,
@@ -2438,68 +2422,15 @@ private fun VideoPlayerOverlayContent(
         }
 
         if (showPageSelectorSheet && pages.size > 1) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.55f))
-                    .clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
-                        showPageSelectorSheet = false
-                    },
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                val pageSelectorMaxWidthDp = remember(configuration.screenWidthDp, isFullscreen) {
-                    resolvePageSelectorSheetMaxWidthDp(
-                        windowWidthDp = configuration.screenWidthDp,
-                        isFullscreen = isFullscreen
-                    )
-                }
-                val pageSelectorMaxHeight = com.android.purebilibili.feature.video.ui.components.episodeSheetMaxHeight()
-                AppSurface(
-                    shape = AppShapes.container(ContainerLevel.Sheet),
-                    color = MaterialTheme.colorScheme.surface,
-                    modifier = Modifier
-                        .heightIn(max = pageSelectorMaxHeight)
-                        .then(
-                            if (pageSelectorMaxWidthDp != null) {
-                                Modifier.widthIn(max = pageSelectorMaxWidthDp.dp)
-                            } else {
-                                Modifier.fillMaxWidth()
-                            }
-                        )
-                        .padding(
-                            start = 8.dp,
-                            top = 8.dp,
-                            end = 8.dp,
-                            bottom = resolvePageSelectorSheetOuterBottomPaddingDp(isFullscreen).dp
-                        )
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .clickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() }
-                            ) {}
-                    ) {
-                        PagesSelector(
-                            pages = pages,
-                            coverUrl = coverUrl,
-                            currentPageIndex = currentPageIndex,
-                            forceGridMode = true,
-                            blockParentVerticalScroll = true,
-                            onDismissRequest = { showPageSelectorSheet = false },
-                            onPageSelect = { index ->
-                                showPageSelectorSheet = false
-                                onPageSelect(index)
-                            }
-                        )
-                    }
-                }
-            }
+            PlayerEpisodeMenu(
+                pages = pages,
+                currentPageIndex = currentPageIndex,
+                isFullscreen = isFullscreen,
+                playerBounds = playerBoundsInWindow,
+                cover = coverUrl,
+                onDismiss = { showPageSelectorSheet = false },
+                onPageSelect = onPageSelect,
+            )
         }
 
         if (shouldConsumeBackgroundGesturesForEndDrawer(endDrawerVisible)) {

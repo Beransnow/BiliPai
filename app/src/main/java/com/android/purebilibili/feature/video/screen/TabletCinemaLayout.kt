@@ -904,8 +904,7 @@ private fun CinemaMetaPanel(
                                 pages = success.info.pages,
                                 coverUrl = success.info.pic,
                                 currentPageIndex = currentPageIndex,
-                                onPageSelect = onPageSelect,
-                                forceGridMode = true
+                                onPageSelect = onPageSelect
                             )
                         }
                     }
