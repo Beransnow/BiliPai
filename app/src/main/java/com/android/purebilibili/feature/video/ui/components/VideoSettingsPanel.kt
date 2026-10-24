@@ -360,6 +360,7 @@ fun VideoSettingsPanel(
     val usesTonalContainerTreatment = rememberAppPlayerChromeProfile()
         .effects
         .usesTonalContainerTreatment
+    val nearbyHandoff = com.android.purebilibili.feature.nearby.LocalNearbyHandoff.current
     val context = androidx.compose.ui.platform.LocalContext.current
     val playableAudioQualities = remember(availableAudioQualities) {
         availableAudioQualities.filter { it.kind != null }
@@ -460,6 +461,12 @@ fun VideoSettingsPanel(
                     }
                     when (page) {
                         "main" -> {
+                            nearbyHandoff?.takeIf { com.android.purebilibili.feature.nearby.NEARBY_HANDOFF_ENABLED }?.let { controller ->
+                                PlayerSettingsRow(com.android.purebilibili.feature.nearby.NEARBY_TITLE) {
+                                    onDismiss()
+                                    controller.openDevices()
+                                }
+                            }
                             onWatchLater?.let { action -> PlayerSettingsRow("添加至「稍后再看」") { onDismiss(); action() } }
                             onShowNotes?.let { action -> PlayerSettingsRow("查看笔记") { onDismiss(); action() } }
                             onDownloadVideo?.let { action -> PlayerSettingsRow("离线缓存") { onDismiss(); action() } }

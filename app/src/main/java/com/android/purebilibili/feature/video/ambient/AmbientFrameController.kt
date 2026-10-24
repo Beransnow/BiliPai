@@ -89,6 +89,7 @@ internal data class AmbientRenderFrame(
 
 @Stable
 internal class AmbientPresentation {
+    private var bindingOwner: Any? = null
     var previous by mutableStateOf<AmbientRenderFrame?>(null)
     var current by mutableStateOf<AmbientRenderFrame?>(null)
     var visible by mutableStateOf(false)
@@ -102,6 +103,19 @@ internal class AmbientPresentation {
     var aspectRatio by mutableStateOf(16f / 9f)
     var failureFadeAt by mutableStateOf<Long?>(null)
     fun clear() { epoch++; previous = null; current = null; failureFadeAt = null }
+
+    fun claimBinding(owner: Any) { bindingOwner = owner }
+
+    /** 旧输出的退出回调不能清除新输出；同时解除捕获视频 View 的几何回调。 */
+    fun releaseBinding(owner: Any): Boolean {
+        if (bindingOwner !== owner) return false
+        bindingOwner = null
+        visibilityGate = { false }
+        videoBoundsInWindow = { null }
+        visible = false
+        layoutEnabled = false
+        return true
+    }
 }
 
 internal data class AmbientRunPolicy(

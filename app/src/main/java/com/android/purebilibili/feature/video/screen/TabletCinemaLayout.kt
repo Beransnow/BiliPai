@@ -599,6 +599,8 @@ private fun CinemaStagePlayer(
                     actions = VideoPlayerSectionActions(
                     resolveNextWatch = playbackActions.resolveNextWatch,
                     playNextWatch = playbackActions.playNextWatch,
+                        onJumpToLastPlayedPart = playbackActions.jumpToLastPlayedPart,
+                        onDismissPartResumeNotice = playbackActions.dismissPartResumeNotice,
                         onToggleFullscreen = onToggleFullscreen,
                         onQualityChange = playbackActions.changeQuality,
                         onBack = onBack,

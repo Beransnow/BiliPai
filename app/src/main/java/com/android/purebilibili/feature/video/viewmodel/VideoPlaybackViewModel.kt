@@ -575,6 +575,8 @@ sealed class VideoPlaybackUiState {
         val switchableQualityIds: List<Int> = emptyList(),
         val startPosition: Long = 0L,
         val pendingPlaybackTransitionPositionMs: Long? = null,
+        /** 「上次看到第 N P」提示：初始加载完成时解析 lastPlayCid，跳转或换视频后清除。 */
+        val partResumeNotice: PartResumeNotice? = null,
         val cachedDashVideos: List<DashVideo> = emptyList(),
         val cachedDashAudios: List<DashAudio> = emptyList(),
         val cachedDash: Dash? = null,
@@ -3616,10 +3618,22 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                             PlaybackResumeNotice(requestToken, result.info.bvid, result.info.cid, startPos)
                         } else null
 
+                        val partResumeNotice = resolvePartResumeNotice(
+                            requestToken = requestToken,
+                            info = result.info,
+                            lastPlayCid = result.lastPlayCid,
+                            requestedCid = playbackRequest.cid,
+                            noticeEnabled = appContext?.let {
+                                com.android.purebilibili.core.store.SettingsManager
+                                    .getShowContinuePartNoticeSync(it)
+                            } ?: true,
+                        )
+
                         val readyState = VideoPlaybackUiState.Success(
                             info = result.info,
                             playUrl = cdnSelection.playUrl,
                             audioUrl = cdnSelection.audioUrl,
+                            partResumeNotice = partResumeNotice,
                             related = _detailState.value.related,
                             relatedLoadState = _detailState.value.relatedLoadState,
                             currentQuality = result.quality,
@@ -7871,6 +7885,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         }
         _uiState.value = subtitleClearedState.copy(
             isQualitySwitching = true,
+            partResumeNotice = null,
             pendingPlaybackTransitionPositionMs = 0L
         )
         
@@ -8047,6 +8062,29 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
 
     fun dismissResumePlaybackSuggestion() {
         playbackCoordinator.dismissResumeSuggestion()
+    }
+
+    /** 用户关闭「上次看到第 N P」提示（点击跳转或左滑移除后调用）。 */
+    fun dismissPartResumeNotice() {
+        val current = _uiState.value as? VideoPlaybackUiState.Success ?: return
+        if (current.partResumeNotice != null) {
+            _uiState.value = current.copy(partResumeNotice = null)
+        }
+    }
+
+    /** 「上次看到第 N P」提示点击跳转：仅当提示仍绑定当前加载与视频时生效。 */
+    fun jumpToLastPlayedPart() {
+        val current = _uiState.value as? VideoPlaybackUiState.Success ?: return
+        val notice = current.partResumeNotice ?: return
+        val stale = notice.requestToken != currentLoadRequestToken ||
+            notice.bvid != current.info.bvid ||
+            notice.currentCid != current.info.cid
+        if (stale) {
+            dismissPartResumeNotice()
+            return
+        }
+        dismissPartResumeNotice()
+        switchPage(notice.partIndex)
     }
 
     fun continueResumePlaybackSuggestion() {

@@ -29,6 +29,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.animateContentSize
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
@@ -40,6 +43,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -51,12 +56,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.NavigationEventTransitionState
+import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.navigationevent.findViewTreeNavigationEventDispatcherOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -101,6 +115,25 @@ fun CollectionSheet(
     onDismiss: () -> Unit,
     onEpisodeClick: (UgcEpisode) -> Unit
 ) {
+    var sheetVisible by remember { mutableStateOf(true) }
+    val backState = rememberNavigationEventState(NavigationEventInfo.None)
+    var committedBackProgress by remember { mutableFloatStateOf(0f) }
+    val backTransition = backState.transitionState as? NavigationEventTransitionState.InProgress
+    val motionEnabled = com.android.purebilibili.core.ui.LocalPredictiveBackGestureEnabled.current &&
+        com.android.purebilibili.core.ui.LocalComponentMotionEnabled.current &&
+        !com.android.purebilibili.core.ui.LocalSystemReduceMotion.current
+    val backProgress = animateFloatAsState(
+        targetValue = if (!motionEnabled) 0f else if (!sheetVisible) committedBackProgress else
+            backTransition?.takeIf {
+                it.direction == NavigationEventTransitionState.TRANSITIONING_BACK
+            }?.latestEvent?.progress?.coerceIn(0f, 1f) ?: 0f,
+        animationSpec = if (backTransition != null || !motionEnabled) snap() else tween(180),
+        label = "collectionPredictiveBack",
+    )
+    val requestDismiss: () -> Unit = {
+        committedBackProgress = backProgress.value
+        sheetVisible = false
+    }
     val selectionHaptic = rememberHapticFeedback()
     val sheetMaxHeight = episodeSheetMaxHeight()
     val context = LocalContext.current
@@ -179,9 +212,32 @@ fun CollectionSheet(
 
     AppModalBottomSheet(
         onDismissRequest = onDismiss,
+        visible = sheetVisible,
+        dismissOnBackPress = false,
+        // 返回由合集所在窗口接管；完成后交给各材质的原生收起动画。
+        modifier = Modifier.graphicsLayer {
+            val progress = backProgress.value
+            transformOrigin = TransformOrigin(0.5f, 1f)
+            scaleX = 1f - 0.06f * progress
+            scaleY = 1f - 0.06f * progress
+            translationY = size.height * 0.12f * progress
+        },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         windowInsets = WindowInsets(0.dp)  //  沉浸式
     ) {
+        // 必须在弹窗内容里读取窗口 owner，避免处理器挂到下层视频路由。
+        val windowOwner = checkNotNull(
+            LocalView.current.findViewTreeNavigationEventDispatcherOwner()
+                ?: LocalNavigationEventDispatcherOwner.current
+        ) { "Collection sheet must provide a window navigation dispatcher" }
+        CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides windowOwner) {
+            NavigationBackHandler(
+                state = backState,
+                // 收起动画结束前仍消费返回，避免连续侧滑穿透到视频页面。
+                isBackEnabled = true,
+                onBackCompleted = { if (sheetVisible) requestDismiss() },
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -250,7 +306,7 @@ fun CollectionSheet(
                         modifier = Modifier.size(20.dp)
                     )
                 }
-                AppIconButton(onClick = onDismiss) {
+                AppIconButton(onClick = requestDismiss) {
                     AppIcon(
                         clearIcon,
                         contentDescription = "关闭",

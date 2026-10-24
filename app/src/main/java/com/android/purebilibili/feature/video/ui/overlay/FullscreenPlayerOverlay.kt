@@ -1230,8 +1230,10 @@ fun FullscreenPlayerOverlay(
                             modifier = Modifier.padding(end = 8.dp)
                         )
 
-                        //  [新增] 弹幕开关按钮
-                        val danmakuActiveColor = Color.White.copy(alpha = 0.96f)
+                        //  [新增] 弹幕开关按钮；开启态跟随选中主题色，与玻璃底栏共用 selectionAccent 入口。
+                        val danmakuActiveColor = AppContentColors.selectionAccent(
+                            com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled,
+                        )
                         val danmakuInactiveColor = Color.White.copy(alpha = 0.74f)
                         NativeDanmakuToggleButton(
                             enabled = danmakuEnabled,

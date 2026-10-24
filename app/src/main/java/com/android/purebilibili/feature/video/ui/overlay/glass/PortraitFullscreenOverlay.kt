@@ -54,7 +54,6 @@ import com.android.purebilibili.feature.video.ui.components.glass.HiResBadge
 import com.android.purebilibili.feature.video.ui.feedback.followActionAnchor
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 
-import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppIconButtonDefaults
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -400,18 +399,14 @@ fun PortraitFullscreenOverlay(
                     exit = fadeOut(),
                     modifier = Modifier.align(Alignment.Center)
                 ) {
-                    AppSurface(
-                        color = Color.Black.copy(alpha = 0.72f),
-                        shape = AppShapes.container(ContainerLevel.Card)
-                    ) {
+                    Box {
                         Row(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            AppCircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
+                            com.android.purebilibili.feature.video.ui.overlay.BiliTvAnimatedBufferingIndicator(
+                                tint = AppContentColors.accent(),
+                                size = 32.dp,
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             AppText(

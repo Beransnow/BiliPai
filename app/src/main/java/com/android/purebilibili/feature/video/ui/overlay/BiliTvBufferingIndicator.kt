@@ -1,18 +1,20 @@
 package com.android.purebilibili.feature.video.ui.overlay
 
 import android.os.Build
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import coil3.asDrawable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
@@ -21,28 +23,40 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.android.purebilibili.R
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppText
 
-/**
- * 播放器默认缓冲动画：小电视循环动画（res/raw/bili_tv_buffering.webp）。
- *
- * 动画源为单色位图，按 [tint] 染色，随主题主色联动（含动态取色与主题切换）。
- * API 28 以下系统没有动画 WebP 解码器，回退通用加载指示器，不改变两条材质路径。
- */
+/** 视频播放共用的小电视动画；仅改变图案和文案，不叠加背景遮罩。 */
 @Composable
 internal fun BiliTvAnimatedBufferingIndicator(
     tint: Color,
     modifier: Modifier = Modifier,
     size: Dp = 32.dp,
 ) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-        AdaptiveLoadingIndicator(modifier = modifier, size = size, color = tint)
+    val context = LocalContext.current
+    val reduceMotion = com.android.purebilibili.core.ui.LocalSystemReduceMotion.current
+    val active = com.android.purebilibili.core.ui.rememberVisualWorkActive() && !reduceMotion
+    var failed by remember { mutableStateOf(false) }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P || reduceMotion || failed) {
+        androidx.compose.foundation.Image(
+            painter = androidx.compose.ui.res.painterResource(R.raw.bili_tv_buffering),
+            contentDescription = "加载中",
+            contentScale = ContentScale.Fit,
+            colorFilter = ColorFilter.tint(tint),
+            modifier = modifier.size(size),
+        )
         return
     }
-    val context = LocalContext.current
     val model = remember(context) {
-        "android.resource://${context.packageName}/${R.raw.bili_tv_buffering}"
+        coil3.request.ImageRequest.Builder(context)
+            .data("android.resource://${context.packageName}/${R.raw.bili_tv_buffering}")
+            .memoryCachePolicy(coil3.request.CachePolicy.DISABLED)
+            .build()
+    }
+    var animation by remember(model) { mutableStateOf<android.graphics.drawable.Animatable?>(null) }
+    DisposableEffect(animation, active) {
+        val current = animation
+        if (active) current?.start() else current?.stop()
+        onDispose { current?.stop() }
     }
     AsyncImage(
         model = model,
@@ -50,16 +64,18 @@ internal fun BiliTvAnimatedBufferingIndicator(
         contentScale = ContentScale.Fit,
         colorFilter = ColorFilter.tint(tint),
         modifier = modifier.size(size),
+        onSuccess = {
+            val drawable = it.result.image.asDrawable(context.resources)
+            (drawable as? android.graphics.drawable.AnimatedImageDrawable)?.repeatCount = android.graphics.drawable.AnimatedImageDrawable.REPEAT_INFINITE
+            val current = drawable as? android.graphics.drawable.Animatable
+            current?.stop()
+            animation = current
+        },
+        onError = { failed = true },
     )
 }
 
-/**
- * 居中缓冲展示：径向渐变暗色圆底 + 小电视动画 + 文案。
- *
- * 固定比例：动画 25dp、圆底四周 20dp 内边距、文案 12sp 白色；
- * 圆底渐变由 26% 黑过渡到透明，保证在任意画面亮度下的可读性。
- * 文案规则：已缓冲时长 > 0 时显示已缓冲到的位置，否则显示「加载中…」。
- */
+/** 小电视与已缓冲位置共用透明容器，等待时保留当前视频画面。 */
 @Composable
 internal fun BiliTvBufferingIndicator(
     tint: Color,
@@ -74,16 +90,7 @@ internal fun BiliTvBufferingIndicator(
     } else {
         "加载中..."
     }
-    Box(
-        modifier = modifier
-            .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(Color.Black.copy(alpha = 0.26f), Color.Transparent),
-                ),
-                shape = CircleShape,
-            )
-            .padding(20.dp),
-    ) {
+    Box(modifier = modifier.padding(20.dp)) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             BiliTvAnimatedBufferingIndicator(tint = tint, size = 25.dp)
             AppText(
@@ -93,4 +100,27 @@ internal fun BiliTvBufferingIndicator(
             )
         }
     }
+}
+
+/** 原生播放视图不再自行显示进度环，由同一动画响应真实缓冲状态。 */
+@Composable
+internal fun PlayerBufferingIndicator(
+    player: androidx.media3.common.Player,
+    modifier: Modifier = Modifier,
+    tint: Color = com.android.purebilibili.core.ui.AppContentColors.accent(),
+    size: Dp = 32.dp,
+) {
+    var buffering by remember(player) {
+        mutableStateOf(player.playWhenReady && player.playbackState == androidx.media3.common.Player.STATE_BUFFERING)
+    }
+    DisposableEffect(player) {
+        val listener = object : androidx.media3.common.Player.Listener {
+            override fun onEvents(player: androidx.media3.common.Player, events: androidx.media3.common.Player.Events) {
+                buffering = player.playWhenReady && player.playbackState == androidx.media3.common.Player.STATE_BUFFERING
+            }
+        }
+        player.addListener(listener)
+        onDispose { player.removeListener(listener) }
+    }
+    if (buffering) BiliTvAnimatedBufferingIndicator(tint = tint, modifier = modifier, size = size)
 }

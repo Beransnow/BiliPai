@@ -163,7 +163,9 @@ internal fun TabletSecondaryDanmakuActions(
         NativeDanmakuToggleButton(
             enabled = danmakuEnabled,
             onToggle = onDanmakuToggle,
-            activeTint = AppContentColors.primaryText(),
+            activeTint = AppContentColors.selectionAccent(
+                com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled,
+            ),
             inactiveTint = AppContentColors.secondaryText(),
             modifier = Modifier
                 .padding(end = layoutPolicy.toggleTrailingPaddingDp.dp)
@@ -481,6 +483,8 @@ internal fun TabletVideoLayout(
                                 actions = VideoPlayerSectionActions(
                     resolveNextWatch = playbackActions.resolveNextWatch,
                     playNextWatch = playbackActions.playNextWatch,
+                                    onJumpToLastPlayedPart = playbackActions.jumpToLastPlayedPart,
+                                    onDismissPartResumeNotice = playbackActions.dismissPartResumeNotice,
                                     onToggleFullscreen = onToggleFullscreen,
                                     onQualityChange = playbackActions.changeQuality,
                                     onBack = onBack,

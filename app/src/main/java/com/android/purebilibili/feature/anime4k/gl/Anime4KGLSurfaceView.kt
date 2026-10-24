@@ -72,5 +72,8 @@ class Anime4KGLSurfaceView @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         queueEvent { pipelineRenderer.release() }
         super.onDetachedFromWindow()
+        // GLSurfaceView 会先处理退出标记，队列里的 release 未必执行。
+        // super 已等待 GL 线程退出，EGL 资源由其销毁；独立输入资源在这里兜底归还。
+        pipelineRenderer.releaseInputAfterThreadExit()
     }
 }

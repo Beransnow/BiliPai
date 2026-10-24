@@ -100,10 +100,6 @@ import com.android.purebilibili.feature.video.playback.audio.resolveAudioQuality
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
-import com.android.purebilibili.core.plugin.skin.LocalUiSkinState
-import com.android.purebilibili.core.plugin.skin.UiSkinAnimatedAsset
-import com.android.purebilibili.core.plugin.skin.UiSkinSurface
-import com.android.purebilibili.core.plugin.skin.assetPath
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
@@ -445,29 +441,6 @@ internal fun resolveDisplayedOnlineCount(
     showOnlineCount: Boolean
 ): String {
     return if (showOnlineCount) onlineCount else ""
-}
-
-@Composable
-private fun SkinAwareLoadingIndicator(
-    color: Color,
-    standalone: Boolean = false,
-    bufferedProvider: () -> Long = { 0L },
-) {
-    val skinPath = LocalUiSkinState.current.assetPath(UiSkinSurface.LOADING_INDICATOR) {
-        it.loadingAnimation ?: it.loadingFrame
-    }
-    if (skinPath != null) {
-        UiSkinAnimatedAsset(
-            path = skinPath,
-            size = 48.dp,
-            contentDescription = "加载中",
-        )
-    } else if (standalone) {
-        // 居中缓冲：暗色圆底 + 小电视动画 + 文案（已缓冲时显示已缓冲位置），动画随主题主色染色。
-        BiliTvBufferingIndicator(tint = color, bufferedProvider = bufferedProvider)
-    } else {
-        BiliTvAnimatedBufferingIndicator(tint = color, size = 32.dp)
-    }
 }
 
 private const val SEEK_RESUME_TRANSITION_GRACE_MS = 350L
@@ -1960,9 +1933,8 @@ private fun VideoPlayerOverlayContent(
             enter = EnterTransition.None,
             exit = fadeOut(OverlayControlFadeSpec)
         ) {
-            SkinAwareLoadingIndicator(
-                color = centerLoadingVisualState.indicatorColor,
-                standalone = true,
+            BiliTvBufferingIndicator(
+                tint = centerLoadingVisualState.indicatorColor,
                 bufferedProvider = { progressProvider().buffered },
             )
         }
@@ -1974,11 +1946,7 @@ private fun VideoPlayerOverlayContent(
             exit = fadeOut(OverlayControlFadeSpec)
         ) {
             val loadingState = centerLoadingUiState ?: return@AnimatedVisibility
-            AppSurface(
-                color = Color.Black.copy(alpha = 0.72f),
-                shape = RoundedCornerShape(overlayVisualPolicy.qualitySwitchCornerRadiusDp.dp),
-                modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)
-            ) {
+            Box(modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(
@@ -1986,7 +1954,7 @@ private fun VideoPlayerOverlayContent(
                         vertical = overlayVisualPolicy.qualitySwitchContentVerticalPaddingDp.dp
                     )
                 ) {
-                    SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
+                    BiliTvAnimatedBufferingIndicator(tint = centerLoadingVisualState.indicatorColor)
                     Spacer(modifier = Modifier.height(overlayVisualPolicy.qualitySwitchContentSpacingDp.dp))
                     AppText(
                         text = loadingState.primaryText,
@@ -2014,11 +1982,7 @@ private fun VideoPlayerOverlayContent(
             enter = fadeIn(OverlayControlFadeSpec),
             exit = fadeOut(OverlayControlFadeSpec)
         ) {
-            AppSurface(
-                color = Color.Black.copy(alpha = 0.7f),
-                shape = RoundedCornerShape(overlayVisualPolicy.qualitySwitchCornerRadiusDp.dp),
-                modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)
-            ) {
+            Box(modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(
@@ -2026,7 +1990,7 @@ private fun VideoPlayerOverlayContent(
                         vertical = overlayVisualPolicy.qualitySwitchContentVerticalPaddingDp.dp
                     )
                 ) {
-                    SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
+                    BiliTvAnimatedBufferingIndicator(tint = centerLoadingVisualState.indicatorColor)
                     Spacer(modifier = Modifier.height(overlayVisualPolicy.qualitySwitchContentSpacingDp.dp))
                     AppText(
                         text = "正在切换清晰度...",

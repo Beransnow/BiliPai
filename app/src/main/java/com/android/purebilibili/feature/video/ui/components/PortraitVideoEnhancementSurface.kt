@@ -227,7 +227,7 @@ internal fun PortraitVideoEnhancementSurface(
                         useController = false
                         setKeepContentOnPlayerReset(true)
                         setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
-                        setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS)
+                        setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                     }
                 },
                 update = { view ->
