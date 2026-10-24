@@ -2065,8 +2065,16 @@ fun AppNavigation(
         // [LayerBackdrop] Create backdrop for bottom bar refraction effect.
         // Capture the wallpaper and navigation content together so transparent wallpaper-aware
         // pages feed the same background into the floating dock as Home.
-        val shouldCaptureBottomBarBackdrop =
-            homeSettings.androidNativeLiquidGlassEnabled || isBottomBarBlurEnabled
+        // 仅玻璃开启时绕过网页采集，关闭后的原生模糊和背景录制保持原有行为。
+        // 网页有独立渲染树；页面关闭采集后，祖先也不能再次把它录入背景层。
+        // 检查整个栈，覆盖网页上方的详情页及返回网页过程，避免来回切换录制状态。
+        val navigationBackdropCaptureEnabled = !homeSettings.androidNativeLiquidGlassEnabled ||
+            navigation3BackStack.none {
+                it is BiliPaiNavKey.Web &&
+                    !com.android.purebilibili.feature.web.shouldOpenWebUrlExternally(it.url)
+            }
+        val shouldCaptureBottomBarBackdrop = navigationBackdropCaptureEnabled &&
+            (homeSettings.androidNativeLiquidGlassEnabled || isBottomBarBlurEnabled)
         val bottomBarBackdropSource = if (shouldCaptureBottomBarBackdrop) {
             // Bind the shared recording to every frame of the app theme palette,
             // rather than waiting for navigation/layout to invalidate a static page.
@@ -2365,7 +2373,7 @@ fun AppNavigation(
                         // [Fix] 将内容标记为全局底栏模糊的源
                         // 必须添加 hazeSource，否则底栏的 hazeEffect 无法获取背景内容，导致模糊失效
                         .then(
-                            if (isBottomBarBlurEnabled && mainHazeState != null) {
+                            if (navigationBackdropCaptureEnabled && isBottomBarBlurEnabled && mainHazeState != null) {
                                 Modifier.hazeSourceCompat(mainHazeState)
                             } else {
                                 Modifier

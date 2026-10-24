@@ -207,6 +207,8 @@ fun AdaptiveScaffold(
     snackbarHost: @Composable () -> Unit = {},
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
+    // WebView 等独立渲染内容不能进入顶栏的背景录制；默认保留普通页面行为。
+    contentBackdropEnabled: Boolean = true,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val sharedWallpaper = LocalGlobalWallpaperBackdropVisible.current &&
@@ -221,12 +223,12 @@ fun AdaptiveScaffold(
     val scaffoldRenderer = resolveAdaptiveScaffoldRenderer(
         uiStyle = LocalAppUiStyle.current
     )
-    val iconBackdropSource = if (LocalAppThemeConfig.current.liquidGlassEnabled) {
+    val iconBackdropSource = if (contentBackdropEnabled && LocalAppThemeConfig.current.liquidGlassEnabled) {
         com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
     } else null
     // 顶栏毛玻璃：由统一的「顶部模糊」开关控制；句柄为 null 时 chrome 保持原生容器色。
     val scaffoldHaze = rememberAdaptiveScaffoldHaze(
-        userEnabled = LocalAppThemeConfig.current.headerBlurEnabled
+        userEnabled = contentBackdropEnabled && LocalAppThemeConfig.current.headerBlurEnabled
     )
     val decoratedTopBar: @Composable () -> Unit = {
         CompositionLocalProvider(
@@ -600,6 +602,7 @@ fun AppScaffold(
     snackbarHost: @Composable () -> Unit = {},
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
+    contentBackdropEnabled: Boolean = true,
     content: @Composable (PaddingValues) -> Unit,
 ) = AdaptiveScaffold(
     modifier = modifier,
@@ -609,6 +612,7 @@ fun AppScaffold(
     snackbarHost = snackbarHost,
     containerColor = containerColor,
     contentWindowInsets = contentWindowInsets,
+    contentBackdropEnabled = contentBackdropEnabled,
     content = content,
 )
 

@@ -101,6 +101,8 @@ fun WebViewScreen(
     })
 
     AppScaffold(
+        // 仅玻璃开启时避开网页背景录制；关闭后保留 MD3、Miuix 原有顶栏行为。
+        contentBackdropEnabled = !com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled,
         topBar = {
             AppTopBar(
                 title = title ?: "浏览器",
