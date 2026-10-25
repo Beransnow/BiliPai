@@ -2,7 +2,6 @@ package com.android.purebilibili.feature.anime4k.gl
 
 import android.content.Context
 import android.opengl.GLES20
-import android.opengl.GLES30
 import android.opengl.Matrix
 import com.android.purebilibili.feature.anime4k.Anime4KConfig
 import io.mockk.Runs
@@ -26,7 +25,7 @@ class Anime4KDetachedInputReleaseTest {
         mockkStatic(Matrix::class)
         every { Matrix.setIdentityM(any(), any()) } just Runs
         mockkStatic(GLES20::class)
-        every { GLES30.glDeleteTextures(any(), any<IntArray>(), any()) } just Runs
+        every { GLES20.glDeleteTextures(any(), any<IntArray>(), any()) } just Runs
         val context = mockk<Context>(relaxed = true)
         every { context.applicationContext } returns context
         val notifications = mutableListOf<android.view.Surface?>()
@@ -45,7 +44,7 @@ class Anime4KDetachedInputReleaseTest {
         renderer.releaseInputAfterThreadExit()
 
         verify(exactly = 1) { input.release() }
-        verify(exactly = 0) { GLES30.glDeleteTextures(any(), any<IntArray>(), any()) }
+        verify(exactly = 0) { GLES20.glDeleteTextures(any(), any<IntArray>(), any()) }
         assertNull(inputField.get(renderer))
         assertEquals(0, textureField.getInt(renderer))
         assertEquals(listOf<android.view.Surface?>(null), notifications)

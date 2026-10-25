@@ -133,23 +133,8 @@ internal fun shouldUseFillMaxPlayerViewport(aspectRatio: VideoAspectRatio): Bool
 }
 
 /**
- * Media3 [AspectRatioFrameLayout] 仅在 resizeMode 变化时 requestLayout。
- * 上滑全屏时容器尺寸变了但 mode 可能已是目标值（或首帧用了错误 measure），
- * 需要强制再测一次，否则 FILL/ZOOM 会留下右/下黑边。
- *
- * @return 实际应写入的 resizeMode（便于测试断言强制刷新策略）
- */
-@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-internal fun resolveForcedPlayerResizeModePivot(targetResizeMode: Int): Int {
-    return if (targetResizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) {
-        AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-    } else {
-        AspectRatioFrameLayout.RESIZE_MODE_FIT
-    }
-}
-
-/**
- * 将 [resizeMode] 应用到 PlayerView，并在需要时通过 mode 切换强制 remeasure。
+ * Apply the selected ratio. Recovery runs after Compose layout: remeasure the native children
+ * against the current viewport instead of relying on another AndroidView parent traversal.
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 internal fun applyPlayerViewResizeMode(
@@ -161,13 +146,25 @@ internal fun applyPlayerViewResizeMode(
     if (current == resizeMode && !forceRelayout) return
     if (current != resizeMode) {
         playerView.resizeMode = resizeMode
-    } else if (forceRelayout) {
-        playerView.resizeMode = resolveForcedPlayerResizeModePivot(resizeMode)
-        playerView.resizeMode = resizeMode
     }
+    val contentFrame = playerView.findViewById<android.view.View>(
+        androidx.media3.ui.R.id.exo_content_frame,
+    )
     playerView.requestLayout()
-    playerView.findViewById<android.view.View>(androidx.media3.ui.R.id.exo_content_frame)
-        ?.requestLayout()
+    contentFrame?.requestLayout()
+    if (forceRelayout && playerView.width > 0 && playerView.height > 0) {
+        playerView.forceLayout()
+        contentFrame?.forceLayout()
+        playerView.measure(
+            android.view.View.MeasureSpec.makeMeasureSpec(
+                playerView.width, android.view.View.MeasureSpec.EXACTLY,
+            ),
+            android.view.View.MeasureSpec.makeMeasureSpec(
+                playerView.height, android.view.View.MeasureSpec.EXACTLY,
+            ),
+        )
+        playerView.layout(playerView.left, playerView.top, playerView.right, playerView.bottom)
+    }
     playerView.invalidate()
 }
 
@@ -209,7 +206,7 @@ private class PlayerViewportRefreshController(
         if (requested == request && pending != null) return
         // Pager callers may omit expected dimensions: do not cache those as a known
         // completed viewport, since their next request can represent a new View size.
-        if (completed == request && playerView.resizeMode == mode &&
+        if (completed == request && playerView.resizeMode == mode && !playerView.isLayoutRequested &&
             width > 0 && height > 0 && !shouldRefreshMeasuredPlayerViewport(
                 width, height, playerView.width, playerView.height,
             )
@@ -226,17 +223,6 @@ private class PlayerViewportRefreshController(
             pending = null
             if (requested != request || !playerView.isAttachedToWindow) return@Runnable
             applyPlayerViewResizeMode(playerView, request.resizeMode, forceRelayout = true)
-            // Compose 宿主尺寸不变时，原生内容层的 requestLayout 可能未触发重新测量。
-            // 使用已落定的实际边界重测内部视频层，避免沿用进入全屏前的尺寸和位置。
-            val width = playerView.width
-            val height = playerView.height
-            if (width > 0 && height > 0) {
-                playerView.measure(
-                    android.view.View.MeasureSpec.makeMeasureSpec(width, android.view.View.MeasureSpec.EXACTLY),
-                    android.view.View.MeasureSpec.makeMeasureSpec(height, android.view.View.MeasureSpec.EXACTLY),
-                )
-                playerView.layout(playerView.left, playerView.top, playerView.right, playerView.bottom)
-            }
             // At most one follow-up, and only when there is a known size mismatch.
             if (!retry && request.width > 0 && request.height > 0 &&
                 shouldRefreshMeasuredPlayerViewport(
