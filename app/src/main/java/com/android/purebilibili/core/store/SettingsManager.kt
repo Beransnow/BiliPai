@@ -1063,6 +1063,7 @@ data class AppNavigationSettings(
     val videoSharedReturnGestureTranslationEnabled: Boolean = true,
     val videoReturnContentFollowProgressEnabled: Boolean = true,
     val settingsContainerMorphEnabled: Boolean = true,
+    val settingsContainerRealtimeBlurEnabled: Boolean = false,
     val liquidIndicatorWobbleEnabled: Boolean = true,
     // 编辑器保留原始配置，不能用运行时过滤后的可见项或生效策略反写用户选择。
     val bottomBarOrder: List<String> = listOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE"),
@@ -8328,6 +8329,8 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
                 preferences[booleanPreferencesKey("video_return_content_follow_progress_enabled")] ?: true,
             settingsContainerMorphEnabled =
                 preferences[booleanPreferencesKey("settings_container_morph_enabled")] ?: true,
+            settingsContainerRealtimeBlurEnabled =
+                preferences[booleanPreferencesKey("settings_container_realtime_blur_enabled")] ?: false,
             videoSharedReturnGestureTranslationEnabled =
                 preferences[KEY_VIDEO_SHARED_RETURN_GESTURE_TRANSLATION_ENABLED] ?: true,
         )
@@ -8389,6 +8392,13 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
 
     suspend fun setVideoReturnContentFollowProgressEnabled(context: Context, enabled: Boolean) {
         NavigationSettingsStore.setVideoReturnContentFollowProgressEnabled(context, enabled)
+    }
+
+    fun getSettingsContainerRealtimeBlurEnabled(context: Context): Flow<Boolean> =
+        NavigationSettingsStore.getSettingsContainerRealtimeBlurEnabled(context)
+
+    suspend fun setSettingsContainerRealtimeBlurEnabled(context: Context, enabled: Boolean) {
+        NavigationSettingsStore.setSettingsContainerRealtimeBlurEnabled(context, enabled)
     }
 
     fun getSettingsContainerMorphEnabled(context: Context): Flow<Boolean> =
@@ -8747,6 +8757,10 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
             BooleanShareablePreferenceDefinition(
                 KEY_LIVE_SURFACE_CARD_TRANSITION_ENABLED,
                 SettingsShareSection.APPEARANCE
+            ),
+            BooleanShareablePreferenceDefinition(
+                booleanPreferencesKey("settings_container_realtime_blur_enabled"),
+                SettingsShareSection.APPEARANCE,
             ),
             BooleanShareablePreferenceDefinition(
                 KEY_VIDEO_TRANSITION_REALTIME_BLUR_ENABLED,

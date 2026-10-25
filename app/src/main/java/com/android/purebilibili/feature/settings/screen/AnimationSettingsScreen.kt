@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.purebilibili.feature.settings.settingItemTitle
 import com.android.purebilibili.R
 import com.android.purebilibili.core.theme.*
 import com.android.purebilibili.core.ui.blur.BlurIntensity
@@ -244,6 +245,8 @@ fun AnimationSettingsContent(
         )
     }
     val videoTransitionRealtimeBlurEnabled by remember(context) { SettingsManager.getVideoTransitionRealtimeBlurEnabled(context) }
+        .collectAsStateWithLifecycle(initialValue = false)
+    val settingsContainerRealtimeBlurEnabled by remember(context) { SettingsManager.getSettingsContainerRealtimeBlurEnabled(context) }
         .collectAsStateWithLifecycle(initialValue = false)
     val settingsContainerMorphEnabled by remember(context) { SettingsManager.getSettingsContainerMorphEnabled(context) }
         .collectAsStateWithLifecycle(initialValue = true)
@@ -596,6 +599,20 @@ fun AnimationSettingsContent(
                                     }
                                 },
                                 iconTint = AppContentColors.secondaryText()
+                            )
+                        }
+                        AppPreferenceDivider()
+                        SettingsItemAnchor("animation.app_navigation_settings.settings_container_realtime_blur_enabled") {
+                            AppSwitchPreference(
+                                icon = rememberSettingsSemanticIcon(SettingsIconRole.SETTINGS_CONTAINER_BLUR),
+                                title = settingItemTitle("animation.app_navigation_settings.settings_container_realtime_blur_enabled"),
+                                subtitle = stringResource(R.string.animation_settings_container_blur_summary),
+                                checked = settingsContainerRealtimeBlurEnabled,
+                                enabled = settingsContainerMorphEnabled && android.os.Build.VERSION.SDK_INT >= 31,
+                                onCheckedChange = { enabled ->
+                                    scope.launch { SettingsManager.setSettingsContainerRealtimeBlurEnabled(context, enabled) }
+                                },
+                                iconTint = AppContentColors.secondaryText(),
                             )
                         }
                         AppPreferenceDivider()

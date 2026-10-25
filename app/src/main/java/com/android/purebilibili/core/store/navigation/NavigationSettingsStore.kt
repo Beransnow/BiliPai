@@ -78,6 +78,7 @@ object NavigationSettingsStore {
         booleanPreferencesKey("video_shared_return_gesture_follow_enabled")
     private val keyVideoSharedReturnGestureTranslationEnabled =
         booleanPreferencesKey("video_shared_return_gesture_translation_enabled")
+    private val keySettingsContainerRealtimeBlurEnabled = booleanPreferencesKey("settings_container_realtime_blur_enabled")
     private val keySettingsContainerMorphEnabled =
         booleanPreferencesKey("settings_container_morph_enabled")
     private val keyFullScreenSwipeBackEnabled =
@@ -240,6 +241,15 @@ object NavigationSettingsStore {
     }
 
     /** 设置容器形变开关：开启时设置页入口以条目容器形变展开，关闭走默认导航转场。 */
+    fun getSettingsContainerRealtimeBlurEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data
+            .map { preferences -> preferences[keySettingsContainerRealtimeBlurEnabled] ?: false }
+            .distinctUntilChanged()
+
+    suspend fun setSettingsContainerRealtimeBlurEnabled(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { it[keySettingsContainerRealtimeBlurEnabled] = enabled }
+    }
+
     fun getSettingsContainerMorphEnabled(context: Context): Flow<Boolean> =
         context.settingsDataStore.data
             .map { preferences -> preferences[keySettingsContainerMorphEnabled] ?: true }

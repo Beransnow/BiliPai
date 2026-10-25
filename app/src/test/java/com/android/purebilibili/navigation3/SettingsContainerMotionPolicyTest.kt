@@ -11,6 +11,19 @@ class SettingsContainerMotionPolicyTest {
     private val page = Rect(0f, 0f, 400f, 900f)
 
     @Test
+    fun realtimeBlurOnlyAffectsCoveredBackgroundAndReversesWithNavigationDepth() {
+        for (depth in listOf(-1f, -0.5f, 0f, Float.NaN, Float.POSITIVE_INFINITY)) {
+            assertEquals(0f, resolveSettingsContainerBlurProgress(depth))
+        }
+        assertEquals(1f, resolveSettingsContainerBlurProgress(1f))
+        assertEquals(1f, resolveSettingsContainerBlurProgress(2f))
+        val enter = (0..10).map { resolveSettingsContainerBlurProgress(it / 10f) }
+        val leave = (10 downTo 0).map { resolveSettingsContainerBlurProgress(it / 10f) }
+        assertEquals(enter.reversed(), leave)
+        assertTrue(enter.zipWithNext().all { (previous, next) -> next >= previous })
+    }
+
+    @Test
     fun pushAndPopHaveExactRowAndPageEndpoints() {
         for (returning in listOf(false, true)) {
             val closed = resolveSettingsContainerFrame(source, page, -1f, returning)

@@ -139,6 +139,7 @@ internal fun BiliPaiNavDisplayHost(
     videoSharedReturnGestureTranslationEnabled: Boolean = true,
     videoReturnContentFollowProgressEnabled: Boolean = true,
     settingsContainerMorphEnabled: Boolean = true,
+    settingsContainerRealtimeBlurEnabled: Boolean = false,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
     preferWholeCardReturn: Boolean = false,
@@ -185,8 +186,16 @@ internal fun BiliPaiNavDisplayHost(
         predictiveBackAnimationStyle != BiliPaiPredictiveBackAnimationStyle.NONE
     val settingsContainerPageColor = AppSurfaceTokens.groupedListContainer()
     val settingsContainerSnapshot = settingsContainerSources.sources.toMap()
-    val availableSettingsContainerTransitions = remember(settingsContainerSnapshot, settingsContainerPageColor) {
-        settingsContainerSnapshot.mapValues { (_, source) -> SettingsContainerTransition(source, settingsContainerPageColor) }
+    val availableSettingsContainerTransitions = remember(
+        settingsContainerSnapshot, settingsContainerPageColor, settingsContainerRealtimeBlurEnabled, navBlurMotionTierProvider,
+    ) {
+        settingsContainerSnapshot.mapValues { (_, source) ->
+            SettingsContainerTransition(
+                source, settingsContainerPageColor,
+                realtimeBlurEnabled = settingsContainerRealtimeBlurEnabled,
+                blurMotionTierProvider = navBlurMotionTierProvider,
+            )
+        }
     }
     val settingsContainerTransitions = if (!settingsContainerEnabled) emptyMap() else
         availableSettingsContainerTransitions.filterKeys { target ->

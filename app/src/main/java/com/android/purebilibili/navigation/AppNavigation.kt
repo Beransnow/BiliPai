@@ -4954,6 +4954,8 @@ fun AppNavigation(
                         appNavigationSettings.videoReturnContentFollowProgressEnabled,
                     settingsContainerMorphEnabled =
                         appNavigationSettings.settingsContainerMorphEnabled,
+                    settingsContainerRealtimeBlurEnabled =
+                        appNavigationSettings.settingsContainerRealtimeBlurEnabled,
                     preferWholeCardReturn = false,
                     onBack = { performSystemBackAction() },
                     onPrepareVideoCardSharedReturn = {

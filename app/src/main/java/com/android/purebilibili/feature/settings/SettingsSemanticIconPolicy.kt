@@ -72,6 +72,7 @@ internal enum class SettingsIconRole {
     HOME_WALLPAPER,
     WALLPAPER_EFFECT,
     SETTINGS_CONTAINER_MORPH,
+    SETTINGS_CONTAINER_BLUR,
     HOME_UP_BADGES,
     HOME_REFRESH_TIP,
     HOME_REFRESH_UNDO,
@@ -302,6 +303,7 @@ internal fun resolveSettingsMaterialSymbolResource(role: SettingsIconRole): Int 
     SettingsIconRole.HOME_INFO_GLASS -> R.drawable.ms_badge_24
     SettingsIconRole.HOME_WALLPAPER -> R.drawable.ms_image_24
     SettingsIconRole.WALLPAPER_EFFECT -> R.drawable.ms_blur_on_24
+    SettingsIconRole.SETTINGS_CONTAINER_BLUR -> R.drawable.ms_lens_blur_24
     SettingsIconRole.SETTINGS_CONTAINER_MORPH -> R.drawable.ms_bottom_panel_open_24
     SettingsIconRole.HOME_UP_BADGES -> R.drawable.ms_workspace_premium_24
     SettingsIconRole.HOME_REFRESH_TIP -> R.drawable.ms_history_24

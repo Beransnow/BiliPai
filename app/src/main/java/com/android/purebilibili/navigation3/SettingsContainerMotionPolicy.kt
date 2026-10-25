@@ -42,3 +42,10 @@ internal fun isSettingsContainerBoundary(
     val index = backStack.indexOf(target)
     return index > 0 && backStack[index - 1] == owner
 }
+
+/** 父页深度从 0 到 1 时逐渐模糊，前景页及非有限输入不参与。 */
+internal fun resolveSettingsContainerBlurProgress(relativeDepth: Float): Float {
+    if (!relativeDepth.isFinite()) return 0f
+    val covered = relativeDepth.coerceIn(0f, 1f)
+    return covered * covered
+}
