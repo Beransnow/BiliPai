@@ -924,9 +924,10 @@ fun SpaceScreen(
 
     repostDynamicId?.let { dynamicId ->
         RepostDialog(
+            contentKey = dynamicId,
             onDismiss = { repostDynamicId = null },
-            onRepost = { content: String, alsoComment: Boolean, onComplete: (Boolean) -> Unit ->
-                dynamicInteractionViewModel.repostDynamic(dynamicId, content, alsoComment) { success, message ->
+            onRepost = { content, alsoComment, richContents, topic, onComplete ->
+                dynamicInteractionViewModel.repostDynamic(dynamicId, content, alsoComment, richContents, topic) { success, message ->
                     android.widget.Toast.makeText(
                         context,
                         message,
@@ -1228,20 +1229,12 @@ private fun SpaceContent(
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings())
     val selectedMainTab = state.tabShellState.selectedTab
-    val singleGlassPrimaryRail = LocalAppThemeConfig.current.liquidGlassEnabled
-    // Glass owns one drag/press lifecycle outside the pager. Per-page native rails keep
-    // their existing sticky layout and animation; only glass pages reserve an empty slot.
+    val contentDensity = LocalDensity.current
     val displayedMainTabs = resolveSpaceDisplayedMainTabs(
         tabs = state.mainTabs,
         selectedTab = selectedMainTab,
         hasCheese = state.hasCheeseTab || state.cheeseItems.isNotEmpty(),
     )
-    // Glass reserves its final shell plus row padding from the first measure. Native
-    // rows retain their own renderer sizing; no measured height feeds back into the grid.
-    val glassPrimaryRailHeight = resolveSpaceMainTabChromeSpec(
-        tabs = displayedMainTabs,
-        selectedTab = resolveSpacePrimaryTab(selectedMainTab),
-    ).heightDp.dp + SpaceMainTabTopPadding + SpaceMainTabBottomPadding
     val selectedPage = displayedMainTabs.indexOfFirst {
         it.tab == resolveSpacePrimaryTab(selectedMainTab)
     }.coerceAtLeast(0)
@@ -1443,13 +1436,6 @@ private fun SpaceContent(
         }
     }
 
-    // 吸顶 Tab 行在窗口根坐标系中的底边，用于把投稿悬浮工具条 dock 在它正下方
-    // （推算 chromeTopInset+高度会双算/漏算 chrome，导致悬浮条压到封面上）。
-    // 声明须在根 Box 之前：其 onGloballyPositioned 回调要写入这些状态。
-    var pinnedTabsRootBottomPx by remember { mutableStateOf(0f) }
-    // 网格容器在根坐标系中的顶边（悬浮条的父容器），用于换算相对 padding。
-    var gridContainerRootTopPx by remember { mutableStateOf(0f) }
-
     // 遮挡铰链时整页内容落入最大安全区，软折痕允许跨越（与首页/动态/搜索一致）。
     com.android.purebilibili.core.ui.adaptive.AppHingeSafeContent(
         modifier = Modifier.fillMaxSize(),
@@ -1459,7 +1445,6 @@ private fun SpaceContent(
             .fillMaxSize()
             .responsiveContentWidth(maxWidth = adaptiveLayoutSpec.contentMaxWidthDp.dp)
             .then(modifier)
-            .onGloballyPositioned { gridContainerRootTopPx = it.boundsInRoot().top }
     ) {
         HorizontalPager(
             state = pagerState,
@@ -1469,8 +1454,17 @@ private fun SpaceContent(
                 pager = pagerState,
                 enabled = !isInitialLoading,
                 contentTopPx = {
-                    if (pinnedTabsRootBottomPx > 0f) pinnedTabsRootBottomPx - gridContainerRootTopPx
-                    else Float.POSITIVE_INFINITY
+                    val info = pageGridStates.getValue(displayedMainTabs[pagerState.currentPage].tab).layoutInfo
+                    val tabs = info.visibleItemsInfo.firstOrNull { it.key == "space_tabs" }
+                    val chromeBottom = with(contentDensity) { chromeTopInset.toPx() }
+                    if (tabs != null) {
+                        (tabs.offset.y + info.beforeContentPadding + tabs.size.height).toFloat()
+                            .coerceAtLeast(chromeBottom)
+                    } else if (info.visibleItemsInfo.any { it.index > 1 }) {
+                        chromeBottom
+                    } else {
+                        Float.POSITIVE_INFINITY
+                    }
                 },
             ),
         ) { page ->
@@ -1654,34 +1648,16 @@ private fun SpaceContent(
                 }
             }
 
-            // Tab 栏吸顶（对齐 PiliPlus 的 pinned TabBar）：头部滚走后固定在顶栏下方，
-            // 长列表里切换 Tab 不必先滚回顶部。
-            // Grid 版 stickyHeader 自动占满整行 span（foundation 内部即 maxLineSpan）。
-            stickyHeader(key = "space_tabs") {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            // 吸顶行需要足够不透明：壁纸模式下 74% 会让「主页/动态/投稿」
-                            // 变成叠在亮封面上的幽灵文字。
-                            com.android.purebilibili.core.ui.globalWallpaperAwareChromeColor(
-                                MaterialTheme.colorScheme.surface
-                            ).let { if (it.alpha < 0.97f) it.copy(alpha = 0.97f) else it }
-                        )
-                        .onGloballyPositioned {
-                            if (isPageActive) pinnedTabsRootBottomPx = it.boundsInRoot().bottom
-                        }
-                ) {
-                    SpaceContentTabs(
-                        state = state,
-                        onMainTabSelected = onMainTabSelected,
-                        pagerState = pagerState,
-                        page = page,
-                        primaryTabHeight = if (singleGlassPrimaryRail) glassPrimaryRailHeight else null,
-                        onContributionTabSelected = onContributionTabSelected,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
+            // 两级标签属于资料下方的普通内容：一起滚出屏幕，回到页面顶部时重新出现。
+            item(key = "space_tabs", span = { GridItemSpan(maxLineSpan) }) {
+                SpaceContentTabs(
+                    state = state,
+                    onMainTabSelected = onMainTabSelected,
+                    onContributionTabSelected = onContributionTabSelected,
+                    pagerState = pagerState,
+                    page = page,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
 
             val showSearch = selectedMainTab == SpaceMainTab.DYNAMIC ||
@@ -2742,8 +2718,7 @@ private fun SpaceContent(
         }
     }
 
-        // 投稿视频悬浮工具条（对齐 PiliPlus 的 SliverFloatingHeaderWidget）：
-        // 统计条随内容滚走后，在吸顶 Tab 行正下方悬浮同一组操作。
+        // 投稿统计条滚走后，仅保留独立的排序工具条，固定在顶部导航栏下方。
         val isContributionVideoTab = selectedMainTab == SpaceMainTab.CONTRIBUTION &&
             selectedContributionTab.subTab in setOf(SpaceSubTab.VIDEO, SpaceSubTab.CHARGING_VIDEO)
         val isContributionSummaryScrolledAway by remember {
@@ -2755,10 +2730,6 @@ private fun SpaceContent(
         if (isContributionVideoTab && !state.isSearchMode &&
             (state.videos.isNotEmpty() || state.totalVideos > 0)
         ) {
-            // 实测 dock：吸顶 Tab 行底边（根坐标）− 父容器顶边（根坐标）。
-            val pinnedTabsTopPadding = with(density) {
-                (pinnedTabsRootBottomPx - gridContainerRootTopPx).coerceAtLeast(0f).toDp()
-            }
             AnimatedVisibility(
                 visible = isContributionSummaryScrolledAway,
                 enter = fadeIn(tween(140)) + slideInVertically(tween(180)) { -it / 2 },
@@ -2768,7 +2739,7 @@ private fun SpaceContent(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = pinnedTabsTopPadding)
+                        .padding(top = chromeTopInset)
                         .background(
                             com.android.purebilibili.core.ui.globalWallpaperAwareChromeColor(
                                 MaterialTheme.colorScheme.surface
@@ -2795,45 +2766,6 @@ private fun SpaceContent(
         )
         } // HorizontalPager
 
-        if (singleGlassPrimaryRail) {
-            // A single fixed owner survives page changes, so the incoming page cannot
-            // start a second pager-driven bloom while the dragged capsule is releasing.
-            // Read geometry in measurement/placement rather than recomposing on scroll.
-            SpaceMainTabRow(
-                tabs = displayedMainTabs,
-                selectedTab = resolveSpacePrimaryTab(selectedMainTab),
-                onSelect = onMainTabSelected,
-                indicatorPositionProvider = { pagerState.currentPage + pagerState.currentPageOffsetFraction },
-                isScrollInProgressProvider = { pagerState.isScrollInProgress },
-                modifier = Modifier
-                    .height(glassPrimaryRailHeight)
-                    .layout { measurable, constraints ->
-                        val activeGrid = pageGridStates.getValue(displayedMainTabs[pagerState.currentPage].tab)
-                        val tabsItem = activeGrid.layoutInfo.visibleItemsInfo.firstOrNull { it.key == "space_tabs" }
-                        val width = (tabsItem?.size?.width ?: constraints.maxWidth)
-                            .coerceIn(constraints.minWidth, constraints.maxWidth)
-                        val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
-                        layout(constraints.maxWidth, placeable.height) {
-                            // Read the current grid result during placement, rather than a
-                            // previous frame's global coordinates. Grid item offsets exclude
-                            // content padding; add it once to map into this viewport.
-                            val info = activeGrid.layoutInfo
-                            val currentTabs = info.visibleItemsInfo.firstOrNull { it.key == "space_tabs" }
-                            if (currentTabs != null) {
-                                placeable.placeRelative(
-                                    (constraints.maxWidth - placeable.width) / 2,
-                                    currentTabs.offset.y + info.beforeContentPadding,
-                                )
-                            }
-                        }
-                    }
-                    .background(
-                        com.android.purebilibili.core.ui.globalWallpaperAwareChromeColor(
-                            MaterialTheme.colorScheme.surface
-                        ).let { if (it.alpha < 0.97f) it.copy(alpha = 0.97f) else it }
-                    ),
-            )
-        }
 
     }
     }
@@ -3407,7 +3339,6 @@ private fun SpaceContentTabs(
     modifier: Modifier = Modifier,
     pagerState: PagerState,
     page: Int,
-    primaryTabHeight: Dp? = null,
 ) {
     val selectedMainTab = state.tabShellState.selectedTab
     val hasCheese = state.hasCheeseTab || state.cheeseItems.isNotEmpty()
@@ -3452,18 +3383,14 @@ private fun SpaceContentTabs(
         }
     }
     Column(modifier = modifier) {
-        if (primaryTabHeight != null) {
-            Spacer(Modifier.fillMaxWidth().height(primaryTabHeight))
-        } else {
-            SpaceMainTabRow(
-                tabs = displayedMainTabs,
-                selectedTab = resolveSpacePrimaryTab(selectedMainTab),
-                onSelect = onMainTabSelected,
-                modifier = Modifier.stationaryPagerHeader(pagerState, page),
-                indicatorPositionProvider = { pagerState.currentPage + pagerState.currentPageOffsetFraction },
-                isScrollInProgressProvider = { pagerState.isScrollInProgress },
-            )
-        }
+        SpaceMainTabRow(
+            tabs = displayedMainTabs,
+            selectedTab = resolveSpacePrimaryTab(selectedMainTab),
+            onSelect = onMainTabSelected,
+            modifier = Modifier.stationaryPagerHeader(pagerState, page),
+            indicatorPositionProvider = { pagerState.currentPage + pagerState.currentPageOffsetFraction },
+            isScrollInProgressProvider = { pagerState.isScrollInProgress },
+        )
         if (shouldShowSpaceSecondarySwitch(selectedMainTab) && secondarySwitchItems.isNotEmpty()) {
             SpaceSecondarySwitchRow(
                 items = secondarySwitchItems,
