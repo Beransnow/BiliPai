@@ -143,8 +143,10 @@ internal fun BiliPaiNavDisplayHost(
     preferWholeCardReturn: Boolean = false,
     onBack: () -> Unit,
     onPrepareVideoCardSharedReturn: () -> Boolean = { false },
-    onRelatedVideoDetailReturned: () -> Unit = {},
-    restorePreviousVideoSourceOnDetailReturn: Boolean = false,
+    pendingRelatedReturnCount: Int = 0,
+    relatedReturnRequestId: Long = 0L,
+    onRelatedVideoDetailReturned: (Long, Long) -> Boolean = { _, _ -> false },
+    videoSourceGeneration: Long = 0L,
     modifier: Modifier = Modifier,
     content: @Composable (BiliPaiNavKey) -> Unit,
 ) = BoxWithConstraints(modifier = modifier) {
@@ -191,8 +193,7 @@ internal fun BiliPaiNavDisplayHost(
             ?.let { it.width > 1f && it.height > 1f } == true,
     )
     val cardMorphAvailable = cardMorphMode != BiliPaiVideoCardMorphMode.NONE
-    var relatedReturnRestorePending by remember { mutableStateOf(false) }
-    var relatedReturnTransitionObserved by remember { mutableStateOf(false) }
+    var relatedReturnTransitionObserved by remember(videoSourceGeneration) { mutableStateOf(false) }
     val style = if (reduceMotion) {
         BiliPaiPredictiveBackAnimationStyle.NONE
     } else {
@@ -202,9 +203,7 @@ internal fun BiliPaiNavDisplayHost(
     val performBack = remember(
         backStack,
         cardMorphAvailable,
-        videoReturnAnimated,
         sourceMetadata.sourceRoute,
-        restorePreviousVideoSourceOnDetailReturn,
     ) {
         {
             val leavingKey = backStack.lastOrNull()
@@ -214,19 +213,7 @@ internal fun BiliPaiNavDisplayHost(
                     videoCardClock.beginReturning(sourceMetadata.sourceRoute, videoCardClock.depthProgress())
                 }
             }
-            val returningFromRelated = (leavingKey as? BiliPaiNavKey.VideoDetail)
-                ?.sourceRoute
-                ?.substringBefore('?')
-                ?.startsWith("video/") == true || restorePreviousVideoSourceOnDetailReturn
             latestOnBack()
-            if (returningFromRelated) {
-                if (videoReturnAnimated) {
-                    relatedReturnTransitionObserved = false
-                    relatedReturnRestorePending = true
-                } else {
-                    latestRelatedReturn()
-                }
-            }
         }
     }
 
@@ -589,12 +576,14 @@ internal fun BiliPaiNavDisplayHost(
     }
     val relatedReturnExposure = if (cardMorphAvailable) effectiveVideoCardExposure else fallbackReturnExposure
     LaunchedEffect(
-        relatedReturnRestorePending,
+        pendingRelatedReturnCount,
+        relatedReturnRequestId,
+        videoSourceGeneration,
         relatedReturnExposure,
         videoReturnAnimated,
     ) {
         val restoreDecision = resolveRelatedReturnSourceRestoreDecision(
-            restorePending = relatedReturnRestorePending,
+            restorePending = pendingRelatedReturnCount > 0,
             transitionObserved = relatedReturnTransitionObserved,
             transitionAnimated = videoReturnAnimated,
             exposure = relatedReturnExposure,
@@ -603,9 +592,9 @@ internal fun BiliPaiNavDisplayHost(
         if (restoreDecision.shouldRestore) {
             // The nested source geometry remains immutable through the complete predictive
             // settle. Only arm the parent's older session after the navigation driver is idle.
-            relatedReturnRestorePending = false
-            relatedReturnTransitionObserved = false
-            latestRelatedReturn()
+            if (latestRelatedReturn(videoSourceGeneration, relatedReturnRequestId)) {
+                relatedReturnTransitionObserved = false
+            }
         }
     }
     LaunchedEffect(effectiveVideoCardExposure) {
