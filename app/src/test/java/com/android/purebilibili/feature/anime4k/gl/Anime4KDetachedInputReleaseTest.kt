@@ -47,6 +47,6 @@ class Anime4KDetachedInputReleaseTest {
         verify(exactly = 0) { GLES30.glDeleteTextures(any(), any<IntArray>(), any()) }
         assertNull(inputField.get(renderer))
         assertEquals(0, textureField.getInt(renderer))
-        assertEquals(listOf(null), notifications)
+        assertEquals(listOf<android.view.Surface?>(null), notifications)
     }
 }
