@@ -2301,6 +2301,11 @@ fun AppNavigation(
                     },
                 )
             }
+            com.android.purebilibili.core.ui.popup.AppGlassPopupHost(
+                glassAvailable = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled &&
+                    com.android.purebilibili.core.ui.blur.shouldAllowHomeChromeLiquidGlass(android.os.Build.VERSION.SDK_INT),
+                tuning = liquidGlassRenderConfig.tuning,
+            ) {
             Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
                 // Remove the whole slot on video detail so an exit animation cannot reserve width.
@@ -4938,6 +4943,8 @@ fun AppNavigation(
                     // List cover waits for the live handoff window; list info is native throughout return.
                     videoReturnContentFollowProgressEnabled =
                         appNavigationSettings.videoReturnContentFollowProgressEnabled,
+                    settingsContainerMorphEnabled =
+                        appNavigationSettings.settingsContainerMorphEnabled,
                     preferWholeCardReturn = false,
                     onBack = { performSystemBackAction() },
                     onPrepareVideoCardSharedReturn = {
@@ -5450,6 +5457,7 @@ fun AppNavigation(
                     .zIndex(101f),
             )
         } // End of Main Box
+            } // Same-window glass menus
         } // End of CompositionLocalProvider
     }
 }

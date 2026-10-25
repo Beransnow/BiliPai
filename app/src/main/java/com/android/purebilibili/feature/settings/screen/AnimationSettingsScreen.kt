@@ -180,6 +180,18 @@ fun AnimationSettingsContent(
     }
     val listState = rememberLazyListState()
     val focusRequest by SettingsSearchFocusController.request.collectAsStateWithLifecycle()
+    LaunchedEffect(focusRequest?.token, state.hapticFeedbackEnabled) {
+        val request = focusRequest ?: return@LaunchedEffect
+        if (!state.hapticFeedbackEnabled && (request.settingId == HAPTIC_SCENES_SETTING_ID ||
+                request.settingId?.startsWith("animation.haptic_scene.") == true)) {
+            SettingsSearchFocusController.submit(
+                target = SettingsSearchTarget.ANIMATION,
+                focusId = "animation_page",
+                settingId = "animation.haptic_feedback_enabled",
+                query = request.query,
+            )
+        }
+    }
     val windowSizeClass = LocalWindowSizeClass.current
     val warningTint = AppContentColors.warning()
     val deviceUiProfile = remember(windowSizeClass.widthSizeClass) {
@@ -233,6 +245,8 @@ fun AnimationSettingsContent(
     }
     val videoTransitionRealtimeBlurEnabled by remember(context) { SettingsManager.getVideoTransitionRealtimeBlurEnabled(context) }
         .collectAsStateWithLifecycle(initialValue = false)
+    val settingsContainerMorphEnabled by remember(context) { SettingsManager.getSettingsContainerMorphEnabled(context) }
+        .collectAsStateWithLifecycle(initialValue = true)
     val liveSurfaceCardTransitionEnabled by remember(context) { SettingsManager.getLiveSurfaceCardTransitionEnabled(context) }
         .collectAsStateWithLifecycle(initialValue = false)
     val relatedVideoTransitionEnabled by remember(context) { SettingsManager.getRelatedVideoTransitionEnabled(context) }
@@ -257,6 +271,11 @@ fun AnimationSettingsContent(
             BiliPaiPredictiveBackAnimationStyle.NONE
         }
     }
+    // 设置容器动画两档:容器形变(条目展开为页面)与默认导航转场。
+    val settingsContainerMorphOptions = listOf(
+        AppSegmentOption(true, stringResource(R.string.animation_settings_container_morph)),
+        AppSegmentOption(false, stringResource(R.string.animation_settings_container_default)),
+    )
     val predictiveBackStyleOptions = listOf(
             AppSegmentOption(BiliPaiPredictiveBackAnimationStyle.NONE, stringResource(R.string.animation_back_style_none)),
             AppSegmentOption(BiliPaiPredictiveBackAnimationStyle.AOSP, "AOSP"),
@@ -350,6 +369,10 @@ fun AnimationSettingsContent(
                                 onCheckedChange = viewModel::toggleHapticFeedback,
                                 iconTint = AppContentColors.secondaryText(),
                             )
+                        }
+                        if (state.hapticFeedbackEnabled) {
+                            AppPreferenceDivider()
+                            HapticScenePreference(enabled = true)
                         }
                         AppPreferenceDivider()
                         SettingsItemAnchor("animation.global_text_tap_copy_enabled") {
@@ -556,6 +579,22 @@ fun AnimationSettingsContent(
                                 subtitle = stringResource(R.string.animation_transition_blur_summary),
                                 checked = videoTransitionRealtimeBlurEnabled,
                                 onCheckedChange = { viewModel.toggleVideoTransitionRealtimeBlur(it) },
+                                iconTint = AppContentColors.secondaryText()
+                            )
+                        }
+                        AppPreferenceDivider()
+                        SettingsItemAnchor("animation.app_navigation_settings.settings_container_morph_enabled") {
+                            SettingsSingleChoicePreference(
+                                icon = rememberSettingsSemanticIcon(SettingsIconRole.SETTINGS_CONTAINER_MORPH),
+                                title = stringResource(R.string.animation_settings_container_title),
+                                subtitle = stringResource(R.string.animation_settings_container_summary),
+                                options = settingsContainerMorphOptions,
+                                selectedValue = settingsContainerMorphEnabled,
+                                onSelectionChange = { enabled ->
+                                    scope.launch {
+                                        SettingsManager.setSettingsContainerMorphEnabled(context, enabled)
+                                    }
+                                },
                                 iconTint = AppContentColors.secondaryText()
                             )
                         }

@@ -78,6 +78,8 @@ object NavigationSettingsStore {
         booleanPreferencesKey("video_shared_return_gesture_follow_enabled")
     private val keyVideoSharedReturnGestureTranslationEnabled =
         booleanPreferencesKey("video_shared_return_gesture_translation_enabled")
+    private val keySettingsContainerMorphEnabled =
+        booleanPreferencesKey("settings_container_morph_enabled")
     private val keyFullScreenSwipeBackEnabled =
         booleanPreferencesKey("full_screen_swipe_back_enabled")
     private val keyBottomBarOrder = stringPreferencesKey("bottom_bar_order")
@@ -234,6 +236,17 @@ object NavigationSettingsStore {
     suspend fun setVideoReturnContentFollowProgressEnabled(context: Context, enabled: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[booleanPreferencesKey("video_return_content_follow_progress_enabled")] = enabled
+        }
+    }
+
+    /** 设置容器形变开关：开启时设置页入口以条目容器形变展开，关闭走默认导航转场。 */
+    fun getSettingsContainerMorphEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data
+            .map { preferences -> preferences[keySettingsContainerMorphEnabled] ?: true }
+
+    suspend fun setSettingsContainerMorphEnabled(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[keySettingsContainerMorphEnabled] = enabled
         }
     }
 

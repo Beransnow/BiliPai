@@ -138,6 +138,7 @@ internal fun BiliPaiNavDisplayHost(
     videoSharedReturnGestureFollowEnabled: Boolean = true,
     videoSharedReturnGestureTranslationEnabled: Boolean = true,
     videoReturnContentFollowProgressEnabled: Boolean = true,
+    settingsContainerMorphEnabled: Boolean = true,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
     preferWholeCardReturn: Boolean = false,
@@ -177,6 +178,27 @@ internal fun BiliPaiNavDisplayHost(
     )
     val stackSnapshot = backStack.toList()
     val settingsPersistentPanes = settingsHasPersistentPanes()
+    val settingsContainerSources = remember { com.android.purebilibili.feature.settings.SettingsContainerSources() }
+    val settingsContainerEnabled = settingsContainerMorphEnabled && !settingsPersistentPanes && !reduceMotion &&
+        predictiveBackAnimationStyle != BiliPaiPredictiveBackAnimationStyle.NONE
+    val settingsContainerPageColor = AppSurfaceTokens.groupedListContainer()
+    val settingsContainerSnapshot = settingsContainerSources.sources.toMap()
+    val availableSettingsContainerTransitions = remember(settingsContainerSnapshot, settingsContainerPageColor) {
+        settingsContainerSnapshot.mapValues { (_, source) -> SettingsContainerTransition(source, settingsContainerPageColor) }
+    }
+    val settingsContainerTransitions = if (!settingsContainerEnabled) emptyMap() else
+        availableSettingsContainerTransitions.filterKeys { target ->
+            isSettingsContainerBoundary(
+                enabled = settingsContainerEnabled,
+                backStack = stackSnapshot,
+                target = target,
+                owner = settingsContainerSnapshot[target]?.owner,
+            )
+        }
+    LaunchedEffect(stackSnapshot, settingsContainerSnapshot.keys) {
+        // 离场 entry 保留自己的转场对象；目录中清除旧来源，搜索直达不能复用上次点击。
+        settingsContainerSources.sources.keys.retainAll(stackSnapshot.toSet())
+    }
     val currentKey = stackSnapshot.lastOrNull()
     val latestOnBack by rememberUpdatedState(onBack)
     val latestPrepareReturn by rememberUpdatedState(onPrepareVideoCardSharedReturn)
@@ -285,7 +307,7 @@ internal fun BiliPaiNavDisplayHost(
     }
     // 抓取返回卡片的瞬间给一次轻触觉反馈，强化“拿起来了”的跟手感。
     if (videoSharedReturnGestureFollowEnabled || videoSharedReturnGestureTranslationEnabled) {
-        val followHapticFeedback = androidx.compose.ui.platform.LocalHapticFeedback.current
+        val followHapticFeedback = com.android.purebilibili.core.ui.rememberAppHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.NAVIGATION)
         LaunchedEffect(videoCardTransitionProgress.gestureFollow) {
             androidx.compose.runtime.snapshotFlow {
                 videoCardTransitionProgress.gestureFollow.grabEvent
@@ -787,6 +809,8 @@ internal fun BiliPaiNavDisplayHost(
         modifier = Modifier
             .fillMaxSize()
             .onGloballyPositioned { coordinates ->
+                settingsContainerSources.hostOrigin = coordinates.positionInRoot()
+                settingsContainerSources.hostSize = coordinates.size
                 videoCardTransitionProgress.gestureFollow.hostOriginInRoot = coordinates.positionInRoot()
                 // System events are in screen pixels; card bounds and layers are host-local.
                 val origin = coordinates.localToScreen(Offset.Zero)
@@ -842,6 +866,7 @@ internal fun BiliPaiNavDisplayHost(
                 swipeBackDirection = swipeBackDirection,
                 settingsBackStack = stackSnapshot,
                 settingsPersistentPanes = settingsPersistentPanes,
+                settingsContainerTransitions = settingsContainerTransitions,
                 activeMainHostRoute = activeMainHostRoute,
                 predictiveBackExcludedTransition = predictiveBackExcludedTransition,
                 videoCardTransition = videoCardTransition,
@@ -856,6 +881,9 @@ internal fun BiliPaiNavDisplayHost(
                     onBack = performBack,
                 ) {
                     CompositionLocalProvider(
+                        com.android.purebilibili.feature.settings.LocalSettingsContainerSources provides
+                            (if (settingsContainerEnabled) settingsContainerSources else null),
+                        com.android.purebilibili.feature.settings.LocalSettingsContainerOwner provides key,
                         LocalVideoDetailNavigationTransitionScope provides LocalNavTransitionScope.current,
                         LocalGlobalWallpaperBackdropVisible provides
                             (globalWallpaperVisible && !opaqueVideoChild &&
