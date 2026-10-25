@@ -3072,7 +3072,7 @@ private fun ProfileDynamicCard(
                     )
                 }
             }
-            Box {
+            com.android.purebilibili.core.ui.components.AppGlassMenuAnchor(onOpen = { showMoreMenu = true }) {
                 AppIconButton(onClick = { showMoreMenu = true }, modifier = Modifier.size(40.dp)) {
                     AppIcon(
                         imageVector = moreIcon,
@@ -3084,7 +3084,8 @@ private fun ProfileDynamicCard(
                 AppDropdownMenu(
                     expanded = showMoreMenu,
                     onDismissRequest = { showMoreMenu = false },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
+                    modifier = if (com.android.purebilibili.core.ui.components.appGlassMenuAvailable()) Modifier
+                else Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
                 ) {
                     AppDropdownMenuItem(
                         text = { AppText("复制链接") },
@@ -5407,7 +5408,7 @@ fun ProfileTripleActionEntry(
     var showCelebration by remember { mutableStateOf(false) }
     val progressDuration = 1500 // 1.5 秒
 
-    val haptic = com.android.purebilibili.core.util.rememberHapticFeedback()
+    val haptic = com.android.purebilibili.core.util.rememberHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.VIDEO_ACTIONS)
 
     // 进度动画
     val animatedProgress by androidx.compose.animation.core.animateFloatAsState(

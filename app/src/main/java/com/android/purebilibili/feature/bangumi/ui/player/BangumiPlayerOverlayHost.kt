@@ -1,6 +1,9 @@
 package com.android.purebilibili.feature.bangumi.ui.player
 
 import androidx.compose.runtime.Composable
+import android.os.SystemClock
+import com.android.purebilibili.core.util.HapticType
+import com.android.purebilibili.core.util.rememberHapticFeedback
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -120,6 +123,8 @@ internal fun BangumiPlayerOverlayHost(
     onShowMessage: (String) -> Unit
 ) {
     val context = LocalContext.current
+    val seekHaptic = rememberHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.PLAYER_SEEK)
+    val seekHaptics = remember(player, epId, bvid, cid) { BangumiSeekHapticPolicy() }
     val settingsScope = rememberCoroutineScope()
     val danmakuSettingsScope = resolveDanmakuSettingsScope(isFullscreen)
     val settings by SettingsManager.getDanmakuSettings(context, danmakuSettingsScope)
@@ -232,6 +237,9 @@ internal fun BangumiPlayerOverlayHost(
         actions = VideoPlayerOverlayActions(
             onSeekStart = danmakuManager::prepareForSeekScrub,
             onSeekDragStart = { position ->
+                if (seekHaptics.start(position, player.duration, SystemClock.uptimeMillis())) {
+                    seekHaptic(HapticType.LIGHT)
+                }
                 seekSession = startPlaybackSeekInteraction(
                     state = seekSession.copy(playbackPositionMs = player.currentPosition),
                     player = player,
@@ -239,13 +247,18 @@ internal fun BangumiPlayerOverlayHost(
                 )
             },
             onSeekDragUpdate = { position ->
+                if (seekHaptics.update(position, SystemClock.uptimeMillis())) {
+                    seekHaptic(HapticType.GESTURE_STEP)
+                }
                 seekSession = updatePlaybackSeekInteraction(seekSession, position)
             },
             onSeekDragCancel = {
+                seekHaptics.finish()
                 seekSession = cancelPlaybackSeekInteraction(seekSession)
                 danmakuManager.cancelSeekScrub()
             },
             onSeekTo = { position ->
+                seekHaptics.finish()
                 val result = commitPlaybackSeekInteraction(
                     state = seekSession.copy(playbackPositionMs = player.currentPosition),
                     player = player,

@@ -1194,7 +1194,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             val metadata = video.recommendationFeedback
-            val supportsServerSync = metadata?.supportsServerSync == true && reason.id != null
+            val supportsServerSync = metadata?.supportsServerSync == true && (reason.id ?: 0L) > 0L
             if (supportsServerSync) {
                 accountRequests.launch {
                     val identity = accountRequests.identity
@@ -1202,7 +1202,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     ensureAccountCurrent(identity)
                     result.onSuccess {
                             _feedbackEvents.send(
-                                reason.toast.ifBlank { "已减少相关内容推荐" }
+                                reason.toast.ifBlank { "已提交推荐反馈" }
                             )
                         }
                         .onFailure {
@@ -1210,7 +1210,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                         }
                 }
             } else {
-                _feedbackEvents.send(reason.toast.ifBlank { "已减少相关内容推荐" })
+                _feedbackEvents.send("已在本地屏蔽所选内容，未同步推荐偏好")
             }
             Logger.d("HomeVM", "已记录不感兴趣: ${video.bvid}, reason=${reason.name}")
         }

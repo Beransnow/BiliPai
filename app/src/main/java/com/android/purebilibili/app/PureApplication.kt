@@ -164,6 +164,7 @@ class PureApplication : Application(), SingletonImageLoader.Factory, ComponentCa
         val diskCacheBytes = 100L * 1024 * 1024
         return ImageLoader.Builder(this)
             .components {
+                add(com.android.purebilibili.core.util.BiliImageQualityInterceptor())
                 // 共享网络客户端及 DNS 策略，保留 HTTP 缓存头语义。
                 add(
                     OkHttpNetworkFetcherFactory(
@@ -196,8 +197,8 @@ class PureApplication : Application(), SingletonImageLoader.Factory, ComponentCa
             //  优先使用缓存
             .memoryCachePolicy(CachePolicy.ENABLED)
             .diskCachePolicy(CachePolicy.ENABLED)
-            //  允许适用图片使用 RGB_565，降低内存占用
-            .allowRgb565(true)
+            // 保留完整颜色精度；内存由按显示尺寸采样和缓存预算控制。
+            .allowRgb565(false)
             .crossfade(true)
             .build()
             .also { _imageLoader = it }  // 保存引用

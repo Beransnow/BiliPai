@@ -155,6 +155,7 @@ import com.android.purebilibili.feature.video.subtitle.resolveDefaultSubtitleLan
 
 private const val PLAYBACK_CDN_FIRST_FRAME_FALLBACK_TIMEOUT_MS = 2_500L
 private const val PLAYBACK_STALL_RECOVERY_TIMEOUT_MS = 10_000L
+private const val PLAYBACK_STARTUP_RECOVERY_TIMEOUT_MS = 5_000L
 
 internal data class PlaybackStallRecoveryDecision(
     val nextCdnIndex: Int? = null
@@ -175,8 +176,7 @@ internal fun resolvePlaybackStallRecoveryDecision(
     if (
         playbackState != Player.STATE_BUFFERING ||
         !playWhenReady ||
-        !firstFrameRendered ||
-        forwardBufferDurationMs > 0L ||
+        forwardBufferDurationMs > (if (firstFrameRendered) 0L else 500L) ||
         cdnCandidateCount <= 1 ||
         usesAdaptivePlayback
     ) {
@@ -1435,6 +1435,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     private var relatedPlaybackPreparedToken = -1L
     private var relatedFirstFrameToken = -1L
     private var pendingPlaybackResumeNotice: PlaybackResumeNotice? = null
+    private var initialPartResumeNoticeCid: Long = 0L
+    private var dismissedPartResumeNoticeToken: Long = -1L
     private val videoLoadTimeline = VideoLoadTimeline(android.os.SystemClock::elapsedRealtime)
 
     private fun logVideoLoadStage(stage: VideoLoadStage, requestToken: Long) {
@@ -2460,6 +2462,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
             if (!playWhenReady) {
                 cancelPlaybackStallRecovery()
+            } else if (exoPlayer?.playbackState == Player.STATE_BUFFERING) {
+                schedulePlaybackStallRecovery()
             }
         }
 
@@ -2534,6 +2538,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     private fun schedulePlaybackStallRecovery() {
         val scheduledPlayer = exoPlayer ?: return
         val current = _uiState.value as? VideoPlaybackUiState.Success ?: return
+        if (scheduledPlayer.playbackState != Player.STATE_BUFFERING || !scheduledPlayer.playWhenReady) return
         val mediaKey = "${current.info.bvid}:${current.info.cid}"
         if (playbackStallRecoveryMediaKey != mediaKey) {
             playbackStallRecoveryMediaKey = mediaKey
@@ -2543,7 +2548,11 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         val ticket = playbackRecoveryGeneration
 
         playbackStallRecoveryJob = viewModelScope.launch {
-            delay(PLAYBACK_STALL_RECOVERY_TIMEOUT_MS)
+            delay(if (playbackStallRecoveryFirstFrameRendered) {
+                PLAYBACK_STALL_RECOVERY_TIMEOUT_MS
+            } else {
+                PLAYBACK_STARTUP_RECOVERY_TIMEOUT_MS
+            })
             val latestPlayer = exoPlayer ?: return@launch
             val latest = _uiState.value as? VideoPlaybackUiState.Success ?: return@launch
             if (ticket != playbackRecoveryGeneration || latestPlayer !== scheduledPlayer ||
@@ -3416,6 +3425,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                 loadRelatedVideosForRequest(playbackRequest.bvid, requestToken)
             }
             
+            try {
                 val isLoggedIn = com.android.purebilibili.data.repository.VideoRepository.isPlaybackLoggedIn()
                 var storedQualityForWarning = 64
                 var autoHighestQualityEnabledForLoad = false
@@ -3425,12 +3435,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         .getAutoHighestQualitySync(context)
                     storedQualityForWarning = storedQuality
                     autoHighestQualityEnabledForLoad = autoHighestEnabled
-                    val effectiveVip = VideoRepository.refreshVipStatusForPreferredQualityIfNeeded(
-                        isLoggedIn = isLoggedIn,
-                        cachedIsVip = com.android.purebilibili.data.repository.VideoRepository.isPlaybackVip(),
-                        storedQuality = storedQuality,
-                        autoHighestEnabled = autoHighestEnabled
-                    )
+                    // 首帧前只读取当前账号缓存；实际可用画质由取流结果决定。
+                    val effectiveVip = VideoRepository.isPlaybackVip()
                     com.android.purebilibili.core.util.resolvePlaybackDefaultQualityId(
                         storedQuality = storedQuality,
                         autoHighestEnabled = autoHighestEnabled,
@@ -3497,7 +3503,6 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                 com.android.purebilibili.core.util.Logger.d("VideoPlaybackViewModel", "📉 省流量模式(${dataSaverMode.label}): 限制画质为480P")
             }
             
-            try {
                 val capabilityContext = appContext
                 val loadQuality = finalQuality
                 val playbackSpeed = exoPlayer?.playbackParameters?.speed ?: capabilityContext?.let {
@@ -3618,6 +3623,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                             PlaybackResumeNotice(requestToken, result.info.bvid, result.info.cid, startPos)
                         } else null
 
+                        initialPartResumeNoticeCid = result.info.cid
                         val partResumeNotice = resolvePartResumeNotice(
                             requestToken = requestToken,
                             info = result.info,
@@ -3675,6 +3681,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                             videoDurationMs = result.duration
                         )
                         _uiState.value = readyState
+                        // prepare 的 BUFFERING 回调可能早于 Success 发布，补齐首次起播保护。
+                        schedulePlaybackStallRecovery()
                         publishSubjectSnapshot(readyState)
                         maybeAnnounceRestoredPlaybackPosition()
                         // Do not wait for the foreground Compose collector to mirror this state.
@@ -6078,6 +6086,27 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         return@onSuccess
                     }
 
+                    // 观看分 P 记录由播放器信息补齐，异步到达不能恢复已关闭或已切分 P 的提示。
+                    val lastPlayCid = data.lastPlayCid
+                    if (lastPlayCid != null && cid == initialPartResumeNoticeCid &&
+                        dismissedPartResumeNoticeToken != requestToken
+                    ) {
+                        val notice = resolvePartResumeNotice(
+                            requestToken = requestToken,
+                            info = currentState.info,
+                            lastPlayCid = lastPlayCid,
+                            requestedCid = playbackSessionState.currentRequest?.cid ?: 0L,
+                            noticeEnabled = appContext?.let {
+                                SettingsManager.getShowContinuePartNoticeSync(it)
+                            } ?: true,
+                        )
+                        _uiState.update { latest ->
+                            if (latest is VideoPlaybackUiState.Success &&
+                                latest.info.bvid == bvid && latest.info.cid == cid
+                            ) latest.copy(partResumeNotice = notice) else latest
+                        }
+                    }
+
                     // 1. 处理章节信息
                     val points = data.viewPoints
                     if (points.isNotEmpty()) {
@@ -8068,6 +8097,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     fun dismissPartResumeNotice() {
         val current = _uiState.value as? VideoPlaybackUiState.Success ?: return
         if (current.partResumeNotice != null) {
+            dismissedPartResumeNoticeToken = currentLoadRequestToken
             _uiState.value = current.copy(partResumeNotice = null)
         }
     }

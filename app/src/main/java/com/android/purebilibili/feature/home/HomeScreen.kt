@@ -42,7 +42,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.clickable
+import com.android.purebilibili.core.ui.components.appActionClickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -1355,7 +1355,7 @@ fun HomeScreen(
     var isPinchPillVisible by remember { mutableStateOf(false) }
     var pinchPillDismissJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     val effectiveGridColumns = interactiveColumns ?: gridColumns
-    val haptic = LocalHapticFeedback.current
+    val haptic = com.android.purebilibili.core.ui.rememberAppHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.ADJUSTMENT)
     LaunchedEffect(
         homeSettings.gridColumnCount,
         homeSettings.gridColumnCountCompact,
@@ -2956,7 +2956,7 @@ fun HomeScreen(
                             modifier = Modifier
                                 .size(22.dp)
                                 .clip(androidx.compose.foundation.shape.CircleShape)
-                                .clickable(enabled = !undoDissolving) { undoDissolving = true },
+                                .appActionClickable(enabled = !undoDissolving) { undoDissolving = true },
                             contentAlignment = androidx.compose.ui.Alignment.Center
                         ) {
                             AppIcon(

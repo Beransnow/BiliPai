@@ -240,7 +240,7 @@ private fun VideoSettingsPanelHost(
             onDismiss = onDismissRequest,
             modifier = modifier,
             useGlassSurface = true,
-        ) {
+        ) { requestDismiss ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -250,7 +250,7 @@ private fun VideoSettingsPanelHost(
             ) {
                 AppText("更多操作", fontSize = 16.sp)
                 Spacer(Modifier.weight(1f))
-                PanelAction(Icons.Default.Close, "关闭", onDismissRequest)
+                PanelAction(Icons.Default.Close, "关闭", requestDismiss)
             }
             content()
         }

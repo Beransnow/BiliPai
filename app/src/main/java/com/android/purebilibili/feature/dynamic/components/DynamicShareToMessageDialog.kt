@@ -1,6 +1,6 @@
 package com.android.purebilibili.feature.dynamic.components
 
-import androidx.compose.foundation.clickable
+import com.android.purebilibili.core.ui.components.appActionClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -263,6 +263,6 @@ internal fun DynamicShareSessionRow(
                 )
             }
         },
-        modifier = Modifier.clickable(enabled = enabled, onClick = onClick),
+        modifier = Modifier.appActionClickable(enabled = enabled, onClick = onClick),
     )
 }

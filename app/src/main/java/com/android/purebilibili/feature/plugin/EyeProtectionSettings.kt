@@ -1,4 +1,4 @@
-@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 
 package com.android.purebilibili.feature.plugin
 
@@ -546,7 +546,7 @@ private fun TimePickerDropdown(
         }
         return
     }
-    Box(modifier = modifier.fillMaxWidth()) {
+    com.android.purebilibili.core.ui.components.AppGlassMenuAnchor(modifier = modifier.fillMaxWidth(), onOpen = { expanded = true }) {
         AppOutlinedButton(
             onClick = { expanded = true },
             modifier = Modifier
@@ -584,6 +584,7 @@ private fun TimePickerDropdown(
             (0..23).forEach { hour ->
                 AppDropdownMenuItem(
                     text = { AppText(formatClockHour(hour)) },
+                    selected = hour == selectedHour,
                     trailingIcon = {
                         if (hour == selectedHour) {
                             AppText(

@@ -333,6 +333,10 @@
     <string name="animation_transition_blur_summary">转场更有层次感；关闭可省电</string>
     <string name="animation_back_title">页面切换动画</string>
     <string name="animation_back_summary">页面进入与返回共用的动画样式</string>
+    <string name="animation_settings_container_title">设置容器动画</string>
+    <string name="animation_settings_container_summary">设置页入口的进入与返回动画</string>
+    <string name="animation_settings_container_morph">容器形变</string>
+    <string name="animation_settings_container_default">默认导航</string>
     <string name="animation_back_preview_title">返回预览幅度</string>
     <string name="animation_back_preview_summary">调整滑动返回时的预览幅度</string>
     <string name="animation_back_blur_on">滑动返回时，模糊后方页面</string>

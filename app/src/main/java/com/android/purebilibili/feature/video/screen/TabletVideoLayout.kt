@@ -1531,7 +1531,7 @@ private fun TabletCollectionPane(
     currentAid: Long,
     onEpisodeClick: (com.android.purebilibili.data.model.response.UgcEpisode) -> Unit
 ) {
-    val selectionHaptic = rememberHapticFeedback()
+    val selectionHaptic = rememberHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.MENUS)
     val episodes = remember(ugcSeason.sections) { ugcSeason.sections.flatMap { it.episodes } }
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -1750,6 +1750,7 @@ private fun ScrollableVideoInfoSection(
             ) {
                 UpInfoSection(
                     info = info,
+                    onOpenLiveRoom = onOpenBilibiliLink,
                     isFollowing = isFollowing,
                     followStatusKnown = followStatusKnown,
                     onFollowClick = onFollowClick,

@@ -185,7 +185,7 @@ internal fun shouldRefreshMeasuredPlayerViewport(
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 private class PlayerViewportRefreshController(
     private val playerView: androidx.media3.ui.PlayerView,
-) : android.view.View.OnAttachStateChangeListener {
+) : android.view.View.OnAttachStateChangeListener, android.view.View.OnLayoutChangeListener {
     private data class Request(
         val resizeMode: Int,
         val width: Int,
@@ -201,6 +201,7 @@ private class PlayerViewportRefreshController(
 
     init {
         playerView.addOnAttachStateChangeListener(this)
+        playerView.addOnLayoutChangeListener(this)
     }
 
     fun schedule(mode: Int, width: Int, height: Int, videoWidth: Int, videoHeight: Int) {
@@ -225,6 +226,17 @@ private class PlayerViewportRefreshController(
             pending = null
             if (requested != request || !playerView.isAttachedToWindow) return@Runnable
             applyPlayerViewResizeMode(playerView, request.resizeMode, forceRelayout = true)
+            // Compose 宿主尺寸不变时，原生内容层的 requestLayout 可能未触发重新测量。
+            // 使用已落定的实际边界重测内部视频层，避免沿用进入全屏前的尺寸和位置。
+            val width = playerView.width
+            val height = playerView.height
+            if (width > 0 && height > 0) {
+                playerView.measure(
+                    android.view.View.MeasureSpec.makeMeasureSpec(width, android.view.View.MeasureSpec.EXACTLY),
+                    android.view.View.MeasureSpec.makeMeasureSpec(height, android.view.View.MeasureSpec.EXACTLY),
+                )
+                playerView.layout(playerView.left, playerView.top, playerView.right, playerView.bottom)
+            }
             // At most one follow-up, and only when there is a known size mismatch.
             if (!retry && request.width > 0 && request.height > 0 &&
                 shouldRefreshMeasuredPlayerViewport(
@@ -249,6 +261,17 @@ private class PlayerViewportRefreshController(
         cancelPending()
         requested = null
         completed = null
+    }
+
+    override fun onLayoutChange(
+        view: android.view.View,
+        left: Int, top: Int, right: Int, bottom: Int,
+        oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int,
+    ) {
+        if (right - left == oldRight - oldLeft && bottom - top == oldBottom - oldTop) return
+        val request = requested ?: return
+        completed = null
+        schedule(request.resizeMode, right - left, bottom - top, request.videoWidth, request.videoHeight)
     }
 
     override fun onViewDetachedFromWindow(view: android.view.View) {

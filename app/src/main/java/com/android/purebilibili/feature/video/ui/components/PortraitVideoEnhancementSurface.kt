@@ -190,7 +190,6 @@ internal fun PortraitVideoEnhancementSurface(
     session: PortraitVideoEnhancementSession,
     preferTexture: Boolean,
     resizeMode: Int,
-    fillContainer: Boolean,
     keepScreenOn: Boolean,
     flippedHorizontal: Boolean,
     flippedVertical: Boolean,
@@ -235,17 +234,20 @@ internal fun PortraitVideoEnhancementSurface(
                     latestViewChanged(view)
                     if (!session.pipelineActive && view.player !== session.player) view.player = session.player
                     view.keepScreenOn = keepScreenOn
-                    val modeChanged = view.resizeMode != resizeMode
-                    val sizeTag = "vp:${view.width}x${view.height}:$resizeMode:$fillContainer"
-                    val sizeChanged = view.tag != sizeTag
-                    applyPlayerViewResizeMode(view, resizeMode, forceRelayout = false)
-                    if (modeChanged || (fillContainer && sizeChanged)) {
-                        view.tag = sizeTag
-                        schedulePlayerViewViewportRefresh(view, resizeMode)
-                    }
+                    // 原生布局完成及视频格式变化都需要恢复视口；不能只依赖组合时的旧 View 尺寸。
+                    // 玻璃、MD3 与 Miuix 共用出画修复，不改变各自的容器比例。
+                    schedulePlayerViewViewportRefresh(
+                        playerView = view,
+                        resizeMode = resizeMode,
+                        expectedWidth = view.width,
+                        expectedHeight = view.height,
+                        videoWidth = session.videoSize.width,
+                        videoHeight = session.videoSize.height,
+                    )
                     view.visibility = if (session.pipelineActive && session.firstFrame) View.INVISIBLE else View.VISIBLE
                 },
                 onRelease = { view ->
+                    cancelPlayerViewViewportRefresh(view)
                     if (session.nativeView === view) {
                         session.nativeView = null
                         latestViewChanged(null)

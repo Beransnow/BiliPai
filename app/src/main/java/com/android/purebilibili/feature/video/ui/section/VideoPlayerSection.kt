@@ -388,7 +388,7 @@ private fun GesturePercentValue(
     val transitionDirection = remember(previousPercent, percent) {
         resolveGesturePercentTransitionDirection(previousPercent, percent)
     }
-    val haptic = rememberHapticFeedback()
+    val haptic = rememberHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.PLAYER_GESTURES)
 
     LaunchedEffect(previousPercent, percent) {
         if (shouldTriggerGesturePercentHaptic(previousPercent, percent)) {
@@ -961,15 +961,9 @@ private fun VideoPlayerSectionContent(
         )
     }
     val liquidGlassLayoutEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
-    // 玻璃控制栏使用原有尺寸预留，原生控制栏保留统一布局的尺寸策略。
-    val bottomGestureExclusionHeightDp = if (liquidGlassLayoutEnabled) {
-        val controls = com.android.purebilibili.feature.video.ui.overlay.glass.resolveBottomControlBarLayoutPolicy(uiLayoutWidthDp)
-        val progress = com.android.purebilibili.feature.video.ui.overlay.resolveVideoProgressBarLayoutPolicy(uiLayoutWidthDp)
-        controls.bottomPaddingDp + controls.progressSpacingDp + progress.baseHeightWithChapterDp +
-            controls.playButtonSizeDp + 12
-    } else {
+    // 两种材质共用控制栏几何，首帧与实际测量使用同一高度依据。
+    val bottomGestureExclusionHeightDp =
         com.android.purebilibili.feature.video.ui.overlay.piliPlayerBottomControlsHeightDp(viewPoints.isNotEmpty())
-    }
     val gestureSeekFallbackDurationMs = remember(uiState) {
         (uiState as? VideoPlaybackUiState.Success)?.videoDurationMs ?: 0L
     }
@@ -1747,8 +1741,9 @@ private fun VideoPlayerSectionContent(
     // [新增] 共享元素过渡支持
     val sharedTransitionScope = com.android.purebilibili.core.ui.LocalSharedTransitionScope.current
     val animatedVisibilityScope = com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope.current
-    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-    val lockHaptic = rememberHapticFeedback()
+    val haptic = com.android.purebilibili.core.ui.rememberAppHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.PLAYER_GESTURES)
+    val seekSceneHaptic = com.android.purebilibili.core.ui.rememberAppHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.PLAYER_SEEK)
+    val lockHaptic = rememberHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.PLAYER_GESTURES)
     //  共享弹幕管理器（用于所有 seek 路径的一致同步）
     val danmakuManager = rememberDanmakuManager(bvid)
     val danmakuTapCoordinates = remember { mutableStateOf<LayoutCoordinates?>(null) }
@@ -2683,7 +2678,7 @@ private fun VideoPlayerSectionContent(
                                 if (shouldEngageHorizontalPlayerSeek(totalDragDistanceX, totalDragDistanceY)) {
                                     gestureMode = VideoGestureMode.Seek
                                     // Lock-in haptic so landscape seek always feels responsive.
-                                    haptic.performHapticFeedback(
+                                    seekSceneHaptic.performHapticFeedback(
                                         androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove
                                     )
                                     lastSeekHapticTargetMs = startPosition
@@ -2803,7 +2798,7 @@ private fun VideoPlayerSectionContent(
                                                 currentTargetMs = seekTargetTime
                                             )
                                         ) {
-                                            haptic.performHapticFeedback(
+                                            seekSceneHaptic.performHapticFeedback(
                                                 androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove
                                             )
                                             lastSeekHapticTargetMs = seekTargetTime
@@ -4814,43 +4809,9 @@ private fun VideoPlayerSectionContent(
                     renderingPaused = suppressTransientOverlaysForTransition,
                     modifier = Modifier.fillMaxSize()
                 )
-                // Each material reserves its own control geometry before the first measurement.
-                val commandControlsReservePx = if (liquidGlassLayoutEnabled) {
-                    val commandControlsLayout = remember(uiLayoutWidthDp) {
-                        com.android.purebilibili.feature.video.ui.overlay.glass.resolveBottomControlBarLayoutPolicy(uiLayoutWidthDp)
-                    }
-                    val commandProgressLayout = remember(uiLayoutWidthDp) {
-                        com.android.purebilibili.feature.video.ui.overlay.resolveVideoProgressBarLayoutPolicy(uiLayoutWidthDp)
-                    }
-                    val requestedCommandProgressPlacement by remember(context) {
-                        com.android.purebilibili.core.store.SettingsManager.getPlayerProgressPlacement(context)
-                    }.collectAsStateWithLifecycle(
-                        initialValue = com.android.purebilibili.core.store.PlayerProgressPlacement.ABOVE_CONTROLS
-                    )
-                    val commandProgressPlacement = com.android.purebilibili.feature.video.ui.overlay.glass.resolveVideoDetailProgressPlacement(
-                        requestedPlacement = requestedCommandProgressPlacement,
-                        isFullscreen = isFullscreen,
-                    )
-                    val commandControlsBottomPaddingDp = com.android.purebilibili.feature.video.ui.overlay.glass.resolveBottomControlBarBottomPaddingDp(
-                        defaultBottomPaddingDp = commandControlsLayout.bottomPaddingDp,
-                        progressPlacement = commandProgressPlacement,
-                    )
-                    with(density) {
-                        (maxOf(
-                            commandControlsLayout.playButtonSizeDp,
-                            commandControlsLayout.danmakuInputHeightDp,
-                            com.android.purebilibili.feature.video.ui.overlay.glass.resolveFullscreenToggleTouchTargetDp(
-                                commandControlsLayout.fullscreenIconSizeDp
-                            ),
-                        ) +
-                            commandProgressLayout.touchContainerHeightDp +
-                            commandControlsLayout.progressSpacingDp +
-                            commandControlsBottomPaddingDp).dp.roundToPx()
-                    } + if (isFullscreen) WindowInsets.navigationBarsIgnoringVisibility.getBottom(density) else 0
-                } else {
-                    measuredBottomControlsHeightPx.takeIf { it > 0 }
-                        ?: with(density) { bottomGestureExclusionHeightDp.dp.roundToPx() }
-                }
+                // 控件测量前使用共享高度种子，避免玻璃切换引起互动弹幕避让跳变。
+                val commandControlsReservePx = measuredBottomControlsHeightPx.takeIf { it > 0 }
+                    ?: with(density) { bottomGestureExclusionHeightDp.dp.roundToPx() }
                 com.android.purebilibili.feature.video.ui.overlay.CommandDanmakuOverlay(
                     viewport = viewport,
                     bottomInsetPx = com.android.purebilibili.feature.video.ui.overlay.resolveCommandDanmakuBottomInsetPx(
@@ -5971,7 +5932,7 @@ private fun VideoPlayerSectionContent(
 
 
     // [新增] 返回时的触感反馈
-    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    val haptic = com.android.purebilibili.core.ui.rememberAppHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.PLAYER_GESTURES)
     val hapticScope = rememberCoroutineScope()
 
     // 拦截系统返回事件 (仅在全屏时拦截以处理退出全屏，否则交给系统处理预测性返回)

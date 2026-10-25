@@ -180,6 +180,7 @@ fun BangumiPlayerView(
     onReloadVideo: () -> Unit = {},
     onShowMessage: (String) -> Unit = {}
 ) {
+    val keepPlaybackAwake = com.android.purebilibili.feature.video.screen.rememberVideoPlaybackKeepAwake(exoPlayer)
     val context = LocalContext.current
     val playerInteractionSettings by SettingsManager.getPlayerInteractionSettings(context)
         .collectAsStateWithLifecycle(
@@ -644,7 +645,7 @@ fun BangumiPlayerView(
                             //（只有音频）。Anime4K 启用后由 VideoOutputRouter 主动解除本绑定并接管 surface。
                             player = exoPlayer
                             useController = false
-                            keepScreenOn = true
+                            keepScreenOn = keepPlaybackAwake
                             resizeMode = currentAspectRatio.playerResizeMode
                             setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                             setBackgroundColor(android.graphics.Color.BLACK)
@@ -652,6 +653,7 @@ fun BangumiPlayerView(
                     },
                     update = { view ->
                         playerViewRef = view
+                        view.keepScreenOn = keepPlaybackAwake
                         view.resizeMode = currentAspectRatio.playerResizeMode
                         view.visibility = if (anime4kFrameVisible) View.INVISIBLE else View.VISIBLE
                         // MediaSource/Player 变化后确保直出绑定仍与播放器同步；

@@ -137,6 +137,7 @@ APK 输出至 `app/build/outputs/bilipai/dev/`；正式版输出至 `app/build/o
 | [Haze](https://github.com/chrisbanes/haze) | 毛玻璃效果 |
 | [Compose Cupertino](https://github.com/alexzhirkevich/compose-cupertino) | iOS 风格组件 |
 | [Miuix](https://github.com/compose-miuix-ui/miuix) | 界面组件与液态玻璃动效参考 |
+| [FlClash](https://github.com/chen08209/FlClash) | 设置容器展开及玻璃指示器动效参考 |
 | [BiliPai-miuix](https://github.com/Piracola/BiliPai-miuix) | UI 组件与设计系统贡献（@piracola） |
 | [Lottie](https://github.com/airbnb/lottie-android) | 矢量动画 |
 | [Coil](https://github.com/coil-kt/coil) | 图片加载 |

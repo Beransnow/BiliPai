@@ -3314,7 +3314,6 @@ private fun VideoPageItem(
                             session = enhancement,
                             preferTexture = preferTexture,
                             resizeMode = portraitPagerResizeMode,
-                            fillContainer = portraitPagerFillContainer,
                             keepScreenOn = shouldKeepPortraitPagerItemAwake,
                             flippedHorizontal = portraitFlippedHorizontal,
                             flippedVertical = portraitFlippedVertical,
@@ -3497,6 +3496,23 @@ private fun VideoPageItem(
                     )
                 }
             }
+        }
+
+        val partResumeNotice = currentSuccess?.partResumeNotice
+        if (partResumeNotice != null && partResumeNotice.bvid == bvid &&
+            isCurrentPage && isPlayerReadyForThisVideo && isPlayerSurfaceReady &&
+            hasRenderedFirstFrame && !isLoading &&
+            !isInPipMode && !portraitScreenLocked
+        ) {
+            com.android.purebilibili.feature.video.ui.section.PartResumeNoticeChip(
+                notice = partResumeNotice,
+                onJump = viewModel::jumpToLastPlayedPart,
+                onDismiss = viewModel::dismissPartResumeNotice,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = (pageDanmakuTopInset + 56.dp).coerceAtLeast(72.dp))
+                    .zIndex(118f),
+            )
         }
 
         // 双击左右区快进/后退视觉反馈
@@ -4273,41 +4289,11 @@ private fun VideoPageItem(
                     ))
                 },
             )
-        // 玻璃竖屏流保留侧边互动和底部信息；原生材质继续使用统一播放器控制栏。
-        if (com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled) {
-            com.android.purebilibili.feature.video.ui.overlay.glass.PortraitPagerControls(
-                state = portraitOverlayState.copy(
-                    isVisible = isCurrentPage && resolvePortraitOverlayControlsVisible(
-                        portraitOverlayVisible = portraitOverlayVisible,
-                        showDetailSheet = showDetailSheet,
-                    ),
-                ),
-                actions = portraitOverlayActions,
-                info = portraitDetailInfo,
-                stat = portraitDetailInfo?.stat ?: stat,
-                progress = progressState,
-                playbackReady = isCurrentPage && !isLoading && isPlayerReadyForThisVideo,
-                videoAspectRatio = currentVideoAspect,
-                commentExpansionProgress = commentSheetVisibilityProgress,
-                onDetailClick = { if (portraitDetailInfo != null) showDetailSheet = true },
-                onAuthorClick = {
-                    if (isCurrentPage && authorMid > 0L) {
-                        showUpPreview = true
-                        onUpPreviewActiveChange(true)
-                    }
-                },
-                onStaffMemberClick = { if (isCurrentPage && it > 0L) onUserClick(it) },
-                onSearchClick = {
-                    onExitSnapshot(bvid, exoPlayer.currentPosition, snapshotCid, cover)
-                    onSearchClick()
-                },
-            )
-        } else {
-            com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlay(
-                state = portraitOverlayState,
-                actions = portraitOverlayActions,
-            )
-        }
+        // 竖屏与横屏共用功能组件，玻璃材质在控制栏内部适配。
+        com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlay(
+            state = portraitOverlayState,
+            actions = portraitOverlayActions,
+        )
         AnimatedVisibility(
             visible = portraitPlaybackRecovering && portraitOverlayVisible &&
                 commentSheetVisibilityProgress <= 0.001f,
