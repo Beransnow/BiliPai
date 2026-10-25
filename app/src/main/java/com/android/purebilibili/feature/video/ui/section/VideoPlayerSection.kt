@@ -5939,7 +5939,7 @@ private fun VideoPlayerSectionContent(
     com.android.purebilibili.core.ui.LocalNavigationBackHandler(
         enabled = !isScreenLocked && isFullscreen,
     ) {
-        onToggleFullscreen()
+        onBack()
     }
     }
 }
