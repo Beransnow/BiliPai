@@ -242,6 +242,9 @@ internal fun TabletCinemaLayout(
             pendingVideoShare = buildVideoSharePayload(
                 title = info.title,
                 bvid = info.bvid,
+                page = info.pages.indexOfFirst { it.cid == info.cid }.coerceAtLeast(0) + 1,
+                positionMs = playerState.player.currentPosition.coerceAtLeast(0L),
+                authorId = info.owner.mid,
                 coverUrl = info.pic,
                 upName = info.owner.name,
                 playCountText = com.android.purebilibili.core.util.FormatUtils
