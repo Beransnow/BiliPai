@@ -60,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.Brush
@@ -1018,10 +1019,12 @@ private fun ProfileSkinVideoBackground(
     val lifecycleOwner = LocalLifecycleOwner.current
     val repeatMode = remember(playMode) { resolveProfileSkinVideoRepeatMode(playMode) }
     val player = remember(videoPath) {
-        ExoPlayer.Builder(context).build()
-    }
+        com.android.purebilibili.core.lifecycle.AbandonableResource(
+            ExoPlayer.Builder(context).build(),
+        ) { it.release() }
+    }.value
 
-    DisposableEffect(player, videoPath, repeatMode) {
+    DisposableEffect(player, videoPath) {
         player.volume = 0f
         player.repeatMode = repeatMode
         player.setMediaItem(MediaItem.fromUri(Uri.fromFile(File(videoPath))))
@@ -1052,12 +1055,15 @@ private fun ProfileSkinVideoBackground(
     }
 
     SideEffect {
+        player.repeatMode = repeatMode
         if (!playbackEnabled) player.pause()
     }
 
     AndroidView(
         factory = { viewContext ->
-            PlayerView(viewContext).apply {
+            // TextureView 跟随头图的裁切和位移，避免独立输出面脱离资料头部布局。
+            (android.view.LayoutInflater.from(viewContext)
+                .inflate(com.android.purebilibili.R.layout.wallpaper_video, null, false) as PlayerView).apply {
                 useController = false
                 resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
                 setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
@@ -1068,7 +1074,8 @@ private fun ProfileSkinVideoBackground(
         update = { playerView ->
             playerView.player = player
         },
-        modifier = modifier,
+        onRelease = { it.player = null },
+        modifier = modifier.clipToBounds(),
     )
 }
 

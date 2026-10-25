@@ -48,7 +48,6 @@ import androidx.compose.material.icons.outlined.*
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppText
@@ -72,6 +71,7 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.android.purebilibili.core.ui.AppContentColors
 import com.android.purebilibili.core.ui.AppWindowSystemUiController
 import com.android.purebilibili.core.ui.AppWindowSystemUiSnapshot
 import com.android.purebilibili.feature.video.screen.VideoDetailHiddenSystemBars
@@ -764,7 +764,7 @@ fun PortraitVideoPager(
     // [重构] 优先复用主播放器；仅在未传入 sharedPlayer 时才创建页内播放器
     val exoPlayer = sharedPlayer ?: remember(context) {
         val audioFocusEnabled = SettingsManager.getAudioFocusEnabledSync(context)
-        ExoPlayer.Builder(context)
+        val createdPlayer = ExoPlayer.Builder(context)
             .setRenderersFactory(
                 HiResCompatibleRenderersFactory(context)
                     .setExtensionRendererMode(
@@ -785,7 +785,8 @@ fun PortraitVideoPager(
                     .preferredVolumeSync()
                 setPlaybackSpeed(SettingsManager.getPreferredPlaybackSpeedSync(context))
             }
-    }
+        com.android.purebilibili.core.lifecycle.AbandonableResource(createdPlayer) { it.release() }
+    }.value
     DisposableEffect(exoPlayer, portraitAudioOnly) {
         val videoTrackType = androidx.media3.common.C.TRACK_TYPE_VIDEO
         val wasDisabled = exoPlayer.trackSelectionParameters.disabledTrackTypes.contains(videoTrackType)
@@ -2829,6 +2830,12 @@ private fun VideoPageItem(
         showUpPreview || commentSheetVisibilityProgress > 0.001f || upPreviewVisibilityProgress > 0.001f ||
         portraitAnyMenuVisible || portraitScreenLocked || portraitComposerVisible ||
         danmakuInputVisible
+    com.android.purebilibili.core.ui.performance.VideoPlaybackRefreshRateEffect(
+        player = exoPlayer,
+        eligible = isCurrentPage && isPortraitPlaybackAllowed && isPlayerReadyForThisVideo &&
+            !isLoading && !isInPipMode && !danmakuEnabled && !portraitOverlayVisible &&
+            !controlsOverlayOpen && !controlsPointerPressed && !isLongPressing && !seekSession.isSliderMoving,
+    )
     val autoHidePortraitControls = shouldAutoHidePortraitControls(
         isCurrentPage = isCurrentPage,
         playbackActive = controlsLifecycleResumed && isPortraitPlaybackAllowed &&
@@ -3402,9 +3409,9 @@ private fun VideoPageItem(
                 }
 
                 if (isLoading && isCurrentPage) {
-                    AdaptiveLoadingIndicator(
+                    com.android.purebilibili.feature.video.ui.overlay.BiliTvAnimatedBufferingIndicator(
                         modifier = Modifier.align(Alignment.Center),
-                        color = Color.White
+                        tint = AppContentColors.accent(),
                     )
                 }
             }
@@ -3798,6 +3805,13 @@ private fun VideoPageItem(
     // 系统小窗不合成竖屏流装饰层：标题 / 互动 / 进度条 / 旋转等控件在小窗里无法操作，
     // 缩放后只会变成错误渲染，播放面本身仍在下方正常输出。
     if (!isInPipMode) {
+        if (isCurrentPage && portraitOverlayVisible && !controlsOverlayOpen &&
+            com.android.purebilibili.feature.nearby.NEARBY_HANDOFF_ENABLED
+        ) {
+            com.android.purebilibili.feature.nearby.NearbyDevicesButton(
+                modifier = Modifier.align(Alignment.TopCenter).padding(top = 72.dp),
+            )
+        }
         val portraitPlaybackRecovering = isCurrentPage && shouldShowPlaybackRecoveryUiAfterSeek(
             state = seekSession,
             playWhenReady = exoPlayer.playWhenReady,
@@ -4301,18 +4315,14 @@ private fun VideoPageItem(
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.Center),
         ) {
-            androidx.compose.material3.Surface(
-                color = Color.Black.copy(alpha = 0.72f),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-            ) {
+            Box {
                 Row(
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    com.android.purebilibili.core.ui.components.AppCircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp,
+                    com.android.purebilibili.feature.video.ui.overlay.BiliTvAnimatedBufferingIndicator(
+                        tint = AppContentColors.accent(),
+                        size = 32.dp,
                     )
                     Spacer(Modifier.width(10.dp))
                     AppText(text = "正在恢复播放...", color = Color.White)

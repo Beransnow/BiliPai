@@ -32,6 +32,7 @@ internal enum class SettingsIconRole {
     IMAGE_SAVE_PATH,
     CLEAR_CACHE,
     PLUGINS,
+    NEARBY_HANDOFF,
     EXPORT_LOGS,
     OPEN_SOURCE_LICENSES,
     OPEN_SOURCE_HOME,
@@ -121,6 +122,7 @@ internal enum class SettingsIconRole {
     NATIVE_MIUIX_DIALOG,
     LONG_PRESS_SPEED_HINT,
     RESUME_PLAYBACK_PROMPT,
+    CONTINUE_PART_NOTICE,
     STOP_ON_EXIT,
     BACKGROUND_PLAYBACK,
     PLAYLIST_AUTO_CONTINUE,
@@ -260,6 +262,7 @@ internal fun resolveSettingsMaterialSymbolResource(role: SettingsIconRole): Int 
     SettingsIconRole.IMAGE_SAVE_PATH -> R.drawable.ms_photo_24
     SettingsIconRole.CLEAR_CACHE -> R.drawable.ms_delete_outline_24
     SettingsIconRole.PLUGINS -> R.drawable.ms_extension_24
+    SettingsIconRole.NEARBY_HANDOFF -> R.drawable.ic_settings_nearby_handoff_24
     SettingsIconRole.EXPORT_LOGS -> R.drawable.ms_article_24
     SettingsIconRole.OPEN_SOURCE_LICENSES -> R.drawable.ms_gavel_24
     SettingsIconRole.OPEN_SOURCE_HOME -> R.drawable.ms_open_in_new_24
@@ -349,6 +352,7 @@ internal fun resolveSettingsMaterialSymbolResource(role: SettingsIconRole): Int 
     SettingsIconRole.NATIVE_MIUIX_DIALOG -> R.drawable.ms_dialogs_24
     SettingsIconRole.LONG_PRESS_SPEED_HINT -> R.drawable.ms_visibility_off_24
     SettingsIconRole.RESUME_PLAYBACK_PROMPT -> R.drawable.ms_restore_24
+    SettingsIconRole.CONTINUE_PART_NOTICE -> R.drawable.ms_history_24
     SettingsIconRole.STOP_ON_EXIT -> R.drawable.ms_stop_circle_24
     SettingsIconRole.BACKGROUND_PLAYBACK -> R.drawable.ms_music_note_24
     SettingsIconRole.PLAYLIST_AUTO_CONTINUE -> R.drawable.ms_queue_play_next_24
@@ -490,6 +494,7 @@ internal fun resolveSettingsSearchTargetIconRole(
     SettingsSearchTarget.IMAGE_SAVE_PATH -> SettingsIconRole.IMAGE_SAVE_PATH
     SettingsSearchTarget.CLEAR_CACHE -> SettingsIconRole.CLEAR_CACHE
     SettingsSearchTarget.PLUGINS -> SettingsIconRole.PLUGINS
+    SettingsSearchTarget.NEARBY_HANDOFF -> SettingsIconRole.NEARBY_HANDOFF
     SettingsSearchTarget.EXPORT_LOGS -> SettingsIconRole.EXPORT_LOGS
     SettingsSearchTarget.OPEN_SOURCE_LICENSES -> SettingsIconRole.OPEN_SOURCE_LICENSES
     SettingsSearchTarget.OPEN_SOURCE_HOME -> SettingsIconRole.OPEN_SOURCE_HOME

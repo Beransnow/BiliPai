@@ -102,7 +102,8 @@ fun TopicDetailScreen(
     onCollectionClick: (Long, Long, String, String) -> Unit = { _, _, _, _ -> },
     onCourseClick: (String, String) -> Unit = { _, _ -> },
     onArticleClick: (Long, String) -> Unit,
-    onDynamicDetailClick: (String) -> Unit
+    onDynamicDetailClick: (String) -> Unit,
+    onMatchClick: ((Long) -> Unit)? = null,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -252,6 +253,7 @@ fun TopicDetailScreen(
                                             onCourseClick = onCourseClick,
                                             onArticleClick = onArticleClick,
                                             onDynamicDetailClick = onDynamicDetailClick,
+                                            onMatchClick = onMatchClick,
                                         ),
                                         interaction = DynamicCardInteractionActions(
                                             onCommentClick = onDynamicDetailClick,

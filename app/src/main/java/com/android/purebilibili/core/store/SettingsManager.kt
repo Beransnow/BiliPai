@@ -80,6 +80,7 @@ import com.materialkolor.Contrast
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
@@ -1425,6 +1426,8 @@ object SettingsManager {
     private val KEY_HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback_enabled")
     private val KEY_GLOBAL_TEXT_TAP_COPY_ENABLED =
         booleanPreferencesKey("global_text_tap_copy_enabled")
+    // 「上次看到第 N P」提示开关（默认开启）
+    private val KEY_SHOW_CONTINUE_PART_NOTICE = booleanPreferencesKey("show_continue_part_notice")
     //  [新增] 手势灵敏度和主题色
     private val KEY_GESTURE_SENSITIVITY = floatPreferencesKey("gesture_sensitivity")
     private val KEY_SLIDE_VOLUME_BRIGHTNESS_ENABLED = booleanPreferencesKey("slide_volume_brightness_enabled")
@@ -1442,6 +1445,11 @@ object SettingsManager {
     private val KEY_DOUBLE_TAP_SEEK_ENABLED = booleanPreferencesKey("double_tap_seek_enabled")
     private val KEY_SEEK_FORWARD_SECONDS = intPreferencesKey("seek_forward_seconds")
     private val KEY_LIVE_QUALITY = intPreferencesKey("live_quality")
+    private val KEY_LIVE_CDN_HOST = stringPreferencesKey("live_cdn_host")
+    private val KEY_LIVE_WIFI_QUALITY = intPreferencesKey("live_wifi_quality")
+    private val KEY_LIVE_MOBILE_QUALITY = intPreferencesKey("live_mobile_quality")
+    private val KEY_LIVE_SUPER_CHAT_ENABLED = booleanPreferencesKey("live_super_chat_enabled")
+    private val KEY_LIVE_PREFERRED_STREAM = stringPreferencesKey("live_preferred_stream")
     private val KEY_SEEK_BACKWARD_SECONDS = intPreferencesKey("seek_backward_seconds")
     private val KEY_LONG_PRESS_SPEED_HINT_CLOSE_ENABLED =
         booleanPreferencesKey("long_press_speed_hint_close_enabled")
@@ -1632,6 +1640,7 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
     private val KEY_LIVE_SUPER_CHAT_FLASH_ENABLED =
         booleanPreferencesKey("live_super_chat_flash_enabled")
     private val KEY_LIVE_DANMAKU_ENABLED = booleanPreferencesKey("live_danmaku_enabled")
+    private val KEY_LIVE_AUTO_MINI_PLAYER_ENABLED = booleanPreferencesKey("live_auto_mini_player_enabled")
     private val KEY_LIVE_SUPER_CHAT_PERSISTENT =
         booleanPreferencesKey("live_super_chat_persistent")
     private val KEY_LIVE_SUPER_CHAT_MAX_WIDTH_DP =
@@ -1734,6 +1743,12 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         booleanPreferencesKey("comment_member_decorations_enabled")
     private val KEY_DETAILED_COMMENT_TIME_ENABLED =
         booleanPreferencesKey("detailed_comment_time_enabled")
+    private val KEY_COMMENT_REPLY_PREVIEW_VISIBLE =
+        booleanPreferencesKey("comment_reply_preview_visible")
+
+    /** 偏好的调用方作用域之外落盘专用；进程存续期即作用域生命期。 */
+    private val commentPreferenceWriteScope =
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO)
     private val KEY_SUB_REPLY_LOADED_COUNT_ENABLED =
         booleanPreferencesKey("sub_reply_loaded_count_enabled")
     private val KEY_IMAGE_PREVIEW_LONG_PRESS_SAVE_ENABLED =
@@ -2886,6 +2901,22 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         }
     }
 
+    /** 播放地址返回上次观看的分P时，播放器内展示「上次看到第 N P」提示；镜像 SP 供同步读取。 */
+    fun getShowContinuePartNoticeSync(context: Context): Boolean =
+        context.getSharedPreferences("playback_notice_cache", Context.MODE_PRIVATE)
+            .getBoolean("show_continue_part_notice", true)
+
+    fun getShowContinuePartNotice(context: Context): Flow<Boolean> = context.settingsDataStore.data
+        .map { preferences -> preferences[KEY_SHOW_CONTINUE_PART_NOTICE] ?: true }
+
+    suspend fun setShowContinuePartNotice(context: Context, value: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_SHOW_CONTINUE_PART_NOTICE] = value
+        }
+        context.getSharedPreferences("playback_notice_cache", Context.MODE_PRIVATE)
+            .edit().putBoolean("show_continue_part_notice", value).apply()
+    }
+
     //  [新增] --- 手势灵敏度 (0.5 ~ 2.0, 默认 1.0) ---
     fun getGestureSensitivity(context: Context): Flow<Float> = context.settingsDataStore.data
         .map { preferences -> preferences[KEY_GESTURE_SENSITIVITY] ?: 1.0f }
@@ -2943,13 +2974,40 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
     fun getSeekForwardSeconds(context: Context): Flow<Int> = context.settingsDataStore.data
         .map { preferences -> preferences[KEY_SEEK_FORWARD_SECONDS] ?: 10 }
 
-    /** 直播清晰度记忆（对齐 PiliPlus liveQuality）：0 表示未选择，走默认策略。 */
-    fun getLivePreferredQuality(context: Context): Flow<Int> = context.settingsDataStore.data
-        .map { preferences -> preferences[KEY_LIVE_QUALITY] ?: 0 }
+    /** 分网络保存直播画质；已有的单份画质作为首次迁移值。 */
+    fun getLivePreferredQuality(context: Context, isWifi: Boolean = true): Flow<Int> = context.settingsDataStore.data
+        .map { preferences ->
+            preferences[if (isWifi) KEY_LIVE_WIFI_QUALITY else KEY_LIVE_MOBILE_QUALITY]
+                ?: preferences[KEY_LIVE_QUALITY]?.takeIf { it > 0 }
+                ?: if (isWifi) 10000 else 250
+        }
 
-    suspend fun setLivePreferredQuality(context: Context, qn: Int) {
+    fun getLiveSuperChatEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
+        .map { it[KEY_LIVE_SUPER_CHAT_ENABLED] ?: true }
+
+    suspend fun setLiveSuperChatEnabled(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { it[KEY_LIVE_SUPER_CHAT_ENABLED] = enabled }
+    }
+
+    fun getLiveCdnHost(context: Context): Flow<String?> = context.settingsDataStore.data
+        .map { it[KEY_LIVE_CDN_HOST] }
+
+    suspend fun setLiveCdnHost(context: Context, host: String?) {
+        context.settingsDataStore.edit {
+            if (host.isNullOrBlank()) it.remove(KEY_LIVE_CDN_HOST) else it[KEY_LIVE_CDN_HOST] = host
+        }
+    }
+
+    fun getLivePreferredStream(context: Context): Flow<String?> = context.settingsDataStore.data
+        .map { it[KEY_LIVE_PREFERRED_STREAM] }
+
+    suspend fun setLivePreferredStream(context: Context, value: String) {
+        context.settingsDataStore.edit { it[KEY_LIVE_PREFERRED_STREAM] = value }
+    }
+
+    suspend fun setLivePreferredQuality(context: Context, qn: Int, isWifi: Boolean = true) {
         context.settingsDataStore.edit { preferences ->
-            preferences[KEY_LIVE_QUALITY] = qn
+            preferences[if (isWifi) KEY_LIVE_WIFI_QUALITY else KEY_LIVE_MOBILE_QUALITY] = qn
         }
     }
 
@@ -3429,6 +3487,13 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
     fun getLiveSuperChatFlashEnabled(context: Context): Flow<Boolean> =
         context.settingsDataStore.data
             .map { preferences -> preferences[KEY_LIVE_SUPER_CHAT_FLASH_ENABLED] ?: true }
+
+    fun getLiveAutoMiniPlayerEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data.map { it[KEY_LIVE_AUTO_MINI_PLAYER_ENABLED] ?: true }
+
+    suspend fun setLiveAutoMiniPlayerEnabled(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { it[KEY_LIVE_AUTO_MINI_PLAYER_ENABLED] = enabled }
+    }
 
     fun getLiveDanmakuEnabled(context: Context): Flow<Boolean> =
         context.settingsDataStore.data
@@ -4314,8 +4379,12 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         }
     }
 
-    fun getLiveFavoriteTags(context: Context): Flow<List<LiveFavoriteTagEntry>> = context.settingsDataStore.data.map { prefs ->
-        val raw = prefs[KEY_LIVE_FAVORITE_TAGS].orEmpty()
+    private fun liveFavoriteTagsKey(accountMid: Long?) = if ((accountMid ?: 0L) > 0L) {
+        stringPreferencesKey("live_favorite_tags_$accountMid")
+    } else KEY_LIVE_FAVORITE_TAGS
+
+    fun getLiveFavoriteTags(context: Context, accountMid: Long? = null): Flow<List<LiveFavoriteTagEntry>> = context.settingsDataStore.data.map { prefs ->
+        val raw = prefs[liveFavoriteTagsKey(accountMid)].orEmpty()
         if (raw.isBlank()) {
             emptyList()
         } else {
@@ -4323,12 +4392,12 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         }
     }
 
-    suspend fun setLiveFavoriteTags(context: Context, tags: List<LiveFavoriteTagEntry>) {
+    suspend fun setLiveFavoriteTags(context: Context, tags: List<LiveFavoriteTagEntry>, accountMid: Long? = null) {
         val normalized = tags
             .filter { it.parentAreaId > 0 && it.areaId >= 0 && it.title.isNotBlank() }
             .distinctBy { it.parentAreaId to it.areaId }
         context.settingsDataStore.edit { prefs ->
-            prefs[KEY_LIVE_FAVORITE_TAGS] = if (normalized.isEmpty()) {
+            prefs[liveFavoriteTagsKey(accountMid)] = if (normalized.isEmpty()) {
                 ""
             } else {
                 Json.encodeToString(normalized)
@@ -6561,9 +6630,37 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         context.settingsDataStore.data
             .map { preferences -> preferences[KEY_DETAILED_COMMENT_TIME_ENABLED] ?: false }
 
+    /** 评论楼中楼预览是否显示；入口在评论右上角菜单，默认显示。 */
+    fun getCommentReplyPreviewVisible(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data
+            .map { preferences -> preferences[KEY_COMMENT_REPLY_PREVIEW_VISIBLE] ?: true }
+
+    suspend fun setCommentReplyPreviewVisible(context: Context, visible: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_COMMENT_REPLY_PREVIEW_VISIBLE] = visible
+        }
+    }
+
+    /**
+     * 评论右上角菜单的落盘入口：弹层关闭会取消其 rememberCoroutineScope，
+     * 挂起写盘必须在调用方作用域之外完成，否则开关可能一次都写不进去。
+     */
+    fun setCommentReplyPreviewVisibleDetached(context: Context, visible: Boolean) {
+        commentPreferenceWriteScope.launch {
+            setCommentReplyPreviewVisible(context.applicationContext, visible)
+        }
+    }
+
     suspend fun setDetailedCommentTimeEnabled(context: Context, enabled: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_DETAILED_COMMENT_TIME_ENABLED] = enabled
+        }
+    }
+
+    /** 评论长按菜单的落盘入口：与回复按钮开关同因，写入不依赖弹层作用域。 */
+    fun setDetailedCommentTimeEnabledDetached(context: Context, enabled: Boolean) {
+        commentPreferenceWriteScope.launch {
+            setDetailedCommentTimeEnabled(context.applicationContext, enabled)
         }
     }
 
@@ -8672,6 +8769,11 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
             IntShareablePreferenceDefinition(KEY_HOME_DURATION_STYLE, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(KEY_SHOW_PROFILE_EDIT_BUTTON, SettingsShareSection.APPEARANCE),
 
+            IntShareablePreferenceDefinition(KEY_LIVE_WIFI_QUALITY, SettingsShareSection.PLAYBACK),
+            IntShareablePreferenceDefinition(KEY_LIVE_MOBILE_QUALITY, SettingsShareSection.PLAYBACK),
+            StringShareablePreferenceDefinition(KEY_LIVE_CDN_HOST, SettingsShareSection.PLAYBACK),
+            BooleanShareablePreferenceDefinition(KEY_LIVE_SUPER_CHAT_ENABLED, SettingsShareSection.PLAYBACK),
+            BooleanShareablePreferenceDefinition(KEY_LIVE_AUTO_MINI_PLAYER_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_NEXT_WATCH_HINT_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_AUTO_PLAY, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_PLAYBACK_COMPLETION_BEHAVIOR, SettingsShareSection.PLAYBACK),

@@ -510,6 +510,7 @@ fun BottomControlBar(
     val onSubtitleLargeTextChange = subtitleControlCallbacks.onLargeTextChange
     val onSubtitlePositionLockedChange = subtitleControlCallbacks.onPositionLockedChange
 
+    val nearbyHandoff = com.android.purebilibili.feature.nearby.LocalNearbyHandoff.current
     val configuration = LocalConfiguration.current
     val uiLayoutWidthDp = remember(configuration.screenWidthDp, viewportWidthDpOverride) {
         (viewportWidthDpOverride ?: configuration.screenWidthDp).coerceAtLeast(1)
@@ -1195,6 +1196,12 @@ fun BottomControlBar(
                                     ),
                                     groups = listOf(
                                         listOfNotNull(
+                                            nearbyHandoff?.takeIf { isFullscreen && com.android.purebilibili.feature.nearby.NEARBY_HANDOFF_ENABLED }?.let { controller ->
+                                                AppWindowAction(
+                                                    label = com.android.purebilibili.feature.nearby.NEARBY_TITLE,
+                                                    onClick = { controller.openDevices() },
+                                                )
+                                            },
                                             if (liquidGlassEnabled) AppWindowAction(
                                                 label = "弹幕热度曲线",
                                                 selected = heatmapVisible,
@@ -1664,6 +1671,12 @@ fun BottomControlBar(
                                 AppWindowActionMenu(
                                     groups = listOf(
                                         listOfNotNull(
+                                            nearbyHandoff?.takeIf { isFullscreen && com.android.purebilibili.feature.nearby.NEARBY_HANDOFF_ENABLED }?.let { controller ->
+                                                AppWindowAction(
+                                                    label = com.android.purebilibili.feature.nearby.NEARBY_TITLE,
+                                                    onClick = { controller.openDevices() },
+                                                )
+                                            },
                                             if (sponsorContributionAvailable) {
                                                 AppWindowAction(
                                                     label = if (sponsorContributionMarking) "结束标记片段" else "标记片段起点",

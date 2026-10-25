@@ -215,6 +215,19 @@ internal class Anime4KPipelineRenderer(
         releaseGlResources(releaseInput = true)
     }
 
+    /** GL 线程退出并销毁 EGL 后调用；此时只释放独立的原生输入资源，不再调用 GLES。 */
+    fun releaseInputAfterThreadExit() {
+        val detachedInput = inputSurface
+        inputSurface = null
+        externalTextureId = 0
+        hasLatchedFrame = false
+        frameAvailable = false
+        if (detachedInput != null) {
+            onInputSurfaceChanged(null)
+            detachedInput.release()
+        }
+    }
+
     private fun renderFrame() {
         if (config.algorithm == VideoEnhancementAlgorithm.FSR_1_0) {
             renderFsrFrame()

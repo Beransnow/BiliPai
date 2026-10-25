@@ -557,6 +557,7 @@ internal enum class ReplyActionSheetAction {
     COPY_USERNAME,
     QUERY_AUTHOR_HISTORY,
     TIME_STYLE,
+    TOGGLE_REPLY_PREVIEW,
     SAVE,
     SHARE,
     REPLY,
@@ -574,6 +575,7 @@ internal fun buildReplyActionSheetActions(
     topActionLabel: String? = null,
     canCopyUsername: Boolean = true,
     canQueryAuthorHistory: Boolean = false,
+    canToggleReplyPreview: Boolean = false,
 ): List<ReplyActionSheetAction> {
     return buildList {
         add(ReplyActionSheetAction.COPY_ALL)
@@ -583,6 +585,9 @@ internal fun buildReplyActionSheetActions(
         }
         if (canQueryAuthorHistory) add(ReplyActionSheetAction.QUERY_AUTHOR_HISTORY)
         add(ReplyActionSheetAction.TIME_STYLE)
+        if (canToggleReplyPreview) {
+            add(ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW)
+        }
         add(ReplyActionSheetAction.SAVE)
         if (canShare) {
             add(ReplyActionSheetAction.SHARE)
@@ -613,6 +618,7 @@ private fun resolveReplyActionSheetLabel(
         ReplyActionSheetAction.COPY_USERNAME -> "复制用户名"
         ReplyActionSheetAction.QUERY_AUTHOR_HISTORY -> "查询作者历史"
         ReplyActionSheetAction.TIME_STYLE -> "评论时间样式"
+        ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW -> "显示回复"
         ReplyActionSheetAction.SAVE -> "保存评论"
         ReplyActionSheetAction.SHARE -> "分享评论"
         ReplyActionSheetAction.REPLY -> "回复"
@@ -1284,6 +1290,8 @@ fun ReplyItemView(
     val scope = rememberCoroutineScope()
     val isUpComment = upMid > 0 && item.mid == upMid
     val showResolvedIdentityDecorations = shouldShowReplyIdentityDecorations(showIdentityDecorations)
+    // 右上角菜单的全局开关只控制"回复"快捷按钮本身，楼中楼预览不受影响。
+    val replyButtonVisible = com.android.purebilibili.core.ui.LocalCommentReplyPreviewVisible.current
     val showSubPreview = shouldShowReplySubPreview(
         hideSubPreview = hideSubPreview,
         lightweightMode = lightweightMode
@@ -1499,6 +1507,8 @@ fun ReplyItemView(
         ReplyActionSheet(
             queryAuthorUid = replyMemberMid,
             canCheckFraud = onCheckFraudClick != null,
+            // 楼中楼详情页的行也复用同一开关：控制其下方"回复"快捷按钮的显示。
+            canToggleReplyPreview = true,
             canReport = onReportClick != null,
             canShare = shouldSupportReplyShare(item),
             canBlockUser = replyMemberMid > 0L,
@@ -1592,7 +1602,10 @@ fun ReplyItemView(
             )
             .combinedClickable(
                 onClick = {
-                    if (openThreadFromRootClick) {
+                    // 条目内部的空白可直接回复；正文、头像及操作按钮各自消费点击。
+                    if (onReplyClick != null) {
+                        onReplyClick()
+                    } else if (openThreadFromRootClick) {
                         onSubClick(previewRoot, 0L)
                     } else {
                         onClick()
@@ -1665,7 +1678,8 @@ fun ReplyItemView(
                                 color = resolveUpNameColor(
                                     vipStatus = item.member.vip?.vipStatus ?: 0,
                                     vipType = item.member.vip?.vipType ?: 0,
-                                    onSurface = appearance.primaryTextColor.copy(alpha = 0.9f),
+                                    // 用户名用主题强调色与正文区分层次，大会员保留专属粉色。
+                                    onSurface = appearance.accentColor,
                                     secondary = com.android.purebilibili.core.ui.components.userVipPink(),
                                 ),
                                 maxLines = 1,
@@ -1799,13 +1813,15 @@ fun ReplyItemView(
 
                     Spacer(modifier = Modifier.height(2.dp))
 
-                    // Footer Actions
+                    // Footer Actions；"隐藏回复"开启时收起回复快捷入口（长按菜单仍可回复）。
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                    ReplyTextAction(
-                        label = "回复",
-                        appearance = appearance,
-                        onClick = { onReplyClick?.invoke() ?: onSubClick(previewRoot, 0L) }
-                    )
+                    if (replyButtonVisible) {
+                        ReplyTextAction(
+                            label = "回复",
+                            appearance = appearance,
+                            onClick = { onReplyClick?.invoke() ?: onSubClick(previewRoot, 0L) }
+                        )
+                    }
 
                     // [新增] 翻译按钮 (胶囊样式)
                     if (canTranslate) {
@@ -1987,7 +2003,8 @@ fun ReplyItemView(
                                     val prefixTextColor = resolveUpNameColor(
                                         vipStatus = subReply.member.vip?.vipStatus ?: 0,
                                         vipType = subReply.member.vip?.vipType ?: 0,
-                                        onSurface = appearance.primaryTextColor.copy(alpha = 0.8f),
+                                        // 楼中楼用户名同样用主题强调色区分正文，大会员保留专属粉色。
+                                        onSurface = appearance.accentColor,
                                         secondary = com.android.purebilibili.core.ui.components.userVipPink(),
                                     )
                                     val prefixSeparatorColor = appearance.secondaryTextColor
@@ -2940,6 +2957,7 @@ internal fun ReplyActionSheet(
     canShare: Boolean = true,
     canBlockUser: Boolean = false,
     canCopyUsername: Boolean = true,
+    canToggleReplyPreview: Boolean = false,
     topActionLabel: String? = null,
     onDismiss: () -> Unit,
     onCopyAll: () -> Unit,
@@ -2962,6 +2980,9 @@ internal fun ReplyActionSheet(
     val detailedTimeEnabled by SettingsManager
         .getDetailedCommentTimeEnabled(sheetContext)
         .collectAsStateWithLifecycle(initialValue = false)
+    val replyPreviewVisible by SettingsManager
+        .getCommentReplyPreviewVisible(sheetContext)
+        .collectAsStateWithLifecycle(initialValue = true)
     val actions = remember(
         canQueryAuthorHistory,
         canCheckFraud,
@@ -2969,6 +2990,7 @@ internal fun ReplyActionSheet(
         canShare,
         canBlockUser,
         canCopyUsername,
+        canToggleReplyPreview,
         topActionLabel,
     ) {
         buildReplyActionSheetActions(
@@ -2979,6 +3001,7 @@ internal fun ReplyActionSheet(
             topActionLabel = topActionLabel,
             canCopyUsername = canCopyUsername,
             canQueryAuthorHistory = canQueryAuthorHistory,
+            canToggleReplyPreview = canToggleReplyPreview,
         )
     }
     AppModalBottomSheet(onDismissRequest = onDismiss) {
@@ -2995,6 +3018,8 @@ internal fun ReplyActionSheet(
                     label = if (action == ReplyActionSheetAction.TIME_STYLE) {
                         if (detailedTimeEnabled) "评论时间样式：绝对（yyyy-MM-dd HH:mm:ss）"
                         else "评论时间样式：相对"
+                    } else if (action == ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW) {
+                        if (replyPreviewVisible) "隐藏回复按钮" else "显示回复按钮"
                     } else {
                         resolveReplyActionSheetLabel(action, topActionLabel)
                     },
@@ -3005,9 +3030,10 @@ internal fun ReplyActionSheet(
                             ReplyActionSheetAction.FREE_COPY -> onFreeCopy()
                             ReplyActionSheetAction.COPY_USERNAME -> onCopyUsername()
                             ReplyActionSheetAction.QUERY_AUTHOR_HISTORY -> queryAicu?.invoke(queryAuthorUid)
-                            ReplyActionSheetAction.TIME_STYLE -> sheetScope.launch {
+                            ReplyActionSheetAction.TIME_STYLE -> {
+                                // 与回复按钮开关同因：写盘不挂弹层作用域，避免关闭竞态落空。
                                 val next = !detailedTimeEnabled
-                                SettingsManager.setDetailedCommentTimeEnabled(sheetContext, next)
+                                SettingsManager.setDetailedCommentTimeEnabledDetached(sheetContext, next)
                                 Toast.makeText(
                                     sheetContext,
                                     if (next) {
@@ -3016,6 +3042,17 @@ internal fun ReplyActionSheet(
                                         "已切换为相对时间：评论按相对时间显示"
                                     },
                                     Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW -> {
+                                // 写盘走独立作用域：弹层随即关闭并取消 sheetScope，
+                                // 挂起写入若挂在它下面会与关闭竞态导致开关落空。
+                                val next = !replyPreviewVisible
+                                SettingsManager.setCommentReplyPreviewVisibleDetached(sheetContext, next)
+                                Toast.makeText(
+                                    sheetContext,
+                                    if (next) "已显示回复按钮" else "已隐藏回复按钮",
+                                    Toast.LENGTH_SHORT
                                 ).show()
                             }
                             ReplyActionSheetAction.SAVE -> onSave()

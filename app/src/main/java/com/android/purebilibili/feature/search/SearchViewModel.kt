@@ -15,6 +15,7 @@ import com.android.purebilibili.data.model.response.SearchType
 import com.android.purebilibili.plugin.sdk.FeedKind
 import com.android.purebilibili.data.model.response.BangumiSearchItem
 import com.android.purebilibili.data.model.response.LiveRoomSearchItem
+import com.android.purebilibili.data.model.response.MatchContestInfo
 import com.android.purebilibili.data.repository.SearchRepository
 import com.android.purebilibili.data.repository.SearchOrder
 import com.android.purebilibili.data.repository.SearchDuration
@@ -52,6 +53,8 @@ data class SearchUiState(
     val upResults: List<SearchUpItem> = emptyList(),
     //  [新增] 番剧结果
     val bangumiResults: List<BangumiSearchItem> = emptyList(),
+    //  赛事结果（综合搜索 esports 块）
+    val matchResults: List<MatchContestInfo> = emptyList(),
     //  [新增] 直播结果
     val liveResults: List<LiveRoomSearchItem> = emptyList(),
     val liveUserResults: List<SearchLiveUserItem> = emptyList(),
@@ -117,6 +120,7 @@ data class SearchResultPageUiState(
     val searchResults: List<VideoItem> = emptyList(),
     val upResults: List<SearchUpItem> = emptyList(),
     val bangumiResults: List<BangumiSearchItem> = emptyList(),
+    val matchResults: List<MatchContestInfo> = emptyList(),
     val liveResults: List<LiveRoomSearchItem> = emptyList(),
     val liveUserResults: List<SearchLiveUserItem> = emptyList(),
     val articleResults: List<SearchArticleItem> = emptyList(),
@@ -138,7 +142,7 @@ internal fun SearchUiState.toCurrentSearchResultPage(): SearchResultPageUiState 
         totalPages = totalPages,
         hasMoreResults = hasMoreResults,
         totalCount = when (searchType) {
-            SearchType.ALL -> searchResults.size + upResults.size + bangumiResults.size
+            SearchType.ALL -> searchResults.size + upResults.size + bangumiResults.size + matchResults.size
             SearchType.VIDEO -> searchResults.size
             SearchType.UP -> upResults.size
             SearchType.BANGUMI, SearchType.MEDIA_FT -> bangumiResults.size
@@ -152,6 +156,7 @@ internal fun SearchUiState.toCurrentSearchResultPage(): SearchResultPageUiState 
         searchResults = searchResults,
         upResults = upResults,
         bangumiResults = bangumiResults,
+        matchResults = matchResults,
         liveResults = liveResults,
         liveUserResults = liveUserResults,
         articleResults = articleResults,
@@ -193,6 +198,7 @@ internal fun SearchUiState.withSearchResultPageMirrored(
         searchResults = pageState.searchResults,
         upResults = pageState.upResults,
         bangumiResults = pageState.bangumiResults,
+        matchResults = pageState.matchResults,
         liveResults = pageState.liveResults,
         liveUserResults = pageState.liveUserResults,
         articleResults = pageState.articleResults,
@@ -436,6 +442,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 searchResults = emptyList(),
                 upResults = emptyList(),
                 bangumiResults = emptyList(),
+                matchResults = emptyList(),
                 liveResults = emptyList(),
                 liveUserResults = emptyList(),
                 articleResults = emptyList(),
@@ -602,6 +609,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 searchResults = if (shouldClearCachedPages || searchType == SearchType.VIDEO) emptyList() else it.searchResults,
                 upResults = if (shouldClearCachedPages) emptyList() else it.upResults,
                 bangumiResults = if (shouldClearCachedPages) emptyList() else it.bangumiResults,
+                matchResults = if (shouldClearCachedPages) emptyList() else it.matchResults,
                 liveResults = if (shouldClearCachedPages) emptyList() else it.liveResults,
                 liveUserResults = if (shouldClearCachedPages) emptyList() else it.liveUserResults,
                 articleResults = if (shouldClearCachedPages) emptyList() else it.articleResults,
@@ -664,7 +672,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         }
         fun chunk(page: SearchResultPageUiState, info: SearchRepository.SearchPageInfo, rawCount: Int): SearchPageChunk {
             val visible = page.searchResults.size + page.upResults.size + page.bangumiResults.size +
-                page.liveResults.size + page.liveUserResults.size + page.articleResults.size +
+                page.matchResults.size + page.liveResults.size + page.liveUserResults.size + page.articleResults.size +
                 page.topicResults.size + page.photoResults.size
             return SearchPageChunk(page.copy(currentPage = info.currentPage, totalPages = info.totalPages,
                 hasMoreResults = info.hasMore, totalCount = visible,
@@ -678,8 +686,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                 chunk(empty.copy(searchResults = videos(result.videos),
                     upResults = result.ups.filter { it.mid !in blockedMids }.map { up ->
                         up.copy(res = up.res?.filterNot { it.mid in blockedMids }) },
-                    bangumiResults = result.bangumi), result.pageInfo,
-                    result.videos.size + result.ups.size + result.bangumi.size)
+                    bangumiResults = result.bangumi,
+                    matchResults = result.matches), result.pageInfo,
+                    result.videos.size + result.ups.size + result.bangumi.size + result.matches.size)
             }
             SearchType.VIDEO -> {
                 val (items, info) = SearchRepository.searchWithDurations(keyword = keyword, page = number, order = filters.searchOrder, durations = filters.searchDurations, tids = filters.videoTid, pubBegin = filters.pubBegin, pubEnd = filters.pubEnd).getOrThrow()
@@ -727,6 +736,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             searchResults = pages.flatMap { it.searchResults }.distinctBy { it.bvid }.filter { it.owner.mid !in blockedMids },
             upResults = pages.flatMap { it.upResults }.distinctBy { it.mid }.filter { it.mid !in blockedMids },
             bangumiResults = pages.flatMap { it.bangumiResults }.distinctBy { it.seasonId },
+            matchResults = pages.flatMap { it.matchResults }.distinctBy { it.id },
             liveResults = pages.flatMap { it.liveResults }.distinctBy { it.roomid }.filter { it.uid !in blockedMids },
             liveUserResults = pages.flatMap { it.liveUserResults }.distinctBy { it.uid }.filter { it.uid !in blockedMids },
             articleResults = pages.flatMap { it.articleResults }.distinctBy { it.id },
@@ -734,7 +744,7 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             photoResults = pages.flatMap { it.photoResults }.distinctBy { it.id },
         )
         val visibleCount = merged.searchResults.size + merged.upResults.size + merged.bangumiResults.size +
-            merged.liveResults.size + merged.liveUserResults.size + merged.articleResults.size +
+            merged.matchResults.size + merged.liveResults.size + merged.liveUserResults.size + merged.articleResults.size +
             merged.topicResults.size + merged.photoResults.size
         return merged.copy(totalCount = visibleCount,
             emptyStateReason = if (visibleCount > 0) SearchEmptyStateReason.NONE else last.emptyStateReason)

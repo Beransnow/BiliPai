@@ -168,7 +168,7 @@ fun ActionButtonsRow(
 
     // 不再对整行做 animateContentSize：状态回填时动画尺寸会放大“跳动”观感，
     // 行高本身由各按钮的固定尺寸保证稳定。
-    Box(modifier = modifier) {
+    Column(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth()
                 .padding(horizontal = 4.dp, vertical = 2.dp),
@@ -379,6 +379,11 @@ fun ActionButtonsRow(
                 }
             }
 
+        }
+        if (com.android.purebilibili.feature.nearby.NEARBY_HANDOFF_ENABLED) {
+            com.android.purebilibili.feature.nearby.NearbyDevicesButton(
+                modifier = Modifier.align(Alignment.End).padding(horizontal = 8.dp),
+            )
         }
     }
 }

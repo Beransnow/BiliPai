@@ -52,6 +52,10 @@ object ProtoWire {
         }
     }
 
+    fun fixed64(fieldNumber: Int, value: Long): ByteArray = encode { writeFixed64(fieldNumber, value) }
+
+    fun fixed32(fieldNumber: Int, value: Int): ByteArray = encode { writeFixed32(fieldNumber, value) }
+
     fun int64(fieldNumber: Int, value: Long): ByteArray = encode { writeInt64(fieldNumber, value) }
 
     fun int32(fieldNumber: Int, value: Int): ByteArray = encode { writeInt32(fieldNumber, value) }

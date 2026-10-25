@@ -33,6 +33,7 @@ data class SearchAllResults(
     val videos: List<VideoItem> = emptyList(),
     val ups: List<SearchUpItem> = emptyList(),
     val bangumi: List<com.android.purebilibili.data.model.response.BangumiSearchItem> = emptyList(),
+    val matches: List<com.android.purebilibili.data.model.response.MatchContestInfo> = emptyList(),
     val pageInfo: SearchRepository.SearchPageInfo
 )
 
@@ -140,15 +141,25 @@ object SearchRepository {
                         cover = com.android.purebilibili.data.model.response.normalizeSearchImageUrl(item.cover)
                     )
                 }
+            // 综合搜索的 esports 块只取首场比赛卡片展示，解析失败时静默跳过。
+            val matches = categories.firstOrNull { it.result_type == "esports" }
+                ?.data.orEmpty()
+                .firstOrNull()
+                ?.let { element ->
+                    runCatching {
+                        searchJson.decodeFromJsonElement<com.android.purebilibili.data.model.response.SearchEsportsBlock>(element)
+                    }.getOrNull()?.contest.orEmpty()
+                }
+                .orEmpty()
             val pageInfo = createPageInfo(
                 requestedPage = page,
                 responsePage = response.data?.page ?: page,
                 totalPages = response.data?.numPages ?: 0,
-                totalResults = response.data?.numResults ?: videos.size + ups.size + bangumi.size,
-                fallbackResultCount = videos.size + ups.size + bangumi.size,
+                totalResults = response.data?.numResults ?: videos.size + ups.size + bangumi.size + matches.size,
+                fallbackResultCount = videos.size + ups.size + bangumi.size + matches.size,
                 pageSize = response.data?.pagesize ?: 20
             )
-            Result.success(SearchAllResults(videos, ups, bangumi, pageInfo))
+            Result.success(SearchAllResults(videos, ups, bangumi, matches, pageInfo))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

@@ -145,15 +145,15 @@ internal fun Modifier.biliPaiProgressiveTopBlur(
     )
 }
 
-/** Scope protection to actual wallpaper chrome, preserving independent profile hero artwork. */
+/** 仅在壁纸实际属于当前顶栏背景时取色，避免个人头图被全局壁纸染色。 */
 @androidx.compose.runtime.Composable
-internal fun currentWallpaperChromeReadability(surfaceColor: Color): com.android.purebilibili.core.ui.wallpaper.WallpaperReadabilityProfile? {
+internal fun currentTopChromeWallpaperPalette(surfaceColor: Color): com.android.purebilibili.feature.home.components.cards.WallpaperPalette? {
     if (surfaceColor.alpha <= 0f) return null
     val route = com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute.current
         ?.substringBefore('?')?.substringBefore('/')
     val visible = com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible.current || route == "home"
     if (!visible || route == "profile") return null
-    return com.android.purebilibili.feature.home.components.cards.LocalWallpaperPalette.current?.readability
+    return com.android.purebilibili.feature.home.components.cards.LocalWallpaperPalette.current
 }
 
 /**
@@ -182,15 +182,16 @@ internal fun BiliPaiImmersiveTopBar(
     val active = shouldUseBiliPaiProgressiveTopBlur(enabled, backdrop != null) &&
         !isLowBlurBudgetForced()
     val solidFadeActive = (fadeEnabled ?: themeConfig.progressiveTopFadeEnabled) && !headerBlurActive
-    val readability = currentWallpaperChromeReadability(surfaceColor)
-    val fadeColor = readability?.top?.let {
-        surfaceColor.copy(alpha = com.android.purebilibili.core.ui.wallpaper.resolveWallpaperProtectionAlpha(
-            band = it,
-            surfaceColor = surfaceColor,
-            foregroundColor = MaterialTheme.colorScheme.onSurface,
-            blurred = active,
-        ))
-    } ?: surfaceColor
+    val wallpaperPalette = currentTopChromeWallpaperPalette(surfaceColor)
+    val readability = wallpaperPalette?.readability
+    // 渐隐取色属于顶部特效，玻璃和原生路径共用；特效关闭后的背景不参与。
+    val fadeColor = resolveTopChromeFadeColor(
+        surfaceColor = surfaceColor,
+        foregroundColor = MaterialTheme.colorScheme.onSurface,
+        blurred = active,
+        backgroundColor = wallpaperPalette?.topColor,
+        readabilityBand = readability?.top,
+    )
     // Local protection is part of the enabled progressive material. With both effects off,
     // preserve the user's plain chrome choice; Haze continues to own its existing scrim.
     val drawProtectionFade = solidFadeActive || (active && !headerBlurActive && readability != null)

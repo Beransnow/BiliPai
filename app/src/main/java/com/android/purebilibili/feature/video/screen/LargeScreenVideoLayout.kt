@@ -600,6 +600,8 @@ private fun LargeScreenPlayerHost(
                     onToggleFavorite = { engagementActions.onFavoriteAction(false) },
                     onTriple = engagementActions.doTripleAction,
                     onReloadVideo = playbackActions.reloadVideo,
+                    onJumpToLastPlayedPart = playbackActions.jumpToLastPlayedPart,
+                    onDismissPartResumeNotice = playbackActions.dismissPartResumeNotice,
                     onSwitchCdn = playbackActions.switchCdn,
                     onSwitchCdnTo = playbackActions.switchCdnTo,
                     onProbeCdnCandidates = playbackActions.probeCdnCandidates,

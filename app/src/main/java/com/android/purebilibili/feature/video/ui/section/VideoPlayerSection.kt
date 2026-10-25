@@ -39,7 +39,6 @@ import com.android.purebilibili.feature.video.ui.overlay.FullscreenDoubleTapActi
 import com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlay
 import com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlayState
 import com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlayActions
-import com.android.purebilibili.feature.video.ui.overlay.SubtitleControlCallbacks
 import com.android.purebilibili.feature.video.ui.overlay.SubtitleControlUiState
 import com.android.purebilibili.feature.video.ui.overlay.nextFullscreenSeekFeedbackEvent
 import com.android.purebilibili.feature.video.ui.overlay.resolveFullscreenDoubleTapAction
@@ -227,7 +226,6 @@ import com.android.purebilibili.feature.video.subtitle.buildSubtitleTrackOptions
 import com.android.purebilibili.feature.video.subtitle.isSubtitleFeatureEnabledForUser
 import com.android.purebilibili.feature.video.subtitle.normalizeSubtitleDisplayMode
 import com.android.purebilibili.feature.video.subtitle.normalizeSubtitleVerticalOffsetFraction
-import com.android.purebilibili.feature.video.subtitle.resolveDefaultSubtitleDisplayMode
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitleControlAvailability
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitleDisplayModeByAutoPreference
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitleTextAt
@@ -676,7 +674,9 @@ private fun BoxScope.VideoSubtitleOverlayHost(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled) {
+        if (com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled &&
+            appearance == com.android.purebilibili.feature.video.ui.components.PlayerSubtitleAppearance()
+        ) {
             val subtitleShadow = Shadow(
                 color = Color.Black.copy(alpha = 0.85f),
                 offset = Offset(0f, 1.5f),
@@ -714,7 +714,7 @@ private fun BoxScope.VideoSubtitleOverlayHost(
                 baseFontSizeSp = if (secondaryAsPrimaryLine) primaryTextSizeSp else secondaryTextSizeSp,
                 appearance = appearance,
                 isFullscreen = isFullscreen,
-                color = Color.White.copy(alpha = 0.88f),
+                color = Color(appearance.textColor).copy(alpha = 0.88f),
             )
             if (showPrimaryLine) com.android.purebilibili.feature.video.subtitle.PiliStyledSubtitleText(
                 text = subtitlePrimaryText.orEmpty(),
@@ -3096,6 +3096,14 @@ private fun VideoPlayerSectionContent(
                 lifecycle = lifecycleOwner.lifecycle
             )
         val danmakuEnabled = danmakuSettings.enabled
+        com.android.purebilibili.core.ui.performance.VideoPlaybackRefreshRateEffect(
+            player = playerState.player,
+            eligible = !danmakuEnabled && danmakuHostActive && hostLifecycleStarted &&
+                uiState is VideoPlaybackUiState.Success && !isInPipMode && !isAudioOnly &&
+                !state.forceCoverOnly && !state.liveBackPreview && !suppressTransientOverlaysForTransition &&
+                !showControls && !isGestureVisible && !isLongPressing &&
+                !sharedSeekSession.isSliderMoving && !landscapeCommentPanelVisible && !danmakuComposerVisible,
+        )
         val danmakuOpacity = danmakuSettings.opacity
         val danmakuFontScale = danmakuSettings.fontScale
         val danmakuFontWeight = danmakuSettings.fontWeight
@@ -3179,30 +3187,10 @@ private fun VideoPlayerSectionContent(
         }
 
         fun queueDanmakuCloudSync(
-            enabled: Boolean = danmakuEnabled,
-            allowScroll: Boolean = danmakuAllowScroll,
-            allowTop: Boolean = danmakuAllowTop,
-            allowBottom: Boolean = danmakuAllowBottom,
-            allowColorful: Boolean = danmakuAllowColorful,
-            allowSpecial: Boolean = danmakuAllowSpecial,
-            opacity: Float = danmakuOpacity,
-            displayAreaRatio: Float = danmakuDisplayArea,
-            speed: Float = danmakuSpeed,
-            fontScale: Float = danmakuFontScale
+            settings: com.android.purebilibili.data.repository.DanmakuCloudSyncSettings,
         ) {
             if (!canSyncDanmakuCloud) return
-            pendingDanmakuCloudSync = buildDanmakuCloudSyncSettings(
-                enabled = enabled,
-                allowScroll = allowScroll,
-                allowTop = allowTop,
-                allowBottom = allowBottom,
-                allowColorful = allowColorful,
-                allowSpecial = allowSpecial,
-                opacity = opacity,
-                displayAreaRatio = displayAreaRatio,
-                speed = speed,
-                fontScale = fontScale
-            )
+            pendingDanmakuCloudSync = settings
             danmakuCloudSyncUiState = resolveDanmakuCloudSyncStateAfterQueued(danmakuCloudSyncUiState)
         }
 
@@ -4123,16 +4111,20 @@ private fun VideoPlayerSectionContent(
                             Anime4KGLSurfaceView(ctx, initialConfig = anime4kConfig).apply {
                                 anime4kSurfaceViewRef = this
                                 onInputSurfaceChanged = { surface ->
-                                    anime4kInputSurface = surface
-                                    if (surface == null) anime4kDisplayedFirstFrame = false
+                                    if (anime4kSurfaceViewRef === this) {
+                                        anime4kInputSurface = surface
+                                        if (surface == null) anime4kDisplayedFirstFrame = false
+                                    }
                                 }
                                 onFirstFrameRendered = {
-                                    anime4kDisplayedFirstFrame = true
+                                    if (anime4kSurfaceViewRef === this) anime4kDisplayedFirstFrame = true
                                 }
                                 onPipelineError = { error ->
-                                    Logger.e("VideoPlayerSection", "Anime4K 管线不可用，已回退原始视频输出", error)
-                                    anime4kPipelineFailed = true
-                                    anime4kInputSurface = null
+                                    if (anime4kSurfaceViewRef === this) {
+                                        Logger.e("VideoPlayerSection", "Anime4K 管线不可用，已回退原始视频输出", error)
+                                        anime4kPipelineFailed = true
+                                        anime4kInputSurface = null
+                                    }
                                 }
                                 updateConfig(anime4kConfig)
                                 updateInputSize(videoSizeState.first, videoSizeState.second)
@@ -4144,22 +4136,37 @@ private fun VideoPlayerSectionContent(
                         update = { surfaceView ->
                             anime4kSurfaceViewRef = surfaceView
                             surfaceView.onInputSurfaceChanged = { surface ->
-                                anime4kInputSurface = surface
-                                if (surface == null) anime4kDisplayedFirstFrame = false
+                                if (anime4kSurfaceViewRef === surfaceView) {
+                                    anime4kInputSurface = surface
+                                    if (surface == null) anime4kDisplayedFirstFrame = false
+                                }
                             }
                             surfaceView.onFirstFrameRendered = {
-                                anime4kDisplayedFirstFrame = true
+                                if (anime4kSurfaceViewRef === surfaceView) anime4kDisplayedFirstFrame = true
                             }
                             surfaceView.onPipelineError = { error ->
-                                Logger.e("VideoPlayerSection", "Anime4K 管线不可用，已回退原始视频输出", error)
-                                anime4kPipelineFailed = true
-                                anime4kInputSurface = null
+                                if (anime4kSurfaceViewRef === surfaceView) {
+                                    Logger.e("VideoPlayerSection", "Anime4K 管线不可用，已回退原始视频输出", error)
+                                    anime4kPipelineFailed = true
+                                    anime4kInputSurface = null
+                                }
                             }
                             surfaceView.updateConfig(anime4kConfig)
                             surfaceView.updateInputSize(videoSizeState.first, videoSizeState.second)
                             surfaceView.updateFlip(isFlippedHorizontal, isFlippedVertical)
                             surfaceView.updateDisplayScaleMode(viewportAspectRatio.toAnime4KDisplayScaleMode())
                             surfaceView.visibility = View.VISIBLE
+                        },
+                        onRelease = { surfaceView ->
+                            surfaceView.onInputSurfaceChanged = {}
+                            surfaceView.onFirstFrameRendered = {}
+                            surfaceView.onPipelineError = {}
+                            if (anime4kSurfaceViewRef === surfaceView) {
+                                videoOutputRouter.update(playerViewRef, null, shouldBindInlinePlayerView, false)
+                                anime4kSurfaceViewRef = null
+                                anime4kInputSurface = null
+                                anime4kDisplayedFirstFrame = false
+                            }
                         },
                         modifier = with(density) {
                             Modifier
@@ -4648,6 +4655,7 @@ private fun VideoPlayerSectionContent(
             !suppressTransientOverlaysForTransition && !forceCoverDuringReturnAnimation &&
             !isInPipMode && !isPortraitFullscreen,
         fullscreen = isFullscreen,
+        controlsVisible = showControls && !isScreenLocked,
     )
 
     // 2. DanmakuView (使用 ByteDance DanmakuRenderEngine - 覆盖在 PlayerView 上方)
@@ -5251,49 +5259,32 @@ private fun VideoPlayerSectionContent(
         val shouldShowLevelIndicator = shouldShowGestureIndicator &&
             (gestureMode == VideoGestureMode.Brightness || gestureMode == VideoGestureMode.Volume)
 
-        if (shouldShowSeekIndicator) {
-            // 🖼️ Seek 模式：显示带缩略图的预览气泡
-            // zIndex must sit above forced return cover (100f) so landscape seek feedback is never buried.
-            Box(
+        PlayerSeekPreview(
+            visible = shouldShowSeekIndicator,
+            videoshotData = videoshotData,
+            player = playerState.player,
+            isPortraitFullscreen = isPortraitFullscreen,
+            seekTargetTime = seekTargetTime,
+            startPosition = startPosition,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .zIndex(120f),
+        )
+
+        // 「上次看到第 N P」提示：点击跳转，左滑移除；画中画/封面态/锁定时不展示。
+        val partResumeNotice = (uiState as? VideoPlaybackUiState.Success)?.partResumeNotice
+        if (partResumeNotice != null && !isInPipMode && !isScreenLocked &&
+            !state.forceCoverOnly && !state.liveBackPreview
+        ) {
+            PartResumeNoticeChip(
+                notice = partResumeNotice,
+                onJump = actions.onJumpToLastPlayedPart,
+                onDismiss = actions.onDismissPartResumeNotice,
                 modifier = Modifier
-                    .align(Alignment.Center)
-                    .zIndex(120f),
-                contentAlignment = Alignment.Center
-            ) {
-                if (videoshotData != null && videoshotData.isValid) {
-                    if (isPortraitFullscreen) {
-                        com.android.purebilibili.feature.video.ui.components.CompactSeekPreview(
-                            videoshotData = videoshotData,
-                            targetPositionMs = seekTargetTime,
-                            durationMs = playerState.player.duration,
-                            // 使用播放器实际视频宽比，避免横屏内容预览被压扁/裁切
-                            videoAspectRatio = playerState.player.videoSize.takeIf { it.width > 0 && it.height > 0 }
-                                ?.let { it.width.toFloat() / it.height.toFloat() }
-                                ?: com.android.purebilibili.feature.video.ui.components.PORTRAIT_SEEK_PREVIEW_ASPECT_RATIO,
-                            containerHeightDp = LocalConfiguration.current.screenHeightDp
-                        )
-                    } else {
-                        // 普通播放器保留横向预览；竖屏全屏统一使用大尺寸 9:16 预览。
-                        com.android.purebilibili.feature.video.ui.components.SeekPreviewBubble(
-                            videoshotData = videoshotData,
-                            targetPositionMs = seekTargetTime,
-                            currentPositionMs = startPosition,
-                            durationMs = playerState.player.duration,
-                            offsetX = 0f,
-                            containerWidth = 0f,
-                            placement = com.android.purebilibili.feature.video.ui.components.SeekPreviewBubblePlacement.Centered
-                        )
-                    }
-                } else {
-                    com.android.purebilibili.feature.video.ui.components.SeekPreviewBubbleSimple(
-                        targetPositionMs = seekTargetTime,
-                        currentPositionMs = startPosition,
-                        offsetX = 0f,
-                        containerWidth = 0f,
-                        placement = com.android.purebilibili.feature.video.ui.components.SeekPreviewBubblePlacement.Centered
-                    )
-                }
-            }
+                    .align(Alignment.TopCenter)
+                    .padding(top = 44.dp)
+                    .zIndex(118f),
+            )
         }
 
         NextWatchOverlay(
@@ -5333,73 +5324,23 @@ private fun VideoPlayerSectionContent(
             isFullscreen = isFullscreen,
         )
 
-        //  Seek 逃生口提示：拖动进度时手指进入顶部角落，松手取消进退
-        AnimatedVisibility(
+        PlayerSeekCancelHint(
             visible = shouldShowSeekIndicator && seekCancelPending,
+            gestureMotionSpec = gestureMotionSpec,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(top = 96.dp)
                 .zIndex(121f),
-            enter = fadeIn(
-                animationSpec = tween(gestureMotionSpec.orientationHintEnterFadeDurationMillis)
-            ),
-            exit = fadeOut(
-                animationSpec = tween(gestureMotionSpec.orientationHintExitDurationMillis)
-            )
-        ) {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                shadowElevation = 4.dp
-            ) {
-                AppText(
-                    text = "松开手指，取消进退",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
-        }
+        )
 
-        AnimatedVisibility(
+        PlayerOrientationHint(
             visible = orientationHintVisible && !isInPipMode,
+            orientationHintText = orientationHintText,
+            gestureMotionSpec = gestureMotionSpec,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(bottom = 196.dp),
-            enter = fadeIn(animationSpec = tween(gestureMotionSpec.orientationHintEnterFadeDurationMillis)) +
-                scaleIn(
-                    initialScale = 0.85f,
-                    animationSpec = tween(gestureMotionSpec.orientationHintEnterTransformDurationMillis)
-                ) +
-                slideInVertically(
-                    initialOffsetY = { -it / 5 },
-                    animationSpec = tween(gestureMotionSpec.orientationHintEnterTransformDurationMillis)
-                ),
-            exit = fadeOut(animationSpec = tween(gestureMotionSpec.orientationHintExitDurationMillis)) +
-                scaleOut(
-                    targetScale = 0.95f,
-                    animationSpec = tween(gestureMotionSpec.orientationHintExitDurationMillis)
-                )
-        ) {
-            Row(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                AppIcon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-                AppText(
-                    text = orientationHintText,
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
-                )
-            }
-        }
+        )
 
         //  [新增] 双击跳转视觉反馈 (±Ns 提示)
         LaunchedEffect(seekFeedbackGeneration) {
@@ -5409,27 +5350,12 @@ private fun VideoPlayerSectionContent(
             }
         }
 
-        AnimatedVisibility(
+        PlayerSeekFeedback(
             visible = seekFeedbackVisible && !isInPipMode,
+            seekFeedbackText = seekFeedbackText,
+            uiLayoutPolicy = uiLayoutPolicy,
             modifier = Modifier.align(Alignment.Center),
-            enter = scaleIn(initialScale = 0.5f) + fadeIn(),
-            exit = scaleOut(targetScale = 0.8f) + fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(uiLayoutPolicy.seekFeedbackSizeDp.dp)
-                    .background(Color.Black.copy(0.75f), AppShapes.container(ContainerLevel.Floating)),
-                contentAlignment = Alignment.Center
-            ) {
-                AppText(
-                    text = seekFeedbackText ?: "",
-                    color = com.android.purebilibili.core.ui.MediaContrastPalette.Foreground,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
-        }
+        )
 
         TwoFingerSpeedFeedbackOverlay(
             visible = twoFingerSpeedFeedbackVisible && !isInPipMode,
@@ -5438,178 +5364,49 @@ private fun VideoPlayerSectionContent(
             hazeState = overlayDrawerHazeState
         )
 
-        //  [新增] 缩放还原按钮 (仅在放大时显示)
-        AnimatedVisibility(
+        PlayerRestorePictureButton(
             visible = scale > 1.05f && !isInPipMode,
+            uiLayoutPolicy = uiLayoutPolicy,
+            onRestore = {
+                scale = 1f
+                panX = 0f
+                panY = 0f
+            },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = uiLayoutPolicy.restoreButtonBottomOffsetDp.dp), // 避开底部进度条位置
-            enter = fadeIn() + scaleIn(),
-            exit = fadeOut() + scaleOut()
-        ) {
-            AppButton(
-                onClick = {
-                    scale = 1f
-                    panX = 0f
-                    panY = 0f
-                    // showControls = true // 可选：还原后显示控制栏
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black.copy(alpha = 0.6f),
-                    contentColor = Color.White
-                ),
-                contentPadding = PaddingValues(
-                    horizontal = uiLayoutPolicy.restoreButtonHorizontalPaddingDp.dp,
-                    vertical = uiLayoutPolicy.restoreButtonVerticalPaddingDp.dp
-                ),
-                shape = AppShapes.container(ContainerLevel.Floating)
-            ) {
-                AppIcon(
-                    imageVector = Icons.Filled.Refresh,
-                    contentDescription = "还原画面",
-                    modifier = Modifier.size(uiLayoutPolicy.restoreButtonIconSizeDp.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                AppText(
-                    text = "还原画面",
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
-                )
-            }
-        }
+                .padding(bottom = uiLayoutPolicy.restoreButtonBottomOffsetDp.dp),
+        )
 
-        AnimatedVisibility(
+        PlayerSpeedLockZones(
             visible = longPressSpeedLockEnabled && isLongPressing && !longPressSpeedLocked && !isInPipMode,
+            longPressSpeedLockSensitivity = longPressSpeedLockSensitivity,
+            gestureMotionSpec = gestureMotionSpec,
             modifier = Modifier.matchParentSize(),
-            enter = fadeIn(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis)),
-            exit = fadeOut(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis))
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                val lockZoneVisual = resolveLongPressSpeedLockZoneVisualPolicy()
-                val zoneModifier = Modifier
-                    .fillMaxWidth()
-                    .height(longPressSpeedLockSensitivity.lockZoneHeightDp.dp)
-                val markerColor = AppContentColors.accent()
-                Box(modifier = zoneModifier.align(Alignment.TopCenter)) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth()
-                            .height(lockZoneVisual.edgeGradientHeightDp.dp)
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(
-                                        markerColor.copy(alpha = lockZoneVisual.edgeGradientAlpha),
-                                        Color.Transparent
-                                    )
-                                )
-                            )
-                    )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .fillMaxWidth(lockZoneVisual.centerMarkerWidthFraction)
-                            .height(lockZoneVisual.centerMarkerHeightDp.dp)
-                            .clip(AppShapes.container(ContainerLevel.Pill))
-                            .background(markerColor.copy(alpha = lockZoneVisual.centerMarkerAlpha))
-                    )
-                }
-                Box(
-                    modifier = zoneModifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = lockZoneVisual.bottomVisualOffsetDp.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .height(lockZoneVisual.edgeGradientHeightDp.dp)
-                            .background(
-                                Brush.verticalGradient(
-                                    listOf(
-                                        Color.Transparent,
-                                        markerColor.copy(alpha = lockZoneVisual.edgeGradientAlpha)
-                                    )
-                                )
-                            )
-                    )
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth(lockZoneVisual.centerMarkerWidthFraction)
-                            .height(lockZoneVisual.centerMarkerHeightDp.dp)
-                            .clip(AppShapes.container(ContainerLevel.Pill))
-                            .background(markerColor.copy(alpha = lockZoneVisual.centerMarkerAlpha))
-                    )
-                }
-            }
-        }
+        )
 
-        // 长按倍速提示保持轻量，避免遮挡视频主体内容。
-        AnimatedVisibility(
+        PlayerLongPressSpeedHint(
             visible = shouldShowLongPressSpeedFeedback(
                 isLongPressing = isLongPressing,
                 isPlaybackSurfaceActive = !isInPipMode,
                 hintDismissed = longPressSpeedHintDismissed,
                 hintHidden = longPressSpeedHintHidden,
             ),
+            longPressSpeedLocked = longPressSpeedLocked,
+            effectiveLongPressSpeed = effectiveLongPressSpeed,
+            longPressSpeedHintScale = longPressSpeedHintScale,
+            longPressSpeedHintAlpha = longPressSpeedHintAlpha,
+            longPressSpeedHintCloseEnabled = longPressSpeedHintCloseEnabled,
+            gestureMotionSpec = gestureMotionSpec,
+            onDismiss = { longPressSpeedHintDismissed = true },
+            // 非沉浸状态栏下继续按系统 inset 避让，沿用原有各材质与窗口布局。
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                // 关闭「播放页沉浸状态栏」后 contentTopInset 为 0，此时按实时状态栏 inset 避让，
-                // 避免提示落入系统状态栏区域被遮挡。
                 .padding(
                     top = contentTopInset
                         .coerceAtLeast(WindowInsets.statusBars.asPaddingValues().calculateTopPadding()) +
                         16.dp
                 ),
-            enter = fadeIn(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis)) +
-                slideInVertically(initialOffsetY = { -it }),
-            exit = fadeOut(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis)) +
-                slideOutVertically(targetOffsetY = { -it })
-        ) {
-            AppSurface(
-                shape = AppShapes.scaledContainer(ContainerLevel.Field, longPressSpeedHintScale),
-                color = Color.Black.copy(alpha = longPressSpeedHintAlpha),
-                contentColor = Color.White,
-                tonalElevation = 0.dp
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    AppText(
-                        text = if (longPressSpeedLocked) {
-                            "已锁定 ${effectiveLongPressSpeed}x"
-                        } else {
-                            "倍速播放中 ${effectiveLongPressSpeed}x"
-                        },
-                        modifier = Modifier.padding(
-                            start = 8.dp * longPressSpeedHintScale,
-                            end = if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
-                                2.dp
-                            } else {
-                                8.dp * longPressSpeedHintScale
-                            },
-                            top = 5.dp * longPressSpeedHintScale,
-                            bottom = 5.dp * longPressSpeedHintScale,
-                        ),
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            fontSize = MaterialTheme.typography.bodyMedium.fontSize * longPressSpeedHintScale,
-                            fontWeight = FontWeight.Medium
-                        )
-                    )
-                    if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
-                        AppIconButton(
-                            onClick = { longPressSpeedHintDismissed = true },
-                            modifier = Modifier.size(36.dp * longPressSpeedHintScale),
-                        ) {
-                            AppIcon(
-                                imageVector = Icons.Outlined.Close,
-                                contentDescription = "关闭倍速提示",
-                                tint = Color.White,
-                                modifier = Modifier.size(14.dp * longPressSpeedHintScale),
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        )
 
         AnimatedVisibility(
             visible = shouldShowLongPressSpeedLockHint(
@@ -5898,286 +5695,11 @@ private fun VideoPlayerSectionContent(
                     onSponsorContributionMarkBoundary = onSponsorContributionMarkBoundary,
                     onSponsorContributionMarkWholeVideo = onSponsorContributionMarkWholeVideo,
                     onSponsorContributionCancel = onSponsorContributionCancel,
-                    onDanmakuToggle = {
-                        val newState = !danmakuEnabled
-                        danmakuManager.isEnabled = newState
-                        if (!newState) {
-                            danmakuManager.clear()
-                        }
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuEnabled(
-                                context,
-                                newState,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(enabled = newState)
-                        //  记录弹幕开关事件
-                        com.android.purebilibili.core.util.AnalyticsHelper.logDanmakuToggle(newState)
-                    },
                     onDanmakuInputClick = onDanmakuInputClick,
                     onDismissDanmakuComposer = onDismissDanmakuComposer,
                     onSendDanmakuComposer = onSendDanmakuComposer,
                     onDanmakuComposerDraftChange = onDanmakuComposerDraftChange,
                     onDanmakuComposerSelectionChange = onDanmakuComposerSelectionChange,
-                    onDanmakuSliderPreview = { parameter, value ->
-                        com.android.purebilibili.feature.video.ui.components.applyDanmakuSliderPreview(danmakuManager, parameter, value)
-                    },
-                    onDanmakuOpacityChange = { value ->
-                        danmakuManager.opacity = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuOpacity(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(opacity = value)
-                    },
-                    onDanmakuFontScaleChange = { value ->
-                        danmakuManager.fontScale = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuFontScale(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(fontScale = value)
-                    },
-                    onDanmakuFontWeightChange = { value ->
-                        danmakuManager.fontWeight = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuFontWeight(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuSpeedChange = { value ->
-                        danmakuManager.speedFactor = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuSpeed(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(speed = value)
-                    },
-                    onDanmakuDisplayAreaChange = { value ->
-                        danmakuManager.displayArea = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuArea(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(displayAreaRatio = value)
-                    },
-                    onDanmakuStrokeWidthChange = { value ->
-                        danmakuManager.strokeWidth = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuStrokeWidth(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuLineHeightChange = { value ->
-                        danmakuManager.lineHeight = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuLineHeight(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuScrollDurationSecondsChange = { value ->
-                        danmakuManager.scrollDurationSeconds = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuScrollDurationSeconds(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuStaticDurationSecondsChange = { value ->
-                        danmakuManager.staticDurationSeconds = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuStaticDurationSeconds(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuScrollFixedVelocityChange = { value ->
-                        danmakuManager.scrollFixedVelocity = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuScrollFixedVelocity(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuStaticToScrollChange = { value ->
-                        danmakuManager.staticDanmakuToScroll = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuStaticToScroll(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuMassiveModeChange = { value ->
-                        danmakuManager.massiveMode = value
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuMassiveMode(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuMergeDuplicatesChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuMergeDuplicates(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuDuplicateMergeWindowMsChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuDuplicateMergeWindowMs(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuDuplicateMergeCountThresholdChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuDuplicateMergeCountThreshold(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuWeightFilterLevelChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager
-                                .setDanmakuWeightFilterLevel(context, value)
-                        }
-                    },
-                    onDanmakuAllowScrollChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuAllowScroll(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(allowScroll = value)
-                    },
-                    onDanmakuAllowTopChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuAllowTop(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(allowTop = value)
-                    },
-                    onDanmakuAllowBottomChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuAllowBottom(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(allowBottom = value)
-                    },
-                    onDanmakuAllowColorfulChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuAllowColorful(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(allowColorful = value)
-                    },
-                    onDanmakuAllowSpecialChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuAllowSpecial(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                        queueDanmakuCloudSync(allowSpecial = value)
-                    },
-                    onDanmakuHideInteractiveCommandsChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager
-                                .setDanmakuHideInteractiveCommands(context, value)
-                        }
-                    },
-                    onDanmakuSmartOcclusionChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuSmartOcclusion(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
-                    onDanmakuFullscreenPanelWidthModeChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuFullscreenPanelWidthMode(context, value)
-                        }
-                    },
-                    onPortraitDanmakuDisplayAreaModeChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager
-                                .setPortraitDanmakuDisplayAreaMode(context, value)
-                        }
-                    },
-                    onDanmakuCloudSyncEnabledChange = { enabled ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager
-                                .setDanmakuCloudSyncEnabled(context, enabled)
-                        }
-                        if (!enabled) {
-                            pendingDanmakuCloudSync = null
-                            danmakuCloudSyncUiState = DanmakuCloudSyncUiState()
-                        }
-                    },
-                    onDanmakuSyncNowClick = {
-                        requestDanmakuCloudSyncNow()
-                    },
-                    onDanmakuBlockRulesRawChange = { value ->
-                        scope.launch {
-                            com.android.purebilibili.core.store.SettingsManager.setDanmakuBlockRulesRaw(
-                                context,
-                                value,
-                                activeDanmakuScope
-                            )
-                        }
-                    },
                     onAspectRatioChange = { ratio ->
                         val safeRatio = resolveSafeVideoAspectRatio(
                             preferred = ratio,
@@ -6201,44 +5723,17 @@ private fun VideoPlayerSectionContent(
                     onSwitchCdnTo = onSwitchCdnTo,
                     onProbeCdnCandidates = onProbeCdnCandidates,
                     onAudioOnlyToggle = onAudioOnlyToggle,
-                    subtitleControlCallbacks = SubtitleControlCallbacks(
-                        onDisplayModeChange = { mode ->
-                            com.android.purebilibili.core.util.Logger.d(
-                                "VideoPlayerSection",
-                                "字幕显示模式切换: mode=$mode"
-                            )
-                            applySubtitleDisplayModePreferenceChange(mode)
-                        },
-                        onEnabledChange = { enabled ->
-                            com.android.purebilibili.core.util.Logger.d(
-                                "VideoPlayerSection",
-                                "字幕总开关切换: enabled=$enabled"
-                            )
-                            val nextMode = if (enabled) {
-                                resolveDefaultSubtitleDisplayMode(
-                                    hasPrimaryTrack = subtitleControlAvailability.primarySelectable,
-                                    hasSecondaryTrack = subtitleControlAvailability.secondarySelectable
-                                )
-                            } else {
-                                SubtitleDisplayMode.OFF
-                            }
-                            applySubtitleDisplayModePreferenceChange(nextMode)
-                        },
-                        onTrackSelected = { trackKey ->
-                            onSubtitleTrackSelected(trackKey)
-                        },
-                        onLargeTextChange = { enabled ->
-                            com.android.purebilibili.core.util.Logger.d(
-                                "VideoPlayerSection",
-                                "字幕大字号切换: enabled=$enabled"
-                            )
-                            subtitleLargeTextByUser = enabled
-                        },
+                    subtitleControlCallbacks = createPlayerSubtitleControlCallbacks(
+                        primarySelectable = subtitleControlAvailability.primarySelectable,
+                        secondarySelectable = subtitleControlAvailability.secondarySelectable,
+                        onModePreferenceChange = applySubtitleDisplayModePreferenceChange,
+                        onTrackSelected = onSubtitleTrackSelected,
+                        onLargeTextChange = { subtitleLargeTextByUser = it },
                         onPositionLockedChange = { locked ->
                             scope.launch {
                                 SettingsManager.setSubtitlePositionLocked(context, locked)
                             }
-                        }
+                        },
                     ),
                     onSleepTimerChange = onSleepTimerChange,
                     onPortraitFullscreen = onPortraitFullscreen,
@@ -6352,6 +5847,22 @@ private fun VideoPlayerSectionContent(
                     ),
                     onTripleAction = actions.onTriple,
                     onQuickFavorite = actions.onQuickFavorite,
+                ).withPlayerDanmakuSettingsCallbacks(
+                    context = context,
+                    danmakuManager = danmakuManager,
+                    danmakuEnabled = danmakuEnabled,
+                    activeDanmakuScope = activeDanmakuScope,
+                    cloudSyncSettings = buildDanmakuCloudSyncSettings(),
+                    launchSettingsWrite = { write ->
+                        scope.launch { write() }
+                        Unit
+                    },
+                    onQueueCloudSync = { queueDanmakuCloudSync(it) },
+                    onCloudSyncDisabled = {
+                        pendingDanmakuCloudSync = null
+                        danmakuCloudSyncUiState = DanmakuCloudSyncUiState()
+                    },
+                    onSyncNow = { requestDanmakuCloudSyncNow() },
                 )
                 VideoPlayerOverlay(state = overlayState, actions = overlayActions)
             }

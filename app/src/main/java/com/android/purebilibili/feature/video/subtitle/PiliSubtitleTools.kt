@@ -396,7 +396,7 @@ fun PiliExternalSubtitleOverlay(
         Column(spatialModifier, horizontalAlignment = Alignment.CenterHorizontally) {
             if (!secondaryText.isNullOrBlank()) PiliStyledSubtitleText(
                 secondaryText, if (tools.controls.largeTextEnabled) 16 else 14, tools.appearance, isFullscreen,
-                color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.88f))
+                color = androidx.compose.ui.graphics.Color(tools.appearance.textColor).copy(alpha = 0.88f))
             if (!text.isNullOrBlank()) PiliStyledSubtitleText(
                 text, if (tools.controls.largeTextEnabled) 18 else 16, tools.appearance, isFullscreen)
         }

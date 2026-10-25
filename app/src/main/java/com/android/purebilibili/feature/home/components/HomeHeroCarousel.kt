@@ -392,6 +392,9 @@ private fun HomeHeroCarouselCard(
     val cardCornerDp = AppShapes.containerCornerDp(ContainerLevel.Card)
     val nativeCardSnapshot = rememberNativeVideoCardSnapshotController(video.bvid)
     val normalizedCoverUrl = remember(video.pic) { FormatUtils.fixImageUrl(video.pic) }
+    var measuredCoverSize by remember(normalizedCoverUrl) {
+        mutableStateOf(androidx.compose.ui.unit.IntSize.Zero)
+    }
     val stationaryCoverRequest = remember(normalizedCoverUrl) {
         ImageRequest.Builder(context)
             .data(normalizedCoverUrl)
@@ -405,13 +408,15 @@ private fun HomeHeroCarouselCard(
     // video cards so a detail return can settle into the hero without a
     // second decode or a one-frame placeholder.
     val coverRegistrationAllowed = LocalPageImageLoadingAllowed.current
-    LaunchedEffect(video.bvid, normalizedCoverUrl, coverRegistrationAllowed) {
+    LaunchedEffect(video.bvid, normalizedCoverUrl, coverRegistrationAllowed, measuredCoverSize) {
         if (!coverRegistrationAllowed) return@LaunchedEffect
         HomeCoverReturnPrefetchRegistry.onCardVisible(
             HomeCoverReturnPrefetchEntry(
                 bvid = video.bvid.trim(),
                 url = normalizedCoverUrl,
                 cacheKey = normalizedCoverUrl,
+                decodeWidthPx = measuredCoverSize.width,
+                decodeHeightPx = measuredCoverSize.height,
             )
         )
     }
@@ -444,6 +449,8 @@ private fun HomeHeroCarouselCard(
                         ),
                     coverUrl = normalizedCoverUrl,
                     coverCacheKey = normalizedCoverUrl,
+                    coverDecodeWidthPx = measuredCoverSize.width,
+                    coverDecodeHeightPx = measuredCoverSize.height,
                 ),
                 sourceInstanceId = sharedSourceInstanceId,
             )
@@ -515,6 +522,7 @@ private fun HomeHeroCarouselCard(
             .clip(cardShape)
             .onGloballyPositioned { coordinates ->
                 cardCoordsRef.value = coordinates
+                measuredCoverSize = coordinates.size
             }
             .combinedClickable(
                 interactionSource = interactionSource,

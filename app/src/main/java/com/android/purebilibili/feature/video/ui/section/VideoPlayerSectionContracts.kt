@@ -156,6 +156,8 @@ internal data class VideoPlayerSectionActions(
     val onToggleFavorite: () -> Unit = {},
     val onTriple: () -> Unit = {},
     val onPageSelect: (Int) -> Unit = {},
+    val onJumpToLastPlayedPart: () -> Unit = {},
+    val onDismissPartResumeNotice: () -> Unit = {},
     val onFavoritePlaylistClick: () -> Unit = {},
     val onSubtitleDisplayModePreferenceOverrideChange: (SubtitleDisplayMode) -> Unit = {},
     val onSubtitleTrackSelected: (String) -> Unit = {},

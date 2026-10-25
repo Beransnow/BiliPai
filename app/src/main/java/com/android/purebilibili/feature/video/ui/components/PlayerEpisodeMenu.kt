@@ -133,6 +133,11 @@ fun PlayerEpisodeMenu(
                         durationSeconds = if (group.size > 1) episode?.arc?.duration?.toLong() ?: entry.durationSeconds else entry.durationSeconds,
                         selected = selected,
                         indexLabel = entry.indexLabel.substringBefore(" · "),
+                        metadataText = buildPlayerEpisodeMetadataText(
+                            pubdateSeconds = entry.pubdateSeconds,
+                            viewCount = entry.viewCount,
+                            danmakuCount = entry.danmakuCount,
+                        ),
                         onCoverLongPress = onCoverLongPress,
                         accessEpisode = episode,
                     ) { if (!selected) select(entry) }
@@ -248,7 +253,7 @@ internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBound
 internal fun PlayerPanelMediaRow(title: String, cover: String, durationSeconds: Long, selected: Boolean,
     indexLabel: String = "", onCoverLongPress: ((String) -> Unit)? = null,
     accessLabel: String? = null, accessEpisode: com.android.purebilibili.data.model.response.UgcEpisode? = null,
-    expandTitle: Boolean = false,
+    expandTitle: Boolean = false, metadataText: String? = null,
     onClick: () -> Unit) {
     val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
     // 章节列表按完整标题增高；其他媒体列表继续使用原有两行与固定行高。
@@ -280,6 +285,8 @@ internal fun PlayerPanelMediaRow(title: String, cover: String, durationSeconds: 
                 else CollectionAccessBadge(label = accessLabel)
             }
             if (indexLabel.isNotBlank()) Text(indexLabel, fontSize = 12.sp, color = color)
+            if (!metadataText.isNullOrBlank()) Text(metadataText, fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (cover.isBlank() && durationSeconds > 0) Text(FormatUtils.formatDuration(durationSeconds.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()), fontSize = 12.sp)
             if (selected) Text("正在播放", fontSize = 12.sp, color = color)
         }

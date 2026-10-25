@@ -82,6 +82,58 @@ private class AppSessionCookieJar : okhttp3.CookieJar {
  * - 稍后再看 (L300-320): getWatchLaterList, addToWatchLater, deleteFromWatchLater
  */
 interface BilibiliApi {
+    @FormUrlEncoded
+    @POST("x/esports/grade/player")
+    suspend fun submitLiveMatchGrade(
+        @FieldMap fields: Map<String, String>,
+        @Header(FORCE_COOKIE_HEADER) cookie: String,
+    ): BaseResponse
+
+    @FormUrlEncoded
+    @POST("x/v2/reply/add")
+    suspend fun addLiveMatchGradeComment(
+        @FieldMap fields: Map<String, String>,
+        @Header(FORCE_COOKIE_HEADER) cookie: String,
+    ): AddReplyResponse
+
+    @GET("x/esports/grade/info")
+    suspend fun getLiveMatchGrades(
+        @Query("cid") contestId: Long,
+        @Query("bo") game: Int,
+        @Header(FORCE_COOKIE_HEADER) cookie: String? = null,
+    ): LiveMatchGradesResponse
+
+    @GET("x/esports/match/search/filter")
+    suspend fun getLiveMatchSeasons(@Query("gid") gameId: Int): LiveMatchSeasonsResponse
+
+    @GET("x/esports/season/series/match/list")
+    suspend fun getLiveMatchSeason(@Query("sid") seasonId: Long): LiveMatchSeasonResponse
+
+    @GET("x/esports/match/search/list")
+    suspend fun getLiveMatchSeasonSchedule(
+        @Query("sids") seasonId: Long,
+        @Query("pn") page: Int,
+        @Query("ps") pageSize: Int = 30,
+    ): LiveMatchScheduleResponse
+
+    @GET("x/esports/match/info")
+    suspend fun getMatchInfo(
+        @Query("cid") contestId: Long,
+        @Query("platform") platform: Int = 2,
+    ): MatchInfoResponse
+
+    @GET("x/esports/match/search/game/list")
+    suspend fun getLiveMatchGames(): LiveMatchGamesResponse
+
+    @GET("x/esports/match/search/list")
+    suspend fun getLiveMatchSchedule(
+        @Query("gid") gameId: Int,
+        @Query("stime") startTime: Long,
+        @Query("etime") endTime: Long,
+        @Query("pn") page: Int,
+        @Query("ps") pageSize: Int = 30,
+    ): LiveMatchScheduleResponse
+
     @POST("x/internal/gaia-gateway/ExClimbWuzhi")
     suspend fun activateSessionBuvid(@retrofit2.http.Body payload: Map<String, String>): SimpleApiResponse
 
@@ -521,6 +573,9 @@ interface BilibiliApi {
     suspend fun getLiveFeedIndex(
         @QueryMap params: Map<String, String>
     ): com.android.purebilibili.data.model.response.LiveFeedIndexResponse
+
+    @GET("https://api.live.bilibili.com/xlive/app-interface/v2/index/feedback")
+    suspend fun submitLiveFeedFeedback(@QueryMap params: Map<String, String>): SimpleApiResponse
 
     // BiliPai-aligned app second-area list (supports new_tags sort chips)
     @GET("https://api.live.bilibili.com/xlive/app-interface/v2/second/getList")
@@ -1040,7 +1095,10 @@ interface BilibiliApi {
     // ==================== 评论模块 ====================
     // 评论主列表 (需 WBI 签名)
     @GET("x/v2/reply/wbi/main")
-    suspend fun getReplyList(@QueryMap params: Map<String, String>): ReplyResponse
+    suspend fun getReplyList(
+        @QueryMap params: Map<String, String>,
+        @Header(FORCE_COOKIE_HEADER) cookie: String? = null,
+    ): ReplyResponse
 
     // 评论主列表兼容链路
     @GET("x/v2/reply/main")
@@ -2608,6 +2666,35 @@ interface AudioApi {
 
 // ==================== 私信 API (api.vc.bilibili.com) ====================
 interface MessageApi {
+    @GET("https://api.bilibili.com/x/relation/followings/search")
+    suspend fun searchMessageContacts(
+        @Query("vmid") mid: Long,
+        @Query("name") name: String,
+        @Query("pn") page: Int,
+        @Query("ps") pageSize: Int = 50,
+    ): FollowingsResponse
+
+    @GET("https://api.bilibili.com/x/msgfeed/like_detail")
+    suspend fun getLikeDetail(
+        @Query("card_id") cardId: Long,
+        @Query("pn") page: Int,
+        @Query("last_mid") lastMid: Long = 0,
+        @Query("platform") platform: String = "web",
+        @Query("mobi_app") mobiApp: String = "web",
+        @Query("build") build: Int = 0,
+    ): MessageLikeDetailResponse
+
+    @POST("https://message.bilibili.com/x/sys-msg/del_notify_list")
+    suspend fun deleteSystemNotice(
+        @Query("csrf") csrf: String,
+        @Query("mobi_app") mobiApp: String = "android",
+        @retrofit2.http.Body body: kotlinx.serialization.json.JsonObject,
+    ): SimpleApiResponse
+
+    @FormUrlEncoded
+    @POST("https://api.vc.bilibili.com/x/bplus/im/report/add")
+    suspend fun reportPrivateMessage(@FieldMap fields: Map<String, String>): SimpleApiResponse
+
     // 获取未读私信数
     @GET("session_svr/v1/session_svr/single_unread")
     suspend fun getUnreadCount(

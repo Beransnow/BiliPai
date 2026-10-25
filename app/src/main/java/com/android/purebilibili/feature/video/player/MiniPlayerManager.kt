@@ -1438,6 +1438,9 @@ class MiniPlayerManager private constructor(private val context: Context) :
     var isActive by mutableStateOf(false)
         private set
     
+    var miniPlayerSessionId by mutableLongStateOf(0L)
+        private set
+
     var isMiniMode by mutableStateOf(false)
         private set
 
@@ -1626,6 +1629,10 @@ class MiniPlayerManager private constructor(private val context: Context) :
             Logger.d(TAG, "clearExternalPlayerIfMatches: cleared external player ${target.hashCode()}")
             target.removeListener(playerListener)
             _externalPlayer = null
+            // 会话包装器也持有播放器；只释放仍绑定该实例的会话。
+            if (mediaSession?.let { !shouldRebindMediaSessionPlayer(it.player, target) } == true) {
+                releaseMediaSession()
+            }
             return true
         }
         return false
@@ -2117,6 +2124,7 @@ class MiniPlayerManager private constructor(private val context: Context) :
             playbackServiceRequested = false
             _externalPlayer?.removeListener(playerListener)
             _externalPlayer = null
+            releaseMediaSession()
             clearPlaybackNotificationArtifacts()
             Logger.d(TAG, "🔧 标记 isActive=false，清除外部播放器引用")
         }
@@ -2329,9 +2337,26 @@ class MiniPlayerManager private constructor(private val context: Context) :
         return audioPlayer
     }
 
+    /** 返回列表前交接当前直播播放器；不重新请求播放地址或创建播放器。 */
+    fun prepareLiveMiniPlayerOnExit(roomId: Long, enabled: Boolean): Boolean {
+        val currentPlayer = player ?: return false
+        if (!com.android.purebilibili.feature.live.shouldAutoEnterLiveMiniPlayer(
+                enabled = enabled,
+                isActive = isActive,
+                isMatchingLiveRoom = isLiveMode && roomId > 0L && currentRoomId == roomId,
+                playWhenReady = currentPlayer.playWhenReady,
+                playbackState = currentPlayer.playbackState,
+                stopPlaybackOnExit = SettingsManager.getStopPlaybackOnExitSync(context),
+            )
+        ) return false
+        // 直播独立偏好允许应用内接管，不依赖普通视频选择的小窗模式。
+        enterMiniMode(forced = true)
+        return isMiniMode
+    }
+
     /**
-     * 进入小窗模式
-     * @param forced 强制进入（点击小窗按钮时使用），忽略模式检查
+     * 进入小窗模式。
+     * @param forced 显式小窗入口或独立直播偏好允许时跳过普通视频模式检查。
      */
     fun enterMiniMode(forced: Boolean = false) {
         val mode = getCurrentMode()
@@ -2357,6 +2382,7 @@ class MiniPlayerManager private constructor(private val context: Context) :
         } == true
         Logger.d(TAG) { "📲 Entering mini mode for video: $currentTitle (forced=$forced)" }
         isLeavingByNavigation = false
+        if (!isMiniMode) miniPlayerSessionId++
         isMiniMode = true
         // Detail-session handoff may have muted the shared player; always restore for mini window.
         currentPlayer?.let(PlayerVolumeController::applyPreferredVolume)
@@ -2599,6 +2625,8 @@ class MiniPlayerManager private constructor(private val context: Context) :
         fromLeft: Boolean = false
     ) {
         Logger.d(TAG, "📺 setLiveInfo: roomId=$roomId, title=$title, uname=$uname")
+        val keepMiniMode = isMiniMode && isLiveMode && currentRoomId == roomId &&
+            isPlayerManaged(externalPlayer)
         currentRoomId = roomId
         currentTitle = title
         currentCover = cover
@@ -2613,7 +2641,7 @@ class MiniPlayerManager private constructor(private val context: Context) :
         
         replaceExternalPlayer(externalPlayer)
         isActive = true
-        isMiniMode = false
+        isMiniMode = keepMiniMode
 
         updateMediaSession(externalPlayer)
         optimizeReplacementPlayerIfInBackground()

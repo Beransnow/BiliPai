@@ -1410,13 +1410,17 @@ internal fun shouldShowBottomBarIcon(labelMode: Int): Boolean {
     }
 }
 
+/** 红点模式的哨兵值：调用方把真实计数映射成它，格式化层负责换成圆点文本。 */
+internal const val BOTTOM_BAR_DYNAMIC_BADGE_DOT = -1
+
 internal fun shouldShowBottomBarDynamicReminderBadge(
     item: BottomNavItem?,
     unreadCount: Int
-): Boolean = item == BottomNavItem.DYNAMIC && unreadCount > 0
+): Boolean = item == BottomNavItem.DYNAMIC && unreadCount != 0
 
 internal fun formatBottomBarDynamicReminderBadge(unreadCount: Int): String? {
     return when {
+        unreadCount == BOTTOM_BAR_DYNAMIC_BADGE_DOT -> "•"
         unreadCount <= 0 -> null
         unreadCount > 999 -> "999+"
         else -> unreadCount.toString()
@@ -3737,7 +3741,10 @@ private fun BiliPaiFloatingBottomBarChrome(
     val isValidSelection = currentItem in visibleItems
     val themedMiuixSelection = LocalAppUiStyle.current == AppUiStyle.MIUIX &&
         !effectiveGlassEnabled && uiSkinDecoration == null
-    val baseSelectedColor = AppContentColors.selectionAccent(effectiveGlassEnabled)
+    val themedMd3Selection = LocalAppUiStyle.current == AppUiStyle.MATERIAL3 &&
+        !effectiveGlassEnabled && uiSkinDecoration == null
+    val baseSelectedColor = if (themedMd3Selection) AppSurfaceTokens.onSecondaryContainer()
+        else AppContentColors.selectionAccent(effectiveGlassEnabled)
     val baseUnselectedColor = if (!effectiveGlassEnabled && (themedMiuixSelection || iconStyle == SharedFloatingBottomBarIconStyle.MATERIAL)) {
         AppContentColors.secondaryText()
     } else {
@@ -3848,10 +3855,10 @@ private fun BiliPaiFloatingBottomBarChrome(
         )
     }
     // Share the theme-tinted selection fill with opaque top tabs and category rails.
-    val themedIndicatorContainerColor = if (themedMiuixSelection) {
-        AppSurfaceTokens.selectionContainer()
-    } else {
-        null
+    val themedIndicatorContainerColor = when {
+        themedMiuixSelection -> AppSurfaceTokens.selectionContainer()
+        themedMd3Selection -> AppSurfaceTokens.secondaryContainer()
+        else -> null
     }
     val floatingColors = FloatingBottomBarColors(
         containerColor = floatingContainerColor,

@@ -17,6 +17,8 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.animation.*
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -575,6 +577,9 @@ internal fun VideoContentSection(
     val introListState = data.introListState
     val commentListState = data.commentListState
     val pagerState = data.pagerState
+    val contentPagerInteractions = remember(pagerState) { MutableInteractionSource() }
+    val nativePagerDragHeld by pagerState.interactionSource.collectIsDraggedAsState()
+    val customPagerDragHeld by contentPagerInteractions.collectIsDraggedAsState()
     val relatedVideos = data.relatedVideos
     val replies = data.replies
     val replyCount = data.replyCount
@@ -977,6 +982,7 @@ internal fun VideoContentSection(
                             isPagerScrollInProgress = pagerState.isScrollInProgress,
                         ),
                         forceVerticalPriority = true,
+                        dragInteractionSource = contentPagerInteractions,
                     )
                     .then(
                         if (immersiveVideoContentChromeEnabled) {
@@ -1176,6 +1182,7 @@ internal fun VideoContentSection(
                         isPagerScrollInProgress = pagerState.isScrollInProgress,
                     ),
                     forceVerticalPriority = liquidGlassEnabled,
+                    dragInteractionSource = contentPagerInteractions,
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1194,6 +1201,8 @@ internal fun VideoContentSection(
                     pagerState.currentPage + pagerState.currentPageOffsetFraction
                 },
                 isScrollInProgressProvider = { pagerState.isScrollInProgress },
+                isPagerDraggingProvider = { nativePagerDragHeld || customPagerDragHeld },
+                pagerTargetPositionProvider = { pagerState.targetPage.toFloat() },
             )
         }
 
@@ -1834,7 +1843,7 @@ internal fun VideoCommentTab(
                             isRepliesRefreshing -> Unit
                             isRepliesLoading -> AdaptiveLoadingIndicator()
                             isRepliesEnd -> {
-                                AppText("—— end ——", color = commentAppearance.secondaryTextColor, style = MaterialTheme.typography.bodySmall)
+                                AppText("没有更多了", color = commentAppearance.secondaryTextColor, style = MaterialTheme.typography.bodySmall)
                             }
                             // 当 shouldLoadMore 为 true 时才显示加载指示器
                             shouldLoadMore -> AdaptiveLoadingIndicator()
@@ -2240,6 +2249,8 @@ internal fun VideoContentTabBar(
     miuixBackdrop: MiuixBackdrop? = null,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
+    isPagerDraggingProvider: (() -> Boolean)? = null,
+    pagerTargetPositionProvider: (() -> Float)? = null,
     showDanmakuActions: Boolean = true,
     measurementLabels: List<String>? = null,
 ) {
@@ -2318,6 +2329,8 @@ internal fun VideoContentTabBar(
                 miuixBackdrop = miuixBackdrop,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = isScrollInProgressProvider,
+                isPagerDraggingProvider = isPagerDraggingProvider,
+                pagerTargetPositionProvider = pagerTargetPositionProvider,
             )
 
             if (showDanmakuActions && shouldShowVideoContentTabBarDanmakuActions(selectedTabIndex)) {

@@ -132,6 +132,7 @@ fun DynamicDetailScreen(
     onCourseClick: ((String, String) -> Unit)? = null,
     onOpenLink: ((String) -> Unit)? = null,
     onDynamicDetailClick: (String) -> Unit = {},
+    onMatchClick: ((Long) -> Unit)? = null,
     onShareToMessageClick: ((DynamicItem) -> Unit)? = null,
     contentTransitionReady: Boolean = true,
 ) {
@@ -370,6 +371,7 @@ fun DynamicDetailScreen(
                                     onCourseClick = onCourseClick,
                                     onOpenLink = onOpenLink,
                                     onDynamicDetailClick = onDynamicDetailClick,
+                                    onMatchClick = onMatchClick,
                                 ),
                                 interaction = DynamicCardInteractionActions(
                                     onCommentClick = {

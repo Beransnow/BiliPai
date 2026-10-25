@@ -637,6 +637,8 @@ internal fun VideoDetailScreenStateHolder(
             setAudioMode = viewModel::setAudioMode,
             setSleepTimer = viewModel::setSleepTimer,
             switchPage = { pageIndex -> viewModel.switchPage(pageIndex) },
+            jumpToLastPlayedPart = viewModel::jumpToLastPlayedPart,
+            dismissPartResumeNotice = viewModel::dismissPartResumeNotice,
             openDownloadDialog = viewModel::openDownloadDialog,
             showDanmakuSendDialog = viewModel::showDanmakuSendDialog,
             skipSponsorSegment = viewModel::skipCurrentSponsorSegment,
@@ -1725,14 +1727,16 @@ internal fun VideoDetailScreenStateHolder(
         }
     }
     val detailShellModifier = Modifier.videoCardShellSharedBoundsOrEmpty(
+        // 全屏整窗播放不参与详情卡片的尺寸插值和圆角裁切。
         enabled = detailShellSharedBoundsEnabled &&
-            !isNavigatingToVideo,
+            !isFullscreenMode && !isPipMode && !isNavigatingToVideo,
         sharedTransitionScope = rootSharedTransitionScope,
         animatedVisibilityScope = rootAnimatedVisibilityScope,
         bvid = bvid,
         sourceRoute = sourceRouteForSharedElement,
         motionSpec = homeSharedTransitionMotionSpec,
-        clipShape = detailShellShape,
+        // 横屏详情与全屏画面均保持矩形，避免外壳保留来源卡片圆角。
+        clipShape = if (isLandscape) androidx.compose.ui.graphics.RectangleShape else detailShellShape,
         role = VideoCardShellSharedBoundsRole.DetailShell,
         // 竖屏全屏（点赞/关注/发弹幕那套）：整卡展开到全屏，不要按顶部横屏播放器 TopCenter 落点。
         fillFullscreenShell = isPortraitFullscreen ||
@@ -5333,7 +5337,10 @@ internal fun VideoDetailScreenStateHolder(
                                         isLeaving = isLeaving,
                                         rootTransitionOwnsContentAlpha = detailShellSharedBoundsEnabled,
                                         animateLateEntryContent = currentBvid == bvid &&
-                                            isTransitionFinished && detailShellSharedBoundsEnabled &&
+                                            isTransitionFinished &&
+                                            // 关闭卡片过渡时同样启用骨架垫底交接：否则 Loading 骨架
+                                            // 在内容可用的同一帧硬切消失，正文区出现跳动。
+                                            (detailShellSharedBoundsEnabled || !transitionEnabled) &&
                                             !keepLoadedContentForBackPreview &&
                                             !suppressEnterFadeAfterBackPreview,
                                         keepContentVisibleAfterBackPreview =

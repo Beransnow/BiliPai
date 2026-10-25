@@ -920,7 +920,7 @@ internal fun SubReplyDetailContent(
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     AppText(
-                                        text = "—— end ——",
+                                        text = "没有更多了",
                                         color = appearance.secondaryTextColor,
                                         style = MaterialTheme.typography.bodySmall,
                                     )

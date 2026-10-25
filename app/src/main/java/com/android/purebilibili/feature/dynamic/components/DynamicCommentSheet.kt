@@ -317,7 +317,13 @@ fun DynamicCommentSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dismissOnBackPress = false,
-        dragHandle = null
+        dragHandle = null,
+        // 内容自己绘制底部安全区，避免弹层默认底色在评论页下方露出一条异色带。
+        // 同时覆盖 MD3/Miuix，玻璃开关不改变安全区归属。
+        windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top),
+        sheetSurfaceModifier = Modifier
+            .background(AppSurfaceTokens.surfaceContainer())
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom)),
     ) {
         CommentWindowNavigation {
             val commentBackState = rememberNavigationEventState(NavigationEventInfo.None)
@@ -772,7 +778,7 @@ fun DynamicInlineCommentHeader(
     AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 }
 
-/** 评论项在 LazyColumn 中的统一 contentType，让骨架与真实评论共用同一种槽位。 */
+/** 真实评论项的复用类型；临时骨架使用独立类型。 */
 internal const val DYNAMIC_COMMENT_ITEM_CONTENT_TYPE = "dynamic_comment_item"
 
 private const val DYNAMIC_COMMENT_FADE_IN_MILLIS = 220
@@ -781,11 +787,7 @@ private const val DYNAMIC_COMMENT_PLACEMENT_DAMPING = 0.9f
 private const val DYNAMIC_COMMENT_PLACEMENT_STIFFNESS = 220f
 
 /**
- * 评论项动画：新项淡入、离场项淡出、位移用弹簧。
- *
- * 骨架槽位被真实评论替换时，旧的骨架项淡出、新的评论项淡入同时发生，视觉上就是
- * 「骨架 → 内容」的交叉淡入淡出（等价于 Crossfade），但不需要把整个评论区降级成
- * 单个 lazy item，从而保住了稳定槽位与滚动锚点。
+ * 真实评论使用淡入、淡出和位移动画；临时骨架不参与离场动画。
  */
 @Composable
 internal fun LazyItemScope.dynamicCommentItemModifier(): Modifier =
@@ -805,8 +807,7 @@ internal fun LazyItemScope.dynamicCommentItemModifier(): Modifier =
 /**
  * 骨架「稳定槽位」：拆成多个独立 lazy item，而不是以前那种「1 个 item 里塞 N 行」。
  *
- * 骨架与真实评论使用相同的 contentType 与同量级的 item 数量，切换时 LazyList 的锚点
- * 不会失效，列表也就不会整体位移。
+ * 骨架按独立条目测量，加载结束立即撤掉全部占位绘制，不保留淡出图层。
  */
 internal fun LazyListScope.dynamicCommentSkeletonItems(
     slotCount: Int,
@@ -816,10 +817,11 @@ internal fun LazyListScope.dynamicCommentSkeletonItems(
     items(
         items = slots,
         key = { "$keyPrefix$it" },
-        contentType = { DYNAMIC_COMMENT_ITEM_CONTENT_TYPE },
+        contentType = { "dynamic_comment_skeleton" },
     ) { slotIndex ->
         CommentListItemSkeleton(
-            modifier = dynamicCommentItemModifier(),
+            // 不给临时骨架保留离场图层；真实评论仍保留原有进场和位移动画。
+            modifier = Modifier,
             slotIndex = slotIndex,
         )
     }

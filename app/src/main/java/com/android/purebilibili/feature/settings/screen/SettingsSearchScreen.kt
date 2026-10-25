@@ -52,6 +52,7 @@ fun SettingsSearchScreen(
     mainHazeState: HazeState? = null,
 ) {
     val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val nearbyHandoff = com.android.purebilibili.feature.nearby.LocalNearbyHandoff.current
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val listState = rememberSaveable(searchQuery, saver = LazyListState.Saver) {
         LazyListState()
@@ -138,7 +139,9 @@ fun SettingsSearchScreen(
                             viewModel.recordSearchQuery(searchQuery)
                             keyboard?.hide()
                             SettingsSearchFocusController.submit(result.target, result.focusId, result.settingId.takeUnless { it.startsWith("legacy.") }, query = searchQuery)
-                            onSearchResultClick(result)
+                            if (result.target == com.android.purebilibili.feature.settings.SettingsSearchTarget.NEARBY_HANDOFF) {
+                                nearbyHandoff?.openDevices?.invoke()
+                            } else onSearchResultClick(result)
                         },
                     )
                 }

@@ -29,13 +29,13 @@ baselineProfile {
     mergeIntoMain = true
 }
 
-abstract class PrepareKspGeneratedDirsTask : org.gradle.api.DefaultTask() {
-    @get:org.gradle.api.tasks.OutputDirectories
-    abstract val outputDirs: org.gradle.api.file.ConfigurableFileCollection
+abstract class PrepareKspGeneratedDirTask : org.gradle.api.DefaultTask() {
+    @get:org.gradle.api.tasks.OutputDirectory
+    abstract val outputDir: org.gradle.api.file.DirectoryProperty
 
     @org.gradle.api.tasks.TaskAction
     fun prepare() {
-        outputDirs.files.forEach { it.mkdirs() }
+        outputDir.get().asFile.mkdirs()
     }
 }
 
@@ -140,8 +140,8 @@ android {
         targetSdk = 37
         // 版本名按发行计划确定；versionCode 每次发布单调 +1
         // 规范：docs/wiki/VERSIONING.md · 更新日志：CHANGELOG.md
-        versionCode = 511
-        versionName = "0.5.6"
+        versionCode = 514
+        versionName = "0.6.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -356,27 +356,25 @@ ksp {
     arg("room.generateKotlin", "true")
 }
 
-val prepareKspGeneratedVariants = listOf(
-    "debug",
-    "debugUnitTest",
-    "release",
-    "releaseUnitTest",
-    "dev",
-    "devUnitTest"
-)
-
-val prepareKspGeneratedDirs by tasks.registering(PrepareKspGeneratedDirsTask::class) {
-    outputDirs.from(
-        prepareKspGeneratedVariants.map { variantName ->
-            layout.buildDirectory.dir("generated/ksp/$variantName")
+// 每个 KSP 任务仅准备自己的目录；其他构建类型的生成文件不参与本任务的输出检查。
+val prepareKspGeneratedDirsByTaskName = listOf("debug", "release", "dev", "smooth")
+    .flatMap { buildType ->
+        listOf("", "UnitTest", "AndroidTest").map { suffix -> "$buildType$suffix" }
+    }
+    .associate { variantName ->
+        val capitalizedVariantName = variantName.replaceFirstChar { it.uppercaseChar() }
+        val prepareTask = tasks.register<PrepareKspGeneratedDirTask>(
+            "prepare${capitalizedVariantName}KspGeneratedDir"
+        ) {
+            outputDir.set(layout.buildDirectory.dir("generated/ksp/$variantName"))
         }
-    )
-}
+        "ksp${capitalizedVariantName}Kotlin" to prepareTask
+    }
 
 tasks.matching { task ->
-    task.name.startsWith("ksp") && task.name.endsWith("Kotlin")
+    task.name in prepareKspGeneratedDirsByTaskName
 }.configureEach {
-    dependsOn(prepareKspGeneratedDirs)
+    dependsOn(prepareKspGeneratedDirsByTaskName.getValue(name))
 }
 
 composeCompiler {

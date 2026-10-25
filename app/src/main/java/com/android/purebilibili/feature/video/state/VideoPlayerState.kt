@@ -42,6 +42,7 @@ import coil3.request.SuccessResult
 import coil3.size.Scale
 import coil3.transform.RoundedCornersTransformation
 import com.android.purebilibili.R
+import com.android.purebilibili.core.lifecycle.AbandonableResource
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.player.HiResCompatibleRenderersFactory
 import com.android.purebilibili.core.player.PlaybackMediaCache
@@ -868,8 +869,6 @@ class VideoPlayerState(
     }
     
     init {
-        player.addListener(playerListener) // 使用统一的 listener
-        player.addAnalyticsListener(analyticsListener)
         // 初始检查
         val size = player.videoSize
         if (size.width > 0 && size.height > 0) {
@@ -940,6 +939,11 @@ class VideoPlayerState(
         // 不重置 _isPortraitFullscreen，保持竖屏全屏状态
     }
     
+    fun attachPlayerListeners() {
+        player.addListener(playerListener)
+        player.addAnalyticsListener(analyticsListener)
+    }
+
     fun release() {
         player.removeListener(playerListener)
         player.removeAnalyticsListener(analyticsListener)
@@ -1013,13 +1017,14 @@ fun rememberVideoPlayerState(
     
     val player = remember(context, bvid, playerCreationKey) {
         // 如果小窗有这个视频的 player，直接复用
-        if (reuseFromMiniPlayerAtEntry) {
+        val reusedPlayer = if (reuseFromMiniPlayerAtEntry) {
             miniPlayerManager.player?.also {
                 com.android.purebilibili.core.util.Logger.d("VideoPlayerState", " 复用小窗 player: bvid=$bvid")
             }
         } else {
             null
-        } ?: run {
+        }
+        val rememberedPlayer = reusedPlayer ?: run {
             // 创建新的 player
             com.android.purebilibili.core.util.Logger.d("VideoPlayerState", " 创建新 player: bvid=$bvid")
             val headers = mapOf(
@@ -1119,7 +1124,11 @@ fun rememberVideoPlayerState(
                         SettingsManager.getClickToPlaySync(context)
                 }
         }
-    }
+        AbandonableResource(rememberedPlayer) {
+            // 复用实例仍由小窗或其他页面持有，只有本次新建的实例需要兜底释放。
+            if (reusedPlayer == null) it.release()
+        }
+    }.value
     val playbackCompletionBehavior by SettingsManager
         .getPlaybackCompletionBehavior(context)
         .collectAsStateWithLifecycle(initialValue = PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC
@@ -1156,8 +1165,9 @@ fun rememberVideoPlayerState(
         }
     }
 
-    DisposableEffect(player) {
+    DisposableEffect(player, holder) {
         miniPlayerManager.retainPlayerForPage(player)
+        holder.attachPlayerListeners()
         onDispose {
             viewModel.flushPlaybackHeartbeatSnapshot(reason = "dispose")
             //  [新增] 保存播放进度到 ViewModel 缓存
