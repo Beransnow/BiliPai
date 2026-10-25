@@ -2987,12 +2987,9 @@ fun SearchTopBar(
         Modifier
     }
 
-    AppSurface(
-        modifier = modifier
-            .fillMaxWidth(),
-        color = Color.Transparent,
-        shadowElevation = 0.dp
-    ) {
+    // 外层只负责排列；MD3、Miuix 与玻璃控件都可把弹性绘制伸到布局边界外。
+    // 输入框与按钮自己保留圆角裁切，不用整个顶栏的 Surface 再裁一次。
+    Box(modifier = modifier.fillMaxWidth()) {
         Column {
             if (includeStatusBarPadding) {
                 Spacer(modifier = Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
@@ -3599,7 +3596,10 @@ private fun SearchResultTypeTabRow(
                 }
             },
             modifier = if (useScrollableRail) {
-                Modifier.liquidDockViewport()
+                Modifier.liquidDockViewport(
+                    verticalOverflow = AppChromeSizeTokens.MinimumTouchTarget,
+                    allowNativeOverflow = true,
+                )
             } else {
                 Modifier.fillMaxWidth()
             },

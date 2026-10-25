@@ -190,6 +190,7 @@ internal fun Modifier.glassMenuItem(
     val scope = LocalAppGlassMenuScope.current ?: return this
     val key = remember { Any() }
     val latestClick by rememberUpdatedState(onClick)
+    val pressedColor = com.android.purebilibili.core.ui.AppContentColors.primaryText().copy(alpha = 0.12f)
     val coordinates = remember { arrayOfNulls<LayoutCoordinates>(1) }
     SideEffect { coordinates[0]?.takeIf { it.isAttached }?.let {
         scope.register(key, it, enabled, dismissOnClick) { latestClick() }
@@ -198,6 +199,10 @@ internal fun Modifier.glassMenuItem(
     return this
         .onGloballyPositioned { coordinates[0] = it; scope.register(key, it, enabled, dismissOnClick) { latestClick() } }
         .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+        .drawBehind {
+            // 绘制阶段读取当前命中项，滑过条目只刷新背景，不触发保存或重复点击。
+            if (enabled && scope.pressedItem() === key) drawRect(pressedColor)
+        }
 
 }
 

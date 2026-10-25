@@ -1185,7 +1185,9 @@ private fun AppGlassChoicePopupCard(
                                 controller.releasePress(position)
                                 break
                             }
-                            // 滚动优先消费位移；玻璃继续旁观拖拽，并取消本轮滑选提交。
+                            // 无需滚动的短菜单由宿主接管滑选，避免子条目接走移动后取消跨项反馈。
+                            if (scrollState.maxValue <= 0) change.consume()
+                            // 长菜单仍由列表优先滚动，滚动后本轮松手不提交选项。
                             val finalEvent = awaitPointerEvent(PointerEventPass.Final)
                             val finalChange = finalEvent.changes.firstOrNull { it.id == down.id }
                             if (finalChange == null) break
@@ -1215,7 +1217,7 @@ private fun AppGlassChoicePopupCard(
                                     fromScrollBoundary = !outside,
                                 )
                             } else {
-                                controller.movePress(position, allowSelection = !scrolled)
+                                controller.movePress(position)
                             }
                         }
                     } finally {
@@ -1311,6 +1313,7 @@ private fun AppGlassChoicePopupCard(
                 }
                 request.options.forEachIndexed { index, option ->
                     val selected = option.value == request.selectedValue
+                    val pressedColor = AppContentColors.primaryText().copy(alpha = 0.12f)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1320,6 +1323,10 @@ private fun AppGlassChoicePopupCard(
                                     Size(it.size.width.toFloat(), it.size.height.toFloat()))
                             }
                             .clip(RoundedCornerShape(PopupItemCornerRadius))
+                            .drawBehind {
+                                // 按住滑到哪一项就高亮哪一项，勾选与保存仍在松手后改变。
+                                if (controller.pressedIndex == index) drawRect(pressedColor)
+                            }
                             .selectable(selected = selected, role = Role.RadioButton,
                                 onClick = { controller.select(option.value) })
                             .padding(
