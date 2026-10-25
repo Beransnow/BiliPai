@@ -169,3 +169,23 @@ lib/ui/navigation_dock.dart, lib/ui/dialog.dart and lib/ui/liquid_glass.dart, re
 7fd417fb9a9a277c6a9339a8ac87f907df7c25f7, inspected 2026-10-26.
 https://github.com/chen08209/FlClash/tree/7fd417fb9a9a277c6a9339a8ac87f907df7c25f7/lib/ui
 FlClash contributors; GPL-3.0. Distributed as part of BiliPai under GPLv3.
+
+/*
+ * Popup slide-to-pick row feedback comparison: chen08209/FlClash,
+ * lib/ui/popup.dart (_startPress, _slidePress, _endPress, _buildRow),
+ * main inspected 2026-10-26.
+ * https://github.com/chen08209/FlClash/blob/main/lib/ui/popup.dart
+ * FlClash contributors; GPL-3.0. BiliPai draws the active row in the existing
+ * Compose popup/menu scope and preserves long-list scrolling priority.
+ * Full license: flclash.LICENSE. Distributed as part of BiliPai under GPLv3.
+ */
+
+Content image export and share interaction reference:
+https://github.com/bggRGjQaUbCoE/PiliPlus/tree/3d0aed958b3b7e59c39c121196f189f429719904
+Reference paths: lib/pages/save_panel/view.dart, lib/pages/share/view.dart,
+lib/pages/video/introduction/ugc/controller.dart, lib/pages/video/introduction/pgc/controller.dart,
+lib/pages/live_room/superchat/superchat_card.dart, lib/utils/request_utils.dart,
+lib/utils/page_utils.dart and lib/grpc/bilibili/im/type.pbenum.dart.
+PiliPlus contributors; GPL-3.0. The Android implementation uses the existing
+rendering, account, networking and theme components. Distributed under GPLv3.
+License copy: artwork/third-party/piliplus/LICENSE in the source distribution.

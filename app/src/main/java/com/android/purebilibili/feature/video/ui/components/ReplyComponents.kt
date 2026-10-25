@@ -80,7 +80,6 @@ import com.android.purebilibili.core.theme.calculateContrastRatio
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.core.util.BilibiliUrlParser
-import com.android.purebilibili.core.util.rememberStoragePermissionState
 import com.android.purebilibili.data.model.response.ReplyFansDetail
 import com.android.purebilibili.data.model.response.ReplyCardLabel
 import com.android.purebilibili.data.model.response.ReplyContent
@@ -519,26 +518,44 @@ internal fun resolveSubReplyOpenTargetId(rootReplyId: Long, clickedReplyId: Long
     return clickedReplyId.takeIf { it > 0L && it != rootReplyId } ?: 0L
 }
 
-internal fun resolveReplyCommentShareUrl(item: ReplyItem): String {
+internal fun resolveReplyCommentShareUrl(
+    item: ReplyItem,
+    context: com.android.purebilibili.feature.share.ReplyShareContext? = null,
+): String {
     val rootId = if (item.root > 0L) item.root else item.rpid
-    return buildString {
-        append("https://www.bilibili.com/video/av")
-        append(item.oid)
-        append("?comment_on=1&comment_root_id=")
-        append(rootId)
-        if (item.root > 0L && item.rpid > 0L) {
-            append("&comment_secondary_id=")
-            append(item.rpid)
+    val episodeId = context?.url?.let { Regex("/bangumi/play/ep(\\d+)").find(it)?.groupValues?.get(1) }
+    if (item.replyType != 1 || episodeId != null) {
+        val enterUri = if (episodeId != null) "bilibili://pgc/season/ep/$episodeId" else
+            context?.url?.takeIf { it.isNotBlank() } ?: when (item.replyType) {
+                11, 17 -> "bilibili://following/detail/${item.oid}"
+                12 -> "https://www.bilibili.com/read/cv${item.oid}"
+                14 -> "https://www.bilibili.com/audio/au${item.oid}"
+                else -> ""
+            }
+        return buildString {
+            append("bilibili://comment/detail/${item.replyType}/${item.oid}/$rootId/?")
+            if (item.root > 0L && item.rpid > 0L) append("anchor=${item.rpid}&")
+            append("enterUri=")
+            append(java.net.URLEncoder.encode(enterUri, "UTF-8"))
         }
+    }
+    val base = context?.url?.takeIf { it.contains("/video/") }
+        ?: "https://www.bilibili.com/video/av${item.oid}"
+    return buildString {
+        append(base)
+        append(if ('?' in base) '&' else '?')
+        append("comment_on=1&comment_root_id=$rootId")
+        if (item.root > 0L && item.rpid > 0L) append("&comment_secondary_id=${item.rpid}")
+        if (context != null && context.page > 1 && !Regex("[?&]p=\\d+").containsMatchIn(base)) append("&p=${context.page}")
     }
 }
 
-internal fun buildReplyCommentShareText(item: ReplyItem): String {
+internal fun buildReplyCommentShareText(item: ReplyItem, context: com.android.purebilibili.feature.share.ReplyShareContext? = null): String {
     return buildString {
         append(item.member.uname.ifBlank { "未知用户" })
         append(": ")
         append(item.content.message.trim())
-        val url = resolveReplyCommentShareUrl(item)
+        val url = resolveReplyCommentShareUrl(item, context)
         if (url.isNotBlank()) {
             append('\n')
             append(url)
@@ -624,7 +641,7 @@ private fun resolveReplyActionSheetLabel(
         ReplyActionSheetAction.QUERY_AUTHOR_HISTORY -> "查询作者历史"
         ReplyActionSheetAction.TIME_STYLE -> "评论时间样式"
         ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW -> "显示回复"
-        ReplyActionSheetAction.SAVE -> "保存评论"
+        ReplyActionSheetAction.SAVE -> "存图 / 分享图片"
         ReplyActionSheetAction.SHARE -> "分享评论"
         ReplyActionSheetAction.REPLY -> "回复"
         ReplyActionSheetAction.BLOCK_USER -> "屏蔽用户"
@@ -1289,6 +1306,14 @@ fun ReplyItemView(
     avatarItemKey: Any = item.rpid,
     onAvatarClick: (String) -> Unit
 ) {
+    val replyShareContext = com.android.purebilibili.feature.share.LocalReplyShareContext.current
+    var showImagePreview by remember(item.oid, item.rpid) { mutableStateOf(false) }
+    if (showImagePreview) {
+        com.android.purebilibili.feature.share.ShareImagePreviewSheet(
+            document = com.android.purebilibili.feature.share.replyShareDocument(item, replyShareContext, emoteMap),
+            onDismiss = { showImagePreview = false },
+        )
+    }
     val appearance = rememberVideoCommentAppearance()
     val context = LocalContext.current
     val detailedCommentTimeEnabled = LocalDetailedCommentTimeEnabled.current
@@ -1453,7 +1478,6 @@ fun ReplyItemView(
 
     var showFreeCopyDialog by remember(item.rpid) { mutableStateOf(false) }
     var showReportDialog by remember(item.rpid) { mutableStateOf(false) }
-    var pendingSaveReply by remember(item.rpid) { mutableStateOf<ReplyItem?>(null) }
     // [新增] 评论翻译状态
     val canTranslate = item.replyControl?.translationSwitch == 2
     var translatedMessage by remember(item.rpid) { mutableStateOf<String?>(null) }
@@ -1472,36 +1496,13 @@ fun ReplyItemView(
     }
     val copyText = remember(item.content.message) { item.content.message.trim() }
     val replyMemberMid = remember(item.member.mid, item.mid) { resolveReplyMemberMid(item) }
-    fun launchSaveReplyCommentImage(reply: ReplyItem) {
-        scope.launch {
-            val success = saveReplyCommentImageToGallery(context, reply)
-            Toast.makeText(
-                context,
-                resolveReplyCommentImageSaveToast(success),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-    val storagePermission = rememberStoragePermissionState { granted ->
-        val pending = pendingSaveReply
-        pendingSaveReply = null
-        if (granted && pending != null) {
-            launchSaveReplyCommentImage(pending)
-        }
-    }
-    fun requestSaveReplyCommentImage() {
-        if (storagePermission.isGranted) {
-            launchSaveReplyCommentImage(item)
-        } else {
-            pendingSaveReply = item
-            storagePermission.request()
-        }
-    }
+    fun requestSaveReplyCommentImage() { showImagePreview = true }
+
     fun shareReplyComment() {
         val sendIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_SUBJECT, "分享评论")
-            putExtra(Intent.EXTRA_TEXT, buildReplyCommentShareText(item))
+            putExtra(Intent.EXTRA_TEXT, buildReplyCommentShareText(item, replyShareContext))
         }
         context.startActivity(Intent.createChooser(sendIntent, "分享评论"))
     }

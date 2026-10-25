@@ -220,6 +220,17 @@ fun DynamicCardV2(
     val detailImageLayout = presentation.detailImageLayout
 
     if (!item.visible) return
+    var shareImagePreview by remember(item.id_str) { mutableStateOf(false) }
+    if (shareImagePreview) {
+        com.android.purebilibili.feature.share.ShareImagePreviewSheet(
+            document = com.android.purebilibili.feature.share.dynamicShareDocument(item),
+            loadDocument = {
+                val complete = DynamicRepository.getDynamicDetail(item.id_str).getOrThrow()
+                com.android.purebilibili.feature.share.dynamicShareDocument(complete)
+            },
+            onDismiss = { shareImagePreview = false },
+        )
+    }
     val openDynamicDetail = remember(item, onDynamicDetailClick) {
         onDynamicDetailClick?.let { callback ->
             { id: String ->
@@ -684,12 +695,12 @@ fun DynamicCardV2(
                                     )
                                 )
                             }
-                            if (onSaveDynamicClick != null) {
+                            run {
                                 add(
                                     AppWindowAction(
-                                        label = "保存动态",
+                                        label = "存图 / 分享图片",
                                         icon = historyIcon,
-                                        onClick = onSaveDynamicClick,
+                                        onClick = { shareImagePreview = true },
                                     )
                                 )
                             }

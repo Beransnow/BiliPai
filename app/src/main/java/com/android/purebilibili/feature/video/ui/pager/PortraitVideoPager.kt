@@ -2326,6 +2326,13 @@ private fun VideoPageItem(
         com.android.purebilibili.feature.video.ui.components.rememberVideoScreenshotAction(
             captureBitmap = { _, width, height -> enhancement.captureScreenshot(width, height) }
         )
+    var pendingPortraitShare by remember(bvid, currentPlayingCid) {
+        mutableStateOf<com.android.purebilibili.feature.video.share.VideoSharePayload?>(null)
+    }
+    com.android.purebilibili.feature.video.share.VideoShareSheetHost(
+        payload = pendingPortraitShare,
+        onDismiss = { pendingPortraitShare = null },
+    )
     var portraitPlayerMenuVisible by remember(bvid) { mutableStateOf(false) }
     var showPortraitExternalPlaylist by rememberSaveable(bvid) { mutableStateOf(false) }
     val portraitExternalPlaylist by PlaylistManager.playlist.collectAsStateWithLifecycle()
@@ -4280,13 +4287,13 @@ private fun VideoPageItem(
                     }
                 },
                 onShare = {
-                    context.startActivity(android.content.Intent.createChooser(
-                        android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                            putExtra(android.content.Intent.EXTRA_TEXT, buildPortraitShareText(title, bvid))
-                            type = "text/plain"
-                        },
-                        "分享视频",
-                    ))
+                    val info = currentSuccess?.info
+                    pendingPortraitShare = com.android.purebilibili.feature.video.share.buildVideoSharePayload(
+                        title = title, bvid = bvid, coverUrl = info?.pic.orEmpty(),
+                        upName = info?.owner?.name.orEmpty(), authorId = info?.owner?.mid ?: 0L,
+                        page = info?.pages?.indexOfFirst { it.cid == currentPlayingCid }?.coerceAtLeast(0)?.plus(1) ?: 1,
+                        positionMs = exoPlayer.currentPosition.coerceAtLeast(0L),
+                    )
                 },
             )
         // 竖屏与横屏共用功能组件，玻璃材质在控制栏内部适配。

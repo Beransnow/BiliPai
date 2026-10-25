@@ -848,6 +848,7 @@ fun BangumiPlayerView(
                         playerViewRef?.videoSurfaceView is android.view.TextureView
                 },
         ) {
+        val captureAndShareScreenshot = com.android.purebilibili.feature.video.ui.components.rememberVideoScreenshotAction()
         BangumiPlayerOverlayHost(
             player = exoPlayer,
             danmakuManager = danmakuManager,
@@ -925,16 +926,8 @@ fun BangumiPlayerView(
                     onShowMessage("截图失败，请稍后重试")
                     return@BangumiPlayerOverlayHost
                 }
-                scope.launch {
-                    val success = captureAndSaveVideoScreenshot(
-                        context = context,
-                        playerView = playerView,
-                        videoWidth = exoPlayer.videoSize.width,
-                        videoHeight = exoPlayer.videoSize.height,
-                        videoTitle = subtitle.ifBlank { title.ifBlank { "bangumi" } }
-                    )
-                    onShowMessage(if (success) "截图已保存到相册" else "截图失败，请稍后重试")
-                }
+                captureAndShareScreenshot(playerView, exoPlayer.videoSize.width, exoPlayer.videoSize.height,
+                    subtitle.ifBlank { title.ifBlank { "bangumi" } })
             },
             onReloadVideo = onReloadVideo,
             anime4kEnabled = videoEnhancementEnabled,

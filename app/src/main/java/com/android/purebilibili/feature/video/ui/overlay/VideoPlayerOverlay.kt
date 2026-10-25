@@ -383,7 +383,7 @@ internal fun resolveFullscreenLockButtonVisualState(
     }
 }
 
-/** 非玻璃播放器的侧边锁定入口；玻璃布局使用自己的独立实现。 */
+/** 横屏锁定入口沿用共用功能布局，侧键材质按玻璃开关选择。 */
 @Composable
 internal fun FullscreenLockButton(
     visualState: FullscreenLockButtonVisualState,
@@ -392,7 +392,7 @@ internal fun FullscreenLockButton(
     iconSizeDp: Int,
     modifier: Modifier = Modifier,
 ) {
-    NativePlayerSideButton(
+    PlayerSideButton(
         icon = when (visualState.icon) {
             FullscreenLockButtonIcon.LOCKED -> Icons.Outlined.Lock
             FullscreenLockButtonIcon.UNLOCKED -> Icons.Outlined.LockOpen
@@ -734,6 +734,8 @@ private fun VideoPlayerOverlayContent(
         pendingVideoShare = buildVideoSharePayload(
             title = title,
             bvid = bvid,
+            page = currentPageIndex + 1,
+            positionMs = player.currentPosition.coerceAtLeast(0L),
             coverUrl = coverUrl,
             upName = videoOwnerName,
             playCountText = videoSharePlayCountText,
@@ -811,7 +813,7 @@ private fun VideoPlayerOverlayContent(
     val sponsorSession = rememberPiliSponsorMenuSession(bvid)
     val registeredPlugins by com.android.purebilibili.core.plugin.PluginManager.pluginsFlow.collectAsStateWithLifecycle()
     val sponsorPluginInfo = registeredPlugins.firstOrNull {
-        it.plugin.id == com.android.purebilibili.feature.plugin.SPONSOR_BLOCK_PLUGIN_ID
+        it.plugin.id == com.android.purebilibili.core.plugin.BuiltinPluginIds.SPONSOR_BLOCK
     }
     var showEnableSponsorPlugin by remember(bvid, cid) { mutableStateOf(false) }
     var enablingSponsorPlugin by remember { mutableStateOf(false) }
@@ -1745,7 +1747,7 @@ private fun VideoPlayerOverlayContent(
                     .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.End))
                     .padding(end = 4.dp)
             ) {
-                NativePlayerSideButton(
+                PlayerSideButton(
                     icon = Icons.Outlined.Camera,
                     contentDescription = "截图",
                     onClick = onCaptureScreenshot,
@@ -2422,7 +2424,7 @@ private fun VideoPlayerOverlayContent(
                             enablingSponsorPlugin = true
                             scope.launch {
                                 try {
-                                    val pluginId = com.android.purebilibili.feature.plugin.SPONSOR_BLOCK_PLUGIN_ID
+                                    val pluginId = com.android.purebilibili.core.plugin.BuiltinPluginIds.SPONSOR_BLOCK
                                     com.android.purebilibili.core.plugin.PluginManager.setEnabled(pluginId, true)
                                     val enabled = com.android.purebilibili.core.plugin.PluginManager.plugins
                                         .any { it.plugin.id == pluginId && it.enabled }

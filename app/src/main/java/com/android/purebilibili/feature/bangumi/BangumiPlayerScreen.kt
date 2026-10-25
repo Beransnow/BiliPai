@@ -460,6 +460,7 @@ fun BangumiPlayerScreen(
         com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction(exoPlayer, positionMs.coerceIn(0L, duration))
     }
     val playerFeatures = BangumiPlayerFeatures(
+        shareSeasonType = successState?.seasonDetail?.seasonType ?: 0,
         commentVisible = commentPanelVisible, commentOnLeft = landscapeCommentOnLeft,
         commentWidthDp = commentWidthDp,
         commentCloseProgressProvider = { landscapeCommentCloseProgress.floatValue },

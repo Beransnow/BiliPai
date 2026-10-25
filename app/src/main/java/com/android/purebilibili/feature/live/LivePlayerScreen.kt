@@ -387,25 +387,13 @@ private fun LiveRoomScreen(
         onBack()
     }
 
+    val captureAndShareScreenshot = com.android.purebilibili.feature.video.ui.components.rememberVideoScreenshotAction()
     fun captureLiveScreenshot() {
         val playerView = playerViewRef
         if (playerView == null) {
             Toast.makeText(context, "截图失败：播放器未就绪", Toast.LENGTH_SHORT).show()
         } else {
-            coroutineScope.launch {
-                val success = com.android.purebilibili.feature.video.util.captureAndSaveVideoScreenshot(
-                    context = context,
-                    playerView = playerView,
-                    videoWidth = 0,
-                    videoHeight = 0,
-                    videoTitle = liveRoomTitle,
-                )
-                Toast.makeText(
-                    context,
-                    if (success) "截图已保存到相册（PNG）" else "截图失败，请稍后重试",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            captureAndShareScreenshot(playerView, 0, 0, liveRoomTitle)
         }
     }
 
@@ -1588,6 +1576,9 @@ private fun LiveRoomScreen(
         LiveShareToMessageSheet(
             roomId = bilibiliRoomId,
             roomTitle = liveRoomTitle,
+            cover = liveCoverForUi,
+            author = anchorInfo.uname,
+            authorId = anchorInfo.uid,
             onDismiss = { showShareMessageSheet = false },
             onResult = { success, message ->
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()

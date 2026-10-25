@@ -779,6 +779,8 @@ private fun VideoPlayerOverlayContent(
         pendingVideoShare = buildVideoSharePayload(
             title = title,
             bvid = bvid,
+            page = currentPageIndex + 1,
+            positionMs = player.currentPosition.coerceAtLeast(0L),
             coverUrl = coverUrl,
             upName = videoOwnerName,
             playCountText = videoSharePlayCountText,

@@ -605,6 +605,15 @@ internal fun VideoDetailScreenStateHolder(
         initialPipMode = isInPipMode,
     )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val shareInfo = (uiState as? VideoPlaybackUiState.Success)?.info
+    androidx.compose.runtime.CompositionLocalProvider(
+        com.android.purebilibili.feature.share.LocalReplyShareContext provides shareInfo?.let {
+            com.android.purebilibili.feature.share.ReplyShareContext(
+                url = "https://www.bilibili.com/video/${it.bvid}", title = it.title, cover = it.pic,
+                page = it.pages.indexOfFirst { page -> page.cid == it.cid }.coerceAtLeast(0) + 1,
+            )
+        },
+    ) {
     val detailState by viewModel.detailState.collectAsStateWithLifecycle()
     // Keep the handle here; only the mounted info/content scopes read the progress value.
     // Download ticks must not invalidate the transition/player state-holder scope.
@@ -5886,5 +5895,6 @@ internal fun VideoDetailScreenStateHolder(
         mainContent = { VideoDetailRouteSheetMainContent() },
         overlayContent = { VideoDetailRouteSheetOverlayContent() }
     )
+    }
     }
 }

@@ -1315,9 +1315,10 @@ fun DynamicScreen(
     //  [新增] 转发弹窗
     showRepostDialog?.let { dynamicId ->
         RepostDialog(
+            contentKey = dynamicId,
             onDismiss = { showRepostDialog = null },
-            onRepost = { content: String, alsoComment: Boolean, onComplete: (Boolean) -> Unit ->
-                viewModel.repostDynamic(dynamicId, content, alsoComment) { success, msg ->
+            onRepost = { content, alsoComment, richContents, topic, onComplete ->
+                viewModel.repostDynamic(dynamicId, content, alsoComment, richContents, topic) { success, msg ->
                     android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
                     if (success) showRepostDialog = null
                     onComplete(success)

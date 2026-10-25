@@ -122,6 +122,12 @@ internal fun BangumiPlayerOverlayHost(
     onFsrSharpnessChange: (Float) -> Unit,
     onShowMessage: (String) -> Unit
 ) {
+    var pendingContentShare by androidx.compose.runtime.remember(epId) {
+        androidx.compose.runtime.mutableStateOf<com.android.purebilibili.feature.share.ContentSharePayload?>(null)
+    }
+    pendingContentShare?.let { payload ->
+        com.android.purebilibili.feature.share.ContentShareSheet(payload, onDismiss = { pendingContentShare = null })
+    }
     val context = LocalContext.current
     val seekHaptic = rememberHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.PLAYER_SEEK)
     val seekHaptics = remember(player, epId, bvid, cid) { BangumiSeekHapticPolicy() }
@@ -319,11 +325,13 @@ internal fun BangumiPlayerOverlayHost(
             subtitleControlCallbacks = features.subtitle.callbacks,
             onAspectRatioChange = onAspectRatioChange,
             onShare = {
-                ShareUtils.shareBangumi(
-                    context = context,
+                pendingContentShare = com.android.purebilibili.feature.share.buildBangumiContentSharePayload(
+                    epId = epId,
                     title = resolveBangumiOverlayShareTitle(title = title, subtitle = subtitle),
-                    seasonId = seasonId,
-                    epId = epId.takeIf { it > 0L }
+                    cover = coverUrl,
+                    seasonType = features.shareSeasonType,
+                    positionMs = player.currentPosition.coerceAtLeast(0L),
+                    aid = aid,
                 )
             },
             onReloadVideo = onReloadVideo,
