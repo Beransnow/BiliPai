@@ -459,7 +459,7 @@ class PureApplication : Application(), SingletonImageLoader.Factory, ComponentCa
         //  [BiliPai 移植] 推荐流过滤(默认关闭, 可在插件中心启用)
         PluginManager.register(com.android.purebilibili.feature.plugin.BiliPaiFeedFilterPlugin())
         PluginManager.register(com.android.purebilibili.feature.plugin.SubscriptionFeedPlugin())
-        Logger.d(PureApplicationRuntimeConfig.TAG, " Plugin system initialized with 11 built-in plugins")
+        Logger.d(PureApplicationRuntimeConfig.TAG, " Plugin system initialized with 12 built-in plugins")
 
         AppScope.ioScope.launch {
             com.android.purebilibili.core.plugin.json.JsonPluginManager.initialize(this@PureApplication)
@@ -472,12 +472,6 @@ class PureApplication : Application(), SingletonImageLoader.Factory, ComponentCa
         }
 
         AppScope.ioScope.launch {
-            val sponsorBlockEnabled = com.android.purebilibili.core.store.SettingsManager
-                .getSponsorBlockEnabled(this@PureApplication)
-                .first()
-            PluginManager.setEnabled("sponsor_block", sponsorBlockEnabled)
-            Logger.d(PureApplicationRuntimeConfig.TAG, " SponsorBlock plugin synced: enabled=$sponsorBlockEnabled")
-
             SettingsManager.forceDanmakuDefaults(this@PureApplication)
         }
 

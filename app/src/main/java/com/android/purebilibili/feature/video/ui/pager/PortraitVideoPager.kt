@@ -148,7 +148,7 @@ import com.android.purebilibili.core.player.HiResCompatibleRenderersFactory
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.store.DanmakuSettings
 import com.android.purebilibili.core.util.NetworkUtils
-import com.android.purebilibili.feature.plugin.PlaybackCdnPlugin
+import com.android.purebilibili.plugin.sdk.PlaybackCdnPlugin
 import com.android.purebilibili.core.store.DanmakuSettingsScope
 import com.android.purebilibili.core.store.PlaybackCompletionBehavior
 import com.android.purebilibili.core.store.PortraitDanmakuDisplayAreaMode

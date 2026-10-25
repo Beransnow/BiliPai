@@ -23,8 +23,8 @@ import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.player.resolveProgressFraction as resolveSharedProgressFraction
 import com.android.purebilibili.data.model.response.AiAudioInfo
 import com.android.purebilibili.data.model.response.SponsorProgressMarker
-import com.android.purebilibili.feature.anime4k.Anime4KPreset
-import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
+import com.android.purebilibili.plugin.sdk.Anime4KPreset
+import com.android.purebilibili.plugin.sdk.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.video.playback.policy.resolveDisplayedPlaybackTransitionPosition
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
 import com.android.purebilibili.feature.video.subtitle.SubtitleDisplayMode

@@ -1,7 +1,6 @@
-package com.android.purebilibili.core.plugin
+package com.android.purebilibili.plugin.sdk
 
 import android.content.Context
-import androidx.compose.ui.graphics.vector.ImageVector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -9,8 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 data class CastPluginRoute(
     val routeId: String,
     val name: String,
-    val description: String? = null,
-    val icon: ImageVector? = null
+    val description: String? = null
 )
 
 data class CastPluginMediaRequest(
@@ -36,7 +34,6 @@ data class CastPluginPlaybackState(
 
 private val defaultPlaybackState: StateFlow<CastPluginPlaybackState> =
     MutableStateFlow(CastPluginPlaybackState()).asStateFlow()
-
 private val defaultIsDiscovering: StateFlow<Boolean> =
     MutableStateFlow(false).asStateFlow()
 
@@ -70,10 +67,8 @@ interface CastPluginApi : Plugin {
 
     suspend fun play(): Result<Unit> =
         Result.failure(UnsupportedOperationException("播放控制不支持"))
-
     suspend fun pause(): Result<Unit> =
         Result.failure(UnsupportedOperationException("暂停控制不支持"))
-
     suspend fun seek(positionMs: Long): Result<Unit> =
         Result.failure(UnsupportedOperationException("进度控制不支持"))
 }

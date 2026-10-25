@@ -6719,9 +6719,13 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         .map { preferences -> preferences[KEY_SPONSOR_BLOCK_ENABLED] ?: false }  // 默认关闭
 
     suspend fun setSponsorBlockEnabled(context: Context, value: Boolean) {
+        com.android.purebilibili.core.plugin.PluginManager.setEnabled(
+            com.android.purebilibili.core.plugin.BuiltinPluginIds.SPONSOR_BLOCK, value
+        )
+    }
+
+    internal suspend fun persistSponsorBlockEnabled(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences -> preferences[KEY_SPONSOR_BLOCK_ENABLED] = value }
-        //  [修复] 同步到PluginStore，使插件系统能正确识别空降助手状态
-        com.android.purebilibili.core.plugin.PluginManager.setEnabled("sponsor_block", value)
     }
     
     // --- 自动跳过（true=自动跳过, false=显示提示按钮）---

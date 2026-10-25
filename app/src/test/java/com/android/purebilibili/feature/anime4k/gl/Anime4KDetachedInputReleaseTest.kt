@@ -3,7 +3,7 @@ package com.android.purebilibili.feature.anime4k.gl
 import android.content.Context
 import android.opengl.GLES20
 import android.opengl.Matrix
-import com.android.purebilibili.feature.anime4k.Anime4KConfig
+import com.android.purebilibili.plugin.sdk.Anime4KConfig
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just

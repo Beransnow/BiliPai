@@ -100,10 +100,10 @@ import com.android.purebilibili.feature.video.subtitle.SubtitleTrackOption
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitleDisplayOptions
 import com.android.purebilibili.feature.video.playback.policy.resolveDisplayedPlaybackTransitionPosition
 import com.android.purebilibili.core.store.PlayerProgressPlacement
-import com.android.purebilibili.feature.anime4k.Anime4KPreset
-import com.android.purebilibili.feature.anime4k.DEFAULT_FSR_SHARPNESS
+import com.android.purebilibili.plugin.sdk.Anime4KPreset
+import com.android.purebilibili.plugin.sdk.DEFAULT_FSR_SHARPNESS
 import com.android.purebilibili.feature.anime4k.FSR_SHARPNESS_SLIDER_STEPS
-import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
+import com.android.purebilibili.plugin.sdk.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.resolveAnime4KPresetLabel
 import kotlin.math.roundToInt
 import com.android.purebilibili.core.ui.AppShapes

@@ -1,6 +1,8 @@
 // 文件路径: feature/home/HomeScreen.kt
 package com.android.purebilibili.feature.home
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
 import com.android.purebilibili.core.ui.AppContentColors
 import com.android.purebilibili.core.ui.components.AppText
@@ -484,7 +486,7 @@ fun HomeScreen(
     val installedPlugins by com.android.purebilibili.core.plugin.PluginManager.pluginsFlow
         .collectAsStateWithLifecycle()
     val isSubscriptionPluginPersistedEnabled by com.android.purebilibili.core.plugin.PluginStore
-        .isEnabledFlow(context, com.android.purebilibili.feature.plugin.SubscriptionFeedPlugin.PLUGIN_ID)
+        .isEnabledFlow(context, BuiltinPluginIds.SUBSCRIPTION_FEED)
         .collectAsStateWithLifecycle(initialValue = false)
     val subscriptionFeedsEnabled = remember(
         subscriptionRevision,

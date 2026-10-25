@@ -1,28 +1,25 @@
-// 文件路径: core/plugin/Plugin.kt
 package com.android.purebilibili.core.plugin
+
+import com.android.purebilibili.plugin.sdk.PluginCapabilityManifest
 
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 
-/**
- *  BiliPai 插件基础接口
- * 
- * 所有插件必须实现此接口，定义插件的基本属性和生命周期方法。
- */
-interface Plugin {
+/** Host-only presentation and settings for a built-in SDK plugin. */
+interface BuiltinPlugin : com.android.purebilibili.plugin.sdk.Plugin {
     /** 唯一标识符，如 "sponsorblock" */
-    val id: String
+    override val id: String
     
     /** 显示名称，如 "空降助手" */
-    val name: String
+    override val name: String
     
     /** 插件描述 */
     val description: String
     
     /** 版本号，如 "1.0.0" */
-    val version: String
+    override val version: String
     
     /**  插件作者 */
     val author: String
@@ -41,7 +38,7 @@ interface Plugin {
         get() = "功能开发中"
 
     /** 插件能力声明，用于安装前授权和插件中心展示 */
-    val capabilityManifest: PluginCapabilityManifest
+    override val capabilityManifest: PluginCapabilityManifest
         get() = PluginCapabilityManifest(
             pluginId = id,
             displayName = name,
@@ -50,16 +47,6 @@ interface Plugin {
             entryClassName = this::class.java.name,
             capabilities = emptySet()
         )
-    
-    /**
-     * 插件启用时调用
-     */
-    suspend fun onEnable() {}
-    
-    /**
-     * 插件禁用时调用
-     */
-    suspend fun onDisable() {}
     
     /**
      * 插件配置界面 (可选)

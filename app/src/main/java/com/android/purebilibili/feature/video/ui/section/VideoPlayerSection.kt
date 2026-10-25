@@ -1,6 +1,8 @@
 // 文件路径: feature/video/VideoPlayerSection.kt
 package com.android.purebilibili.feature.video.ui.section
 
+import com.android.purebilibili.core.plugin.BuiltinPluginIds
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import com.android.purebilibili.feature.video.ui.overlay.NextWatchOverlay
@@ -209,7 +211,7 @@ import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.core.util.applyPlayerRequestedOrientation
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import com.android.purebilibili.feature.screenshot.AppScreenshotGestureBlockState
-import com.android.purebilibili.feature.anime4k.Anime4KConfig
+import com.android.purebilibili.plugin.sdk.Anime4KConfig
 import com.android.purebilibili.feature.anime4k.Anime4KBypassReason
 import com.android.purebilibili.feature.anime4k.ANIME4K_FIRST_FRAME_FALLBACK_TIMEOUT_MS
 import com.android.purebilibili.feature.anime4k.isAnime4KGles3Available
@@ -217,7 +219,7 @@ import com.android.purebilibili.feature.anime4k.resolveInitialVideoEnhancementEn
 import com.android.purebilibili.feature.anime4k.resolveAnime4KOutputDecision
 import com.android.purebilibili.feature.anime4k.shouldFallbackAnime4KBeforeFirstFrame
 import com.android.purebilibili.feature.anime4k.gl.Anime4KGLSurfaceView
-import com.android.purebilibili.feature.plugin.Anime4KPlugin
+import com.android.purebilibili.plugin.sdk.VideoEnhancementPluginApi
 import com.android.purebilibili.feature.video.subtitle.SubtitleDisplayMode
 import com.android.purebilibili.feature.video.subtitle.SubtitleAutoPreference
 import com.android.purebilibili.feature.video.subtitle.buildSubtitleTrackOptions
@@ -889,8 +891,8 @@ private fun VideoPlayerSectionContent(
     val lifecycleState by lifecycleOwner.lifecycle.currentStateAsState()
     val hostLifecycleStarted = lifecycleState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)
     val registeredPlugins by PluginManager.pluginsFlow.collectAsStateWithLifecycle()
-    val anime4kPluginInfo = registeredPlugins.firstOrNull { it.plugin.id == Anime4KPlugin.PLUGIN_ID }
-    val anime4kPlugin = anime4kPluginInfo?.plugin as? Anime4KPlugin
+    val anime4kPluginInfo = registeredPlugins.firstOrNull { it.plugin.id == BuiltinPluginIds.VIDEO_ENHANCEMENT }
+    val anime4kPlugin = PluginManager.getPlugin(VideoEnhancementPluginApi::class)
     val anime4kConfig = if (anime4kPlugin == null) {
         Anime4KConfig()
     } else {
@@ -5748,9 +5750,9 @@ private fun VideoPlayerSectionContent(
                         videoEnhancementSessionOverride = enabled
                         settingsScope.launch {
                             if (enabled && anime4kPluginInfo?.enabled != true) {
-                                PluginManager.setEnabled(Anime4KPlugin.PLUGIN_ID, true)
+                                PluginManager.setEnabled(BuiltinPluginIds.VIDEO_ENHANCEMENT, true)
                             }
-                            Anime4KPlugin.getInstance()?.rememberCurrentVideoEnabled(enabled)
+                            anime4kPlugin?.rememberCurrentVideoEnabled(enabled)
                         }
                     },
                     onVideoEnhancementAlgorithmChange = { algorithm ->
