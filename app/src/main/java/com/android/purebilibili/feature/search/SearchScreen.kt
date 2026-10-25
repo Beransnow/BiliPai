@@ -35,6 +35,9 @@ import com.android.purebilibili.core.ui.components.KeepScrollableTabSelectionVis
 import com.android.purebilibili.core.ui.components.liquidDockViewport
 import com.android.purebilibili.navigation.animatePagerSelection
 import com.android.purebilibili.core.util.BilibiliNavigationTarget
+import com.android.purebilibili.data.model.response.MatchContestInfo
+import com.android.purebilibili.data.model.response.MatchContestTeam
+import com.android.purebilibili.data.model.response.resolveMatchContestLogoUrl
 import com.android.purebilibili.navigation.SearchSubmitAction
 import com.android.purebilibili.navigation.resolveSearchSubmitAction
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
@@ -853,7 +856,7 @@ fun SearchScreen(
         )
     }
     val cardTransitionEnabled by SettingsManager.getCardTransitionEnabled(context).collectAsStateWithLifecycle(initialValue = false)
-    val showOnlineCount by SettingsManager.getShowOnlineCount(context).collectAsStateWithLifecycle(initialValue = false)
+    val showOnlineCount by SettingsManager.getShowCardOnlineCount(context).collectAsStateWithLifecycle(initialValue = false)
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
         .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.BILIPAI)
@@ -1988,6 +1991,19 @@ fun SearchScreen(
                                                     }
                                                 }
                                             }
+                                        }
+                                    }
+                                    if (pageResultState.matchResults.isNotEmpty()) {
+                                        itemsIndexed(pageResultState.matchResults, key = { _, item -> "all_match_${item.id}" }, span = { _, _ -> GridItemSpan(maxLineSpan) }) { _, item ->
+                                            MatchSearchResultCard(
+                                                item = item,
+                                                appearance = genericResultCardAppearance,
+                                                onClick = {
+                                                    if (item.id > 0L) {
+                                                        onNavigateSearchTarget(BilibiliNavigationTarget.Match(item.id))
+                                                    }
+                                                },
+                                            )
                                         }
                                     }
                                     if (pageResultState.bangumiResults.isNotEmpty()) {
@@ -4536,6 +4552,112 @@ internal fun BangumiSearchResultCard(
                 }
             }
         }
+    }
+}
+
+/**
+ * 综合搜索结果中的赛事卡片：对阵双方队标/队名与比分（或 VS），点击进入原生比赛详情页。
+ */
+@Composable
+internal fun MatchSearchResultCard(
+    item: com.android.purebilibili.data.model.response.MatchContestInfo,
+    appearance: SearchResultCardAppearance,
+    onClick: () -> Unit
+) {
+    SearchResultCardSurface(
+        appearance = appearance,
+        onClick = onClick
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                SearchResultText(
+                    text = listOfNotNull(
+                        item.season?.title?.takeIf { it.isNotBlank() },
+                        item.gameStage.takeIf { it.isNotBlank() }
+                    ).joinToString(" · ").ifBlank { "游戏赛事" },
+                    role = SearchResultTextRole.TITLE,
+                    fontWeight = FontWeight.Medium,
+                    color = AppContentColors.primaryText(),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    MatchSearchTeamContent(item.homeTeam, Modifier.weight(1f))
+                    SearchResultText(
+                        text = if (item.contestStatus in 2..3) {
+                            "${item.homeScore ?: 0} : ${item.awayScore ?: 0}"
+                        } else {
+                            "VS"
+                        },
+                        role = SearchResultTextRole.METADATA,
+                        fontWeight = FontWeight.Bold,
+                        color = AppContentColors.primaryText(),
+                        modifier = Modifier.padding(horizontal = AppSpacingTokens.Small)
+                    )
+                    MatchSearchTeamContent(item.awayTeam, Modifier.weight(1f))
+                }
+            }
+            Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
+            AppSurface(
+                color = if (item.contestStatus == 2) {
+                    AppContentColors.accent()
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                },
+                shape = AppShapes.container(ContainerLevel.Tag)
+            ) {
+                SearchResultText(
+                    text = when (item.contestStatus) {
+                        1 -> "未开始"
+                        2 -> "直播中"
+                        3 -> "已结束"
+                        else -> "待确认"
+                    },
+                    role = SearchResultTextRole.BADGE,
+                    color = if (item.contestStatus == 2) {
+                        MaterialTheme.colorScheme.onError
+                    } else {
+                        AppContentColors.secondaryText()
+                    },
+                    modifier = Modifier.padding(
+                        horizontal = AppSpacingTokens.ExtraSmall,
+                        vertical = AppSpacingTokens.Micro,
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MatchSearchTeamContent(
+    team: com.android.purebilibili.data.model.response.MatchContestTeam?,
+    modifier: Modifier = Modifier
+) {
+    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
+        val logo = team.resolveMatchContestLogoUrl()
+        AsyncImage(
+            model = logo.ifBlank { null },
+            contentDescription = null,
+            modifier = Modifier
+                .size(28.dp)
+                .clip(AppShapes.container(ContainerLevel.Chip)),
+            contentScale = ContentScale.Fit
+        )
+        Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall))
+        SearchResultText(
+            text = team?.title?.ifBlank { null } ?: "待定",
+            role = SearchResultTextRole.METADATA,
+            color = AppContentColors.secondaryText(),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

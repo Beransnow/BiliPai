@@ -1410,13 +1410,17 @@ internal fun shouldShowBottomBarIcon(labelMode: Int): Boolean {
     }
 }
 
+/** 红点模式的哨兵值：调用方把真实计数映射成它，格式化层负责换成圆点文本。 */
+internal const val BOTTOM_BAR_DYNAMIC_BADGE_DOT = -1
+
 internal fun shouldShowBottomBarDynamicReminderBadge(
     item: BottomNavItem?,
     unreadCount: Int
-): Boolean = item == BottomNavItem.DYNAMIC && unreadCount > 0
+): Boolean = item == BottomNavItem.DYNAMIC && unreadCount != 0
 
 internal fun formatBottomBarDynamicReminderBadge(unreadCount: Int): String? {
     return when {
+        unreadCount == BOTTOM_BAR_DYNAMIC_BADGE_DOT -> "•"
         unreadCount <= 0 -> null
         unreadCount > 999 -> "999+"
         else -> unreadCount.toString()
@@ -1789,13 +1793,20 @@ internal fun rememberBottomBarClickPulseTransform(
     pulseKey: Int
 ): BottomBarClickPulseTransform {
     val progress = remember { Animatable(1f) }
-    LaunchedEffect(pulseKey) {
-        if (pulseKey <= 0) return@LaunchedEffect
-        progress.snapTo(0f)
-        progress.animateTo(
-            targetValue = 1f,
-            animationSpec = bottomBarClickPulseMotionSpec()
-        )
+    val currentPulseKey by rememberUpdatedState(pulseKey)
+    LaunchedEffect(progress) {
+        snapshotFlow { currentPulseKey }.collect { key ->
+            // Repeated taps keep the current feedback moving; do not reset its scale.
+            if (key > 0 && !progress.isRunning) {
+                launch(start = kotlinx.coroutines.CoroutineStart.UNDISPATCHED) {
+                    progress.snapTo(0f)
+                    progress.animateTo(
+                        targetValue = 1f,
+                        animationSpec = bottomBarClickPulseMotionSpec()
+                    )
+                }
+            }
+        }
     }
     return resolveBottomBarClickPulseTransform(progress.value)
 }
@@ -2208,6 +2219,8 @@ fun FrostedBottomBar(
     indicatorPositionProvider: (() -> Float)? = null,
     isPagerScrollInProgressProvider: () -> Boolean = { false },
     isPagerDraggingProvider: (() -> Boolean)? = null,
+    pagerTargetPositionProvider: (() -> Float)? = null,
+    isPagerNavigatingProvider: (() -> Boolean)? = null,
     uiSkinDecoration: BottomBarUiSkinDecoration? = null,
     linkedDockPhase: LinkedDockPhase? = null,
     onLinkedDockPhaseChange: ((LinkedDockPhase) -> Unit)? = null,
@@ -2284,6 +2297,8 @@ fun FrostedBottomBar(
                     indicatorPositionProvider = indicatorPositionProvider,
                     isPagerScrollInProgressProvider = isPagerScrollInProgressProvider,
                     isPagerDraggingProvider = isPagerDraggingProvider,
+                    pagerTargetPositionProvider = pagerTargetPositionProvider,
+                    isPagerNavigatingProvider = isPagerNavigatingProvider,
                     uiSkinDecoration = uiSkinDecoration,
                     sharedLiquidGlassEnabled = policy.liquidGlassEnabled,
                     linkedDockPhase = linkedDockPhase,
@@ -2321,6 +2336,8 @@ fun FrostedBottomBar(
                     indicatorPositionProvider = indicatorPositionProvider,
                     isPagerScrollInProgressProvider = isPagerScrollInProgressProvider,
                     isPagerDraggingProvider = isPagerDraggingProvider,
+                    pagerTargetPositionProvider = pagerTargetPositionProvider,
+                    isPagerNavigatingProvider = isPagerNavigatingProvider,
                     uiSkinDecoration = uiSkinDecoration,
                     sharedLiquidGlassEnabled = policy.liquidGlassEnabled,
                     linkedDockPhase = linkedDockPhase,
@@ -2362,6 +2379,8 @@ private fun MaterialBottomBar(
     indicatorPositionProvider: (() -> Float)? = null,
     isPagerScrollInProgressProvider: () -> Boolean = { false },
     isPagerDraggingProvider: (() -> Boolean)? = null,
+    pagerTargetPositionProvider: (() -> Float)? = null,
+    isPagerNavigatingProvider: (() -> Boolean)? = null,
     uiSkinDecoration: BottomBarUiSkinDecoration? = null,
     sharedLiquidGlassEnabled: Boolean,
     linkedDockPhase: LinkedDockPhase? = null,
@@ -2588,6 +2607,8 @@ private fun MaterialBottomBar(
             indicatorPositionProvider = indicatorPositionProvider,
             isPagerScrollInProgressProvider = isPagerScrollInProgressProvider,
             isPagerDraggingProvider = isPagerDraggingProvider,
+            pagerTargetPositionProvider = pagerTargetPositionProvider,
+            isPagerNavigatingProvider = isPagerNavigatingProvider,
             uiSkinDecoration = uiSkinDecoration,
             linkedDockPhase = linkedDockPhase,
             onLinkedDockPhaseChange = onLinkedDockPhaseChange,
@@ -2957,6 +2978,8 @@ private fun MiuixBottomBar(
     indicatorPositionProvider: (() -> Float)? = null,
     isPagerScrollInProgressProvider: () -> Boolean = { false },
     isPagerDraggingProvider: (() -> Boolean)? = null,
+    pagerTargetPositionProvider: (() -> Float)? = null,
+    isPagerNavigatingProvider: (() -> Boolean)? = null,
     uiSkinDecoration: BottomBarUiSkinDecoration? = null,
     sharedLiquidGlassEnabled: Boolean,
     linkedDockPhase: LinkedDockPhase? = null,
@@ -3071,6 +3094,8 @@ private fun MiuixBottomBar(
             indicatorPositionProvider = indicatorPositionProvider,
             isPagerScrollInProgressProvider = isPagerScrollInProgressProvider,
             isPagerDraggingProvider = isPagerDraggingProvider,
+            pagerTargetPositionProvider = pagerTargetPositionProvider,
+            isPagerNavigatingProvider = isPagerNavigatingProvider,
             uiSkinDecoration = uiSkinDecoration,
             linkedDockPhase = linkedDockPhase,
             onLinkedDockPhaseChange = onLinkedDockPhaseChange,
@@ -3511,6 +3536,8 @@ private fun BiliPaiFloatingBottomBar(
     indicatorPositionProvider: (() -> Float)? = null,
     isPagerScrollInProgressProvider: () -> Boolean = { false },
     isPagerDraggingProvider: (() -> Boolean)? = null,
+    pagerTargetPositionProvider: (() -> Float)? = null,
+    isPagerNavigatingProvider: (() -> Boolean)? = null,
     uiSkinDecoration: BottomBarUiSkinDecoration? = null,
     linkedDockPhase: LinkedDockPhase? = null,
     onLinkedDockPhaseChange: ((LinkedDockPhase) -> Unit)? = null,
@@ -3592,6 +3619,8 @@ private fun BiliPaiFloatingBottomBar(
                     indicatorPositionProvider = indicatorPositionProvider,
                     isPagerScrollInProgressProvider = isPagerScrollInProgressProvider,
                     isPagerDraggingProvider = isPagerDraggingProvider,
+                    pagerTargetPositionProvider = pagerTargetPositionProvider,
+                    isPagerNavigatingProvider = isPagerNavigatingProvider,
                     uiSkinDecoration = uiSkinDecoration,
                     embeddedDock = true,
                 )
@@ -3636,6 +3665,8 @@ private fun BiliPaiFloatingBottomBar(
             indicatorPositionProvider = indicatorPositionProvider,
             isPagerScrollInProgressProvider = isPagerScrollInProgressProvider,
             isPagerDraggingProvider = isPagerDraggingProvider,
+            pagerTargetPositionProvider = pagerTargetPositionProvider,
+            isPagerNavigatingProvider = isPagerNavigatingProvider,
             uiSkinDecoration = uiSkinDecoration,
         )
     }
@@ -3683,6 +3714,8 @@ private fun BiliPaiFloatingBottomBarChrome(
     indicatorPositionProvider: (() -> Float)? = null,
     isPagerScrollInProgressProvider: () -> Boolean = { false },
     isPagerDraggingProvider: (() -> Boolean)? = null,
+    pagerTargetPositionProvider: (() -> Float)? = null,
+    isPagerNavigatingProvider: (() -> Boolean)? = null,
     uiSkinDecoration: BottomBarUiSkinDecoration? = null
 ) {
     // BiliPai 对齐：材质/动效由 FloatingBottomBar 三层结构承担；
@@ -3708,7 +3741,10 @@ private fun BiliPaiFloatingBottomBarChrome(
     val isValidSelection = currentItem in visibleItems
     val themedMiuixSelection = LocalAppUiStyle.current == AppUiStyle.MIUIX &&
         !effectiveGlassEnabled && uiSkinDecoration == null
-    val baseSelectedColor = AppContentColors.selectionAccent(effectiveGlassEnabled)
+    val themedMd3Selection = LocalAppUiStyle.current == AppUiStyle.MATERIAL3 &&
+        !effectiveGlassEnabled && uiSkinDecoration == null
+    val baseSelectedColor = if (themedMd3Selection) AppSurfaceTokens.onSecondaryContainer()
+        else AppContentColors.selectionAccent(effectiveGlassEnabled)
     val baseUnselectedColor = if (!effectiveGlassEnabled && (themedMiuixSelection || iconStyle == SharedFloatingBottomBarIconStyle.MATERIAL)) {
         AppContentColors.secondaryText()
     } else {
@@ -3819,10 +3855,10 @@ private fun BiliPaiFloatingBottomBarChrome(
         )
     }
     // Share the theme-tinted selection fill with opaque top tabs and category rails.
-    val themedIndicatorContainerColor = if (themedMiuixSelection) {
-        AppSurfaceTokens.selectionContainer()
-    } else {
-        null
+    val themedIndicatorContainerColor = when {
+        themedMiuixSelection -> AppSurfaceTokens.selectionContainer()
+        themedMd3Selection -> AppSurfaceTokens.secondaryContainer()
+        else -> null
     }
     val floatingColors = FloatingBottomBarColors(
         containerColor = floatingContainerColor,
@@ -4102,6 +4138,8 @@ private fun BiliPaiFloatingBottomBarChrome(
                                     externalPagerMotionEffectsEnabled = indicatorPositionProvider != null,
                                     isScrollInProgressProvider = isPagerScrollInProgressProvider,
                                     isPagerDraggingProvider = isPagerDraggingProvider,
+                                    pagerTargetPositionProvider = pagerTargetPositionProvider,
+                                    isPagerNavigatingProvider = isPagerNavigatingProvider,
                                     liquidGlassTuning = liquidGlassTuning,
                                 ) {
                                     dockContent()
@@ -4413,6 +4451,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     interactionModifier: Modifier = Modifier,
     wobblePosition: (() -> Float)? = null,
     wobbleSelection: (() -> Any?)? = null,
+    wobbleReady: (() -> Boolean)? = null,
     wobbleLastIndex: Int = -1,
 ) {
     if (!visible) return
@@ -4428,8 +4467,14 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     val motionExtentPx = with(LocalDensity.current) {
         (if (swapMotionAxes) indicatorHeight else indicatorWidth).toPx().coerceAtLeast(1f)
     }
+    // Only the glass tail uses this gate; native transforms and timings remain unchanged.
     val canRecoil: () -> Boolean = {
-        !isDragging
+        !isDragging && (wobbleReady?.invoke() ?: (
+            effectivePressProgress <= 0.001f && abs(velocityItemsPerSecond) <= 0.01f &&
+                indicatorLayerScaleProgress <= 0.001f &&
+                abs((indicatorLayerScaleTransform?.scaleX ?: 1f) - 1f) <= 0.001f &&
+                abs((indicatorLayerScaleTransform?.scaleY ?: 1f) - 1f) <= 0.001f
+            ))
     }
     val wobble = rememberLiquidIndicatorWobble(
         enabled = wobbleEnabled,
@@ -4470,7 +4515,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     }
     val recoilStretch: () -> Float = {
         com.android.purebilibili.core.ui.animation.resolveLiquidIndicatorRecoilStretch(
-            wobble.value, !isDragging && (wobble.isSelectionMotion || canRecoil()),
+            wobble.value, canRecoil(),
         )
     }
     val layerScaleX: () -> Float = {

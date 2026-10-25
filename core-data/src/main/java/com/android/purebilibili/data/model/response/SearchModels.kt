@@ -141,6 +141,12 @@ data class SearchAllResultCategory(
     val data: List<kotlinx.serialization.json.JsonObject>? = null
 )
 
+/** 综合搜索 esports 块：data 首元素内含 contest 列表，字段为驼峰命名（由 MatchContestInfo 备用名兼容）。 */
+@Serializable
+data class SearchEsportsBlock(
+    val contest: List<MatchContestInfo> = emptyList()
+)
+
 //  [新增] 分类搜索响应 (search/type API)
 @Serializable
 data class SearchTypeResponse(
@@ -688,6 +694,7 @@ data class LiveRoomSearchItem(
     val area_v2_parent_name: String = "", // 父分区名
     val cate_name: String = "",     // 分类名 (备用)
     val tags: String = "",          // 标签
+    @SerialName("watched_show") val watchedShow: WatchedShow? = null,
     val hit_columns: List<String>? = null  // 高亮字段
 ) {
     fun cleanupFields(): LiveRoomSearchItem {

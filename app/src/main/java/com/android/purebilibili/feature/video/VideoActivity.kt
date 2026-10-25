@@ -172,6 +172,9 @@ class VideoActivity : ComponentActivity() {
             val cardFrostedGlassEnabled by SettingsManager
                 .getHomeCardFrostedGlassEnabled(this@VideoActivity)
                 .collectAsStateWithLifecycle(initialValue = false)
+            val commentReplyPreviewVisible by remember(this@VideoActivity) {
+                SettingsManager.getCommentReplyPreviewVisible(this@VideoActivity)
+            }.collectAsStateWithLifecycle(initialValue = true)
             val hapticFeedbackEnabled by SettingsManager
                 .getHapticFeedbackEnabled(this@VideoActivity)
                 .collectAsStateWithLifecycle(initialValue = true)
@@ -224,6 +227,7 @@ class VideoActivity : ComponentActivity() {
                 com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity {
                 ProvideAppTextSelectionHost {
                 CompositionLocalProvider(
+                    com.android.purebilibili.core.ui.LocalCommentReplyPreviewVisible provides commentReplyPreviewVisible,
                     com.android.purebilibili.feature.aicu.LocalAicuNavigation provides { uid: Long? ->
                         startActivity(android.content.Intent(this@VideoActivity, com.android.purebilibili.MainActivity::class.java).apply {
                             putExtra(com.android.purebilibili.EXTRA_PENDING_NAVIGATION_ROUTE,
@@ -231,6 +235,8 @@ class VideoActivity : ComponentActivity() {
                         })
                     },
                     LocalWindowSizeClass provides windowSizeClass,
+                    com.android.purebilibili.core.ui.LocalAdaptiveScaffoldHazeFactory provides
+                        { userEnabled -> com.android.purebilibili.core.ui.blur.rememberAppScaffoldHazeHandle(userEnabled) },
                     LocalAppWindowAdaptiveInfo provides appWindowAdaptiveInfo,
                     com.android.purebilibili.core.ui.LocalHingeSafeOverlayRegions provides
                         com.android.purebilibili.core.ui.adaptive.rememberHingeSafeOverlayRegions(
@@ -243,9 +249,16 @@ class VideoActivity : ComponentActivity() {
                         cardFrostedGlassEnabled,
                 ) {
                 // VideoDetailScreen handles its own UI state and player initialization
+                var nearbyVideo by remember { mutableStateOf<com.android.purebilibili.feature.nearby.NearbyVideo?>(null) }
+                com.android.purebilibili.feature.nearby.NearbyHandoffHost(
+                    miniPlayer = MiniPlayerManager.getInstance(this@VideoActivity),
+                    onOpenVideo = { nearbyVideo = it },
+                ) {
                 com.android.purebilibili.feature.video.screen.VideoDetailScreen(
-                    bvid = bvid,
-                    coverUrl = "", // Will be updated when video info loads
+                    bvid = nearbyVideo?.bvid ?: bvid,
+                    cid = nearbyVideo?.cid ?: 0L,
+                    resumePositionMsFromRoute = nearbyVideo?.positionMs ?: 0L,
+                    coverUrl = nearbyVideo?.cover.orEmpty(),
                     onBack = { onBackPressedDispatcher.onBackPressed() },
                     onNavigateToAudioMode = {
                         viewModel.setAudioMode(true)
@@ -257,6 +270,7 @@ class VideoActivity : ComponentActivity() {
                     isInPipMode = isInPipMode ||
                         MiniPlayerManager.getInstance(this@VideoActivity).shouldKeepPlaybackForPipTransition()
                 )
+                }
                 }
                 }
                 }

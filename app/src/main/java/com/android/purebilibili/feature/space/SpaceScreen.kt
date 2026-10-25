@@ -41,7 +41,7 @@ import com.android.purebilibili.core.util.animateScrollToTop
 import com.android.purebilibili.core.util.shouldShowScrollToTop
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.text.selection.SelectionContainer
+import com.android.purebilibili.core.ui.common.AppSelectionContainer as SelectionContainer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -288,6 +288,7 @@ fun SpaceScreen(
     onTopicKeywordClick: ((String) -> Unit)? = null,
     onDynamicDetailClick: (String) -> Unit = {},
     onArticleClick: (Long, String) -> Unit = { _, _ -> },
+    onMatchClick: ((Long) -> Unit)? = null,
     onViewAllClick: (String, Long, Long, String, String) -> Unit = { _, _, _, _, _ -> },
     onLikedVideosClick: ((Long, String) -> Unit)? = null,
     onMessageClick: (Long, String, String) -> Unit = { _, _, _ -> },
@@ -743,6 +744,7 @@ fun SpaceScreen(
                             onTopicKeywordClick = onTopicKeywordClick,
                             onDynamicDetailClick = onDynamicDetailClick,
                             onArticleClick = onArticleClick,
+                            onMatchClick = onMatchClick,
                             onViewAllClick = onViewAllClick,
                             onLikedVideosClick = onLikedVideosClick,
                             onMainTabSelected = viewModel::selectMainTab,
@@ -1154,6 +1156,7 @@ private fun SpaceContent(
     onTopicKeywordClick: ((String) -> Unit)? = null,
     onDynamicDetailClick: (String) -> Unit,
     onArticleClick: (Long, String) -> Unit,
+    onMatchClick: ((Long) -> Unit)? = null,
     onViewAllClick: (String, Long, Long, String, String) -> Unit,
     onLikedVideosClick: ((Long, String) -> Unit)? = null,
     onMainTabSelected: (SpaceMainTab) -> Unit,
@@ -2085,6 +2088,7 @@ private fun SpaceContent(
                                     },
                                     onArticleClick = onArticleClick,
                                     onDynamicDetailClick = onDynamicDetailClick,
+                                    onMatchClick = onMatchClick,
                                 ),
                                 interaction = DynamicCardInteractionActions(
                                     onCommentClick = { onDynamicDetailClick(dynamic.id_str) },

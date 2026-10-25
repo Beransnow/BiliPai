@@ -388,6 +388,7 @@ internal fun SettingsRootCategoryContent(
     actions: SettingsRootCategoryActions,
     state: SettingsRootCategoryState
 ) {
+    val nearbyHandoff = com.android.purebilibili.feature.nearby.LocalNearbyHandoff.current
     val resolvedCategory = canonicalSettingsRootCategory(category)
     Column {
         when (resolvedCategory) {
@@ -431,6 +432,20 @@ internal fun SettingsRootCategoryContent(
                 }
             }
             SettingsRootCategory.PLAYBACK_QUALITY -> {
+                if (com.android.purebilibili.feature.nearby.NEARBY_HANDOFF_ENABLED) {
+                    SettingsRootCategoryEntranceSection {
+                        SettingsDetailGroup(title = "跨设备播放") {
+                            SettingsDetailEntrySection(entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.NEARBY_HANDOFF,
+                                    title = settingsDestinationCopy(SettingsSearchTarget.NEARBY_HANDOFF).title,
+                                    value = settingsDestinationCopy(SettingsSearchTarget.NEARBY_HANDOFF).summary,
+                                    onClick = { nearbyHandoff?.openDevices?.invoke() },
+                                ),
+                            ))
+                        }
+                    }
+                }
                 SettingsRootCategoryEntranceSection {
                     SettingsDetailGroup(title = "播放与画质") {
                         SettingsDetailEntrySection(

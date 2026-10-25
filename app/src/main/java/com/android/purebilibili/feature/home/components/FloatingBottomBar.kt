@@ -62,6 +62,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.draw.drawWithContent
@@ -530,6 +531,8 @@ fun FloatingBottomBar(
     dragScrollState: ScrollState? = null,
     dragScrollViewportWidthPx: () -> Float = { 0f },
     isPagerDraggingProvider: (() -> Boolean)? = null,
+    pagerTargetPositionProvider: (() -> Float)? = null,
+    isPagerNavigatingProvider: (() -> Boolean)? = null,
     content: @Composable RowScope.() -> Unit
 ) {
     // Do not use the system night flag here: BiliPai supports an app-only dark theme.
@@ -678,6 +681,8 @@ fun FloatingBottomBar(
     val indicatorPositionLatest by rememberUpdatedState(indicatorPositionProvider)
     val isScrollInProgressLatest by rememberUpdatedState(isScrollInProgressProvider)
     val isPagerDraggingLatest by rememberUpdatedState(isPagerDraggingProvider)
+    val pagerTargetPositionLatest by rememberUpdatedState(pagerTargetPositionProvider)
+    val isPagerNavigatingLatest by rememberUpdatedState(isPagerNavigatingProvider)
     val externalPagerMotionEffectsLatest by rememberUpdatedState(externalPagerMotionEffectsEnabled)
     val pagerFollowGate = remember { ExternalPagerIndicatorFollowGate() }
     var selectionTapFeedbackActive by remember { mutableStateOf(false) }
@@ -703,6 +708,16 @@ fun FloatingBottomBar(
                     pressProgressProvider = if (isLiquidGlassMode) null else {
                         { holder.instance?.pressProgress ?: 0f }
                     },
+                    // 页面横滑没有 dock 指针事件，也需要为放大的指示器提供可折射亮光。
+                    // 在绘制阶段读取分页进度；点按仍由原来的触摸亮光负责。
+                    motionProgressProvider = if (isLiquidGlassMode) {
+                        {
+                            val animation = holder.instance
+                            if (externalPagerMotionEffectsLatest && glassTapTarget == null &&
+                                isScrollInProgressLatest() && animation?.isDragging == false
+                            ) animation.pressProgress else 0f
+                        }
+                    } else null,
                 )
             }
         } else {
@@ -842,6 +857,20 @@ fun FloatingBottomBar(
             }
         }
     }
+    // Programmatic return is one selection, even when the pager crosses several pages.
+    // Native materials and actual finger-driven paging retain their existing behavior.
+    LaunchedEffect(dampedDragAnimation, isLiquidGlassMode, maxTabIndex) {
+        if (!isLiquidGlassMode) return@LaunchedEffect
+        snapshotFlow {
+            if (isPagerNavigatingLatest?.invoke() == true) {
+                pagerTargetPositionLatest?.invoke()?.roundToInt()?.coerceIn(0, maxTabIndex)
+            } else null
+        }.collect { target ->
+            if (target != null && glassTapTarget != target && !dampedDragAnimation.isDragging) {
+                selectionTapFeedback(target)
+            }
+        }
+    }
     LaunchedEffect(glassTapTarget, isLiquidGlassMode) {
         val target = glassTapTarget ?: return@LaunchedEffect
         snapshotFlow {
@@ -967,29 +996,44 @@ fun FloatingBottomBar(
                 (dragSelectionEnabled || longPressDragSelectionEnabled),
         )
     }
-    // Glass recoil joins release immediately. Native press/velocity transforms retain their specs.
+    // Glass-only policy: real pointers hold the tail; all released paths use the final target.
+    // Pager-follow scales already shrink with page progress, so they must not wait for scale == 1.
+    val wobbleManualInteraction: () -> Boolean = {
+        resolveFloatingDockWobbleManualInteraction(
+            indicatorDragging = dampedDragAnimation.isDragging,
+            pagerDragging = isPagerDraggingLatest?.invoke(),
+            pagerScrolling = isScrollInProgressLatest(),
+            tapMotionActive = (glassTapTarget != null || selectionTapFeedbackActive),
+            indicatorOwnsTarget = pagerFollowGate.ownedTargetIndex != null,
+        )
+    }
+    val followsExternalPager: () -> Boolean = {
+        externalPagerMotionEffectsLatest && indicatorPositionLatest != null && pagerTargetPositionLatest != null &&
+            glassTapTarget == null && pagerFollowGate.ownedTargetIndex == null
+    }
+    val wobbleTarget: () -> Float = {
+        glassTapTarget?.toFloat() ?: pagerFollowGate.ownedTargetIndex?.toFloat() ?:
+            (if (followsExternalPager()) pagerTargetPositionLatest?.invoke() else null) ?:
+            dampedDragAnimation.targetValue
+    }
     val canRecoil: () -> Boolean = {
-        !dampedDragAnimation.isDragging &&
-            (!isScrollInProgressLatest() || pagerFollowGate.ownedTargetIndex != null) &&
-            !selectionTapFeedbackActive
+        com.android.purebilibili.core.ui.animation.canStartLiquidIndicatorRecoil(
+            position = rawIndicatorPositionProvider(),
+            target = wobbleTarget(),
+            range = maxTabIndex.toFloat(),
+            interactionActive = wobbleManualInteraction(),
+            returning = followsExternalPager() || dampedDragAnimation.isReadyForRecoil,
+        )
     }
     val indicatorWobble = rememberLiquidIndicatorWobble(
         enabled = isLiquidGlassMode,
         // Position is in slots: search/label width changes must not recreate the shape spring.
         geometryKey = safeTabsCount,
         canSettle = canRecoil,
-        // 松手即确认拖动落点；稍后的页面回执不能再触发一次选中形变。
-        selectionKey = { glassTapTarget ?: pagerFollowGate.ownedTargetIndex ?: selectedIndexLatest.value() },
-        interactionActive = {
-            resolveFloatingDockWobbleManualInteraction(
-                indicatorDragging = dampedDragAnimation.isDragging,
-                pagerDragging = isPagerDraggingLatest?.invoke(),
-                pagerScrolling = isScrollInProgressLatest(),
-                tapMotionActive = (glassTapTarget != null || selectionTapFeedbackActive),
-                indicatorOwnsTarget = pagerFollowGate.ownedTargetIndex != null,
-            )
-        },
-        // 目标锁只负责导航；甩尾仅在分页实际运动时保持，取消切页后可自行收敛。
+        // 松手仅记录待回弹；稍后的页面回执不能再触发一次甩尾。
+        selectionKey = { wobbleTarget().roundToInt() },
+        interactionActive = wobbleManualInteraction,
+        // 点按身份持续到收尾结束；是否进入回弹由接近落点与缩放收回共同决定。
         selectionMotionActive = {
             (glassTapTarget != null && isScrollInProgressLatest()) || selectionTapFeedbackActive
         },
@@ -1000,7 +1044,7 @@ fun FloatingBottomBar(
             indicatorWobble.value,
             !dampedDragAnimation.isDragging &&
                 isPagerDraggingLatest?.invoke() != true &&
-                (indicatorWobble.isSelectionMotion || canRecoil()),
+                canRecoil(),
         )
     }
     LaunchedEffect(dampedDragAnimation) {
@@ -1037,8 +1081,7 @@ fun FloatingBottomBar(
         }
     }
     // A single final geometry feeds the backdrop transform and its optical band.
-    // Manual dragging keeps its original velocity; release fades that contribution
-    // continuously while the original bloom and recoil springs keep running.
+    // Original velocity stretch stays active; the landing tail overlaps the final shrink.
     val indicatorVelocityProvider: () -> Float = {
         dampedDragAnimation.velocity *
             if (dampedDragAnimation.isDragging) 1f else indicatorWobble.velocityWeight
@@ -1108,11 +1151,10 @@ fun FloatingBottomBar(
         }
     }
     val baseContentAlphaProvider: (Int) -> Float = { itemIndex ->
-        // Fade the dock copy of the selected label in every mode. Leaving it opaque
-        // under a clamped right-edge indicator stacks two glyphs (重影).
+        // 原生模式只绘制一份前景；玻璃模式由捕获副本承接指示器覆盖区的文字。
         val coverage = (1f - abs(itemIndex.toFloat() - visualIndicatorPositionProvider()))
             .coerceIn(0f, 1f)
-        1f - coverage
+        resolveFloatingDockBaseContentAlpha(isLiquidGlassMode, coverage)
     }
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
@@ -1246,7 +1288,7 @@ fun FloatingBottomBar(
             // not leave a route-selected accent behind while the capsule is dragged.
             LocalFloatingBottomBarSelectedContentColor provides if (isLiquidGlassMode) {
                 Color.Unspecified
-            } else LocalFloatingBottomBarSelectedContentColor.current,
+            } else colors.activeContentColor,
             LocalFloatingBottomBarTapFeedback provides selectionTapFeedback,
             LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
             LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
@@ -1350,7 +1392,8 @@ fun FloatingBottomBar(
             } else {
                 Modifier
             }
-            if (drawShell && contentIndicatorWidthsPx.isNotEmpty()) {
+            // 原生背景与文字分层，让指示器处于背景之上、前景文字之下。
+            if (drawShell && (!isLiquidGlassMode || contentIndicatorWidthsPx.isNotEmpty())) {
                 Box(
                     Modifier
                         .matchParentSize()
@@ -1374,6 +1417,8 @@ fun FloatingBottomBar(
             }
             Row(
                 Modifier
+                    // 原生文字位于指示器之上，避免选中文字被填色遮住。
+                    .zIndex(if (isLiquidGlassMode) 0f else 1f)
                     // Observe visible-row touches without giving the optical copy a hit target.
                     .then(if (isLiquidGlassMode) interactiveHighlight?.gestureModifier ?: Modifier else Modifier)
                     .onGloballyPositioned { coords ->
@@ -1392,7 +1437,7 @@ fun FloatingBottomBar(
                             clip = false
                         }
                     }
-                    .then(if (contentIndicatorWidthsPx.isEmpty()) shellModifier else Modifier)
+                    .then(if (isLiquidGlassMode && contentIndicatorWidthsPx.isEmpty()) shellModifier else Modifier)
                     .drawWithContent {
                         val scroll = dragScrollState
                         val viewportWidth = dragScrollViewportWidthLatest.value()
@@ -1606,53 +1651,52 @@ fun FloatingBottomBar(
                             } else Modifier
                         )
                         .clip(indicatorShape)
-                        .then(
-                            if (indicatorIdleSurfaceColorOverride != null || isLiquidGlassMode) {
-                                Modifier.background(
-                                    indicatorIdleSurfaceColorOverride ?: colors.contentColor.copy(alpha = 0.1f),
-                                    indicatorShape,
-                                )
-                            } else {
-                                Modifier
-                            }
+                        .background(
+                            indicatorIdleSurfaceColorOverride ?: if (isLiquidGlassMode) {
+                                colors.contentColor.copy(alpha = 0.1f)
+                            } else colors.indicatorColor.copy(alpha = 0.14f),
+                            indicatorShape,
                         )
                         .height(fittedIndicatorHeight)
                         .then(indicatorWidthModifier),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    CompositionLocalProvider(
-                        LocalFloatingBottomBarContentColor provides colors.activeContentColor,
-                        LocalFloatingBottomBarActiveContent provides true,
-                        LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
-                        LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
-                    ) {
-                        Row(
-                            Modifier
-                                .clearAndSetSemantics {}
-                                .wrapContentWidth(align = Alignment.Start, unbounded = true)
-                                .requiredWidth(
-                                    with(density) {
-                                        (totalWidthPx - (horizontalPadding * 2).toPx()).coerceAtLeast(0f).toDp()
-                                    }
-                                )
-                                .requiredHeight(capturedContentHeight)
-                                .graphicsLayer {
-                                    val contentTranslationPx =
-                                        resolveFloatingDockClippedContentTranslationPx(
-                                            position = visualIndicatorPositionProvider(),
-                                            tabWidthPx = tabWidthPx,
-                                            tabsCount = safeTabsCount,
-                                            indicatorWidthPx = indicatorWidthPxProvider(),
-                                        )
-                                    translationX = if (isLtr) {
-                                        contentTranslationPx
-                                    } else {
-                                        -contentTranslationPx
-                                    }
-                                },
-                            verticalAlignment = Alignment.CenterVertically,
-                            content = { content(this) }
-                        )
+                    // 原生前景不再依赖经过裁切与平移的副本；仅保留玻璃回退副本。
+                    if (isLiquidGlassMode) {
+                        CompositionLocalProvider(
+                            LocalFloatingBottomBarContentColor provides colors.activeContentColor,
+                            LocalFloatingBottomBarActiveContent provides true,
+                            LocalFloatingBottomBarIndicatorPosition provides visualIndicatorPositionProvider,
+                            LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
+                        ) {
+                            Row(
+                                Modifier
+                                    .clearAndSetSemantics {}
+                                    .wrapContentWidth(align = Alignment.Start, unbounded = true)
+                                    .requiredWidth(
+                                        with(density) {
+                                            (totalWidthPx - (horizontalPadding * 2).toPx()).coerceAtLeast(0f).toDp()
+                                        }
+                                    )
+                                    .requiredHeight(capturedContentHeight)
+                                    .graphicsLayer {
+                                        val contentTranslationPx =
+                                            resolveFloatingDockClippedContentTranslationPx(
+                                                position = visualIndicatorPositionProvider(),
+                                                tabWidthPx = tabWidthPx,
+                                                tabsCount = safeTabsCount,
+                                                indicatorWidthPx = indicatorWidthPxProvider(),
+                                            )
+                                        translationX = if (isLtr) {
+                                            contentTranslationPx
+                                        } else {
+                                            -contentTranslationPx
+                                        }
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                content = { content(this) }
+                            )
+                        }
                     }
                 }
             }
@@ -1662,6 +1706,7 @@ fun FloatingBottomBar(
             // overflow cannot steal taps from neighbouring destinations.
             Box(
                 modifier = Modifier
+                    .zIndex(if (isLiquidGlassMode) 0f else 2f)
                     .graphicsLayer {
                         val slotOffsetPx = visualIndicatorPositionProvider() * tabWidthPx
                         translationX = if (isLtr) {

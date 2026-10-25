@@ -197,7 +197,9 @@ fun TopControlBar(
                                 HeaderButton(description, onDanmakuToggle) {
                                     PiliPlusDanmakuGlyph(
                                         if (danmakuEnabled) "\uE803" else "\uE802",
-                                        description, Color.White, 20.dp,
+                                        description,
+                                        if (danmakuEnabled) com.android.purebilibili.core.ui.AppSurfaceTokens.primary() else Color.White,
+                                        20.dp,
                                     )
                                 }
                             }

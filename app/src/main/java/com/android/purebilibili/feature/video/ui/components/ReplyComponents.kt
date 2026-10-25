@@ -122,7 +122,7 @@ import com.android.purebilibili.core.ui.resolveUserAvatarCornerMark
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.resolveUpNameColor
 import com.android.purebilibili.core.ui.components.AppSurface
-import androidx.compose.foundation.text.selection.SelectionContainer
+import com.android.purebilibili.core.ui.common.AppSelectionContainer as SelectionContainer
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -557,24 +557,25 @@ internal enum class ReplyActionSheetAction {
     COPY_USERNAME,
     QUERY_AUTHOR_HISTORY,
     TIME_STYLE,
+    TOGGLE_REPLY_PREVIEW,
     SAVE,
     SHARE,
     REPLY,
     BLOCK_USER,
     REPORT,
     CHECK_FRAUD,
-    TOGGLE_TOP,
-    DELETE
+    TOGGLE_TOP
 }
 
 internal fun buildReplyActionSheetActions(
-    canDelete: Boolean,
+    canCheckFraud: Boolean,
     canReport: Boolean,
     canShare: Boolean,
     canBlockUser: Boolean,
     topActionLabel: String? = null,
     canCopyUsername: Boolean = true,
     canQueryAuthorHistory: Boolean = false,
+    canToggleReplyPreview: Boolean = false,
 ): List<ReplyActionSheetAction> {
     return buildList {
         add(ReplyActionSheetAction.COPY_ALL)
@@ -584,6 +585,9 @@ internal fun buildReplyActionSheetActions(
         }
         if (canQueryAuthorHistory) add(ReplyActionSheetAction.QUERY_AUTHOR_HISTORY)
         add(ReplyActionSheetAction.TIME_STYLE)
+        if (canToggleReplyPreview) {
+            add(ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW)
+        }
         add(ReplyActionSheetAction.SAVE)
         if (canShare) {
             add(ReplyActionSheetAction.SHARE)
@@ -595,14 +599,11 @@ internal fun buildReplyActionSheetActions(
         if (canReport) {
             add(ReplyActionSheetAction.REPORT)
         }
-        if (canDelete) {
+        if (canCheckFraud) {
             add(ReplyActionSheetAction.CHECK_FRAUD)
         }
         if (!topActionLabel.isNullOrBlank()) {
             add(ReplyActionSheetAction.TOGGLE_TOP)
-        }
-        if (canDelete) {
-            add(ReplyActionSheetAction.DELETE)
         }
     }
 }
@@ -617,6 +618,7 @@ private fun resolveReplyActionSheetLabel(
         ReplyActionSheetAction.COPY_USERNAME -> "复制用户名"
         ReplyActionSheetAction.QUERY_AUTHOR_HISTORY -> "查询作者历史"
         ReplyActionSheetAction.TIME_STYLE -> "评论时间样式"
+        ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW -> "显示回复"
         ReplyActionSheetAction.SAVE -> "保存评论"
         ReplyActionSheetAction.SHARE -> "分享评论"
         ReplyActionSheetAction.REPLY -> "回复"
@@ -624,14 +626,12 @@ private fun resolveReplyActionSheetLabel(
         ReplyActionSheetAction.REPORT -> "举报"
         ReplyActionSheetAction.CHECK_FRAUD -> "检测评论状态"
         ReplyActionSheetAction.TOGGLE_TOP -> topActionLabel.orEmpty()
-        ReplyActionSheetAction.DELETE -> "删除"
     }
 }
 
 private fun isReplyActionDestructive(action: ReplyActionSheetAction): Boolean {
     return action == ReplyActionSheetAction.REPORT ||
-        action == ReplyActionSheetAction.BLOCK_USER ||
-        action == ReplyActionSheetAction.DELETE
+        action == ReplyActionSheetAction.BLOCK_USER
 }
 
 internal fun resolveReplyCommentImageSaveToast(success: Boolean): String {
@@ -1290,12 +1290,17 @@ fun ReplyItemView(
     val scope = rememberCoroutineScope()
     val isUpComment = upMid > 0 && item.mid == upMid
     val showResolvedIdentityDecorations = shouldShowReplyIdentityDecorations(showIdentityDecorations)
+    // 右上角菜单的全局开关只控制"回复"快捷按钮本身，楼中楼预览不受影响。
+    val replyButtonVisible = com.android.purebilibili.core.ui.LocalCommentReplyPreviewVisible.current
     val showSubPreview = shouldShowReplySubPreview(
         hideSubPreview = hideSubPreview,
         lightweightMode = lightweightMode
     )
-    val collapsedSubReplyPreviewLimit = remember(context) {
-        SettingsManager.getCommentCollapsedReplyPreviewLimitSync(context)
+    val preview = rememberReplyPreviewState(item = item, enabled = showSubPreview)
+    val collapsedSubReplyPreviewLimit = preview.collapsedLimit
+    val previewReplies = preview.replies
+    val previewRoot = remember(item, previewReplies) {
+        if (item.replies.orEmpty() == previewReplies) item else item.copy(replies = previewReplies)
     }
     val localEmoteMap = remember(item.content.emote, emoteMap) {
         val inlineEmotes = item.content.emote.orEmpty()
@@ -1392,31 +1397,31 @@ fun ReplyItemView(
             compact = true
         )
     }
-    var isSubPreviewExpanded by remember(item.rpid, item.replies) {
+    var isSubPreviewExpanded by remember(item.rpid, previewReplies) {
         mutableStateOf(
             resolveInitialSubReplyPreviewExpanded(
-                previewReplyCount = item.replies.orEmpty().size
+                previewReplyCount = previewReplies.size
             )
         )
     }
-    val visibleSubReplies = remember(item.replies, isSubPreviewExpanded, collapsedSubReplyPreviewLimit) {
+    val visibleSubReplies = remember(previewReplies, isSubPreviewExpanded, collapsedSubReplyPreviewLimit) {
         resolveVisibleSubReplies(
-            replies = item.replies,
+            replies = previewReplies,
             expanded = isSubPreviewExpanded,
             collapsedLimit = collapsedSubReplyPreviewLimit
         )
     }
-    val showInlineSubReplyToggle = remember(item.replies, collapsedSubReplyPreviewLimit) {
+    val showInlineSubReplyToggle = remember(previewReplies, collapsedSubReplyPreviewLimit) {
         shouldShowInlineSubReplyToggle(
-            previewReplyCount = item.replies.orEmpty().size,
+            previewReplyCount = previewReplies.size,
             collapsedLimit = collapsedSubReplyPreviewLimit
         )
     }
-    val threadReplyCount = remember(item.count, item.rcount, item.replies) {
-        resolveReplyThreadCount(item)
+    val threadReplyCount = remember(item.count, item.rcount, item.replies, previewReplies) {
+        maxOf(resolveReplyThreadCount(item), previewReplies.size)
     }
-    val hasUpSubReply = remember(item.replyControl?.upReply, item.replies, upMid) {
-        item.replyControl?.upReply == true || (upMid > 0 && item.replies.orEmpty().any { it.mid == upMid })
+    val hasUpSubReply = remember(item.replyControl?.upReply, previewReplies, upMid) {
+        item.replyControl?.upReply == true || (upMid > 0 && previewReplies.any { it.mid == upMid })
     }
     val subReplySummaryLabel = remember(threadReplyCount, hasUpSubReply) {
         resolveSubReplyPreviewSummaryLabel(
@@ -1424,8 +1429,8 @@ fun ReplyItemView(
             hasUpReply = hasUpSubReply
         )
     }
-    val openThreadFromRootClick = remember(hideSubPreview, item.count, item.rcount, item.replies) {
-        !hideSubPreview && shouldOpenReplyThreadFromRootClick(item)
+    val openThreadFromRootClick = remember(hideSubPreview, previewRoot) {
+        !hideSubPreview && shouldOpenReplyThreadFromRootClick(previewRoot)
     }
     val copyToClipboard = rememberClipboardCopyHandler()
     val blockedUpRepository = remember { BlockedUpRepository.getInstance(context) }
@@ -1501,7 +1506,9 @@ fun ReplyItemView(
     if (showActionSheet) {
         ReplyActionSheet(
             queryAuthorUid = replyMemberMid,
-            canDelete = onDeleteClick != null,
+            canCheckFraud = onCheckFraudClick != null,
+            // 楼中楼详情页的行也复用同一开关：控制其下方"回复"快捷按钮的显示。
+            canToggleReplyPreview = true,
             canReport = onReportClick != null,
             canShare = shouldSupportReplyShare(item),
             canBlockUser = replyMemberMid > 0L,
@@ -1524,7 +1531,7 @@ fun ReplyItemView(
                 shareReplyComment()
             },
             onReply = {
-                onReplyClick?.invoke() ?: onSubClick(item, 0L)
+                onReplyClick?.invoke() ?: onSubClick(previewRoot, 0L)
             },
             onBlockUser = {
                 confirmBlockUser = true
@@ -1537,9 +1544,6 @@ fun ReplyItemView(
             },
             onCheckFraud = {
                 onCheckFraudClick?.invoke()
-            },
-            onDelete = {
-                onDeleteClick?.invoke()
             }
         )
     }
@@ -1598,8 +1602,11 @@ fun ReplyItemView(
             )
             .combinedClickable(
                 onClick = {
-                    if (openThreadFromRootClick) {
-                        onSubClick(item, 0L)
+                    // 条目内部的空白可直接回复；正文、头像及操作按钮各自消费点击。
+                    if (onReplyClick != null) {
+                        onReplyClick()
+                    } else if (openThreadFromRootClick) {
+                        onSubClick(previewRoot, 0L)
                     } else {
                         onClick()
                     }
@@ -1671,7 +1678,8 @@ fun ReplyItemView(
                                 color = resolveUpNameColor(
                                     vipStatus = item.member.vip?.vipStatus ?: 0,
                                     vipType = item.member.vip?.vipType ?: 0,
-                                    onSurface = appearance.primaryTextColor.copy(alpha = 0.9f),
+                                    // 用户名用主题强调色与正文区分层次，大会员保留专属粉色。
+                                    onSurface = appearance.accentColor,
                                     secondary = com.android.purebilibili.core.ui.components.userVipPink(),
                                 ),
                                 maxLines = 1,
@@ -1774,7 +1782,7 @@ fun ReplyItemView(
                         noteCvidStr = item.noteCvidStr,
                         prefix = contentPrefix,
                         onPlainTextClick = if (openThreadFromRootClick) {
-                            { onSubClick(item, 0L) }
+                            { onSubClick(previewRoot, 0L) }
                         } else {
                             null
                         }
@@ -1805,13 +1813,15 @@ fun ReplyItemView(
 
                     Spacer(modifier = Modifier.height(2.dp))
 
-                    // Footer Actions
+                    // Footer Actions；"隐藏回复"开启时收起回复快捷入口（长按菜单仍可回复）。
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                    ReplyTextAction(
-                        label = "回复",
-                        appearance = appearance,
-                        onClick = { onReplyClick?.invoke() ?: onSubClick(item, 0L) }
-                    )
+                    if (replyButtonVisible) {
+                        ReplyTextAction(
+                            label = "回复",
+                            appearance = appearance,
+                            onClick = { onReplyClick?.invoke() ?: onSubClick(previewRoot, 0L) }
+                        )
+                    }
 
                     // [新增] 翻译按钮 (胶囊样式)
                     if (canTranslate) {
@@ -1888,6 +1898,20 @@ fun ReplyItemView(
 
                     Spacer(modifier = Modifier.weight(1f))
 
+                    if (onDeleteClick != null) {
+                        Box(modifier = Modifier.height(32.dp)) {
+                            AppIconButton(onClick = onDeleteClick) {
+                                AppIcon(
+                                    imageVector = Icons.Outlined.Delete,
+                                    contentDescription = "删除",
+                                    tint = appearance.actionTint,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
                     val likeFilledIcon = rememberAppLikeFilledIcon()
 
                     // Like
@@ -1928,24 +1952,10 @@ fun ReplyItemView(
                         }
                     }
 
-                    // [新增] 删除按钮 (仅显示给本人)
-                    if (onDeleteClick != null) {
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Box(modifier = Modifier.height(32.dp)) {
-                            AppIconButton(onClick = onDeleteClick) {
-                                AppIcon(
-                                    imageVector = Icons.Outlined.Delete,
-                                    contentDescription = "删除",
-                                    tint = appearance.actionTint,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
-                        }
-                    }
                 }
 
                 // Sub-comments (Threaded view)
-                if (showSubPreview && (!item.replies.isNullOrEmpty() || item.rcount > 0)) {
+                if (showSubPreview && (previewReplies.isNotEmpty() || threadReplyCount > 0)) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Column(
                         modifier = Modifier
@@ -1956,7 +1966,7 @@ fun ReplyItemView(
                             .padding(horizontal = 8.dp, vertical = 6.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        item.replies.orEmpty().forEachIndexed { index, subReply ->
+                        previewReplies.forEachIndexed { index, subReply ->
                             key(subReply.rpid) {
                                 CommentContentReveal(visible = index < visibleSubReplies.size) {
                                     val subEmoteMap = remember(subReply.content.emote, emoteMap) {
@@ -1993,7 +2003,8 @@ fun ReplyItemView(
                                     val prefixTextColor = resolveUpNameColor(
                                         vipStatus = subReply.member.vip?.vipStatus ?: 0,
                                         vipType = subReply.member.vip?.vipType ?: 0,
-                                        onSurface = appearance.primaryTextColor.copy(alpha = 0.8f),
+                                        // 楼中楼用户名同样用主题强调色区分正文，大会员保留专属粉色。
+                                        onSurface = appearance.accentColor,
                                         secondary = com.android.purebilibili.core.ui.components.userVipPink(),
                                     )
                                     val prefixSeparatorColor = appearance.secondaryTextColor
@@ -2040,7 +2051,7 @@ fun ReplyItemView(
                                             .combinedClickable(
                                                 onClick = {
                                                     onSubClick(
-                                                        item,
+                                                        previewRoot,
                                                         resolveSubReplyOpenTargetId(item.rpid, subReply.rpid)
                                                     )
                                                 },
@@ -2069,7 +2080,7 @@ fun ReplyItemView(
                                             prefix = prefix,
                                             onPlainTextClick = {
                                                 onSubClick(
-                                                    item,
+                                                    previewRoot,
                                                     resolveSubReplyOpenTargetId(item.rpid, subReply.rpid)
                                                 )
                                             }
@@ -2096,7 +2107,7 @@ fun ReplyItemView(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("$COMMENT_VIEW_ALL_REPLIES_TAG_PREFIX${item.rpid}")
-                                    .clickable { onSubClick(item, 0L) },
+                                    .clickable { onSubClick(previewRoot, 0L) },
                                 contentAlignment = Alignment.CenterStart
                             ) {
                                 AppText(
@@ -2941,11 +2952,12 @@ internal fun ReplyTextAction(
 @Composable
 internal fun ReplyActionSheet(
     queryAuthorUid: Long = 0L,
-    canDelete: Boolean,
+    canCheckFraud: Boolean,
     canReport: Boolean,
     canShare: Boolean = true,
     canBlockUser: Boolean = false,
     canCopyUsername: Boolean = true,
+    canToggleReplyPreview: Boolean = false,
     topActionLabel: String? = null,
     onDismiss: () -> Unit,
     onCopyAll: () -> Unit,
@@ -2957,8 +2969,7 @@ internal fun ReplyActionSheet(
     onBlockUser: () -> Unit = {},
     onReport: () -> Unit,
     onCheckFraud: () -> Unit = {},
-    onToggleTop: () -> Unit,
-    onDelete: () -> Unit
+    onToggleTop: () -> Unit
 ) {
     val queryAicu = com.android.purebilibili.feature.aicu.LocalAicuNavigation.current
     val canQueryAuthorHistory = queryAicu != null && queryAuthorUid > 0
@@ -2969,23 +2980,28 @@ internal fun ReplyActionSheet(
     val detailedTimeEnabled by SettingsManager
         .getDetailedCommentTimeEnabled(sheetContext)
         .collectAsStateWithLifecycle(initialValue = false)
+    val replyPreviewVisible by SettingsManager
+        .getCommentReplyPreviewVisible(sheetContext)
+        .collectAsStateWithLifecycle(initialValue = true)
     val actions = remember(
         canQueryAuthorHistory,
-        canDelete,
+        canCheckFraud,
         canReport,
         canShare,
         canBlockUser,
         canCopyUsername,
+        canToggleReplyPreview,
         topActionLabel,
     ) {
         buildReplyActionSheetActions(
-            canDelete = canDelete,
+            canCheckFraud = canCheckFraud,
             canReport = canReport,
             canShare = canShare,
             canBlockUser = canBlockUser,
             topActionLabel = topActionLabel,
             canCopyUsername = canCopyUsername,
             canQueryAuthorHistory = canQueryAuthorHistory,
+            canToggleReplyPreview = canToggleReplyPreview,
         )
     }
     AppModalBottomSheet(onDismissRequest = onDismiss) {
@@ -3002,6 +3018,8 @@ internal fun ReplyActionSheet(
                     label = if (action == ReplyActionSheetAction.TIME_STYLE) {
                         if (detailedTimeEnabled) "评论时间样式：绝对（yyyy-MM-dd HH:mm:ss）"
                         else "评论时间样式：相对"
+                    } else if (action == ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW) {
+                        if (replyPreviewVisible) "隐藏回复按钮" else "显示回复按钮"
                     } else {
                         resolveReplyActionSheetLabel(action, topActionLabel)
                     },
@@ -3012,9 +3030,10 @@ internal fun ReplyActionSheet(
                             ReplyActionSheetAction.FREE_COPY -> onFreeCopy()
                             ReplyActionSheetAction.COPY_USERNAME -> onCopyUsername()
                             ReplyActionSheetAction.QUERY_AUTHOR_HISTORY -> queryAicu?.invoke(queryAuthorUid)
-                            ReplyActionSheetAction.TIME_STYLE -> sheetScope.launch {
+                            ReplyActionSheetAction.TIME_STYLE -> {
+                                // 与回复按钮开关同因：写盘不挂弹层作用域，避免关闭竞态落空。
                                 val next = !detailedTimeEnabled
-                                SettingsManager.setDetailedCommentTimeEnabled(sheetContext, next)
+                                SettingsManager.setDetailedCommentTimeEnabledDetached(sheetContext, next)
                                 Toast.makeText(
                                     sheetContext,
                                     if (next) {
@@ -3025,6 +3044,17 @@ internal fun ReplyActionSheet(
                                     Toast.LENGTH_LONG
                                 ).show()
                             }
+                            ReplyActionSheetAction.TOGGLE_REPLY_PREVIEW -> {
+                                // 写盘走独立作用域：弹层随即关闭并取消 sheetScope，
+                                // 挂起写入若挂在它下面会与关闭竞态导致开关落空。
+                                val next = !replyPreviewVisible
+                                SettingsManager.setCommentReplyPreviewVisibleDetached(sheetContext, next)
+                                Toast.makeText(
+                                    sheetContext,
+                                    if (next) "已显示回复按钮" else "已隐藏回复按钮",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                             ReplyActionSheetAction.SAVE -> onSave()
                             ReplyActionSheetAction.SHARE -> onShare()
                             ReplyActionSheetAction.REPLY -> onReply()
@@ -3032,7 +3062,6 @@ internal fun ReplyActionSheet(
                             ReplyActionSheetAction.REPORT -> onReport()
                             ReplyActionSheetAction.CHECK_FRAUD -> onCheckFraud()
                             ReplyActionSheetAction.TOGGLE_TOP -> onToggleTop()
-                            ReplyActionSheetAction.DELETE -> onDelete()
                         }
                         onDismiss()
                     }

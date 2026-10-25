@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.video.screen
 
+import com.android.purebilibili.feature.video.ui.components.RelatedVideoList
+
 import com.android.purebilibili.core.ui.AppContentColors
 
 import com.android.purebilibili.feature.video.ambient.PlayerAmbientLayout
@@ -597,6 +599,8 @@ private fun CinemaStagePlayer(
                     actions = VideoPlayerSectionActions(
                     resolveNextWatch = playbackActions.resolveNextWatch,
                     playNextWatch = playbackActions.playNextWatch,
+                        onJumpToLastPlayedPart = playbackActions.jumpToLastPlayedPart,
+                        onDismissPartResumeNotice = playbackActions.dismissPartResumeNotice,
                         onToggleFullscreen = onToggleFullscreen,
                         onQualityChange = playbackActions.changeQuality,
                         onBack = onBack,
@@ -902,8 +906,7 @@ private fun CinemaMetaPanel(
                                 pages = success.info.pages,
                                 coverUrl = success.info.pic,
                                 currentPageIndex = currentPageIndex,
-                                onPageSelect = onPageSelect,
-                                forceGridMode = true
+                                onPageSelect = onPageSelect
                             )
                         }
                     }
@@ -1659,13 +1662,14 @@ private fun CinemaRelatedPane(
     val relatedChromeBackdrop = relatedChromeSource?.takeIf { it.isReady }?.backdrop
 
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(
+        RelatedVideoList(
+            cardLayout = relatedVideoCardLayout,
             modifier = Modifier
                 .fillMaxSize()
                 .then(relatedChromeSource?.modifier ?: Modifier),
             state = listState,
             contentPadding = PaddingValues(vertical = 8.dp)
-        ) {
+        ) { cardPresentation ->
             val relatedRows = chunkRelatedVideosForHomeStyleGrid(visibleRelatedVideos)
             itemsIndexed(
                 items = relatedRows,
@@ -1686,6 +1690,7 @@ private fun CinemaRelatedPane(
                     RelatedVideoGridRow(
                         videos = row,
                         cardLayout = relatedVideoCardLayout,
+                        cardPresentation = cardPresentation,
                         followingMids = success.followingMids,
                         showUpBadge = showUpBadge,
                         onVideoClick = { video ->

@@ -1,5 +1,8 @@
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.util.rememberHapticFeedback
+import com.android.purebilibili.core.util.HapticType
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -43,14 +46,15 @@ import kotlinx.coroutines.launch
 /** One bounded lazy viewport in the native page/detail region in every player mode. */
 @Composable
 fun PlayerEpisodeMenu(
-    pages: List<Page>, currentPageIndex: Int, ugcSeason: UgcSeason?,
-    currentBvid: String, currentCid: Long, anchorBounds: IntRect?,
-    onDismiss: () -> Unit, onPageSelect: (Int) -> Unit, onEpisodeSelect: (UgcEpisode) -> Unit,
+    pages: List<Page>, currentPageIndex: Int, ugcSeason: UgcSeason? = null,
+    currentBvid: String = "", currentCid: Long = 0L,
+    onDismiss: () -> Unit, onPageSelect: (Int) -> Unit, onEpisodeSelect: ((UgcEpisode) -> Unit)? = null,
     isFullscreen: Boolean = false, playerBounds: IntRect? = null,
     cover: String = "", isReversed: Boolean = false, onReverse: (() -> Unit)? = null,
     isSubscribed: Boolean? = null, onSubscriptionChange: ((Boolean) -> Unit)? = null,
     onCoverLongPress: ((String) -> Unit)? = null,
 ) {
+    val selectionHaptic = rememberHapticFeedback()
     val content = remember(pages, currentPageIndex, ugcSeason, currentBvid, currentCid) {
         resolvePlayerEpisodeMenuContent(pages, currentPageIndex, ugcSeason, currentBvid, currentCid)
     }
@@ -71,7 +75,8 @@ fun PlayerEpisodeMenu(
     }
     LaunchedEffect(content, sectionIndex, reversed) {
         val index = if (sectionIndex == content.currentSectionIndex) currentIndex() else 0
-        if (index in entries.indices) listState.scrollToItem(index)
+        // 面板展开/切换分区后动画定位当前集，与面板入场衔接；越界保持原位。
+        if (index in entries.indices) listState.animateScrollToItem(index)
     }
     PlayerDetailPanel(title = if (pages.size > 1) "分P" else "合集", isFullscreen = isFullscreen,
         playerBounds = playerBounds, onDismiss = onDismiss, compactHeight = true) {
@@ -114,10 +119,11 @@ fun PlayerEpisodeMenu(
                 val episode = (entry.target as? PlayerEpisodeMenuTarget.Episode)?.episode
                 fun select(part: PlayerEpisodeMenuEntry) {
                     if (part == current) return
+                    selectionHaptic(HapticType.LIGHT)
                     onDismiss()
                     when (val target = part.target) {
                         is PlayerEpisodeMenuTarget.Part -> onPageSelect(target.pageIndex)
-                        is PlayerEpisodeMenuTarget.Episode -> onEpisodeSelect(target.episode)
+                        is PlayerEpisodeMenuTarget.Episode -> onEpisodeSelect?.invoke(target.episode)
                     }
                 }
                 Column {
@@ -127,6 +133,11 @@ fun PlayerEpisodeMenu(
                         durationSeconds = if (group.size > 1) episode?.arc?.duration?.toLong() ?: entry.durationSeconds else entry.durationSeconds,
                         selected = selected,
                         indexLabel = entry.indexLabel.substringBefore(" · "),
+                        metadataText = buildPlayerEpisodeMetadataText(
+                            pubdateSeconds = entry.pubdateSeconds,
+                            viewCount = entry.viewCount,
+                            danmakuCount = entry.danmakuCount,
+                        ),
                         onCoverLongPress = onCoverLongPress,
                         accessEpisode = episode,
                     ) { if (!selected) select(entry) }
@@ -241,9 +252,14 @@ internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBound
 @Composable
 internal fun PlayerPanelMediaRow(title: String, cover: String, durationSeconds: Long, selected: Boolean,
     indexLabel: String = "", onCoverLongPress: ((String) -> Unit)? = null,
-    accessLabel: String? = null, accessEpisode: com.android.purebilibili.data.model.response.UgcEpisode? = null, onClick: () -> Unit) {
+    accessLabel: String? = null, accessEpisode: com.android.purebilibili.data.model.response.UgcEpisode? = null,
+    expandTitle: Boolean = false, metadataText: String? = null,
+    onClick: () -> Unit) {
     val color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-    Row(Modifier.fillMaxWidth().height(110.dp).semantics(mergeDescendants = true) { this.selected = selected }
+    // 章节列表按完整标题增高；其他媒体列表继续使用原有两行与固定行高。
+    Row(Modifier.fillMaxWidth()
+        .then(if (expandTitle) Modifier.heightIn(min = 110.dp) else Modifier.height(110.dp))
+        .semantics(mergeDescendants = true) { this.selected = selected }
         .combinedClickable(onClick = onClick,
             onLongClick = if (cover.isNotBlank() && onCoverLongPress != null) ({ onCoverLongPress(cover) }) else null)
         .padding(horizontal = 12.dp, vertical = 5.dp),
@@ -260,13 +276,17 @@ internal fun PlayerPanelMediaRow(title: String, cover: String, durationSeconds: 
                 modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp).background(Color.Black.copy(alpha = 0.6f)).padding(horizontal = 3.dp))
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(title, fontSize = 14.sp, lineHeight = 20.sp, color = color, maxLines = 2, overflow = TextOverflow.Ellipsis,
+            Text(title, fontSize = 14.sp, lineHeight = 20.sp, color = color,
+                maxLines = if (expandTitle) Int.MAX_VALUE else 2,
+                overflow = TextOverflow.Ellipsis,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
             if (cover.isBlank()) {
                 if (accessEpisode != null) CollectionAccessBadge(episode = accessEpisode)
                 else CollectionAccessBadge(label = accessLabel)
             }
             if (indexLabel.isNotBlank()) Text(indexLabel, fontSize = 12.sp, color = color)
+            if (!metadataText.isNullOrBlank()) Text(metadataText, fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (cover.isBlank() && durationSeconds > 0) Text(FormatUtils.formatDuration(durationSeconds.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()), fontSize = 12.sp)
             if (selected) Text("正在播放", fontSize = 12.sp, color = color)
         }

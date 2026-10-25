@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import com.android.purebilibili.core.lifecycle.AbandonableResource
 import com.android.purebilibili.core.plugin.DanmakuItem as PluginDanmakuItem
 import com.android.purebilibili.core.plugin.DanmakuPlugin
 import com.android.purebilibili.core.plugin.DanmakuStyle
@@ -3130,12 +3131,16 @@ fun rememberDanmakuManager(playbackIdentity: Any): DanmakuManager {
     val scope = rememberCoroutineScope()
 
     val manager = remember(context.applicationContext, playbackIdentity) {
-        DanmakuSessionFactory.acquire(
+        val acquired = DanmakuSessionFactory.acquire(
             context = context,
             scope = scope,
             playbackIdentity = playbackIdentity
         )
-    }
+        // 未提交的组合也必须归还引用，避免单例会话表持有数据和独立协程。
+        AbandonableResource(acquired) {
+            DanmakuSessionFactory.release(playbackIdentity, it)
+        }
+    }.value
 
     DisposableEffect(manager, playbackIdentity) {
         onDispose {

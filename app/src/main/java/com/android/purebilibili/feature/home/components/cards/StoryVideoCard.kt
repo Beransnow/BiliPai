@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -166,9 +167,11 @@ internal fun StoryVideoCard(
     val premiumBadgeLabel = remember(video.rights) {
         resolveVideoPremiumBadgeLabel(video.rights)
     }
+    var cardVisibleInWindow by remember(video.bvid, video.cid) { mutableStateOf(false) }
     val onlineCount = rememberVideoCardOnlineCount(
         video = video,
-        showOnlineCount = showOnlineCount
+        showOnlineCount = showOnlineCount,
+        isVisibleInWindow = cardVisibleInWindow,
     )
     val useLowQualityCover = isDataSaverActive && preferLowQualityCover
     val coverSource = remember(video.bvid, video.id, video.cid, video.title, video.pic, useLowQualityCover, coverRequestSpec) {
@@ -176,6 +179,9 @@ internal fun StoryVideoCard(
     }
     val coverUrl = coverSource.url
     val coverCacheKey = coverSource.cacheKey
+    var measuredCoverSize by remember(coverCacheKey) {
+        mutableStateOf(androidx.compose.ui.unit.IntSize.Zero)
+    }
     val publishTimeRowText = remember(showPublishTime, video.pubdate) {
         if (!showPublishTime) {
             ""
@@ -282,16 +288,16 @@ internal fun StoryVideoCard(
             .diskCacheKey(coverCacheKey)
             .build()
     }
-    val coverWorkAllowed = LocalPageImageLoadingAllowed.current
-    LaunchedEffect(video.bvid, coverUrl, coverCacheKey, coverRequestSpec, coverWorkAllowed) {
+    val coverWorkAllowed = LocalPageImageLoadingAllowed.current && cardVisibleInWindow
+    LaunchedEffect(video.bvid, coverUrl, coverCacheKey, coverRequestSpec, measuredCoverSize, coverWorkAllowed) {
         if (!coverWorkAllowed) return@LaunchedEffect
         HomeCoverReturnPrefetchRegistry.onCardVisible(
             HomeCoverReturnPrefetchEntry(
                 bvid = video.bvid.trim(),
                 url = coverUrl,
                 cacheKey = coverCacheKey,
-                decodeWidthPx = coverRequestSpec?.widthPx ?: 0,
-                decodeHeightPx = coverRequestSpec?.heightPx ?: 0,
+                decodeWidthPx = coverRequestSpec?.widthPx ?: measuredCoverSize.width,
+                decodeHeightPx = coverRequestSpec?.heightPx ?: measuredCoverSize.height,
             ),
         )
     }
@@ -328,6 +334,9 @@ internal fun StoryVideoCard(
 
     Column(
         modifier = modifier
+            .onVisibilityChanged(minFractionVisible = 0.01f, minDurationMs = 0L) {
+                cardVisibleInWindow = it
+            }
             .fillMaxWidth()
             .adaptiveCardHoverEffect(shape = cardShellShape)
             .videoCardShellSharedBoundsOrEmpty(
@@ -397,6 +406,7 @@ internal fun StoryVideoCard(
                 .aspectRatio(coverAspectRatio)
                 .onGloballyPositioned { coordinates ->
                     coverCoordinates.value = coordinates
+                    if (coverRequestSpec == null) measuredCoverSize = coordinates.size
                 }
                 .clip(coverShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant) // 封面占位色

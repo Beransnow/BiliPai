@@ -42,6 +42,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.chrisbanes.haze.hazeSource
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
@@ -206,6 +207,8 @@ fun AdaptiveScaffold(
     snackbarHost: @Composable () -> Unit = {},
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
+    // WebView 等独立渲染内容不能进入顶栏的背景录制；默认保留普通页面行为。
+    contentBackdropEnabled: Boolean = true,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val sharedWallpaper = LocalGlobalWallpaperBackdropVisible.current &&
@@ -220,25 +223,42 @@ fun AdaptiveScaffold(
     val scaffoldRenderer = resolveAdaptiveScaffoldRenderer(
         uiStyle = LocalAppUiStyle.current
     )
-    val iconBackdropSource = if (LocalAppThemeConfig.current.liquidGlassEnabled) {
+    val iconBackdropSource = if (contentBackdropEnabled && LocalAppThemeConfig.current.liquidGlassEnabled) {
         com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
     } else null
+    // 顶栏毛玻璃：由统一的「顶部模糊」开关控制；句柄为 null 时 chrome 保持原生容器色。
+    val scaffoldHaze = rememberAdaptiveScaffoldHaze(
+        userEnabled = contentBackdropEnabled && LocalAppThemeConfig.current.headerBlurEnabled
+    )
     val decoratedTopBar: @Composable () -> Unit = {
         CompositionLocalProvider(
+            LocalAdaptiveScaffoldHaze provides scaffoldHaze,
             com.android.purebilibili.core.ui.components.LocalAppTopBarIconBackdrop provides
                 iconBackdropSource?.takeIf { it.isReady }?.backdrop,
         ) { topBar() }
     }
     val recordedContent: @Composable (PaddingValues) -> Unit = { padding ->
+        val hazeSourceModifier = if (scaffoldHaze != null) {
+            Modifier.hazeSource(scaffoldHaze.state)
+        } else {
+            Modifier
+        }
         if (iconBackdropSource != null || sharedWallpaper) {
             Box(
                 Modifier
                     .fillMaxSize()
+                    .then(hazeSourceModifier)
                     .then(iconBackdropSource?.modifier ?: Modifier)
                     .then(
                         if (sharedWallpaper) Modifier.sharedGlobalWallpaperBackground(containerColor)
                         else Modifier
                     ),
+            ) { content(padding) }
+        } else if (scaffoldHaze != null) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .then(hazeSourceModifier),
             ) { content(padding) }
         } else content(padding)
     }
@@ -288,11 +308,18 @@ fun AdaptiveTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     collapseBehavior: AppTopBarCollapseBehavior? = null,
 ) {
-    AppChromeOverflowHost(modifier = modifier) {
+    val scaffoldHaze = LocalAdaptiveScaffoldHaze.current
+    val hazeModifier = if (scaffoldHaze != null) {
+        Modifier.adaptiveTopBarHazeBlur(scaffoldHaze)
+    } else {
+        Modifier
+    }
+    AppChromeOverflowHost(modifier = modifier.then(hazeModifier)) {
         NativeAdaptiveTopAppBar(
             title = title,
             subtitle = subtitle,
             largeTitle = largeTitle,
+            scaffoldHaze = scaffoldHaze,
             navigationIcon = {
                 CompositionLocalProvider(
                     com.android.purebilibili.core.ui.components.LocalAppTopBarIconDecorationEnabled provides true,
@@ -328,6 +355,8 @@ private fun NativeAdaptiveTopAppBar(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     largeTitle: String = title,
+    /** 脚手架注入的顶栏模糊句柄；存在时容器色置透明，由模糊样式提供材质。 */
+    scaffoldHaze: AdaptiveScaffoldHazeHandle? = null,
     navigationIcon: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
@@ -368,12 +397,18 @@ private fun NativeAdaptiveTopAppBar(
     } else {
         colors
     }
-    val topAppBarColors = if (LocalImmersiveTopChromeActive.current) {
-        effectiveColors.copy(
+    val topAppBarColors = when {
+        LocalImmersiveTopChromeActive.current -> effectiveColors.copy(
             containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
         )
-    } else effectiveColors
+        // 模糊接管材质：容器色透明，避免实色盖住 haze 背景。
+        scaffoldHaze != null -> effectiveColors.copy(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
+        )
+        else -> effectiveColors
+    }
 
     if (rememberIsNativeMiuixEnabled()) {
         SideEffect {
@@ -567,6 +602,7 @@ fun AppScaffold(
     snackbarHost: @Composable () -> Unit = {},
     containerColor: Color = MaterialTheme.colorScheme.background,
     contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
+    contentBackdropEnabled: Boolean = true,
     content: @Composable (PaddingValues) -> Unit,
 ) = AdaptiveScaffold(
     modifier = modifier,
@@ -576,6 +612,7 @@ fun AppScaffold(
     snackbarHost = snackbarHost,
     containerColor = containerColor,
     contentWindowInsets = contentWindowInsets,
+    contentBackdropEnabled = contentBackdropEnabled,
     content = content,
 )
 

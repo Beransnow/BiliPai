@@ -416,6 +416,10 @@ internal fun resolveMainActivityLinkNavigation(
             pendingNavigationRoute = ScreenRoutes.ArticleDetail.createRoute(target.articleId)
         )
 
+        is BilibiliNavigationTarget.Match -> MainActivityLinkNavigation(
+            pendingNavigationRoute = ScreenRoutes.MatchInfo.createRoute(target.contestId)
+        )
+
         is BilibiliNavigationTarget.PopularFeed -> if (target.subCategoryKey == "weekly") {
             MainActivityLinkNavigation(
                 pendingNavigationRoute = ScreenRoutes.WeeklySeries.createRoute(target.weeklyNumber)
@@ -1354,8 +1358,7 @@ open class MainActivity : AppCompatActivity() {
             // val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
             // var showWelcome by remember { mutableStateOf(!prefs.getBoolean(KEY_FIRST_LAUNCH, false)) }
 
-            val appThemeSettings by SettingsManager
-                .getAppThemeSettings(context)
+            val appThemeSettings by remember(context) { SettingsManager.getAppThemeSettings(context) }
                 .collectAsStateWithLifecycle(
                     initialValue = SettingsManager.getInitialAppThemeSettings(context)
                 )
@@ -1400,6 +1403,9 @@ open class MainActivity : AppCompatActivity() {
             val detailedCommentTimeEnabled by remember(context) {
                 SettingsManager.getDetailedCommentTimeEnabled(context)
             }.collectAsStateWithLifecycle(initialValue = false)
+            val commentReplyPreviewVisible by remember(context) {
+                SettingsManager.getCommentReplyPreviewVisible(context)
+            }.collectAsStateWithLifecycle(initialValue = true)
             val globalDragFeedbackEnabled by SettingsManager
                 .getGlobalDragFeedbackEnabled(context)
                 .collectAsStateWithLifecycle(initialValue = true)
@@ -1576,8 +1582,12 @@ open class MainActivity : AppCompatActivity() {
                 ProvideAppTextSelectionHost {
                     //  📐 [平板适配] 提供全局 WindowSizeClass
                     CompositionLocalProvider(
+                        com.android.purebilibili.feature.settings.LocalSettingsThemeConfiguration provides appThemeSettings,
+                        com.android.purebilibili.core.ui.LocalAdaptiveScaffoldHazeFactory provides
+                            { userEnabled -> com.android.purebilibili.core.ui.blur.rememberAppScaffoldHazeHandle(userEnabled) },
                         LocalDensity provides effectiveDensity,
                         LocalDetailedCommentTimeEnabled provides detailedCommentTimeEnabled,
+                        com.android.purebilibili.core.ui.LocalCommentReplyPreviewVisible provides commentReplyPreviewVisible,
                         LocalWindowSizeClass provides windowSizeClass,
                         LocalAppWindowAdaptiveInfo provides appWindowAdaptiveInfo,
                         com.android.purebilibili.core.ui.LocalHingeSafeOverlayRegions provides
@@ -1705,6 +1715,16 @@ open class MainActivity : AppCompatActivity() {
                             }
                             //  首次启动必须同意用户协议与隐私政策后才能使用应用
                             com.android.purebilibili.feature.agreement.UserAgreementGate {
+                                com.android.purebilibili.feature.nearby.NearbyHandoffHost(
+                                    miniPlayer = miniPlayerManager,
+                                    onOpenVideo = { video ->
+                                        pendingNavigationRoute = PlaybackHandoffCodec.toRoute(
+                                            com.android.purebilibili.feature.video.handoff.PlaybackHandoffPayload.V1.Video(
+                                                bvid = video.bvid, cid = video.cid, resumePositionMs = video.positionMs,
+                                            )
+                                        )
+                                    },
+                                ) {
                                 AppNavigation(
                                 miniPlayerManager = miniPlayerManager,
                                 isInPipMode = isPipRenderingActive,
@@ -1758,6 +1778,7 @@ open class MainActivity : AppCompatActivity() {
                                 mainHazeState = mainHazeState, //  传递全局 Haze 状态
                                 onBrandFeedbackBottomInsetChanged = { brandFeedbackBottomInset = it }
                                 )
+                                }
                             }
                             
                             //  OnboardingBottomSheet 等其他 overlay 组件
@@ -1807,6 +1828,7 @@ open class MainActivity : AppCompatActivity() {
                             val useTextureSurface = com.android.purebilibili.feature.video.ui.components.rememberCompatibleVideoTextureSurface(
                                 pipPlayer, miniPlayerManager.cachedUiState?.currentQuality ?: 0,
                             )
+                            Box(Modifier.fillMaxSize()) {
                             key(pipPlayer, useTextureSurface) {
                             AndroidView(
                                 factory = { viewContext ->
@@ -1814,7 +1836,7 @@ open class MainActivity : AppCompatActivity() {
                                         player = pipPlayer
                                         useController = false
                                         resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-                                        setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+                                        setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                                     }
                                 },
                                 update = { playerView -> playerView.player = pipPlayer },
@@ -1822,6 +1844,10 @@ open class MainActivity : AppCompatActivity() {
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(Color.Black)
+                            )
+                            }
+                            com.android.purebilibili.feature.video.ui.overlay.PlayerBufferingIndicator(
+                                player = pipPlayer, modifier = Modifier.align(Alignment.Center),
                             )
                             }
                         }

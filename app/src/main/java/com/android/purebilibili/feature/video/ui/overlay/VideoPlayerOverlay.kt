@@ -100,11 +100,6 @@ import com.android.purebilibili.feature.video.playback.audio.resolveAudioQuality
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.core.plugin.skin.LocalUiSkinState
-import com.android.purebilibili.core.plugin.skin.UiSkinAnimatedAsset
-import com.android.purebilibili.core.plugin.skin.UiSkinSurface
-import com.android.purebilibili.core.plugin.skin.assetPath
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
@@ -181,6 +176,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.lifecycle.compose.currentStateAsState
 import com.android.purebilibili.feature.video.playback.session.PendingPlaybackUserAction
 import dev.chrisbanes.haze.HazeState
+import com.android.purebilibili.core.store.ChapterDisplayMode
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -447,22 +443,6 @@ internal fun resolveDisplayedOnlineCount(
     return if (showOnlineCount) onlineCount else ""
 }
 
-@Composable
-private fun SkinAwareLoadingIndicator(color: Color) {
-    val skinPath = LocalUiSkinState.current.assetPath(UiSkinSurface.LOADING_INDICATOR) {
-        it.loadingAnimation ?: it.loadingFrame
-    }
-    if (skinPath != null) {
-        UiSkinAnimatedAsset(
-            path = skinPath,
-            size = 48.dp,
-            contentDescription = "加载中",
-        )
-    } else {
-        AdaptiveLoadingIndicator(color = color)
-    }
-}
-
 private const val SEEK_RESUME_TRANSITION_GRACE_MS = 350L
 
 // 播放器 overlay 色层动效 token：遮罩/控制栏/锁屏按钮/加载指示共用同一节奏与曲线。
@@ -658,6 +638,7 @@ private fun VideoPlayerOverlayContent(
     val onProbeCdnCandidates = actions.onProbeCdnCandidates
     val videoshotData = state.videoshotData
     val viewPoints = state.viewPoints
+    var persistentChapterBarHeightPx by remember(bvid, cid) { mutableIntStateOf(0) }
     val sponsorMarkers = state.sponsorMarkers
     val pbpRidgeSamples = state.pbpRidgeSamples
     val onPortraitFullscreen = actions.onPortraitFullscreen
@@ -739,7 +720,6 @@ private fun VideoPlayerOverlayContent(
     }
     var playerBoundsInWindow by remember(bvid, cid) { mutableStateOf<IntRect?>(null) }
     var showHeatmap by remember(bvid, cid) { mutableStateOf(true) }
-    var showViewPointMarkers by remember(bvid, cid) { mutableStateOf(true) }
     var showSponsorSegments by remember(bvid, cid) { mutableStateOf(false) }
     var showPlayerInformation by remember(bvid, cid) { mutableStateOf(false) }
 
@@ -1113,6 +1093,19 @@ private fun VideoPlayerOverlayContent(
         .getShowOnlineCount(context)
         .collectAsStateWithLifecycle(initialValue = false
         )
+    val chapterDisplayMode by remember(context) { SettingsManager.getChapterDisplayMode(context) }
+        .collectAsStateWithLifecycle(initialValue = ChapterDisplayMode.WITH_CONTROLS)
+    val showViewPointMarkers = chapterDisplayMode != ChapterDisplayMode.HIDDEN
+    val onChapterVisibilityChange: (Boolean) -> Unit = { visible ->
+        scope.launch {
+            SettingsManager.setChapterDisplayMode(
+                context,
+                if (!visible) ChapterDisplayMode.HIDDEN
+                else if (chapterDisplayMode == ChapterDisplayMode.HIDDEN) ChapterDisplayMode.WITH_CONTROLS
+                else chapterDisplayMode,
+            )
+        }
+    }
     val bottomProgressBehavior by SettingsManager
         .getBottomProgressBehavior(context)
         .collectAsStateWithLifecycle(initialValue = BottomProgressBehavior.ALWAYS_HIDE
@@ -1428,6 +1421,7 @@ private fun VideoPlayerOverlayContent(
             subtitleTools, isFullscreen,
             controlsVisible = isVisible && !isScreenLocked && !danmakuComposerVisible,
             bottomControlsHeightPx = subtitleChromeHeightPx,
+            persistentBottomOverlayHeightProvider = { persistentChapterBarHeightPx },
             isPortrait = isFullscreen && state.isVerticalVideo,
         )
         if (showPlayerInformation) {
@@ -1523,6 +1517,31 @@ private fun VideoPlayerOverlayContent(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .landscapeEndDrawerPadding(endDrawerReservedWidthProvider)
+            )
+        }
+
+        // 两条材质路径共用显示策略；仅显式选择常驻时在控制栏收起后保留章节。
+        val chapterViewportIsLandscape = playerBoundsInWindow?.let { it.width > it.height }
+            ?: (configuration.screenWidthDp > configuration.screenHeightDp)
+        if (chapterDisplayMode == ChapterDisplayMode.PERSISTENT &&
+            isFullscreen && chapterViewportIsLandscape && (!isVisible || isScreenLocked) &&
+            !danmakuComposerVisible && showViewPointMarkers && viewPoints.isNotEmpty()
+        ) {
+            com.android.purebilibili.feature.video.ui.overlay.OverlayPersistentChapterBar(
+                progressProvider = displayedProgressProvider,
+                viewPoints = viewPoints,
+                onChapterClick = { showChapterList = true },
+                enabled = !isScreenLocked,
+                onHeightChanged = { height ->
+                    persistentChapterBarHeightPx = height
+                    actions.onPersistentChapterBarHeightChanged(height)
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .landscapeEndDrawerPadding(endDrawerReservedWidthProvider)
+                    // 常驻条贴住播放器底边，仅保留左右安全区，不添加底部间距。
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    .padding(horizontal = 20.dp),
             )
         }
 
@@ -1657,7 +1676,7 @@ private fun VideoPlayerOverlayContent(
                             heatmapEnabled = showHeatmap,
                             onHeatmapToggle = { showHeatmap = !showHeatmap },
                             showViewPoints = showViewPointMarkers,
-                            onViewPointsToggle = { showViewPointMarkers = !showViewPointMarkers },
+                            onViewPointsToggle = { onChapterVisibilityChange(!showViewPointMarkers) },
                             onChapterClick = { showChapterList = true },
                             onFloatingPanelVisibilityChange = { bottomControlFloatingPanelVisible = it },
                         )
@@ -1914,7 +1933,10 @@ private fun VideoPlayerOverlayContent(
             enter = EnterTransition.None,
             exit = fadeOut(OverlayControlFadeSpec)
         ) {
-            SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
+            BiliTvBufferingIndicator(
+                tint = centerLoadingVisualState.indicatorColor,
+                bufferedProvider = { progressProvider().buffered },
+            )
         }
 
         AnimatedVisibility(
@@ -1924,11 +1946,7 @@ private fun VideoPlayerOverlayContent(
             exit = fadeOut(OverlayControlFadeSpec)
         ) {
             val loadingState = centerLoadingUiState ?: return@AnimatedVisibility
-            AppSurface(
-                color = Color.Black.copy(alpha = 0.72f),
-                shape = RoundedCornerShape(overlayVisualPolicy.qualitySwitchCornerRadiusDp.dp),
-                modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)
-            ) {
+            Box(modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(
@@ -1936,7 +1954,7 @@ private fun VideoPlayerOverlayContent(
                         vertical = overlayVisualPolicy.qualitySwitchContentVerticalPaddingDp.dp
                     )
                 ) {
-                    SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
+                    BiliTvAnimatedBufferingIndicator(tint = centerLoadingVisualState.indicatorColor)
                     Spacer(modifier = Modifier.height(overlayVisualPolicy.qualitySwitchContentSpacingDp.dp))
                     AppText(
                         text = loadingState.primaryText,
@@ -1964,11 +1982,7 @@ private fun VideoPlayerOverlayContent(
             enter = fadeIn(OverlayControlFadeSpec),
             exit = fadeOut(OverlayControlFadeSpec)
         ) {
-            AppSurface(
-                color = Color.Black.copy(alpha = 0.7f),
-                shape = RoundedCornerShape(overlayVisualPolicy.qualitySwitchCornerRadiusDp.dp),
-                modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)
-            ) {
+            Box(modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(
@@ -1976,7 +1990,7 @@ private fun VideoPlayerOverlayContent(
                         vertical = overlayVisualPolicy.qualitySwitchContentVerticalPaddingDp.dp
                     )
                 ) {
-                    SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
+                    BiliTvAnimatedBufferingIndicator(tint = centerLoadingVisualState.indicatorColor)
                     Spacer(modifier = Modifier.height(overlayVisualPolicy.qualitySwitchContentSpacingDp.dp))
                     AppText(
                         text = "正在切换清晰度...",
@@ -2166,6 +2180,10 @@ private fun VideoPlayerOverlayContent(
 
         if (showVideoSettings) {
             VideoSettingsPanel(
+                chapterDisplayMode = chapterDisplayMode,
+                onChapterDisplayModeChange = { mode ->
+                    scope.launch { SettingsManager.setChapterDisplayMode(context, mode) }
+                },
                 isFullscreen = isFullscreen,
                 playerBounds = playerBoundsInWindow,
                 sleepTimerMinutes = menuSession.sleepTimerMinutes,
@@ -2312,7 +2330,7 @@ private fun VideoPlayerOverlayContent(
                 isFullscreen = isFullscreen,
                 playerBounds = playerBoundsInWindow,
                 showViewPoints = showViewPointMarkers,
-                onShowViewPointsChange = { showViewPointMarkers = it },
+                onShowViewPointsChange = onChapterVisibilityChange,
             )
         }
 
@@ -2323,7 +2341,6 @@ private fun VideoPlayerOverlayContent(
                 ugcSeason = ugcSeason,
                 currentBvid = bvid,
                 currentCid = cid,
-                anchorBounds = actionAnchorBounds[PlayerControlAnchor.EPISODES],
                 isFullscreen = isFullscreen,
                 playerBounds = playerBoundsInWindow,
                 cover = coverUrl,
@@ -2804,12 +2821,14 @@ fun LandscapeEndDrawer(
                                     horizontal = layoutPolicy.followButtonHorizontalPaddingDp.dp,
                                     vertical = 0.dp
                                 ),
-                                modifier = Modifier.height(layoutPolicy.followButtonHeightDp.dp),
+                                modifier = Modifier.heightIn(min = layoutPolicy.followButtonHeightDp.dp),
                                 shape = AppShapes.container(ContainerLevel.Card)
                             ) {
                                 AppText(
                                     if (!followStatusKnown) "—" else if (isFollowed) "已关注" else "+ 关注",
-                                    fontSize = layoutPolicy.followButtonFontSp.sp
+                                    fontSize = layoutPolicy.followButtonFontSp.sp,
+                                    maxLines = 1,
+                                    softWrap = false,
                                 )
                             }
                         }
@@ -2903,7 +2922,8 @@ fun LandscapeEndDrawer(
                             }
                             LaunchedEffect(visible, selectedTab, currentLazyIndex) {
                                 if (visible && selectedTab == 1 && currentLazyIndex >= 0) {
-                                    collectionListState.scrollToItem(currentLazyIndex)
+                                    // 面板展开后动画定位当前集，与面板入场衔接。
+                                    collectionListState.animateScrollToItem(currentLazyIndex)
                                 }
                             }
                             LazyColumn(
