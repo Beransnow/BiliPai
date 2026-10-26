@@ -39,7 +39,7 @@
 
 **液态玻璃设计，贯穿全局**
 
-顶栏、底栏、菜单与播放控制实时取景毛玻璃，点按伴随折射与弹性反馈；可随时一键关闭，回到 Material 3 / Miuix 原生材质。截图仅展示应用部分场景的液态玻璃设计样式。
+顶栏、底栏、菜单与播放控制采用实时取景的液态玻璃材质，随背后内容与点按产生折射和弹性反馈；可随时一键关闭，回到 Material 3 / Miuix 原生材质。截图仅展示应用部分场景的液态玻璃设计样式。
 
 <img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai 首页" />
 <img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai 外观设置" />

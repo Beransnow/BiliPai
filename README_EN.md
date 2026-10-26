@@ -39,7 +39,7 @@ Some quality tiers require login or account privileges. Appearance, playback, da
 
 **Liquid Glass, throughout the app**
 
-Live blur across top bars, docks, menus and player controls, with subtle refraction and springy feedback on every touch. Toggle it off anytime to fall back to native Material 3 / Miuix materials. Screenshots showcase only a selection of the app's Liquid Glass design scenes.
+Top bars, docks, menus and player controls use live-sampled liquid glass that refracts with the content behind it and responds elastically to touch. Toggle it off anytime to fall back to native Material 3 / Miuix materials. Screenshots showcase only a selection of the app's Liquid Glass design scenes.
 
 <img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai home" />
 <img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai appearance settings" />
