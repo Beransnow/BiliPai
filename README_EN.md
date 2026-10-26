@@ -37,15 +37,14 @@ Some quality tiers require login or account privileges. Appearance, playback, da
 
 <div align="center">
 
-<img src="docs/images/screenshot1.png" height="400" alt="BiliPai 1" />
-<img src="docs/images/screenshot2.png" height="400" alt="BiliPai 2" />
-<img src="docs/images/screenshot3.png" height="400" alt="BiliPai 3" />
-<img src="docs/images/screenshot4.png" height="400" alt="BiliPai 4" />
-<img src="docs/images/screenshot5.png" height="400" alt="BiliPai 5" />
-<img src="docs/images/screenshot6.png" height="400" alt="BiliPai 6" />
-<img src="docs/images/screenshot7.png" height="400" alt="BiliPai 7" />
-<img src="docs/images/screenshot8.png" height="400" alt="BiliPai 8" />
-<img src="docs/images/screenshot9.png" height="400" alt="BiliPai 9" />
+**Liquid Glass, throughout the app**
+
+Live blur across top bars, docks, menus and settings. Screenshots showcase the app's Liquid Glass design style only.
+
+<img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai home" />
+<img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai appearance settings" />
+<img src="docs/images/screenshot-glass-3.png" height="400" alt="BiliPai video detail" />
+<img src="docs/images/screenshot-glass-4.png" height="400" alt="BiliPai search" />
 
 </div>
 

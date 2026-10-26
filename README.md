@@ -37,15 +37,14 @@
 
 <div align="center">
 
-<img src="docs/images/screenshot1.png" height="400" alt="BiliPai 1" />
-<img src="docs/images/screenshot2.png" height="400" alt="BiliPai 2" />
-<img src="docs/images/screenshot3.png" height="400" alt="BiliPai 3" />
-<img src="docs/images/screenshot4.png" height="400" alt="BiliPai 4" />
-<img src="docs/images/screenshot5.png" height="400" alt="BiliPai 5" />
-<img src="docs/images/screenshot6.png" height="400" alt="BiliPai 6" />
-<img src="docs/images/screenshot7.png" height="400" alt="BiliPai 7" />
-<img src="docs/images/screenshot8.png" height="400" alt="BiliPai 8" />
-<img src="docs/images/screenshot9.png" height="400" alt="BiliPai 9" />
+**液态玻璃设计，贯穿全局**
+
+顶栏、底栏、菜单与设置实时取景毛玻璃。截图仅展示应用的液态玻璃设计样式。
+
+<img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai 首页" />
+<img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai 外观设置" />
+<img src="docs/images/screenshot-glass-3.png" height="400" alt="BiliPai 视频详情" />
+<img src="docs/images/screenshot-glass-4.png" height="400" alt="BiliPai 搜索" />
 
 </div>
 
