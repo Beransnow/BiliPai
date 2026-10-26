@@ -90,6 +90,16 @@ Share bugs and ideas through [Issues](https://github.com/jay3-yy/BiliPai/issues/
 
 ## Acknowledgements
 
+- [Kotlin](https://kotlinlang.org/) — language and coroutines
+- [Jetpack Compose](https://developer.android.com/jetpack/compose) — declarative UI framework
+- [AndroidX Media3](https://github.com/androidx/media) — Media3 / ExoPlayer playback engine
+- [FFmpeg](https://ffmpeg.org/) — audio decoding
+- [Room](https://developer.android.com/training/data-storage/room) / [DataStore](https://developer.android.com/topic/libraries/architecture/datastore) — local data and preferences
+- [Retrofit](https://github.com/square/retrofit) / [OkHttp](https://github.com/square/okhttp) — networking
+- [Coil](https://github.com/coil-kt/coil) — image loading
+- [Lottie](https://github.com/airbnb/lottie-android) — vector animation
+- [MaterialKolor](https://github.com/jordond/MaterialKolor) — dynamic theme colors
+- [Compose Rich Editor](https://github.com/MohamedRejeb/Compose-Rich-Editor) — rich text editing
 - [DanmakuRenderEngine](https://github.com/bytedance/DanmakuRenderEngine) — danmaku rendering engine
 - [BiliBili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect) — BiliBili API reference
 - [BiliBiliSponsorBlock](https://github.com/hanydd/BilibiliSponsorBlock) — sponsor-skip data and API

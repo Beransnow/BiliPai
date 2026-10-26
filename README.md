@@ -90,6 +90,16 @@ Miuix 依赖从 GitHub Packages 获取，需在本机 `~/.gradle/gradle.properti
 
 ## 致谢
 
+- [Kotlin](https://kotlinlang.org/) — 开发语言与协程
+- [Jetpack Compose](https://developer.android.com/jetpack/compose) — 声明式 UI 框架
+- [AndroidX Media3](https://github.com/androidx/media) — Media3 / ExoPlayer 播放引擎
+- [FFmpeg](https://ffmpeg.org/) — 音频解码
+- [Room](https://developer.android.com/training/data-storage/room) / [DataStore](https://developer.android.com/topic/libraries/architecture/datastore) — 本地数据与偏好存储
+- [Retrofit](https://github.com/square/retrofit) / [OkHttp](https://github.com/square/okhttp) — 网络请求
+- [Coil](https://github.com/coil-kt/coil) — 图片加载
+- [Lottie](https://github.com/airbnb/lottie-android) — 矢量动画
+- [MaterialKolor](https://github.com/jordond/MaterialKolor) — 动态主题配色
+- [Compose Rich Editor](https://github.com/MohamedRejeb/Compose-Rich-Editor) — 富文本编辑
 - [DanmakuRenderEngine](https://github.com/bytedance/DanmakuRenderEngine) — 弹幕渲染引擎
 - [BiliBili-API-collect](https://github.com/SocialSisterYi/bilibili-API-collect) — B 站 API 文档
 - [BiliBiliSponsorBlock](https://github.com/hanydd/BilibiliSponsorBlock) — 空降助手数据与 API
