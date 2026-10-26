@@ -97,7 +97,7 @@ Share bugs and ideas through [Issues](https://github.com/jay3-yy/BiliPai/issues/
 - [Miuix](https://github.com/compose-miuix-ui/miuix) — UI component library
 - [Haze](https://github.com/chrisbanes/haze) — blur effects
 - [BiliPai-miuix](https://github.com/Piracola/BiliPai-miuix) — UI and design-system contributions (@piracola)
-- [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) — playback pipeline reference
+- [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) — overall app interaction reference
 - [Bili Pilot](https://github.com/siwei-yuan/bili-pilot) — CDN routing reference
 
 See [third-party notices](THIRD_PARTY_NOTICES.md) for all other dependencies and sources.

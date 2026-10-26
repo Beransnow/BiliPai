@@ -97,7 +97,7 @@ Miuix 依赖从 GitHub Packages 获取，需在本机 `~/.gradle/gradle.properti
 - [Miuix](https://github.com/compose-miuix-ui/miuix) — 界面组件库
 - [Haze](https://github.com/chrisbanes/haze) — 毛玻璃效果
 - [BiliPai-miuix](https://github.com/Piracola/BiliPai-miuix) — UI 组件与设计系统贡献（@piracola）
-- [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) — 播放链路参考
+- [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) — 全局应用交互参考
 - [Bili Pilot](https://github.com/siwei-yuan/bili-pilot) — CDN 选线参考
 
 其余依赖与来源见 [第三方声明](THIRD_PARTY_NOTICES.md)。
