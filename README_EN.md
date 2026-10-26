@@ -60,7 +60,7 @@ Get APKs and release notes from the [Telegram channel](https://t.me/bilipai666).
 
 ## Plugins
 
-The 12 built-in plugins cover sponsor skipping, ad filtering, Anime4K, danmaku, eye care, recommendations and casting. Import JSON / `.bp` rules by URL. External `.bpplugin` packages currently support preview and authorization records only, without loading or executing external code.
+The 12 built-in plugins cover sponsor skipping, ad filtering, Anime4K, danmaku, eye care, recommendations and casting. Import JSON / `.bp` rules by URL.
 
 Review the source and declared permissions before importing third-party plugins. For plugin development, see [plugin-sdk](plugin-sdk).
 
