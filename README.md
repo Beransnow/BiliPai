@@ -39,7 +39,7 @@
 
 **液态玻璃设计，贯穿全局**
 
-顶栏、底栏、菜单与播放控制实时取景液态玻璃，随内容折射、点笔回弹，可一键切回 Google Material 3 / Miuix 原生材质。截图仅展示部分场景。
+顶栏、底栏、菜单与播放控制实时取景液态玻璃，随内容折射、点按回弹，也可一键切回 Google Material 3 / Miuix 原生材质。截图仅展示部分场景。
 
 <img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai 首页" />
 <img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai 外观设置" />
