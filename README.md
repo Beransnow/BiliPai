@@ -39,7 +39,7 @@
 
 **液态玻璃设计，贯穿全局**
 
-截图仅展示部分界面下的场景。
+截图仅展示部分界面下的液态玻璃效果。
 
 <img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai 首页" />
 <img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai 外观设置" />
