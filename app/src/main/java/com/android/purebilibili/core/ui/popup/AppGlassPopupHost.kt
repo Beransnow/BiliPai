@@ -142,8 +142,10 @@ private val PopupScreenMargin = 16.dp
 /** 锚定菜单向上覆盖源控件的距离。 */
 private val PopupAnchorOverlap = 8.dp
 
-/** 锚定弹窗的最大宽度；放宽到 320dp，容纳玻璃行更大的固定开销，避免长选项折行。 */
-private val PopupMaxWidth = 320.dp
+/**
+ * 锚定弹窗的默认最大宽度：与原生菜单一致按窗口宽度自适应，
+ * 内容多宽就多宽，仅在超出窗口时钳制；调用方显式传入 maxWidth 时优先。
+ */
 private val PopupMinWidth = 160.dp
 
 /** 居中弹窗的最大宽度（与 AppSingleChoiceDialog 的 420dp 策略一致）。 */
@@ -788,7 +790,7 @@ private fun AppGlassChoicePopupOverlay(
             screenMarginPx = with(density) { PopupScreenMargin.roundToPx() },
             anchorOverlapPx = with(density) { PopupAnchorOverlap.roundToPx() },
             anchorMinWidthPx = with(density) { (request.menu?.minWidth ?: PopupMinWidth).roundToPx() },
-            anchorMaxWidthPx = with(density) { (request.menu?.maxWidth ?: PopupMaxWidth).roundToPx() },
+            anchorMaxWidthPx = request.menu?.maxWidth?.let { with(density) { it.roundToPx() } },
             centeredMaxWidthPx = with(density) { (request.menu?.maxWidth ?: CenteredPopupMaxWidth).roundToPx() },
         )
         var overlayOrigin by remember { mutableStateOf(Offset.Zero) }
@@ -850,13 +852,13 @@ private fun AppGlassChoicePopupOverlay(
     }
 }
 
-/** 卡片布局的定位输入（像素）。 */
+/** 卡片布局的定位输入（像素）；[anchorMaxWidthPx] 为调用方显式限制，null 表示按窗口宽度自适应。 */
 @Immutable
 private data class PopupPlacementMargins(
     val screenMarginPx: Int,
     val anchorOverlapPx: Int,
     val anchorMinWidthPx: Int,
-    val anchorMaxWidthPx: Int,
+    val anchorMaxWidthPx: Int?,
     val centeredMaxWidthPx: Int,
 )
 
@@ -878,7 +880,9 @@ private fun AppGlassChoicePopupPlacement(
         val maxWidth = if (centered || anchor == null) {
             margins.centeredMaxWidthPx.coerceAtMost(constraints.maxWidth - margin * 2)
         } else {
-            margins.anchorMaxWidthPx.coerceAtMost(constraints.maxWidth - margin * 2)
+            // 与原生菜单一致：未显式限制时按内容自适应，仅受窗口宽度钳制。
+            (margins.anchorMaxWidthPx ?: constraints.maxWidth - margin * 2)
+                .coerceAtMost(constraints.maxWidth - margin * 2)
         }
         val maxHeight = if (useAvailableHeight) {
             constraints.maxHeight - margin * 2
