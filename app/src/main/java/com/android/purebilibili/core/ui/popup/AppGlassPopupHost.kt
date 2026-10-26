@@ -142,8 +142,8 @@ private val PopupScreenMargin = 16.dp
 /** 锚定菜单向上覆盖源控件的距离。 */
 private val PopupAnchorOverlap = 8.dp
 
-/** 锚定弹窗的最大宽度。 */
-private val PopupMaxWidth = 280.dp
+/** 锚定弹窗的最大宽度；放宽到 320dp，容纳玻璃行更大的固定开销，避免长选项折行。 */
+private val PopupMaxWidth = 320.dp
 private val PopupMinWidth = 160.dp
 
 /** 居中弹窗的最大宽度（与 AppSingleChoiceDialog 的 420dp 策略一致）。 */
@@ -1410,7 +1410,8 @@ private fun AppGlassChoicePopupCard(
                                 AppText(
                                     text = option.label,
                                     tapToCopyEnabled = false,
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 17.sp, lineHeight = 22.sp),
+                                    // 与原生菜单一致的 bodyLarge 16sp，玻璃开关切换时选项文字排版不变。
+                                    style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Medium,
                                     color = AppContentColors.primaryText(),
                                 )
