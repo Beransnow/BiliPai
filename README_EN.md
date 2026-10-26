@@ -28,7 +28,7 @@ Built with Kotlin and Jetpack Compose, BiliPai supports videos, bangumi, live st
 | Bangumi and live | Following, episode selection, seek previews, live categories and danmaku |
 | Feeds and messages | Followed creators, comments, replies, image previews and direct messages |
 | Search and downloads | Video, creator and bangumi search; resumable downloads and local playback |
-| Appearance | Material 3, Miuix, optional Liquid Glass, dynamic colors and large-screen layouts |
+| Appearance | Google Material 3, Miuix, optional Liquid Glass, dynamic colors and large-screen layouts |
 | Extensions | Plugins, DLNA / Google Cast and WebDAV settings backup |
 
 Some quality tiers require login or account privileges. Appearance, playback, danmaku and background behavior are configurable in Settings.
@@ -39,7 +39,7 @@ Some quality tiers require login or account privileges. Appearance, playback, da
 
 **Liquid Glass, throughout the app**
 
-Top bars, docks, menus and player controls use live-sampled liquid glass that refracts with the content behind it and responds elastically to touch. Toggle it off anytime to fall back to native Material 3 / Miuix materials. Screenshots showcase only a selection of the app's Liquid Glass design scenes.
+Top bars, docks, menus and player controls use live-sampled liquid glass that refracts with the content behind it and responds elastically to touch. Toggle it off anytime to fall back to native Google Material 3 / Miuix materials. Screenshots showcase only a selection of the app's Liquid Glass design scenes.
 
 <img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai home" />
 <img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai appearance settings" />
@@ -49,6 +49,8 @@ Top bars, docks, menus and player controls use live-sampled liquid glass that re
 </div>
 
 Appearance varies by version, theme and screen size.
+
+Beyond the screenshots: tap-to-act danmaku, swipe-up fullscreen with ambient light in portrait playback, audio mode, AI note summaries, subtitle import/export, plugins, DLNA / Google Cast casting and WebDAV settings backup.
 
 ## Download
 
