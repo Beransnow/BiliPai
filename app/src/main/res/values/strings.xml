@@ -389,10 +389,10 @@
     <string name="animation_title_video_speed">视频转场速度</string>
     <string name="animation_title_skeleton">加载占位动画</string>
     <string name="animation_title_header_blur">顶部栏磨砂</string>
-    <string name="animation_title_progressive_blur">顶栏渐变模糊</string>
+    <string name="animation_title_progressive_blur">顶栏渐进模糊</string>
     <string name="animation_title_progressive_fade">顶栏纯色渐变</string>
     <string name="animation_title_bottom_blur">底栏磨砂</string>
-    <string name="preview_title_top_blur">顶栏渐变模糊</string>
+    <string name="preview_title_top_blur">顶栏渐进模糊</string>
     <string name="preview_title_image_page">图片立体翻页</string>
     <string name="preview_title_long_press">长按临时加速</string>
     <string name="preview_title_card_entrance">首页卡片淡入</string>
