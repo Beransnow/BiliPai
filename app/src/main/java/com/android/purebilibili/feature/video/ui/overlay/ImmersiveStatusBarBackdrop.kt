@@ -189,17 +189,21 @@ private fun resolveAmbientFramePlacementInStrip(
     )
 }
 
-/**
- * 竖屏页横屏视频 letterbox 上下黑边高度（各半）。
- * fillContainer 或无效尺寸时返回 0。
- */
-internal fun resolvePortraitLetterboxBarHeightPx(
+internal data class PortraitLetterboxBarHeights(val top: Int, val bottom: Int)
+
+/** Follow the actual viewport, including its portrait lift, without covering the video. */
+internal fun resolvePortraitLetterboxBarHeightsPx(
     containerHeightPx: Int,
     viewportHeightPx: Int,
     fillContainer: Boolean,
-): Int {
-    if (fillContainer || containerHeightPx <= 0 || viewportHeightPx <= 0) return 0
-    val leftover = (containerHeightPx - viewportHeightPx).coerceAtLeast(0)
-    if (leftover <= 1) return 0
-    return leftover / 2
+    viewportVerticalOffsetPx: Int = 0,
+): PortraitLetterboxBarHeights {
+    if (fillContainer || containerHeightPx <= 0 || viewportHeightPx <= 0) {
+        return PortraitLetterboxBarHeights(0, 0)
+    }
+    val viewportTop = ((containerHeightPx - viewportHeightPx) / 2f).roundToInt() + viewportVerticalOffsetPx
+    return PortraitLetterboxBarHeights(
+        top = viewportTop.coerceIn(0, containerHeightPx),
+        bottom = (containerHeightPx - viewportTop - viewportHeightPx).coerceIn(0, containerHeightPx),
+    )
 }

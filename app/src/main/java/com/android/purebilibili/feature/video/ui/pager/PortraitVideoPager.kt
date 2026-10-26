@@ -195,7 +195,7 @@ import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIEN
 import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX
 import com.android.purebilibili.feature.video.ui.overlay.nextFullscreenSeekFeedbackEvent
 import com.android.purebilibili.feature.video.ui.overlay.resolveFullscreenDoubleTapAction
-import com.android.purebilibili.feature.video.ui.overlay.resolvePortraitLetterboxBarHeightPx
+import com.android.purebilibili.feature.video.ui.overlay.resolvePortraitLetterboxBarHeightsPx
 import com.android.purebilibili.feature.video.util.captureVideoAmbientFrame
 import com.android.purebilibili.feature.video.subtitle.SubtitleAutoPreference
 import com.android.purebilibili.feature.video.subtitle.isSubtitleFeatureEnabledForUser
@@ -2890,20 +2890,27 @@ private fun VideoPageItem(
         portraitPageHeightPx,
         portraitPagerViewportAspect,
         portraitPagerFillContainer,
+        aspectRatio,
+        exoPlayer.videoSize.width,
+        exoPlayer.videoSize.height,
     ) {
         resolvePortraitVideoViewportSize(
             containerWidth = portraitPageWidthPx,
             containerHeight = portraitPageHeightPx,
             currentVideoAspect = portraitPagerViewportAspect,
             fillContainer = portraitPagerFillContainer,
+            aspectRatio = aspectRatio,
+            videoWidth = exoPlayer.videoSize.width,
+            videoHeight = exoPlayer.videoSize.height,
         )
     }
-    val letterboxBarHeightPx = resolvePortraitLetterboxBarHeightPx(
+    val letterboxBars = resolvePortraitLetterboxBarHeightsPx(
         containerHeightPx = portraitPageHeightPx,
         viewportHeightPx = letterboxViewportSize.height,
         fillContainer = portraitPagerFillContainer,
+        viewportVerticalOffsetPx = portraitViewportVerticalOffsetPx.roundToInt(),
     )
-    val letterboxBarHeightDp = with(density) { letterboxBarHeightPx.toDp() }
+    val letterboxBarHeightPx = maxOf(letterboxBars.top, letterboxBars.bottom)
     val letterboxAmbientFrame = remember(bvid) { mutableStateOf<ImageBitmap?>(null) }
     val shouldCaptureLetterboxAmbient = shouldCapturePortraitLetterboxAmbientFrame(
         isCurrentPage = isCurrentPage,
@@ -3275,7 +3282,7 @@ private fun VideoPageItem(
         if (letterboxBarHeightPx > 0) {
             ImmersiveAmbientLetterboxBackdrop(
                 ambientFrame = letterboxAmbientFrame,
-                height = letterboxBarHeightDp,
+                height = with(density) { letterboxBars.top.toDp() },
                 useAmbientHaze = letterboxAmbientHazeEnabled,
                 contentAlignment = Alignment.TopCenter,
                 modifier = Modifier
@@ -3284,7 +3291,7 @@ private fun VideoPageItem(
             )
             ImmersiveAmbientLetterboxBackdrop(
                 ambientFrame = letterboxAmbientFrame,
-                height = letterboxBarHeightDp,
+                height = with(density) { letterboxBars.bottom.toDp() },
                 useAmbientHaze = letterboxAmbientHazeEnabled,
                 contentAlignment = Alignment.BottomCenter,
                 modifier = Modifier
@@ -4727,10 +4734,24 @@ internal fun resolvePortraitVideoViewportSize(
     containerWidth: Int,
     containerHeight: Int,
     currentVideoAspect: Float,
-    fillContainer: Boolean
+    fillContainer: Boolean,
+    aspectRatio: VideoAspectRatio? = null,
+    videoWidth: Int = 0,
+    videoHeight: Int = 0,
 ): PortraitVideoViewportSize {
     val safeWidth = containerWidth.coerceAtLeast(1)
     val safeHeight = containerHeight.coerceAtLeast(1)
+    // FIT must size the host to the source frame, not merely FIT inside an opaque
+    // page-sized PlayerView, which would paint black over the ambient letterbox.
+    if (aspectRatio != null && aspectRatio != VideoAspectRatio.FIT) {
+        return com.android.purebilibili.feature.video.ui.components.resolveVideoViewportLayout(
+            containerWidth = safeWidth,
+            containerHeight = safeHeight,
+            aspectRatio = aspectRatio,
+            videoWidth = videoWidth,
+            videoHeight = videoHeight,
+        ).let { PortraitVideoViewportSize(it.width, it.height) }
+    }
     if (fillContainer) {
         return PortraitVideoViewportSize(width = safeWidth, height = safeHeight)
     }
@@ -4821,22 +4842,15 @@ internal fun PortraitVideoViewportContainer(
     BoxWithConstraints(modifier = modifier.clipToBounds()) {
         val density = LocalDensity.current
         val viewportSize = with(density) {
-            if (aspectRatio != null) {
-                com.android.purebilibili.feature.video.ui.components.resolveVideoViewportLayout(
-                    containerWidth = maxWidth.roundToPx(),
-                    containerHeight = maxHeight.roundToPx(),
-                    aspectRatio = aspectRatio,
-                    videoWidth = videoWidth,
-                    videoHeight = videoHeight,
-                ).let { PortraitVideoViewportSize(it.width, it.height) }
-            } else {
-                resolvePortraitVideoViewportSize(
-                    containerWidth = maxWidth.roundToPx(),
-                    containerHeight = maxHeight.roundToPx(),
-                    currentVideoAspect = currentVideoAspect,
-                    fillContainer = fillContainer,
-                )
-            }
+            resolvePortraitVideoViewportSize(
+                containerWidth = maxWidth.roundToPx(),
+                containerHeight = maxHeight.roundToPx(),
+                currentVideoAspect = currentVideoAspect,
+                fillContainer = fillContainer,
+                aspectRatio = aspectRatio,
+                videoWidth = videoWidth,
+                videoHeight = videoHeight,
+            )
         }
         val isLandscape = maxWidth > maxHeight
 

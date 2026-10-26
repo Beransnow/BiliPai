@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -228,10 +229,12 @@ fun PortraitFullscreenOverlay(
                     viewCount = statView,
                     onSearchClick = onSearchClick,
                     onMoreClick = onMoreClick,
-                    modifier = Modifier.graphicsLayer {
-                        alpha = commentOverlayAlpha
-                        translationY = -commentOverlayOffsetPx
-                    }
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .graphicsLayer {
+                            alpha = commentOverlayAlpha
+                            translationY = -commentOverlayOffsetPx
+                        }
                 )
 
                 // 2. 右侧互动栏 (不再包含头像)
@@ -557,7 +560,13 @@ private fun PortraitTopControlBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .statusBarsPadding()
+            .testTag("player_top_bar")
+            // The pager hides Android bars; visible statusBars alone collapses to zero.
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing
+                    .union(WindowInsets.statusBarsIgnoringVisibility)
+                    .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+            )
             .padding(
                 horizontal = layoutPolicy.topHorizontalPaddingDp.dp,
                 vertical = layoutPolicy.topVerticalPaddingDp.dp

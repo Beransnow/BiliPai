@@ -8,6 +8,7 @@ import com.android.purebilibili.data.model.response.ViewInfo
 import androidx.media3.common.Player
 import androidx.media3.ui.AspectRatioFrameLayout
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
+import com.android.purebilibili.feature.video.ui.overlay.resolvePortraitLetterboxBarHeightsPx
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -171,6 +172,75 @@ class PortraitVideoPagerPolicyTest {
 
         assertEquals(1200, layout.width)
         assertEquals(675, layout.height)
+    }
+
+    @Test
+    fun portraitFitViewport_boundsOpaquePlayerToSourceFrameAndLeavesAmbientOutside() {
+        val viewport = resolvePortraitVideoViewportSize(
+            containerWidth = 360,
+            containerHeight = 640,
+            currentVideoAspect = 16f / 9f,
+            fillContainer = false,
+            aspectRatio = VideoAspectRatio.FIT,
+            videoWidth = 1920,
+            videoHeight = 1080,
+        )
+        assertEquals(360, viewport.width)
+        assertEquals(203, viewport.height)
+        assertEquals(AspectRatioFrameLayout.RESIZE_MODE_FIT,
+            resolvePortraitPagerResizeMode(VideoAspectRatio.FIT, isVerticalContent = false))
+
+        val bars = resolvePortraitLetterboxBarHeightsPx(
+            containerHeightPx = 640,
+            viewportHeightPx = viewport.height,
+            fillContainer = false,
+            viewportVerticalOffsetPx = -48,
+        )
+        assertEquals(171, bars.top)
+        assertEquals(266, bars.bottom)
+        assertEquals(640, bars.top + viewport.height + bars.bottom)
+    }
+
+    @Test
+    fun portraitViewport_explicitCropAndStretchStillFillButFitNeverCrops() {
+        for (ratio in listOf(VideoAspectRatio.FILL, VideoAspectRatio.STRETCH)) {
+            val fill = resolvePortraitPagerFillContainer(ratio, isVerticalContent = false)
+            val viewport = resolvePortraitVideoViewportSize(
+                containerWidth = 360, containerHeight = 640,
+                currentVideoAspect = 16f / 9f, fillContainer = fill,
+                aspectRatio = ratio, videoWidth = 1920, videoHeight = 1080,
+            )
+            assertTrue(fill)
+            assertEquals(PortraitVideoViewportSize(360, 640), viewport)
+            val bars = resolvePortraitLetterboxBarHeightsPx(640, viewport.height, fill)
+            assertEquals(0, bars.top)
+            assertEquals(0, bars.bottom)
+        }
+        assertFalse(resolvePortraitPagerFillContainer(VideoAspectRatio.FIT, isVerticalContent = false))
+        assertEquals(AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
+            resolvePortraitPagerResizeMode(VideoAspectRatio.FILL, isVerticalContent = false))
+        assertEquals(AspectRatioFrameLayout.RESIZE_MODE_FILL,
+            resolvePortraitPagerResizeMode(VideoAspectRatio.STRETCH, isVerticalContent = false))
+    }
+
+    @Test
+    fun portraitViewport_explicitAxisAndNativeSizeModesUseSameGeometryAsBackdrop() {
+        assertEquals(
+            PortraitVideoViewportSize(360, 203),
+            resolvePortraitVideoViewportSize(360, 640, 16f / 9f, false,
+                VideoAspectRatio.FIT_WIDTH, 1920, 1080),
+        )
+        assertEquals(
+            PortraitVideoViewportSize(1920, 1080),
+            resolvePortraitVideoViewportSize(360, 640, 16f / 9f, false,
+                VideoAspectRatio.ORIGINAL, 1920, 1080),
+        )
+        val croppedNativeBars = resolvePortraitLetterboxBarHeightsPx(640, 1080, false, -48)
+        assertEquals(0, croppedNativeBars.top)
+        assertEquals(0, croppedNativeBars.bottom)
+        val centeredBars = resolvePortraitLetterboxBarHeightsPx(640, 203, false)
+        assertEquals(219, centeredBars.top)
+        assertEquals(218, centeredBars.bottom)
     }
 
 
