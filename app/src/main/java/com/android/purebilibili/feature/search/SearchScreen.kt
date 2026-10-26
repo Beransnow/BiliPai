@@ -3732,7 +3732,8 @@ fun SearchFilterBar(
     val filterRowPadding = if (useMiuixPresentation) {
         Modifier.padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small)
     } else {
-        Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+        // 与类型标签槽共用 8dp 栏起点，使筛选文字与"综合"等标签文字上下对齐。
+        Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
     }
     val chipSpacing = if (useMiuixPresentation) 9.dp else 10.dp
     val centerWideFilters = LocalWindowSizeClass.current.let { it.isTabletDevice && it.isTablet }
