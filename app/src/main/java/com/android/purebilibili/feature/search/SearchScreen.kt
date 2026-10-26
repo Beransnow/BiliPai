@@ -4046,7 +4046,6 @@ private fun FilterMenuChip(
         label = {
             AppText(
                 text = text,
-                // 玻璃开关切换时文字尺寸保持不变，避免筛选行跳动。
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
