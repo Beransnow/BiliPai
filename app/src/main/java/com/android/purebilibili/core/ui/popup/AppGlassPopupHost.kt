@@ -336,6 +336,7 @@ private fun AppGlassPopupContentHost(
                     com.android.purebilibili.core.ui.components.LocalAppGlassMenuBackdrop provides null,
                     com.android.purebilibili.core.ui.components.LocalAppGlassMenuSource provides null,
                     com.android.purebilibili.core.ui.components.LocalAppGlassMenuScope provides null,
+                    com.android.purebilibili.core.ui.blur.LocalAppGlassContainer provides null,
                 ) {
                     AppGlassPopupHost(glassAvailable = true, tuning = tuning, content = content)
                 }
@@ -834,6 +835,7 @@ private fun AppGlassChoicePopupOverlay(
                 centered = request.centered,
                 placement = request.menu?.placement ?: AppGlassMenuPlacement.ANCHOR_END,
                 requestedMaxHeight = request.menu?.maxHeight?.let { with(density) { it.roundToPx() } },
+                useAvailableHeight = request.menu?.useAvailableHeight == true,
                 margins = margins,
             ) {
                 AppGlassChoicePopupCard(
@@ -867,6 +869,7 @@ private fun AppGlassChoicePopupPlacement(
     centered: Boolean,
     placement: AppGlassMenuPlacement,
     requestedMaxHeight: Int?,
+    useAvailableHeight: Boolean = false,
     margins: PopupPlacementMargins,
     content: @Composable () -> Unit,
 ) {
@@ -877,7 +880,9 @@ private fun AppGlassChoicePopupPlacement(
         } else {
             margins.anchorMaxWidthPx.coerceAtMost(constraints.maxWidth - margin * 2)
         }
-        val maxHeight = if (centered || anchor == null) {
+        val maxHeight = if (useAvailableHeight) {
+            constraints.maxHeight - margin * 2
+        } else if (centered || anchor == null) {
             (constraints.maxHeight * CenteredPopupMaxHeightFraction).toInt()
         } else {
             // 长菜单保留上下形变空间，正文在受限视口内滚动。
@@ -985,6 +990,36 @@ private data class PopupFrameShape(
     }
 }
 
+/** 只记录真实布局坐标；滚动位移还原成内容坐标，避免滚动时反复改变视口高度。 */
+private class WholeMenuItemViewport {
+    private var viewport: LayoutCoordinates? = null
+    private val rows = linkedMapOf<Any, LayoutCoordinates>()
+    var itemBottoms by mutableStateOf<List<Int>>(emptyList())
+        private set
+
+    fun register(key: Any, coordinates: LayoutCoordinates, scrollOffset: Int) {
+        rows[key] = coordinates
+        refresh(scrollOffset)
+    }
+
+    fun unregister(key: Any, scrollOffset: Int) {
+        rows.remove(key)
+        refresh(scrollOffset)
+    }
+
+    fun updateViewport(coordinates: LayoutCoordinates, scrollOffset: Int) {
+        viewport = coordinates
+        refresh(scrollOffset)
+    }
+
+    private fun refresh(scrollOffset: Int) {
+        val parent = viewport?.takeIf { it.isAttached } ?: return
+        itemBottoms = rows.values.filter { it.isAttached }.map { child ->
+            (parent.localPositionOf(child, Offset.Zero).y + child.size.height + scrollOffset).roundToInt()
+        }.distinct().sorted()
+    }
+}
+
 @Composable
 private fun AppGlassChoicePopupCard(
     request: AppSingleChoicePopupRequest,
@@ -994,24 +1029,34 @@ private fun AppGlassChoicePopupCard(
     controller: AppGlassChoicePopupController,
     modifier: Modifier = Modifier,
 ) {
-    val isDark = request.menu?.darkTheme ?: isAppInDarkTheme()
+    val isDark = isAppInDarkTheme()
     val density = LocalDensity.current
     val cornerRadiusPx = with(density) { PopupCornerRadius.toPx() }
     val densityScale = density.density
     val outlineCache = remember { PopupSurfaceOutlineCache() }
     val ownScrollState = remember(request) { androidx.compose.foundation.ScrollState(0) }
     val scrollState = request.menu?.scrollState ?: ownScrollState
+    val wholeItemViewport = remember(request) { WholeMenuItemViewport() }
+    val fitWholeItems = request.menu?.fitWholeItems == true && request.menu?.interactiveContent != true
+    val itemBottomPadding = with(density) { PopupItemInset.roundToPx() }
     // 只记录玻璃底层，排除正文与子控件，供内嵌标签栏采样，避免透出清晰的原始视频。
     val interactivePanel = request.menu?.interactiveContent == true
     val panelSurfaceSource = if (interactivePanel) rememberChromeBackdropSource() else null
     val contentBackdrop = panelSurfaceSource?.takeIf { it.isReady }?.backdrop ?: backdrop
-    val contentMenuScope = remember(controller, contentBackdrop) {
+    val contentMenuScope = remember(controller, contentBackdrop, wholeItemViewport, fitWholeItems, scrollState) {
         AppGlassMenuScope(
             pressedItem = controller.menuScope.pressedItem,
-            register = controller.menuScope.register,
-            unregister = controller.menuScope.unregister,
+            register = { key, coordinates, enabled, dismiss, action ->
+                controller.menuScope.register(key, coordinates, enabled, dismiss, action)
+                if (fitWholeItems) wholeItemViewport.register(key, coordinates, scrollState.value)
+            },
+            unregister = { key ->
+                controller.menuScope.unregister(key)
+                if (fitWholeItems) wholeItemViewport.unregister(key, scrollState.value)
+            },
             dispatch = controller.menuScope.dispatch,
             backdrop = contentBackdrop,
+            fitWholeItems = fitWholeItems,
         )
     }
     var selectedItemBounds by remember(request) { mutableStateOf<Rect?>(null) }
@@ -1088,6 +1133,16 @@ private fun AppGlassChoicePopupCard(
 
     Box(
         modifier = modifier
+            .layout { measurable, constraints ->
+                // 仅在布局阶段读取行边界；视口与滚动范围一起收紧，不靠绘制裁掉半行。
+                val height = if (fitWholeItems) resolveWholeMenuViewportHeight(
+                    constraints.maxHeight, wholeItemViewport.itemBottoms, itemBottomPadding,
+                ) else constraints.maxHeight
+                val placeable = measurable.measure(constraints.copy(
+                    minHeight = constraints.minHeight.coerceAtMost(height), maxHeight = height,
+                ))
+                layout(placeable.width, placeable.height) { placeable.placeRelative(0, 0) }
+            }
             .onGloballyPositioned { coordinates ->
                 // 本层不挂动画矩阵，不能将缩放后的包围盒重新写回动画终点。
                 val origin = coordinates.positionInWindow()
@@ -1160,6 +1215,10 @@ private fun AppGlassChoicePopupCard(
                 }
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    // 滚动条独立接管右侧窄区域，避免拖动时触发菜单项或整块玻璃形变。
+                    if (scrollState.maxValue in 1 until Int.MAX_VALUE &&
+                        down.position.x >= size.width - 24.dp.toPx()
+                    ) return@awaitEachGesture
                     down.consume()
                     if (!controller.beginPress(
                             morph.card.topLeft + down.position,
@@ -1294,83 +1353,99 @@ private fun AppGlassChoicePopupCard(
                     renderEffect = if (!lowBlurBudget && frame.contentBlur > 0.1f) {
                         BlurEffect(frame.contentBlur, frame.contentBlur)
                     } else null
-                }
-                .then(if (request.menu?.interactiveContent == true) Modifier else
-                    Modifier.verticalScroll(scrollState, enabled = scrollState.maxValue > 0)),
+                },
         ) {
-            // 次要文字按玻璃底色叠最差背景校正对比，主文字与状态色沿用原调色板。
-            com.android.purebilibili.core.ui.ProvideAppGlassPopupContentColors(
-                glassSurfaceColor = surfaceColor,
-            ) {
-            Column(
+            Box(
                 modifier = Modifier
-                    .then(if (request.menu?.interactiveContent == true) Modifier.fillMaxWidth() else Modifier.width(IntrinsicSize.Max))
-                    .selectableGroup()
-                    .padding(PopupItemInset),
+                    .onGloballyPositioned {
+                        if (fitWholeItems) wholeItemViewport.updateViewport(it, scrollState.value)
+                    }
+                    .then(if (interactivePanel) Modifier else Modifier.verticalScroll(scrollState)),
             ) {
-                request.menu?.let { menu ->
-                    Box(menu.modifier) { menu.content(contentMenuScope) }
-                }
-                request.options.forEachIndexed { index, option ->
-                    val selected = option.value == request.selectedValue
-                    val pressedColor = AppContentColors.primaryText().copy(alpha = 0.12f)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onGloballyPositioned {
-                                controller.registerRow(index, it)
-                                if (selected) selectedItemBounds = Rect(it.positionInParent(),
-                                    Size(it.size.width.toFloat(), it.size.height.toFloat()))
+                // 次要文字按玻璃底色叠最差背景校正对比，主文字与状态色沿用原调色板。
+                com.android.purebilibili.core.ui.ProvideAppGlassPopupContentColors(
+                    glassSurfaceColor = surfaceColor,
+                ) {
+                Column(
+                    modifier = Modifier
+                        .then(if (request.menu?.interactiveContent == true) Modifier.fillMaxWidth() else Modifier.width(IntrinsicSize.Max))
+                        .selectableGroup()
+                        .padding(PopupItemInset)
+                        .then(if (!interactivePanel && request.menu?.showScrollbar != false) Modifier.padding(end = 12.dp) else Modifier),
+                ) {
+                    request.menu?.let { menu ->
+                        Box(menu.modifier) { menu.content(contentMenuScope) }
+                    }
+                    request.options.forEachIndexed { index, option ->
+                        val selected = option.value == request.selectedValue
+                        val pressedColor = AppContentColors.primaryText().copy(alpha = 0.12f)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned {
+                                    controller.registerRow(index, it)
+                                    if (selected) selectedItemBounds = Rect(it.positionInParent(),
+                                        Size(it.size.width.toFloat(), it.size.height.toFloat()))
+                                }
+                                .clip(RoundedCornerShape(PopupItemCornerRadius))
+                                .drawBehind {
+                                    // 按住滑到哪一项就高亮哪一项，勾选与保存仍在松手后改变。
+                                    if (controller.pressedIndex == index) drawRect(pressedColor)
+                                }
+                                .selectable(selected = selected, role = Role.RadioButton,
+                                    onClick = { controller.select(option.value) })
+                                .padding(
+                                    start = OptionStartPadding,
+                                    end = OptionEndPadding,
+                                    top = OptionVerticalPadding,
+                                    bottom = OptionVerticalPadding,
+                                ),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            request.optionLeading?.let { leading ->
+                                leading(option.value)
+                                Spacer(modifier = Modifier.width(14.dp))
                             }
-                            .clip(RoundedCornerShape(PopupItemCornerRadius))
-                            .drawBehind {
-                                // 按住滑到哪一项就高亮哪一项，勾选与保存仍在松手后改变。
-                                if (controller.pressedIndex == index) drawRect(pressedColor)
-                            }
-                            .selectable(selected = selected, role = Role.RadioButton,
-                                onClick = { controller.select(option.value) })
-                            .padding(
-                                start = OptionStartPadding,
-                                end = OptionEndPadding,
-                                top = OptionVerticalPadding,
-                                bottom = OptionVerticalPadding,
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        request.optionLeading?.let { leading ->
-                            leading(option.value)
-                            Spacer(modifier = Modifier.width(14.dp))
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            AppText(
-                                text = option.label,
-                                tapToCopyEnabled = false,
-                                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 17.sp, lineHeight = 22.sp),
-                                fontWeight = FontWeight.Medium,
-                                color = AppContentColors.primaryText(),
-                            )
-                            option.description?.let { description ->
-                                Spacer(modifier = Modifier.height(2.dp))
+                            Column(modifier = Modifier.weight(1f)) {
                                 AppText(
-                                    text = description,
+                                    text = option.label,
                                     tapToCopyEnabled = false,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = AppContentColors.secondaryText(),
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 17.sp, lineHeight = 22.sp),
+                                    fontWeight = FontWeight.Medium,
+                                    color = AppContentColors.primaryText(),
+                                )
+                                option.description?.let { description ->
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    AppText(
+                                        text = description,
+                                        tapToCopyEnabled = false,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = AppContentColors.secondaryText(),
+                                    )
+                                }
+                            }
+                            if (selected) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = AppContentColors.primaryText(),
+                                    modifier = Modifier.size(20.dp),
                                 )
                             }
                         }
-                        if (selected) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = null,
-                                tint = AppContentColors.primaryText(),
-                                modifier = Modifier.size(20.dp),
-                            )
-                        }
                     }
                 }
+                }
             }
+            if (!interactivePanel && request.menu?.showScrollbar != false) {
+                Box(Modifier.matchParentSize()) {
+                    com.android.purebilibili.core.ui.components.AppMenuScrollbar(
+                        scrollState = scrollState,
+                        glass = true,
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                    )
+                }
             }
         }
     }
