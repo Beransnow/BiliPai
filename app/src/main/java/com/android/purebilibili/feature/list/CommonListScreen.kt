@@ -2832,7 +2832,7 @@ internal fun CommonListContent(
     val showInitialSkeleton = isLoading && items.isEmpty()
     val historySkeletonBlockColor = if (showInitialSkeleton && isPersonalList) {
         com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonBlockColor(
-            com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse()
+            com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulseState()
         )
     } else {
         null

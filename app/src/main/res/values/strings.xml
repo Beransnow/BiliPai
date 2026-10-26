@@ -357,7 +357,7 @@
     <string name="animation_glass_share_title">分享液态玻璃设置</string>
     <string name="animation_glass_share_failed">无法打开系统分享</string>
     <string name="animation_glass_export_failed">液态玻璃设置导出失败</string>
-    <string name="animation_skeleton_summary">加载时，占位卡片轻轻明暗变化</string>
+    <string name="animation_skeleton_summary">加载时，柔和光带扫过占位卡片；关闭后显示静态占位</string>
     <string name="animation_header_blur_summary">模糊顶栏背后的内容，不含折射和光效</string>
     <string name="animation_progressive_blur_summary">顶栏模糊随滚动渐变（需 Android 13+）</string>
     <string name="animation_progressive_fade_summary">状态栏到顶栏用纯色渐变过渡，比模糊更省电</string>
