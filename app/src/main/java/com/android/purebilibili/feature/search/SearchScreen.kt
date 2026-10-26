@@ -151,7 +151,6 @@ import com.android.purebilibili.core.ui.components.AppTabRowIndicatorPresentatio
 import com.android.purebilibili.core.theme.resolveAccessibleContainerColors
 import com.android.purebilibili.core.theme.resolveFilledSelectionAccentColors
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
-import com.android.purebilibili.core.ui.appTabLabelFontSize
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
@@ -3733,8 +3732,7 @@ fun SearchFilterBar(
     val filterRowPadding = if (useMiuixPresentation) {
         Modifier.padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small)
     } else {
-        // 与类型标签槽共用 8dp 栏起点，使筛选文字与"综合"等标签文字上下对齐。
-        Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+        Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
     }
     val chipSpacing = if (useMiuixPresentation) 9.dp else 10.dp
     val centerWideFilters = LocalWindowSizeClass.current.let { it.isTabletDevice && it.isTablet }
@@ -4048,10 +4046,8 @@ private fun FilterMenuChip(
         label = {
             AppText(
                 text = text,
-                // 玻璃模式下与类型标签同样放宽到 14sp，两行文字大小一致；原生路径保持 12sp。
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontSize = appTabLabelFontSize(MaterialTheme.typography.labelMedium.fontSize)
-                ),
+                // 玻璃开关切换时文字尺寸保持不变，避免筛选行跳动。
+                style = MaterialTheme.typography.labelMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

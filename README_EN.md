@@ -50,7 +50,7 @@ Live-sampled liquid glass across top bars, docks, menus and player controls — 
 
 Appearance varies by version, theme and screen size.
 
-Beyond the screenshots: tap-to-act danmaku, swipe-up fullscreen with ambient light in portrait playback, audio mode, AI note summaries, subtitle import/export, plugins, DLNA / Google Cast casting and WebDAV settings backup.
+Beyond the screenshots: tap-to-act danmaku, swipe-up fullscreen with ambient light in portrait playback, audio mode, AI note summaries, subtitle import/export, plugins, DLNA / Google Cast casting, WebDAV settings backup and more; some features vary with the Android version.
 
 ## Download
 
