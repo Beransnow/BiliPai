@@ -1,9 +1,10 @@
-package com.android.purebilibili.feature.video.ui.overlay.glass
+package com.android.purebilibili.feature.video.ui.overlay.portrait
 
 import com.android.purebilibili.feature.video.ui.overlay.*
 
 import com.android.purebilibili.core.ui.AppContentColors
 import com.android.purebilibili.core.ui.components.appElasticPress
+import com.android.purebilibili.core.ui.components.appActionWithFeedback
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -49,7 +50,6 @@ import com.android.purebilibili.core.ui.rememberAppCoinIcon
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.rememberHapticFeedback
-import com.android.purebilibili.core.ui.components.appActionWithFeedback
 
 import com.android.purebilibili.feature.video.ui.feedback.VideoActionCountRequests
 import com.android.purebilibili.feature.video.ui.feedback.VideoActionCountText
@@ -132,8 +132,8 @@ fun PortraitInteractionBar(
             countAnimationRequest = countRequests.like,
             countValue = likeCount,
             onClick = {
-                haptic(HapticType.LIGHT)
                 countRequests.requestLike()
+                haptic(HapticType.LIGHT)
                 onLikeClick()
             },
             onLongClick = {
@@ -162,8 +162,8 @@ fun PortraitInteractionBar(
             countAnimationRequest = countRequests.coin,
             countValue = coinCount,
             onClick = {
-                haptic(HapticType.LIGHT)
                 countRequests.requestCoin()
+                haptic(HapticType.LIGHT)
                 onCoinClick()
             }
         )
@@ -187,8 +187,8 @@ fun PortraitInteractionBar(
             countAnimationRequest = countRequests.favorite,
             countValue = favoriteCount,
             onClick = {
-                haptic(HapticType.LIGHT)
                 countRequests.requestFavorite()
+                haptic(HapticType.LIGHT)
                 onFavoriteClick()
             },
             onLongClick = {

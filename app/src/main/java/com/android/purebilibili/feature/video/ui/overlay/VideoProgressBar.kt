@@ -74,6 +74,7 @@ fun VideoProgressBar(
     displayPositionProvider: (() -> Long)? = null,
     seekAreaHeight: Dp? = null,
     verticalHeightScale: Float = 1f,
+    neutralGlassTrack: Boolean = false,
 ) {
     var containerWidthPx by remember { mutableFloatStateOf(0f) }
     var dragTargetPositionMs by remember { mutableLongStateOf(displayPositionMs.coerceAtLeast(0L)) }
@@ -99,11 +100,11 @@ fun VideoProgressBar(
         // 与详情页选中态共用颜色入口，保留皮肤显式覆盖及原生主色。
         AppContentColors.selectionAccent(LocalAppThemeConfig.current.liquidGlassEnabled),
     )
-    val bufferedTrackColor = parseUiSkinColor(
+    val bufferedTrackColor = if (neutralGlassTrack) Color.White.copy(alpha = 0.5f) else parseUiSkinColor(
         progressColors?.playerProgressBufferedTint,
         Color.White.copy(alpha = 0.42f),
     )
-    val inactiveTrackColor = parseUiSkinColor(
+    val inactiveTrackColor = if (neutralGlassTrack) Color.White.copy(alpha = 0.22f) else parseUiSkinColor(
         progressColors?.playerProgressTrackTint,
         Color.White.copy(alpha = 0.24f),
     )
@@ -363,6 +364,15 @@ fun VideoProgressBar(
                                             drawLine(primaryColor.copy(alpha = 0.68f), ridgePoints[index],
                                                 ridgePoints[index + 1], trackHeightPx * 1.25f, StrokeCap.Round)
                                         }
+                                    }
+                                    if (neutralGlassTrack) {
+                                        drawLine(
+                                            Color.Black.copy(alpha = 0.32f),
+                                            Offset(0f, centerY),
+                                            Offset(size.width, centerY),
+                                            trackHeightPx + 2.dp.toPx(),
+                                            StrokeCap.Round,
+                                        )
                                     }
                                     drawMediaProgressTrack(
                                         progressFraction = resolveProgressFraction(activePositionProvider(), duration),

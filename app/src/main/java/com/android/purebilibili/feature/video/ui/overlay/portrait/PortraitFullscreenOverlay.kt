@@ -1,4 +1,4 @@
-package com.android.purebilibili.feature.video.ui.overlay.glass
+package com.android.purebilibili.feature.video.ui.overlay.portrait
 
 import com.android.purebilibili.feature.video.ui.overlay.*
 
@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,8 +50,8 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.MoreVert
 import com.android.purebilibili.feature.video.ui.components.PlaybackSpeed
-import com.android.purebilibili.feature.video.ui.components.glass.DolbyBadge
-import com.android.purebilibili.feature.video.ui.components.glass.HiResBadge
+import com.android.purebilibili.feature.video.ui.components.DolbyBadge
+import com.android.purebilibili.feature.video.ui.components.HiResBadge
 import com.android.purebilibili.feature.video.ui.feedback.followActionAnchor
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 
@@ -69,8 +70,6 @@ import com.android.purebilibili.core.ui.ContainerLevel
 internal fun shouldShowPortraitViewCount(viewCount: Int, compactMode: Boolean): Boolean {
     return viewCount > 0 && !compactMode
 }
-
-internal fun shouldShowPortraitTopMoreAction(): Boolean = false
 
 internal fun resolvePortraitProgressTimeLabel(
     positionMs: Long,
@@ -144,19 +143,16 @@ fun PortraitFullscreenOverlay(
     isDolbyAudioSelected: Boolean,
     currentRatio: VideoAspectRatio,
     danmakuEnabled: Boolean,
-    isStatusBarHidden: Boolean,
 
     // 显示状态
     showControls: Boolean = true,
     commentExpansionProgress: Float = 0f,
     videoshotData: VideoshotData? = null,
     videoAspectRatio: Float? = null,
-    isPlaybackRecovering: Boolean = false,
 
     // 回调
     onBack: () -> Unit,
     onHomeClick: () -> Unit = onBack,
-    onPlayPause: () -> Unit,
     onSeek: (Long) -> Unit,
     onSeekStart: () -> Unit = {},
     seekPositionMs: Long = progress.current,
@@ -173,12 +169,10 @@ fun PortraitFullscreenOverlay(
     onSubtitleClick: () -> Unit = {},
     onDanmakuToggle: () -> Unit,
     onDanmakuInputClick: () -> Unit,
-    onToggleStatusBar: () -> Unit,
     onRotateToLandscape: () -> Unit,
     onSearchClick: () -> Unit = {},
     onMoreClick: () -> Unit = {},
 
-    playbackReady: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
@@ -235,10 +229,12 @@ fun PortraitFullscreenOverlay(
                     viewCount = statView,
                     onSearchClick = onSearchClick,
                     onMoreClick = onMoreClick,
-                    modifier = Modifier.graphicsLayer {
-                        alpha = commentOverlayAlpha
-                        translationY = -commentOverlayOffsetPx
-                    }
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .graphicsLayer {
+                            alpha = commentOverlayAlpha
+                            translationY = -commentOverlayOffsetPx
+                        }
                 )
 
                 // 2. 右侧互动栏 (不再包含头像)
@@ -360,17 +356,7 @@ fun PortraitFullscreenOverlay(
                         videoAspectRatio = videoAspectRatio
                     )
 
-                    // 底部输入栏占位 (Input Bar Spacer)
-                    // Input Bar height is usually around 50-60dp.
-                    // Since Input Bar is an overlay at Alignment.BottomCenter in the outer Box (see below),
-                    // we need to add a spacer here so the progress bar sits *above* the input bar, not behind it.
-                    // Or, we render the Input Bar *here* in the Column?
-                    // "PortraitBottomInputBar" logic:
-                    // If we put it here, it will be stacked.
-                    // Let's verify where PortraitBottomInputBar is placed in the original code.
-                    // Original: Modifier.align(Alignment.BottomCenter)
-
-                    // Let's add a Spacer. Assuming Input Bar height ~50dp + margins.
+                    // Reserve the same bottom input row in both control materials.
                     Spacer(
                         modifier = Modifier.height(
                             (layoutPolicy.bottomInputSpacerHeightDp + layoutPolicy.bottomInputLiftDp).dp
@@ -393,43 +379,8 @@ fun PortraitFullscreenOverlay(
                         }
                 )
 
-                AnimatedVisibility(
-                    visible = isPlaybackRecovering,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                    modifier = Modifier.align(Alignment.Center)
-                ) {
-                    Box {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            com.android.purebilibili.feature.video.ui.overlay.BiliTvAnimatedBufferingIndicator(
-                                tint = AppContentColors.accent(),
-                                size = 32.dp,
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            AppText(
-                                text = "正在恢复播放...",
-                                color = Color.White,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium)
-                            )
-                        }
-                    }
-                }
             }
         }
-
-        CenterPlaybackControl(
-            visible = showControls && playbackReady && !isPlaybackRecovering &&
-                !isSeekScrubbing && commentOverlayAlpha > 0.001f,
-            isPlaying = isPlaying,
-            onPlayPause = onPlayPause,
-            diameter = 72.dp,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .graphicsLayer { alpha = commentOverlayAlpha },
-        )
 
         // 控件隐藏时仍显示底部细进度条，方便随时感知播放进度
         if (!showControls) {
@@ -609,7 +560,13 @@ private fun PortraitTopControlBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .statusBarsPadding()
+            .testTag("player_top_bar")
+            // The pager hides Android bars; visible statusBars alone collapses to zero.
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing
+                    .union(WindowInsets.statusBarsIgnoringVisibility)
+                    .only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+            )
             .padding(
                 horizontal = layoutPolicy.topHorizontalPaddingDp.dp,
                 vertical = layoutPolicy.topVerticalPaddingDp.dp
@@ -669,15 +626,13 @@ private fun PortraitTopControlBar(
                     modifier = Modifier.size(layoutPolicy.topActionIconSizeDp.dp)
                 )
             }
-            if (shouldShowPortraitTopMoreAction()) {
-                PortraitGlassIconButton(onClick = onMoreClick) {
-                    AppIcon(
-                        imageVector = Icons.Rounded.MoreVert,
-                        contentDescription = "菜单",
-                        tint = Color.White,
-                        modifier = Modifier.size(layoutPolicy.topActionIconSizeDp.dp)
-                    )
-                }
+            PortraitGlassIconButton(onClick = onMoreClick) {
+                AppIcon(
+                    imageVector = Icons.Rounded.MoreVert,
+                    contentDescription = "更多设置",
+                    tint = Color.White,
+                    modifier = Modifier.size(layoutPolicy.topActionIconSizeDp.dp)
+                )
             }
         }
     }

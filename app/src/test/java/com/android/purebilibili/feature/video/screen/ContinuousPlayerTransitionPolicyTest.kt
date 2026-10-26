@@ -58,7 +58,7 @@ class ContinuousPlayerTransitionPolicyTest {
     }
 
     @Test
-    fun exitingFullscreenWaitsForPortraitBeforeCollapsing() {
+    fun exitingFullscreenKeepsLandscapePresentationUntilPortraitArrives() {
         val awaitingPortrait = reduceContinuousPlayerTransition(
             phase = ContinuousPlayerTransitionPhase.Fullscreen,
             event = ContinuousPlayerTransitionEvent.Toggle,
@@ -71,12 +71,20 @@ class ContinuousPlayerTransitionPolicyTest {
             ContinuousPlayerOrientationRequest.Portrait,
             awaitingPortrait.orientationRequest,
         )
+        assertTrue(resolveContinuousPlayerFullscreenPresentation(
+            orientationFullscreen = false,
+            phase = awaitingPortrait.phase,
+            isLandscape = true,
+        ))
 
-        val collapsing = reduceContinuousPlayerTransition(
+        val inline = reduceContinuousPlayerTransition(
             phase = awaitingPortrait.phase,
             event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = false),
         )
-        assertEquals(ContinuousPlayerTransitionPhase.Collapsing, collapsing.phase)
+        assertEquals(ContinuousPlayerTransitionPhase.Inline, inline.phase)
+        assertFalse(resolveContinuousPlayerFullscreenPresentation(
+            orientationFullscreen = false, phase = inline.phase, isLandscape = false,
+        ))
     }
 
     @Test
@@ -130,22 +138,19 @@ class ContinuousPlayerTransitionPolicyTest {
         )
         assertEquals(ContinuousPlayerTransitionPhase.AwaitingPortrait, lateLandscape.phase)
 
-        val collapsing = reduceContinuousPlayerTransition(
+        assertEquals(
+            VideoDetailLocalBackTarget.EXIT_LANDSCAPE_FULLSCREEN,
+            resolveVideoDetailLocalBackTarget(
+                isLandscapeFullscreen = false,
+                isPortraitFullscreen = false,
+                continuousPlayerPhase = lateLandscape.phase,
+            ),
+        )
+        val inline = reduceContinuousPlayerTransition(
             phase = lateLandscape.phase,
             event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = false),
         )
-        assertEquals(ContinuousPlayerTransitionPhase.Collapsing, collapsing.phase)
-        val repeatedBack = reduceContinuousPlayerTransition(
-            phase = collapsing.phase,
-            event = ContinuousPlayerTransitionEvent.ExitFullscreen,
-        )
-        assertEquals(ContinuousPlayerTransitionPhase.Collapsing, repeatedBack.phase)
-        assertEquals(ContinuousPlayerOrientationRequest.None, repeatedBack.orientationRequest)
-
-        val inline = reduceContinuousPlayerTransition(
-            phase = repeatedBack.phase,
-            event = ContinuousPlayerTransitionEvent.CollapseFinished,
-        )
+        // Android's first portrait frame is already inline; there is no second collapse.
         assertEquals(ContinuousPlayerTransitionPhase.Inline, inline.phase)
         assertEquals(
             VideoDetailLocalBackTarget.NAVIGATE_BACK,
@@ -158,7 +163,7 @@ class ContinuousPlayerTransitionPolicyTest {
     }
 
     @Test
-    fun backFromButtonOrAutoRotatedFullscreenRequestsPortraitAndFinishesCollapse() {
+    fun backFromButtonOrAutoRotatedFullscreenRequestsPortraitAndRestoresInlineImmediately() {
         for (phaseBeforeLandscape in listOf(
             ContinuousPlayerTransitionPhase.AwaitingLandscape,
             ContinuousPlayerTransitionPhase.Inline,
@@ -182,18 +187,21 @@ class ContinuousPlayerTransitionPolicyTest {
             )
             assertEquals(ContinuousPlayerTransitionPhase.AwaitingPortrait, exiting.phase)
             assertEquals(ContinuousPlayerOrientationRequest.Portrait, exiting.orientationRequest)
-            val collapsing = reduceContinuousPlayerTransition(
+            assertTrue(resolveContinuousPlayerFullscreenPresentation(
+                orientationFullscreen = false,
+                phase = exiting.phase,
+                isLandscape = true,
+            ))
+            val inline = reduceContinuousPlayerTransition(
                 phase = exiting.phase,
                 event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = false),
             )
-            assertEquals(ContinuousPlayerTransitionPhase.Collapsing, collapsing.phase)
-            assertEquals(
-                ContinuousPlayerTransitionPhase.Inline,
-                reduceContinuousPlayerTransition(
-                    phase = collapsing.phase,
-                    event = ContinuousPlayerTransitionEvent.CollapseFinished,
-                ).phase,
-            )
+            assertEquals(ContinuousPlayerTransitionPhase.Inline, inline.phase)
+            assertFalse(resolveContinuousPlayerFullscreenPresentation(
+                orientationFullscreen = false,
+                phase = inline.phase,
+                isLandscape = false,
+            ))
         }
     }
 
@@ -217,16 +225,16 @@ class ContinuousPlayerTransitionPolicyTest {
     }
 
     @Test
-    fun systemPortraitFromFullscreenOrStuckPhasesStartsCollapse() {
+    fun systemPortraitFromFullscreenOrStuckPhasesRestoresInlineImmediately() {
         assertEquals(
-            ContinuousPlayerTransitionPhase.Collapsing,
+            ContinuousPlayerTransitionPhase.Inline,
             reduceContinuousPlayerTransition(
                 phase = ContinuousPlayerTransitionPhase.Fullscreen,
                 event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = false),
             ).phase,
         )
         assertEquals(
-            ContinuousPlayerTransitionPhase.Collapsing,
+            ContinuousPlayerTransitionPhase.Inline,
             reduceContinuousPlayerTransition(
                 phase = ContinuousPlayerTransitionPhase.AwaitingLandscape,
                 event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = false),
@@ -234,20 +242,4 @@ class ContinuousPlayerTransitionPolicyTest {
         )
     }
 
-    @Test
-    fun reenteringDuringCollapseRequestsLandscapeWithoutWaitingForAnimation() {
-        val result = reduceContinuousPlayerTransition(
-            phase = ContinuousPlayerTransitionPhase.Collapsing,
-            event = ContinuousPlayerTransitionEvent.Toggle,
-        )
-        assertEquals(ContinuousPlayerTransitionPhase.AwaitingLandscape, result.phase)
-        assertEquals(ContinuousPlayerOrientationRequest.Landscape, result.orientationRequest)
-
-        val lateCollapse = reduceContinuousPlayerTransition(
-            phase = result.phase,
-            event = ContinuousPlayerTransitionEvent.CollapseFinished,
-        )
-        assertEquals(ContinuousPlayerTransitionPhase.AwaitingLandscape, lateCollapse.phase)
-        assertEquals(ContinuousPlayerOrientationRequest.None, lateCollapse.orientationRequest)
-    }
 }

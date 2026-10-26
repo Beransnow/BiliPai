@@ -1060,20 +1060,16 @@ fun PureBiliBiliTheme(
     val view = LocalView.current
     val themeDefaultLightBars = materialColorScheme.background.luminance() > 0.5f
     if (!view.isInEditMode) {
-        // Apply only when the brightness boundary changes. Reapplying on every color
-        // frame would overwrite player/immersive pages that own their system-bar style.
-        LaunchedEffect(view, themeDefaultLightBars) {
-            val window = view.context.findHostActivity()?.window ?: return@LaunchedEffect
-            val controller = WindowCompat.getInsetsController(window, view)
-            // 设置状态栏图标颜色：
-            // - 深色模式：使用浅色图标 (isAppearanceLightStatusBars = false)
-            // - 浅色模式：使用深色图标 (isAppearanceLightStatusBars = true)
-            // 这里是主题默认外观的兜底出口；有场景外观的页面（首页皮肤、视频沉浸等）
-            // 会在自己的 effect 中覆盖。仅在明暗边界变化时更新主题默认值，
-            // 避免逐帧配色更新与页面 effect 争抢状态栏外观。
-            if (controller.isAppearanceLightStatusBars != themeDefaultLightBars) {
-                controller.isAppearanceLightStatusBars = themeDefaultLightBars
+        // Commit the default before page SideEffects; async defaults can overwrite player icons.
+        DisposableEffect(view, themeDefaultLightBars) {
+            val window = view.context.findHostActivity()?.window
+            if (window != null) {
+                val controller = WindowCompat.getInsetsController(window, view)
+                if (controller.isAppearanceLightStatusBars != themeDefaultLightBars) {
+                    controller.isAppearanceLightStatusBars = themeDefaultLightBars
+                }
             }
+            onDispose {}
         }
     }
 
