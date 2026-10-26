@@ -39,7 +39,7 @@
 
 **液态玻璃设计，贯穿全局**
 
-顶栏、底栏、菜单与设置实时取景毛玻璃。截图仅展示应用的液态玻璃设计样式。
+顶栏、底栏、菜单与设置实时取景毛玻璃。截图仅展示应用部分场景的液态玻璃设计样式。
 
 <img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai 首页" />
 <img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai 外观设置" />
@@ -95,7 +95,6 @@ Miuix 依赖从 GitHub Packages 获取，需在本机 `~/.gradle/gradle.properti
 - [BiliBiliSponsorBlock](https://github.com/hanydd/BilibiliSponsorBlock) — 空降助手数据与 API
 - [Miuix](https://github.com/compose-miuix-ui/miuix) — 界面组件库
 - [Haze](https://github.com/chrisbanes/haze) — 毛玻璃效果
-- [BiliPai-miuix](https://github.com/Piracola/BiliPai-miuix) — UI 组件与设计系统贡献（@piracola）
 - [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) — 全局应用交互参考
 - [Bili Pilot](https://github.com/siwei-yuan/bili-pilot) — CDN 选线参考
 

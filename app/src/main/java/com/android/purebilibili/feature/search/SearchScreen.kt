@@ -151,6 +151,7 @@ import com.android.purebilibili.core.ui.components.AppTabRowIndicatorPresentatio
 import com.android.purebilibili.core.theme.resolveAccessibleContainerColors
 import com.android.purebilibili.core.theme.resolveFilledSelectionAccentColors
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.appTabLabelFontSize
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
@@ -4047,7 +4048,10 @@ private fun FilterMenuChip(
         label = {
             AppText(
                 text = text,
-                style = MaterialTheme.typography.labelMedium,
+                // 玻璃模式下与类型标签同样放宽到 14sp，两行文字大小一致；原生路径保持 12sp。
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontSize = appTabLabelFontSize(MaterialTheme.typography.labelMedium.fontSize)
+                ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

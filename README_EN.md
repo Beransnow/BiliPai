@@ -39,7 +39,7 @@ Some quality tiers require login or account privileges. Appearance, playback, da
 
 **Liquid Glass, throughout the app**
 
-Live blur across top bars, docks, menus and settings. Screenshots showcase the app's Liquid Glass design style only.
+Live blur across top bars, docks, menus and settings. Screenshots showcase only a selection of the app's Liquid Glass design scenes.
 
 <img src="docs/images/screenshot-glass-1.png" height="400" alt="BiliPai home" />
 <img src="docs/images/screenshot-glass-2.png" height="400" alt="BiliPai appearance settings" />
@@ -95,7 +95,6 @@ Share bugs and ideas through [Issues](https://github.com/jay3-yy/BiliPai/issues/
 - [BiliBiliSponsorBlock](https://github.com/hanydd/BilibiliSponsorBlock) — sponsor-skip data and API
 - [Miuix](https://github.com/compose-miuix-ui/miuix) — UI component library
 - [Haze](https://github.com/chrisbanes/haze) — blur effects
-- [BiliPai-miuix](https://github.com/Piracola/BiliPai-miuix) — UI and design-system contributions (@piracola)
 - [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus) — overall app interaction reference
 - [Bili Pilot](https://github.com/siwei-yuan/bili-pilot) — CDN routing reference
 
