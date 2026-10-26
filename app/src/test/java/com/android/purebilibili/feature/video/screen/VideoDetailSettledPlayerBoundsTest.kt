@@ -13,28 +13,29 @@ class VideoDetailSettledPlayerBoundsTest {
             assertEquals(
                 exposure != VideoCardTransitionExposure.Idle &&
                     exposure != VideoCardTransitionExposure.SettledHidden,
-                shouldFreezeVideoDetailPlayerBounds(true, false, exposure),
+                shouldFreezeVideoDetailPlayerBounds(false, true, false, exposure),
                 "exposure=$exposure",
             )
         }
         // Cancellation ends at a stable detail; it must resume geometry publication.
-        assertTrue(shouldFreezeVideoDetailPlayerBounds(true, false, VideoCardTransitionExposure.Restoring))
-        assertFalse(shouldFreezeVideoDetailPlayerBounds(true, false, VideoCardTransitionExposure.SettledHidden))
+        assertTrue(shouldFreezeVideoDetailPlayerBounds(false, true, false, VideoCardTransitionExposure.Restoring))
+        assertFalse(shouldFreezeVideoDetailPlayerBounds(false, true, false, VideoCardTransitionExposure.SettledHidden))
     }
 
     @Test
     fun committedOutgoingEntryCannotPublishCardCoordinatesAtIdleEndpoint() {
         for (exposure in VideoCardTransitionExposure.entries) {
-            assertTrue(shouldFreezeVideoDetailPlayerBounds(true, true, exposure))
+            assertTrue(shouldFreezeVideoDetailPlayerBounds(false, true, true, exposure))
             // Session cleanup may revoke ownership before the outgoing entry is disposed.
-            assertTrue(shouldFreezeVideoDetailPlayerBounds(false, true, exposure))
+            assertTrue(shouldFreezeVideoDetailPlayerBounds(false, false, true, exposure))
         }
     }
 
     @Test
     fun unrelatedParentAndNonCardPlaybackKeepTheirNormalBoundsUpdates() {
         for (exposure in VideoCardTransitionExposure.entries) {
-            assertFalse(shouldFreezeVideoDetailPlayerBounds(false, false, exposure))
+            assertFalse(shouldFreezeVideoDetailPlayerBounds(false, false, false, exposure))
+            assertTrue(shouldFreezeVideoDetailPlayerBounds(true, false, false, exposure))
         }
     }
 }

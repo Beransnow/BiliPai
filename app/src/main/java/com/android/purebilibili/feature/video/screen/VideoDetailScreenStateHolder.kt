@@ -288,6 +288,7 @@ import kotlin.math.roundToInt
 private val commentBackToTopRestoreFlow =
     kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
+private const val CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS = 240
 
 private const val VIDEO_DETAIL_COLLAPSE_SIGNAL_IDLE_TIMEOUT_MS = 120L
 
@@ -1389,23 +1390,12 @@ internal fun VideoDetailScreenStateHolder(
     }
     val orientationPolicyDevice = playerPresentation.isOrientationDriven
     val isOrientationDrivenFullscreen = playerPresentation.isOrientationDriven
-    val orientationFullscreenMode = resolveVideoDetailFullscreenMode(
+    val isFullscreenMode = resolveVideoDetailFullscreenMode(
         isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
         isLandscape = isLandscape,
         userRequestedFullscreen = userRequestedFullscreen,
         isInMultiWindowMode = isActivityInMultiWindowMode,
         manualPortraitHoldActive = manualPortraitHoldActive,
-    )
-    var continuousPlayerPhase by rememberSaveable(currentBvid) {
-        mutableStateOf(
-            if (orientationFullscreenMode) ContinuousPlayerTransitionPhase.Fullscreen
-            else ContinuousPlayerTransitionPhase.Inline
-        )
-    }
-    val isFullscreenMode = resolveContinuousPlayerFullscreenPresentation(
-        orientationFullscreen = orientationFullscreenMode,
-        phase = continuousPlayerPhase,
-        isLandscape = isLandscape,
     )
 
     // 「下一集 / 相关视频」的导航 lambda 定义在 isFullscreenMode 之前，用 state 桥接，
@@ -2618,6 +2608,20 @@ internal fun VideoDetailScreenStateHolder(
         orientationPolicyDevice &&
         !isActivityInMultiWindowMode &&
         !isVerticalVideo
+    var continuousPlayerPhase by rememberSaveable(currentBvid) {
+        mutableStateOf(
+            if (isFullscreenMode) {
+                ContinuousPlayerTransitionPhase.Fullscreen
+            } else {
+                ContinuousPlayerTransitionPhase.Inline
+            }
+        )
+    }
+    val continuousPlayerProgress = remember(currentBvid) {
+        Animatable(if (isFullscreenMode) 1f else 0f)
+    }
+    val isContinuousPlayerMorphing = continuousFullscreenTransitionEnabled &&
+        continuousPlayerPhase == ContinuousPlayerTransitionPhase.Collapsing
 
     fun applyContinuousPlayerDecision(decision: ContinuousPlayerTransitionDecision) {
         continuousPlayerPhase = decision.phase
@@ -2651,8 +2655,12 @@ internal fun VideoDetailScreenStateHolder(
         isLandscape,
         isFullscreenMode,
     ) {
-        // Non-continuous hosts follow their actual fullscreen presentation.
+        // 关闭 continuous morph 时同步到真实全屏层，避免折叠/展开后继承旧方向相位。
         if (!continuousFullscreenTransitionEnabled) {
+            val target = if (isFullscreenMode) 1f else 0f
+            if (kotlin.math.abs(continuousPlayerProgress.value - target) > 0.001f) {
+                continuousPlayerProgress.snapTo(target)
+            }
             continuousPlayerPhase = if (isFullscreenMode) {
                 ContinuousPlayerTransitionPhase.Fullscreen
             } else {
@@ -2665,9 +2673,10 @@ internal fun VideoDetailScreenStateHolder(
             isLandscape &&
                 continuousPlayerPhase != ContinuousPlayerTransitionPhase.Fullscreen &&
                 continuousPlayerPhase != ContinuousPlayerTransitionPhase.AwaitingPortrait -> {
+                continuousPlayerProgress.snapTo(1f)
                 continuousPlayerPhase = ContinuousPlayerTransitionPhase.Fullscreen
             }
-            // The portrait configuration immediately restores inline presentation.
+            // 自动旋回竖屏也从当前进度收起，与手动退出共用连续过渡。
             // AwaitingLandscape 已请求旋转，但系统窗口方向可能尚未更新，不能提前清理。
             !isLandscape &&
                 continuousPlayerPhase == ContinuousPlayerTransitionPhase.Fullscreen -> {
@@ -2693,6 +2702,31 @@ internal fun VideoDetailScreenStateHolder(
         }
     }
 
+    LaunchedEffect(continuousFullscreenTransitionEnabled, continuousPlayerPhase) {
+        if (!continuousFullscreenTransitionEnabled) return@LaunchedEffect
+        when (continuousPlayerPhase) {
+            ContinuousPlayerTransitionPhase.Collapsing -> {
+                val remaining = continuousPlayerProgress.value.coerceIn(0f, 1f)
+                continuousPlayerProgress.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(
+                        durationMillis = (CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS * remaining)
+                            .roundToInt()
+                            .coerceAtLeast(1),
+                        // 系统旋转后立即承接收起，避免慢起步造成第二次停顿。
+                        easing = AppMotionEasing.Continuity,
+                    ),
+                )
+                applyContinuousPlayerDecision(
+                    reduceContinuousPlayerTransition(
+                        continuousPlayerPhase,
+                        ContinuousPlayerTransitionEvent.CollapseFinished,
+                    )
+                )
+            }
+            else -> Unit
+        }
+    }
     val activeVideoSharedTransitionVisualSpec = remember(
         sourceRouteForSharedElement,
         sharedTransitionSourceCornerDp,
@@ -2961,18 +2995,8 @@ internal fun VideoDetailScreenStateHolder(
             portraitSyncSnapshotCid = (uiState as? VideoPlaybackUiState.Success)?.info?.cid ?: 0L
             portraitSyncSnapshotPositionMs = playerState.player.currentPosition.coerceAtLeast(0L)
             hasPendingPortraitSync = false
-            userRequestedFullscreen = false
             presentationState.setPortraitFullscreen(true)
         }
-    }
-    val exitPortraitFullscreen = {
-        userRequestedFullscreen = false
-        manualPortraitHoldActive = true
-        presentationState.setPortraitFullscreen(false)
-        activity?.applyPlayerRequestedOrientation(
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
-            displayContext = displayContext,
-        )
     }
     LaunchedEffect(
         autoEnterPortraitFromRoute,
@@ -3421,7 +3445,7 @@ internal fun VideoDetailScreenStateHolder(
     fun consumeLocalBack(): Boolean {
         return when (currentLocalBackTarget()) {
             VideoDetailLocalBackTarget.EXIT_PORTRAIT_FULLSCREEN -> {
-                exitPortraitFullscreen()
+                presentationState.setPortraitFullscreen(false)
                 true
             }
             VideoDetailLocalBackTarget.EXIT_LANDSCAPE_FULLSCREEN -> {
@@ -3976,7 +4000,7 @@ internal fun VideoDetailScreenStateHolder(
                                             if (isFullscreenMode) toggleFullscreen()
                                             enterPortraitFullscreen()
                                         } else {
-                                            exitPortraitFullscreen()
+                                            presentationState.setPortraitFullscreen(false)
                                         }
                                     }
                                 },
@@ -4050,7 +4074,7 @@ internal fun VideoDetailScreenStateHolder(
                                         if (isFullscreenMode) toggleFullscreen()
                                         enterPortraitFullscreen()
                                     } else {
-                                        exitPortraitFullscreen()
+                                        presentationState.setPortraitFullscreen(false)
                                     }
                                 }
                             },
@@ -4913,7 +4937,7 @@ internal fun VideoDetailScreenStateHolder(
                                     }
                                 )
                                 .continuousPlayerViewportHeight(
-                                    progressProvider = { if (isFullscreenMode) 1f else 0f },
+                                    progressProvider = { continuousPlayerProgress.value },
                                     inlineHeight = inlinePlayerHeight,
                                     fullscreenHeight = fullscreenPlayerHeight,
                                     enabled = continuousFullscreenTransitionEnabled,
@@ -4993,6 +5017,7 @@ internal fun VideoDetailScreenStateHolder(
                                 .onSettledVideoPlayerPositioned(
                                     freezeProvider = {
                                         shouldFreezeVideoDetailPlayerBounds(
+                                            continuousPlayerMorphing = isContinuousPlayerMorphing,
                                             ownsCardTransition = entryOwnsMiuixCardTransition,
                                             committedCardReturn = isCommittedCardReturn,
                                             exposure = videoCardDepthBackgroundState.exposureProvider(),
@@ -5589,7 +5614,7 @@ internal fun VideoDetailScreenStateHolder(
             isPlayerSurfaceReady = isPlayerSurfaceReady,
             onBack = handlePlayerBack,
             onHomeClick = {
-                exitPortraitFullscreen()
+                presentationState.setPortraitFullscreen(false)
                 handleTopBarAction(resolveVideoDetailTopBarAction(isHomeButton = true))
             },
             onVideoChange = { portraitPendingSelectionBvid = it },
@@ -5660,7 +5685,7 @@ internal fun VideoDetailScreenStateHolder(
                 if (com.android.purebilibili.feature.video.ui.pager
                         .shouldExitPortraitForExternalNavigation(isPortraitFullscreen)
                 ) {
-                    exitPortraitFullscreen()
+                    presentationState.setPortraitFullscreen(false)
                 }
                 navigateToSearchFromVideo()
             },
@@ -5687,7 +5712,7 @@ internal fun VideoDetailScreenStateHolder(
                 if (com.android.purebilibili.feature.video.ui.pager
                         .shouldExitPortraitForUserSpaceNavigation(isPortraitFullscreen)
                 ) {
-                    exitPortraitFullscreen()
+                    presentationState.setPortraitFullscreen(false)
                 }
                 navigateToUserSpaceFromVideo(mid)
             },

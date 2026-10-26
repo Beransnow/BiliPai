@@ -13,12 +13,13 @@ import com.android.purebilibili.core.ui.transition.VideoCardTransitionExposure
 import kotlinx.coroutines.flow.collectLatest
 
 internal fun shouldFreezeVideoDetailPlayerBounds(
+    continuousPlayerMorphing: Boolean,
     ownsCardTransition: Boolean,
     committedCardReturn: Boolean,
     exposure: VideoCardTransitionExposure,
 ): Boolean {
     // A committed entry can lose session ownership before its final frame is disposed.
-    if (committedCardReturn) return true
+    if (continuousPlayerMorphing || committedCardReturn) return true
     if (!ownsCardTransition) return false
     return when (exposure) {
         VideoCardTransitionExposure.Opening,

@@ -4,6 +4,6 @@
             android:name="com.android.purebilibili.feature.video.PlayerParityTestActivity"
             android:exported="false"
             android:configChanges="orientation|screenSize|smallestScreenSize|keyboardHidden"
-            android:theme="@style/Theme.PureBiliBili.Main" />
+            android:theme="@style/Theme.PureBiliBili" />
     </application>
 </manifest>

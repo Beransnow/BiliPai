@@ -350,8 +350,9 @@ fun PortraitSubtitleHost(
         onControlsChange(controlState, controlCallbacks)
     }
 
-    // Default subtitle typography follows the shared portrait layout, independently of material.
-    val glassLayout = subtitleAppearance == PlayerSubtitleAppearance()
+    // 未自定义字幕时保留玻璃原有排版；自定义样式与原生路径共用渲染器。
+    val glassLayout = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled &&
+        subtitleAppearance == PlayerSubtitleAppearance()
     Box(modifier = modifier.fillMaxSize()) {
         if (keepMounted && subtitleSession.selectedTrackKey == null) {
             Column(

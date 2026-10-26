@@ -195,7 +195,7 @@ import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIEN
 import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX
 import com.android.purebilibili.feature.video.ui.overlay.nextFullscreenSeekFeedbackEvent
 import com.android.purebilibili.feature.video.ui.overlay.resolveFullscreenDoubleTapAction
-import com.android.purebilibili.feature.video.ui.overlay.resolvePortraitLetterboxBarHeightsPx
+import com.android.purebilibili.feature.video.ui.overlay.resolvePortraitLetterboxBarHeightPx
 import com.android.purebilibili.feature.video.util.captureVideoAmbientFrame
 import com.android.purebilibili.feature.video.subtitle.SubtitleAutoPreference
 import com.android.purebilibili.feature.video.subtitle.isSubtitleFeatureEnabledForUser
@@ -2597,6 +2597,7 @@ private fun VideoPageItem(
             currentVideoAspect = portraitPagerViewportAspect,
             fillContainer = portraitPagerFillContainer,
             isLandscape = portraitPageWidthPx > portraitPageHeightPx,
+            liquidGlassEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled,
         ).dp.toPx()
     }
     // 评论 / UP 半屏共用上缩：取较大进度；下拉 UP 预览时 progress 下降，视频跟手回位。
@@ -2890,27 +2891,20 @@ private fun VideoPageItem(
         portraitPageHeightPx,
         portraitPagerViewportAspect,
         portraitPagerFillContainer,
-        aspectRatio,
-        exoPlayer.videoSize.width,
-        exoPlayer.videoSize.height,
     ) {
         resolvePortraitVideoViewportSize(
             containerWidth = portraitPageWidthPx,
             containerHeight = portraitPageHeightPx,
             currentVideoAspect = portraitPagerViewportAspect,
             fillContainer = portraitPagerFillContainer,
-            aspectRatio = aspectRatio,
-            videoWidth = exoPlayer.videoSize.width,
-            videoHeight = exoPlayer.videoSize.height,
         )
     }
-    val letterboxBars = resolvePortraitLetterboxBarHeightsPx(
+    val letterboxBarHeightPx = resolvePortraitLetterboxBarHeightPx(
         containerHeightPx = portraitPageHeightPx,
         viewportHeightPx = letterboxViewportSize.height,
         fillContainer = portraitPagerFillContainer,
-        viewportVerticalOffsetPx = portraitViewportVerticalOffsetPx.roundToInt(),
     )
-    val letterboxBarHeightPx = maxOf(letterboxBars.top, letterboxBars.bottom)
+    val letterboxBarHeightDp = with(density) { letterboxBarHeightPx.toDp() }
     val letterboxAmbientFrame = remember(bvid) { mutableStateOf<ImageBitmap?>(null) }
     val shouldCaptureLetterboxAmbient = shouldCapturePortraitLetterboxAmbientFrame(
         isCurrentPage = isCurrentPage,
@@ -3282,7 +3276,7 @@ private fun VideoPageItem(
         if (letterboxBarHeightPx > 0) {
             ImmersiveAmbientLetterboxBackdrop(
                 ambientFrame = letterboxAmbientFrame,
-                height = with(density) { letterboxBars.top.toDp() },
+                height = letterboxBarHeightDp,
                 useAmbientHaze = letterboxAmbientHazeEnabled,
                 contentAlignment = Alignment.TopCenter,
                 modifier = Modifier
@@ -3291,7 +3285,7 @@ private fun VideoPageItem(
             )
             ImmersiveAmbientLetterboxBackdrop(
                 ambientFrame = letterboxAmbientFrame,
-                height = with(density) { letterboxBars.bottom.toDp() },
+                height = letterboxBarHeightDp,
                 useAmbientHaze = letterboxAmbientHazeEnabled,
                 contentAlignment = Alignment.BottomCenter,
                 modifier = Modifier
@@ -4302,34 +4296,10 @@ private fun VideoPageItem(
                     )
                 },
             )
-        // The portrait layout is shared; the host owns menus, tools and playback controls.
+        // 竖屏与横屏共用功能组件，玻璃材质在控制栏内部适配。
         com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlay(
             state = portraitOverlayState,
             actions = portraitOverlayActions,
-            chromeContent = { presentation ->
-                com.android.purebilibili.feature.video.ui.overlay.portrait.PortraitPagerControls(
-                    state = portraitOverlayState,
-                    actions = portraitOverlayActions,
-                    presentation = presentation,
-                    info = portraitDetailInfo,
-                    stat = portraitDetailInfo?.stat ?: stat,
-                    progress = progressState,
-                    videoAspectRatio = currentVideoAspect,
-                    commentExpansionProgress = commentSheetVisibilityProgress,
-                    onDetailClick = { if (portraitDetailInfo != null) showDetailSheet = true },
-                    onAuthorClick = {
-                        if (isCurrentPage && authorMid > 0L) {
-                            showUpPreview = true
-                            onUpPreviewActiveChange(true)
-                        }
-                    },
-                    onStaffMemberClick = { if (isCurrentPage && it > 0L) onUserClick(it) },
-                    onSearchClick = {
-                        onExitSnapshot(bvid, exoPlayer.currentPosition, snapshotCid, cover)
-                        onSearchClick()
-                    },
-                )
-            },
         )
         AnimatedVisibility(
             visible = portraitPlaybackRecovering && portraitOverlayVisible &&
@@ -4734,24 +4704,10 @@ internal fun resolvePortraitVideoViewportSize(
     containerWidth: Int,
     containerHeight: Int,
     currentVideoAspect: Float,
-    fillContainer: Boolean,
-    aspectRatio: VideoAspectRatio? = null,
-    videoWidth: Int = 0,
-    videoHeight: Int = 0,
+    fillContainer: Boolean
 ): PortraitVideoViewportSize {
     val safeWidth = containerWidth.coerceAtLeast(1)
     val safeHeight = containerHeight.coerceAtLeast(1)
-    // FIT must size the host to the source frame, not merely FIT inside an opaque
-    // page-sized PlayerView, which would paint black over the ambient letterbox.
-    if (aspectRatio != null && aspectRatio != VideoAspectRatio.FIT) {
-        return com.android.purebilibili.feature.video.ui.components.resolveVideoViewportLayout(
-            containerWidth = safeWidth,
-            containerHeight = safeHeight,
-            aspectRatio = aspectRatio,
-            videoWidth = videoWidth,
-            videoHeight = videoHeight,
-        ).let { PortraitVideoViewportSize(it.width, it.height) }
-    }
     if (fillContainer) {
         return PortraitVideoViewportSize(width = safeWidth, height = safeHeight)
     }
@@ -4823,8 +4779,9 @@ internal fun resolvePortraitVideoViewportVerticalOffsetDp(
     currentVideoAspect: Float,
     fillContainer: Boolean,
     isLandscape: Boolean = false,
+    liquidGlassEnabled: Boolean = false,
 ): Int {
-    if (fillContainer || isLandscape) return 0
+    if (!liquidGlassEnabled || fillContainer || isLandscape) return 0
     return if (currentVideoAspect > 1f) -48 else 0
 }
 
@@ -4839,18 +4796,26 @@ internal fun PortraitVideoViewportContainer(
     videoHeight: Int = 0,
     content: @Composable BoxScope.() -> Unit
 ) {
+    val liquidGlassEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
     BoxWithConstraints(modifier = modifier.clipToBounds()) {
         val density = LocalDensity.current
         val viewportSize = with(density) {
-            resolvePortraitVideoViewportSize(
-                containerWidth = maxWidth.roundToPx(),
-                containerHeight = maxHeight.roundToPx(),
-                currentVideoAspect = currentVideoAspect,
-                fillContainer = fillContainer,
-                aspectRatio = aspectRatio,
-                videoWidth = videoWidth,
-                videoHeight = videoHeight,
-            )
+            if (aspectRatio != null && !liquidGlassEnabled) {
+                com.android.purebilibili.feature.video.ui.components.resolveVideoViewportLayout(
+                    containerWidth = maxWidth.roundToPx(),
+                    containerHeight = maxHeight.roundToPx(),
+                    aspectRatio = aspectRatio,
+                    videoWidth = videoWidth,
+                    videoHeight = videoHeight,
+                ).let { PortraitVideoViewportSize(it.width, it.height) }
+            } else {
+                resolvePortraitVideoViewportSize(
+                    containerWidth = maxWidth.roundToPx(),
+                    containerHeight = maxHeight.roundToPx(),
+                    currentVideoAspect = currentVideoAspect,
+                    fillContainer = fillContainer,
+                )
+            }
         }
         val isLandscape = maxWidth > maxHeight
 
@@ -4866,6 +4831,7 @@ internal fun PortraitVideoViewportContainer(
                         currentVideoAspect = currentVideoAspect,
                         fillContainer = fillContainer,
                         isLandscape = isLandscape,
+                        liquidGlassEnabled = liquidGlassEnabled,
                     ).dp
                 )
         ) {

@@ -149,7 +149,7 @@ class DanmakuComposerUiRegressionTest {
             ) {
                 MaterialTheme { MiuixTheme {
                     Box(Modifier.fillMaxSize().background(Color.Black)) {
-                        LandscapeDanmakuComposer(
+                        com.android.purebilibili.feature.video.ui.components.glass.LandscapeDanmakuComposer(
                             visible = true,
                             onDismiss = {},
                             onSend = { _, _, _, _, _ -> },

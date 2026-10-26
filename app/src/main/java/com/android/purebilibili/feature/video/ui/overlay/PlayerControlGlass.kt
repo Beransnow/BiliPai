@@ -145,9 +145,7 @@ internal fun PlayerControlGlassDock(
                 darkTheme = true,
                 interactionLayerBlock = elastic.layerBlock,
                 interactionState = elastic,
-            ) else if (minimumReadabilityScrimAlpha > 0f) {
-                Modifier.background(Color.Black.copy(alpha = minimumReadabilityScrimAlpha), shape)
-            } else Modifier),
+            ) else Modifier),
     ) {
         CompositionLocalProvider(
             LocalElasticPressEnabled provides (!feedbackEnabled && LocalElasticPressEnabled.current),
@@ -160,6 +158,14 @@ internal fun PlayerControlGlassDock(
             top.yukonga.miuix.kmp.theme.LocalContentColor provides Color.White,
         ) { content() }
     }
+}
+
+/** Shared transport capsule; the seek host retains pointer ownership inside its own slot. */
+@Composable
+internal fun Modifier.playerControlGlassProgressDock(): Modifier {
+    val backdrop = LocalPlayerControlBackdrop.current
+    if (!LocalPlayerControlGlassEnabled.current || backdrop == null) return this
+    return playerControlGlassSurface(backdrop, shape = RoundedCornerShape(24.dp))
 }
 
 /** Shared Miuix material for player chrome and gesture feedback; capture stays caller-owned. */

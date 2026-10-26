@@ -5,6 +5,7 @@ internal enum class ContinuousPlayerTransitionPhase {
     AwaitingLandscape,
     Fullscreen,
     AwaitingPortrait,
+    Collapsing,
 }
 internal enum class ContinuousPlayerOrientationRequest {
     None,
@@ -15,6 +16,7 @@ internal enum class ContinuousPlayerOrientationRequest {
 internal sealed interface ContinuousPlayerTransitionEvent {
     data object Toggle : ContinuousPlayerTransitionEvent
     data object ExitFullscreen : ContinuousPlayerTransitionEvent
+    data object CollapseFinished : ContinuousPlayerTransitionEvent
     data class OrientationChanged(val isLandscape: Boolean) : ContinuousPlayerTransitionEvent
 }
 
@@ -31,20 +33,14 @@ internal fun shouldKeepContinuousPlayerEnterPhaseWhilePortrait(
     return !isLandscape && phase == ContinuousPlayerTransitionPhase.AwaitingLandscape
 }
 
-internal fun resolveContinuousPlayerFullscreenPresentation(
-    orientationFullscreen: Boolean,
-    phase: ContinuousPlayerTransitionPhase,
-    isLandscape: Boolean,
-): Boolean = orientationFullscreen ||
-    (isLandscape && phase == ContinuousPlayerTransitionPhase.AwaitingPortrait)
-
 internal fun reduceContinuousPlayerTransition(
     phase: ContinuousPlayerTransitionPhase,
     event: ContinuousPlayerTransitionEvent,
 ): ContinuousPlayerTransitionDecision {
     return when (event) {
         ContinuousPlayerTransitionEvent.Toggle -> when (phase) {
-            ContinuousPlayerTransitionPhase.Inline -> ContinuousPlayerTransitionDecision(
+            ContinuousPlayerTransitionPhase.Inline,
+            ContinuousPlayerTransitionPhase.Collapsing -> ContinuousPlayerTransitionDecision(
                 // 直接请求横屏，避免先在竖屏窗口展开成全屏再旋转。
                 phase = ContinuousPlayerTransitionPhase.AwaitingLandscape,
                 orientationRequest = ContinuousPlayerOrientationRequest.Landscape,
@@ -62,11 +58,25 @@ internal fun reduceContinuousPlayerTransition(
             )
         }
 
-        // Back is exit-only, including repeated presses while Android is still rotating.
-        ContinuousPlayerTransitionEvent.ExitFullscreen -> ContinuousPlayerTransitionDecision(
-            phase = ContinuousPlayerTransitionPhase.AwaitingPortrait,
-            orientationRequest = ContinuousPlayerOrientationRequest.Portrait,
-        )
+        ContinuousPlayerTransitionEvent.ExitFullscreen -> {
+            // 返回只退出，不像 Toggle 那样在收起途中重新进入全屏。
+            if (phase == ContinuousPlayerTransitionPhase.Collapsing) {
+                ContinuousPlayerTransitionDecision(phase)
+            } else {
+                ContinuousPlayerTransitionDecision(
+                    phase = ContinuousPlayerTransitionPhase.AwaitingPortrait,
+                    orientationRequest = ContinuousPlayerOrientationRequest.Portrait,
+                )
+            }
+        }
+
+        ContinuousPlayerTransitionEvent.CollapseFinished -> {
+            if (phase == ContinuousPlayerTransitionPhase.Collapsing) {
+                ContinuousPlayerTransitionDecision(ContinuousPlayerTransitionPhase.Inline)
+            } else {
+                ContinuousPlayerTransitionDecision(phase)
+            }
+        }
 
         is ContinuousPlayerTransitionEvent.OrientationChanged -> when {
             event.isLandscape &&
@@ -82,15 +92,16 @@ internal fun reduceContinuousPlayerTransition(
 
             !event.isLandscape &&
                 phase == ContinuousPlayerTransitionPhase.AwaitingPortrait ->
-                ContinuousPlayerTransitionDecision(ContinuousPlayerTransitionPhase.Inline)
+                ContinuousPlayerTransitionDecision(ContinuousPlayerTransitionPhase.Collapsing)
 
-            // Android owns rotation; the first portrait frame must already use inline bounds.
+            // 系统旋转回竖屏：Fullscreen / 卡在 AwaitingLandscape
+            // 都应收起为 Collapsing，避免竖屏仍按全屏高度铺满。
             !event.isLandscape &&
                 (
                     phase == ContinuousPlayerTransitionPhase.Fullscreen ||
                         phase == ContinuousPlayerTransitionPhase.AwaitingLandscape
                     ) ->
-                ContinuousPlayerTransitionDecision(ContinuousPlayerTransitionPhase.Inline)
+                ContinuousPlayerTransitionDecision(ContinuousPlayerTransitionPhase.Collapsing)
 
             else -> ContinuousPlayerTransitionDecision(phase)
         }

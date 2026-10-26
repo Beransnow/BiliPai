@@ -629,10 +629,12 @@ private fun BoxScope.VideoSubtitleOverlayHost(
                 )
             }
             .then(
-                if (appearance == com.android.purebilibili.feature.video.ui.components.PlayerSubtitleAppearance()) Modifier
+                if (com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled) Modifier
                     .fillMaxWidth(0.9f)
-                    .padding(horizontal = 22.dp, vertical = 8.dp)
-                else Modifier.fillMaxWidth()
+                    .padding(horizontal = 10.dp)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                else Modifier
+                    .fillMaxWidth()
                     .padding(horizontal = appearance.horizontalPadding.dp)
                     .padding(bottom = appearance.bottomPadding.dp)
             )
@@ -672,7 +674,9 @@ private fun BoxScope.VideoSubtitleOverlayHost(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (appearance == com.android.purebilibili.feature.video.ui.components.PlayerSubtitleAppearance()) {
+        if (com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled &&
+            appearance == com.android.purebilibili.feature.video.ui.components.PlayerSubtitleAppearance()
+        ) {
             val subtitleShadow = Shadow(
                 color = Color.Black.copy(alpha = 0.85f),
                 offset = Offset(0f, 1.5f),
@@ -958,9 +962,10 @@ private fun VideoPlayerSectionContent(
             widthDp = uiLayoutWidthDp
         )
     }
-    // Both materials seed gesture/danmaku reservations from the canonical controls geometry.
+    val liquidGlassLayoutEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
+    // 两种材质共用控制栏几何，首帧与实际测量使用同一高度依据。
     val bottomGestureExclusionHeightDp =
-        com.android.purebilibili.feature.video.ui.overlay.playerBottomControlsHeightDp(uiLayoutWidthDp)
+        com.android.purebilibili.feature.video.ui.overlay.piliPlayerBottomControlsHeightDp(viewPoints.isNotEmpty())
     val gestureSeekFallbackDurationMs = remember(uiState) {
         (uiState as? VideoPlaybackUiState.Success)?.videoDurationMs ?: 0L
     }
@@ -1774,7 +1779,7 @@ private fun VideoPlayerSectionContent(
         isFullscreen = isFullscreen,
         screenWidthDp = configuration.screenWidthDp
     )
-    val panelViewport = remember(currentPlaybackIdentity, isFullscreen) {
+    val panelViewport = remember(currentPlaybackIdentity, isFullscreen, liquidGlassLayoutEnabled) {
         PlayerPanelViewportState()
     }
     var playerRightInWindow by remember { mutableIntStateOf(0) }
@@ -3876,7 +3881,7 @@ private fun VideoPlayerSectionContent(
         // LaunchedEffect 在退出瞬间直接重绑 surface（rebindPlayerSurfaceIfNeeded）恢复画面。
         // HDR/色彩元数据与纹理翻转维度仍触发重建。
         key(isFlippedHorizontal, isFlippedVertical, useTextureSurface) {
-            val viewportAspectRatio = currentAspectRatio
+            val viewportAspectRatio = if (liquidGlassLayoutEnabled && !isFullscreen) VideoAspectRatio.FIT else currentAspectRatio
             val playerVideoSize = playerState.player.videoSize
             BoxWithConstraints(
                 modifier = playerContentModifier
@@ -4698,7 +4703,7 @@ private fun VideoPlayerSectionContent(
 
             //  [修复] 移除 key(isFullscreen)，避免横竖屏切换时重建 DanmakuView 导致弹幕消失
             // 使用 remember 保存 DanmakuView 引用，在 update 回调中处理尺寸变化
-            val viewportAspectRatio = currentAspectRatio
+            val viewportAspectRatio = if (liquidGlassLayoutEnabled && !isFullscreen) VideoAspectRatio.FIT else currentAspectRatio
             BoxWithConstraints(
                 modifier = playerContentModifier
                     .then(if (capturePlayerPage) playerPageBackdrop.danmaku.modifier else Modifier)
@@ -4806,7 +4811,7 @@ private fun VideoPlayerSectionContent(
                     renderingPaused = suppressTransientOverlaysForTransition,
                     modifier = Modifier.fillMaxSize()
                 )
-                // Use the shared height seed until the canonical controls are measured.
+                // 控件测量前使用共享高度种子，避免玻璃切换引起互动弹幕避让跳变。
                 val commandControlsReservePx = measuredBottomControlsHeightPx.takeIf { it > 0 }
                     ?: with(density) { bottomGestureExclusionHeightDp.dp.roundToPx() }
                 com.android.purebilibili.feature.video.ui.overlay.CommandDanmakuOverlay(

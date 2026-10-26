@@ -1,4 +1,4 @@
-package com.android.purebilibili.feature.video.ui.overlay.portrait
+package com.android.purebilibili.feature.video.ui.overlay.glass
 
 import com.android.purebilibili.feature.video.ui.overlay.*
 

@@ -1,4 +1,6 @@
-package com.android.purebilibili.feature.video.ui.overlay
+package com.android.purebilibili.feature.video.ui.overlay.glass
+
+import com.android.purebilibili.feature.video.ui.overlay.*
 
 import com.android.purebilibili.core.store.PlayerProgressPlacement
 
@@ -29,8 +31,16 @@ data class BottomControlBarLayoutPolicy(
     val fullscreenIconSizeDp: Int
 )
 
-/** Keep the visible time-to-icon gap independent of the expanded touch target. */
-internal fun resolveTimeToIconSpacingDp(timeFontSp: Int, iconSizeDp: Int, slotSizeDp: Int): Int {
+/**
+ * Keeps the visible gap between time text and an icon near one text size. The
+ * actual layout slot contributes blank space around its glyph; touch expansion
+ * is independent of the compact row's measured size.
+ */
+internal fun resolveTimeToIconSpacingDp(
+    timeFontSp: Int,
+    iconSizeDp: Int,
+    slotSizeDp: Int
+): Int {
     val iconInsetDp = ((slotSizeDp - iconSizeDp) / 2).coerceAtLeast(0)
     return (timeFontSp - iconInsetDp).coerceAtLeast(0)
 }
@@ -38,53 +48,30 @@ internal fun resolveTimeToIconSpacingDp(timeFontSp: Int, iconSizeDp: Int, slotSi
 internal fun resolveBottomControlBarBottomPaddingDp(
     defaultBottomPaddingDp: Int,
     progressPlacement: PlayerProgressPlacement
-): Int = if (progressPlacement == PlayerProgressPlacement.BOTTOM_EDGE) 0 else defaultBottomPaddingDp
+): Int {
+    return if (progressPlacement == PlayerProgressPlacement.BOTTOM_EDGE) {
+        0
+    } else {
+        defaultBottomPaddingDp
+    }
+}
 
-/** Inline playback keeps the scrubber above its compact action row; fullscreen honors settings. */
+/**
+ * Keeps the inline detail player's scrubber anchored to the video edge.
+ *
+ * The phone detail player is always drawn edge-to-edge, including when the transparent system
+ * status bar remains visible. Placing the progress bar above the controls makes it appear in
+ * the middle of the video frame.
+ */
 internal fun resolveVideoDetailProgressPlacement(
     requestedPlacement: PlayerProgressPlacement,
     isFullscreen: Boolean
-): PlayerProgressPlacement = if (isFullscreen) requestedPlacement else PlayerProgressPlacement.ABOVE_CONTROLS
-
-/** Width changes horizontal density, never the shared inline/fullscreen action-row height. */
-internal fun resolvePlayerBottomControlBarLayoutPolicy(
-    widthDp: Int,
-    compact: Boolean = false,
-    isFullscreen: Boolean = false,
-): BottomControlBarLayoutPolicy {
-    val base = resolveBottomControlBarLayoutPolicy(widthDp, compact)
-    return base.copy(
-        progressSpacingDp = if (isFullscreen) 4 else base.progressSpacingDp,
-        horizontalPaddingDp = if (isFullscreen) PlayerChromeLayout.EdgePaddingDp else base.horizontalPaddingDp,
-        playButtonSizeDp = PlayerChromeLayout.CircularButtonSizeDp,
-        playIconSizeDp = 22,
-        afterPlaySpacingDp = 0,
-        timeFontSp = 12,
-        afterTimeSpacingDp = 4,
-        danmakuIconSizeDp = 22,
-        danmakuSwitchToInputSpacingDp = 8,
-        danmakuInputHeightDp = PlayerChromeLayout.CircularButtonSizeDp,
-        danmakuInputStartPaddingDp = 12,
-        danmakuInputFontSp = 12,
-        danmakuSettingButtonSizeDp = PlayerChromeLayout.CircularButtonSizeDp,
-        danmakuSettingIconSizeDp = 22,
-        afterInputSpacingDp = 8,
-        rightActionSpacingDp = if (isFullscreen) 0 else base.rightActionSpacingDp,
-        actionTextFontSp = 12,
-        fullscreenIconSizeDp = 22,
-    )
-}
-
-/** Keep the right capsule bounded so both edge groups remain visually distinct on narrow screens. */
-internal fun resolveBottomRightGroupMaxWidthPx(
-    availableWidthPx: Int,
-    groupGapPx: Int,
-    targetSizePx: Int,
-): Int {
-    val available = availableWidthPx.coerceAtLeast(0)
-    val gap = groupGapPx.coerceIn(0, available)
-    val leftReserve = targetSizePx.coerceAtLeast(0).coerceAtMost((available - gap) / 2)
-    return minOf(available - gap - leftReserve, (available - gap) / 3 * 2)
+): PlayerProgressPlacement {
+    return if (!isFullscreen) {
+        PlayerProgressPlacement.BOTTOM_EDGE
+    } else {
+        requestedPlacement
+    }
 }
 
 fun resolveBottomControlBarLayoutPolicy(
@@ -98,9 +85,9 @@ fun resolveBottomControlBarLayoutPolicy(
             horizontalPaddingDp = if (compact) 10 else 20,
             playButtonSizeDp = 48,
             playIconSizeDp = 28,
-            afterPlaySpacingDp = resolveTimeToIconSpacingDp(14, 28, 48),
+            afterPlaySpacingDp = resolveTimeToIconSpacingDp(timeFontSp = 14, iconSizeDp = 28, slotSizeDp = 48),
             timeFontSp = 14,
-            afterTimeSpacingDp = resolveTimeToIconSpacingDp(14, 28, 48),
+            afterTimeSpacingDp = resolveTimeToIconSpacingDp(timeFontSp = 14, iconSizeDp = 28, slotSizeDp = 48),
             danmakuIconSizeDp = 28,
             danmakuSwitchToInputSpacingDp = 12,
             danmakuSwitchHorizontalPaddingDp = 10,
@@ -119,6 +106,7 @@ fun resolveBottomControlBarLayoutPolicy(
             fullscreenIconSizeDp = 26
         )
     }
+
     if (widthDp >= 840) {
         return BottomControlBarLayoutPolicy(
             bottomPaddingDp = 5,
@@ -126,9 +114,9 @@ fun resolveBottomControlBarLayoutPolicy(
             horizontalPaddingDp = if (compact) 8 else 16,
             playButtonSizeDp = 40,
             playIconSizeDp = 26,
-            afterPlaySpacingDp = resolveTimeToIconSpacingDp(12, 26, 40),
+            afterPlaySpacingDp = resolveTimeToIconSpacingDp(timeFontSp = 12, iconSizeDp = 26, slotSizeDp = 40),
             timeFontSp = 12,
-            afterTimeSpacingDp = resolveTimeToIconSpacingDp(12, 24, 40),
+            afterTimeSpacingDp = resolveTimeToIconSpacingDp(timeFontSp = 12, iconSizeDp = 24, slotSizeDp = 40),
             danmakuIconSizeDp = 24,
             danmakuSwitchToInputSpacingDp = 10,
             danmakuSwitchHorizontalPaddingDp = 8,
@@ -147,6 +135,7 @@ fun resolveBottomControlBarLayoutPolicy(
             fullscreenIconSizeDp = 22
         )
     }
+
     if (widthDp >= 600) {
         return BottomControlBarLayoutPolicy(
             bottomPaddingDp = 5,
@@ -154,9 +143,9 @@ fun resolveBottomControlBarLayoutPolicy(
             horizontalPaddingDp = if (compact) 6 else 12,
             playButtonSizeDp = 36,
             playIconSizeDp = 24,
-            afterPlaySpacingDp = resolveTimeToIconSpacingDp(12, 24, 36),
+            afterPlaySpacingDp = resolveTimeToIconSpacingDp(timeFontSp = 12, iconSizeDp = 24, slotSizeDp = 36),
             timeFontSp = 12,
-            afterTimeSpacingDp = resolveTimeToIconSpacingDp(12, 22, 36),
+            afterTimeSpacingDp = resolveTimeToIconSpacingDp(timeFontSp = 12, iconSizeDp = 22, slotSizeDp = 36),
             danmakuIconSizeDp = 22,
             danmakuSwitchToInputSpacingDp = 10,
             danmakuSwitchHorizontalPaddingDp = 8,
@@ -175,15 +164,16 @@ fun resolveBottomControlBarLayoutPolicy(
             fullscreenIconSizeDp = 20
         )
     }
+
     return BottomControlBarLayoutPolicy(
         bottomPaddingDp = 4,
         progressSpacingDp = if (compact) 3 else 0,
         horizontalPaddingDp = if (compact) 4 else 6,
         playButtonSizeDp = 32,
         playIconSizeDp = 22,
-        afterPlaySpacingDp = resolveTimeToIconSpacingDp(11, 22, 32),
+        afterPlaySpacingDp = resolveTimeToIconSpacingDp(timeFontSp = 11, iconSizeDp = 22, slotSizeDp = 32),
         timeFontSp = 11,
-        afterTimeSpacingDp = resolveTimeToIconSpacingDp(11, 20, 32),
+        afterTimeSpacingDp = resolveTimeToIconSpacingDp(timeFontSp = 11, iconSizeDp = 20, slotSizeDp = 32),
         danmakuIconSizeDp = 20,
         danmakuSwitchToInputSpacingDp = 8,
         danmakuSwitchHorizontalPaddingDp = 6,

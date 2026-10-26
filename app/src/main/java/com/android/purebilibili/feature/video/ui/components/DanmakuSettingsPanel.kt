@@ -450,9 +450,9 @@ fun DanmakuSettingsPanel(
                         DanmakuSliderItem("滚动弹幕时长", scrollDurationSeconds, 1f..50f, displayValue = { "$it 秒" }, onValueChange = onScrollDurationSecondsChange, colors = panelColors, resetValue = 7f, steps = 48)
                         DanmakuSliderItem("静态弹幕时长", staticDurationSeconds, 1f..50f, displayValue = { "$it 秒" }, onValueChange = onStaticDurationSecondsChange, colors = panelColors, resetValue = 4f, steps = 48)
                         DanmakuSliderItem("弹幕行高", lineHeight, 1f..3f, displayValue = { "$it" }, onValueChange = onLineHeightChange, colors = panelColors, resetValue = 1.6f)
-                        PlayerSettingsRow("高级设置", icon = Icons.Outlined.Settings) { showExtraSettings = true }
+                        PlayerSettingsRow("高级设置") { showExtraSettings = true }
                     } else {
-                        PlayerSettingsRow("返回", icon = Icons.Outlined.ArrowBack) { showExtraSettings = false }
+                        PlayerSettingsRow("返回") { showExtraSettings = false }
 
                     if (showSectionBasic && onShowDanmakuPool != null) {
                         AppSurface(

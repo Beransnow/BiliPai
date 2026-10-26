@@ -170,6 +170,7 @@ import com.android.purebilibili.feature.video.handoff.PlaybackHandoffCodec
 import com.android.purebilibili.feature.video.handoff.PlaybackHandoffPayload
 import com.android.purebilibili.feature.video.handoff.PlaybackHandoffRegistry
 import com.android.purebilibili.feature.video.player.buildPipPlaybackRemoteActions
+import com.android.purebilibili.feature.video.ui.overlay.FullscreenPlayerOverlay
 import com.android.purebilibili.feature.audio.player.AudioNowPlayingSession
 import com.android.purebilibili.feature.audio.screen.resolveAudioNowPlayingVisible
 import com.android.purebilibili.feature.video.player.PlaylistManager
@@ -1786,6 +1787,8 @@ open class MainActivity : AppCompatActivity() {
 
                         }
                     }
+                    //  小窗全屏状态
+                    var showFullscreen by remember { mutableStateOf(false) }
                     val audioNowPlayingActive by AudioNowPlayingSession.active.collectAsStateWithLifecycle()
                     val audioNowPlayingBarEnabled by SettingsManager
                         .getAudioNowPlayingBarEnabled(context)
@@ -1889,9 +1892,32 @@ open class MainActivity : AppCompatActivity() {
                         )
                     }
                     
+                    //  全屏播放器覆盖层（包含亮度、音量、进度调节）
+                    if (showFullscreen) {
+                        FullscreenPlayerOverlay(
+                            miniPlayerManager = miniPlayerManager,
+                            onDismiss = { 
+                                showFullscreen = false
+                                miniPlayerManager.enterMiniMode()
+                            },
+                            onNavigateToDetail = {
+                                //  关闭全屏覆盖层并导航到视频详情页
+                                showFullscreen = false
+                                miniPlayerManager.currentBvid?.let { bvid ->
+                                    miniPlayerManager.isNavigatingToVideo = true
+                                    miniPlayerManager.exitMiniMode(animate = false)
+                                    //  [修复] 使用正确的 cid，而不是 0
+                                    val cid = miniPlayerManager.currentCid
+                                    pendingNavigationRoute = resolveMainActivityVideoRoute(bvid = bvid, cid = cid)
+                                }
+                            }
+                        )
+                    }
+                    
                     //  护眼模式覆盖层（最顶层，应用于所有内容）
                     EyeProtectionOverlay(
                         playbackActive = isInVideoDetail ||
+                            showFullscreen ||
                             miniPlayerManager.isPlaying ||
                             isPipRenderingActive
                     )

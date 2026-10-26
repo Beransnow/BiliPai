@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.SurfaceView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -54,9 +53,6 @@ class PlayerParityTestActivity : ComponentActivity() {
     var fullscreen by mutableStateOf(false)
     var glass by mutableStateOf(false)
     var uiStyle by mutableStateOf(AppUiStyle.MATERIAL3)
-    var portraitFeed by mutableStateOf(false)
-    var fullscreenViewportLift by mutableStateOf(false)
-    var locked by mutableStateOf(false)
     var richCapabilities by mutableStateOf(true)
     var currentAspectRatio by mutableStateOf(VideoAspectRatio.FIT)
         private set
@@ -74,8 +70,6 @@ class PlayerParityTestActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        com.android.purebilibili.core.ui.AppWindowSystemUiController.configureEdgeToEdgeHost(this)
         fullscreen = intent.getBooleanExtra("fullscreen", false)
         glass = intent.getBooleanExtra("glass", false)
         uiStyle = AppUiStyle.entries.firstOrNull {
@@ -106,48 +100,31 @@ class PlayerParityTestActivity : ComponentActivity() {
         setContent {
             val configuration = LocalConfiguration.current
             val config by enhancement.configState.collectAsState()
-            SideEffect {
-                val controller = androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
-                controller.systemBarsBehavior = if (fullscreen) {
-                    androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                } else androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
-                if (fullscreen) controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-                else controller.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
-            }
             CompositionLocalProvider(
                 LocalAppThemeConfig provides AppThemeConfig(liquidGlassEnabled = glass),
                 LocalAppUiStyle provides uiStyle,
             ) {
                 MaterialTheme { MiuixTheme {
-                    Box(Modifier.fillMaxSize().background(Color.Black).testTag("parity_window")) {
-                        // Match the real detail host: page chrome precedes the inline host,
-                        // and the video plane excludes the status strip while controls do not.
-                        val inlineVideoTopInset = if (fullscreen) 0.dp else
-                            WindowInsets.statusBarsIgnoringVisibility.asPaddingValues().calculateTopPadding()
+                    Box(Modifier.fillMaxSize().background(Color.Black)) {
                         val height = if (fullscreen) Modifier.fillMaxHeight() else Modifier.height(
                             if (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) 260.dp else 300.dp,
                         )
-                        Box(Modifier.fillMaxWidth().then(height)
-                            .offset(y = if (!fullscreen) 32.dp else if (fullscreenViewportLift) (-24).dp else 0.dp)
-                            .testTag("parity_player_viewport")) {
-                            Box(Modifier.fillMaxSize().padding(top = inlineVideoTopInset)) {
-                                AndroidView(
-                                    factory = { context -> PlayerView(context).also {
-                                        it.useController = false; it.player = player; playerView = it
-                                    } },
-                                    update = { it.resizeMode = currentAspectRatio.playerResizeMode },
-                                    modifier = Modifier.fillMaxSize().testTag("parity_video_viewport"),
-                                )
-                            }
-                            val overlayState = VideoPlayerOverlayState(
+                        Box(Modifier.fillMaxWidth().then(height).testTag("parity_player_viewport")) {
+                            AndroidView(
+                                factory = { context -> PlayerView(context).also {
+                                    it.useController = false; it.player = player; playerView = it
+                                } },
+                                update = { it.resizeMode = currentAspectRatio.playerResizeMode },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                            VideoPlayerOverlay(
+                                state = VideoPlayerOverlayState(
                                     player = player, title = "Local player parity", isVisible = true,
                                     isFullscreen = fullscreen,
-                                    isScreenLocked = locked,
                                     currentQualityLabel = "Local MP4", qualityLabels = listOf("Local MP4"),
                                     qualityIds = listOf(16), switchableQualityIds = listOf(16),
                                     currentQuality = 16, bvid = "local-fixture", cid = selectedPage + 1L,
                                     videoDuration = 3, videoTitle = "Local player parity",
-                                    statusBarBackdropHeight = inlineVideoTopInset,
                                     currentAspectRatio = currentAspectRatio,
                                     pages = if (richCapabilities) pages else emptyList(), currentPageIndex = selectedPage,
                                     viewPoints = if (richCapabilities) listOf(
@@ -169,13 +146,12 @@ class PlayerParityTestActivity : ComponentActivity() {
                                     anime4kEnabled = config.rememberedEnabled,
                                     anime4kPreset = config.preset, videoEnhancementAlgorithm = config.algorithm,
                                     playerDiagnosticLoggingEnabled = false,
-                                )
-                            val overlayActions = VideoPlayerOverlayActions(
+                                ),
+                                actions = VideoPlayerOverlayActions(
                                     onToggleVisible = {}, onQualitySelected = { player.prepare() },
                                     onBack = { if (fullscreen) fullscreen = false else finish() },
                                     onToggleFullscreen = { fullscreen = !fullscreen },
                                     onPortraitFullscreen = { fullscreen = true },
-                                    onLockToggle = { locked = !locked },
                                     onPlaybackSpeedChange = { player.setPlaybackSpeed(it) },
                                     onSeekTo = { player.seekTo(it) },
                                     onPageSelect = { index ->
@@ -205,32 +181,7 @@ class PlayerParityTestActivity : ComponentActivity() {
                                     },
                                     onAnime4kPresetChange = enhancement::setPreset,
                                     onVideoEnhancementAlgorithmChange = enhancement::setAlgorithm,
-                                )
-                            VideoPlayerOverlay(
-                                state = overlayState,
-                                actions = overlayActions,
-                                chromeContent = if (portraitFeed) { presentation ->
-                                    val progress by produceState(PlayerProgress(), player) {
-                                        while (true) {
-                                            value = PlayerProgress(player.currentPosition, player.duration.coerceAtLeast(0), player.bufferedPosition)
-                                            kotlinx.coroutines.delay(100)
-                                        }
-                                    }
-                                    com.android.purebilibili.feature.video.ui.overlay.portrait.PortraitPagerControls(
-                                        state = overlayState,
-                                        actions = overlayActions,
-                                        presentation = presentation,
-                                        info = null,
-                                        stat = com.android.purebilibili.data.model.response.Stat(),
-                                        progress = progress,
-                                        videoAspectRatio = 16f / 9f,
-                                        commentExpansionProgress = 0f,
-                                        onDetailClick = { fullscreen = false },
-                                        onAuthorClick = { fullscreen = false },
-                                        onStaffMemberClick = { fullscreen = false },
-                                        onSearchClick = { fullscreen = false },
-                                    )
-                                } else null,
+                                ),
                             )
                         }
                     }

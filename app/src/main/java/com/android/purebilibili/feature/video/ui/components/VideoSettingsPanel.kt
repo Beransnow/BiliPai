@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.outlined.*
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.rememberAppCodecIcon
@@ -335,7 +334,6 @@ fun VideoSettingsPanel(
     onCdnServiceSelected: ((Int) -> Unit)? = null,
     chapterDisplayMode: ChapterDisplayMode = ChapterDisplayMode.WITH_CONTROLS,
     onChapterDisplayModeChange: ((ChapterDisplayMode) -> Unit)? = null,
-    extraActions: List<com.android.purebilibili.core.ui.components.AppWindowAction> = emptyList(),
     // 关闭面板
     onDismiss: () -> Unit
 ) {
@@ -456,7 +454,7 @@ fun VideoSettingsPanel(
         ) {
             if (page != "advanced") {
                 item {
-                    if (page != "main") PlayerSettingsRow("返回", icon = Icons.Outlined.ArrowBack, onClick = { page = "main" })
+                    if (page != "main") PlayerSettingsRow("返回", onClick = { page = "main" })
                     val submenuTitle = when (page) { "quality" -> "选择画质"; "audio" -> "选择音质"; "codec" -> "选择解码格式"; "cdn" -> "CDN 设置"; else -> null }
                     submenuTitle?.let { title ->
                         Box(Modifier.fillMaxWidth().height(45.dp), contentAlignment = Alignment.Center) { Text(title, fontSize = 14.sp) }
@@ -464,31 +462,25 @@ fun VideoSettingsPanel(
                     when (page) {
                         "main" -> {
                             nearbyHandoff?.takeIf { com.android.purebilibili.feature.nearby.NEARBY_HANDOFF_ENABLED }?.let { controller ->
-                                PlayerSettingsRow(com.android.purebilibili.feature.nearby.NEARBY_TITLE, icon = Icons.Outlined.Devices) {
+                                PlayerSettingsRow(com.android.purebilibili.feature.nearby.NEARBY_TITLE) {
                                     onDismiss()
                                     controller.openDevices()
                                 }
                             }
-                            extraActions.forEach { action ->
-                                PlayerSettingsRow(action.label, action.summary, icon = action.icon, onClick = action.onClick?.let { callback ->
-                                    { onDismiss(); callback() }
-                                })
-                            }
-                            onWatchLater?.let { action -> PlayerSettingsRow("添加至「稍后再看」", icon = Icons.Outlined.WatchLater) { onDismiss(); action() } }
-                            onShowNotes?.let { action -> PlayerSettingsRow("查看笔记", icon = Icons.Outlined.EditNote) { onDismiss(); action() } }
-                            onDownloadVideo?.let { action -> PlayerSettingsRow("离线缓存", icon = Icons.Outlined.FolderZip) { onDismiss(); action() } }
-                            PlayerSettingsRow("保存封面", icon = Icons.Outlined.Image) { onDismiss(); onSaveCover() }
-                            PlayerSettingsRow("定时关闭", sleepTimerMinutes?.let { "剩余 $it 分钟" }, icon = Icons.Outlined.HourglassTop) { page = "sleep" }
+                            onWatchLater?.let { action -> PlayerSettingsRow("添加至「稍后再看」") { onDismiss(); action() } }
+                            onShowNotes?.let { action -> PlayerSettingsRow("查看笔记") { onDismiss(); action() } }
+                            onDownloadVideo?.let { action -> PlayerSettingsRow("离线缓存") { onDismiss(); action() } }
+                            PlayerSettingsRow("保存封面") { onDismiss(); onSaveCover() }
+                            PlayerSettingsRow("定时关闭", sleepTimerMinutes?.let { "剩余 $it 分钟" }) { page = "sleep" }
                             onChapterDisplayModeChange?.let { onModeChange ->
                                 PlayerSettingsPopupRow(
                                     title = playbackSettingTitle("playback.chapter_display_mode"),
                                     current = chapterDisplayMode.label,
                                     options = ChapterDisplayMode.entries.map { it.label },
-                                    icon = Icons.Outlined.Segment,
                                 ) { index -> onModeChange(ChapterDisplayMode.entries[index]) }
                             }
-                            onEditPlayUrl?.let { action -> PlayerSettingsRow("播放地址", icon = Icons.Outlined.Link) { onDismiss(); action() } }
-                            PlayerSettingsRow("重载视频", icon = Icons.Outlined.Refresh) { onDismiss(); onReload() }
+                            onEditPlayUrl?.let { action -> PlayerSettingsRow("播放地址") { onDismiss(); action() } }
+                            PlayerSettingsRow("重载视频") { onDismiss(); onReload() }
                             PlayerSettingsPopupRow(
                                 "超分辨率",
                                 when {
@@ -499,7 +491,6 @@ fun VideoSettingsPanel(
                                 },
                                 listOf("禁用", "效率", "画质"),
                                 enabledOptions = listOf(true, anime4kAvailable, anime4kAvailable),
-                                icon = Icons.Outlined.AutoFixHigh,
                             ) { index ->
                                 if (index == 0) onAnime4kToggle(false)
                                 else if (anime4kAvailable) {
@@ -509,36 +500,34 @@ fun VideoSettingsPanel(
                                 }
                             }
                             if (onPlayerVolumeChange != null) {
-                                PlayerSettingsRow("播放器音量", "当前: ${(playerVolume * 100).toInt()}%", icon = Icons.Outlined.VolumeUp) { showPlayerVolumeDialog = true }
+                                PlayerSettingsRow("播放器音量", "当前: ${(playerVolume * 100).toInt()}%") { showPlayerVolumeDialog = true }
                             } else if (playerVolumeUnavailableReason != null) {
-                                PlayerSettingsRow("播放器音量", playerVolumeUnavailableReason, icon = Icons.Outlined.VolumeUp, onClick = null)
+                                PlayerSettingsRow("播放器音量", playerVolumeUnavailableReason, onClick = null)
                             }
-                            if (cdnCount > 0 || cdnServiceLabels.isNotEmpty()) PlayerSettingsRow("CDN 设置", "当前：${cdnServiceLabels.getOrNull(currentCdnServiceIndex) ?: "线路 ${currentCdnIndex + 1}"}，无法播放请切换", icon = Icons.Outlined.Cloud) { page = "cdn" }
-                            PlayerSettingsRow("左右翻转", icon = flipHorizontalIcon, checked = isFlippedHorizontal, onClick = onFlipHorizontal)
-                            PlayerSettingsRow("上下翻转", icon = flipVerticalIcon, checked = isFlippedVertical, onClick = onFlipVertical)
-                            PlayerSettingsRow("听视频", icon = headphonesIcon, checked = isAudioOnly, onClick = onAudioOnlyToggle)
-                            onBackgroundPlaybackChange?.let { change ->
-                                PlayerSettingsRow("后台播放", icon = Icons.Outlined.PlayCircle, checked = isBackgroundPlaybackEnabled) {
-                                    change(!isBackgroundPlaybackEnabled)
+                            if (cdnCount > 0 || cdnServiceLabels.isNotEmpty()) PlayerSettingsRow("CDN 设置", "当前：${cdnServiceLabels.getOrNull(currentCdnServiceIndex) ?: "线路 ${currentCdnIndex + 1}"}，无法播放请切换") { page = "cdn" }
+                            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                FilterChip(isFlippedHorizontal, onFlipHorizontal, label = { Text("左右翻转") })
+                                FilterChip(isFlippedVertical, onFlipVertical, label = { Text("上下翻转") })
+                                FilterChip(isAudioOnly, onAudioOnlyToggle, label = { Text("听视频") })
+                                onBackgroundPlaybackChange?.let { change ->
+                                    FilterChip(isBackgroundPlaybackEnabled, { change(!isBackgroundPlaybackEnabled) }, label = { Text("后台播放") })
                                 }
                             }
-                            if (qualityLabels.isNotEmpty()) PlayerSettingsRow("选择画质", "当前画质 $currentQualityLabel", icon = Icons.Outlined.HighQuality) { page = "quality" }
-                            if (playableAudioQualities.isNotEmpty()) PlayerSettingsRow("选择音质", playableAudioQualities.firstOrNull { it.preferenceId == selectedAudioQuality }?.label ?: "当前音质未知", icon = Icons.Outlined.Album) { page = "audio" }
-                            PlayerSettingsRow("解码格式", "当前解码格式 ${piliCodecLabel(playingVideoCodec)}", icon = Icons.Outlined.Memory) {
+                            if (qualityLabels.isNotEmpty()) PlayerSettingsRow("选择画质", "当前画质 $currentQualityLabel") { page = "quality" }
+                            if (playableAudioQualities.isNotEmpty()) PlayerSettingsRow("选择音质", playableAudioQualities.firstOrNull { it.preferenceId == selectedAudioQuality }?.label ?: "当前音质未知") { page = "audio" }
+                            PlayerSettingsRow("解码格式", "当前解码格式 ${piliCodecLabel(playingVideoCodec)}") {
                                 if (availableCodecIds.isNotEmpty()) page = "codec"
                                 else android.widget.Toast.makeText(context, "不支持选择解码格式", android.widget.Toast.LENGTH_SHORT).show()
                             }
-                            onPlaybackOrderChange?.let { change -> PlayerSettingsPopupRow("播放顺序", playbackOrderLabel, playbackOrderOptions, icon = Icons.Outlined.Repeat, onSelected = change) }
-                            onShowDanmakuPool?.let { action -> PlayerSettingsRow("弹幕列表", icon = Icons.Outlined.Comment) { onDismiss(); action() } }
-                            PlayerSettingsRow("弹幕设置", leadingContent = {
-                                PiliPlusDanmakuSettingsIcon(size = 20.dp, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            }) { onDismiss(); onDanmakuSettingsClick() }
-                            onSubtitleSettings?.let { action -> PlayerSettingsRow("字幕设置", icon = Icons.Outlined.Subtitles) { onDismiss(); action() } }
-                            onLoadSubtitle?.let { action -> PlayerSettingsRow("加载字幕", icon = Icons.Outlined.FileOpen) { onDismiss(); action() } }
-                            onSaveSubtitle?.let { action -> PlayerSettingsRow("保存字幕", icon = Icons.Outlined.Download) { onDismiss(); action() } }
-                            onShowPlaybackInfo?.let { action -> PlayerSettingsRow("播放信息", icon = Icons.Outlined.Info) { action() } }
-                            onReport?.let { action -> PlayerSettingsRow("举报", icon = Icons.Outlined.Flag) { onDismiss(); action() } }
-                            PlayerSettingsRow("高级设置", icon = Icons.Outlined.Settings) { page = "advanced" }
+                            onPlaybackOrderChange?.let { change -> PlayerSettingsPopupRow("播放顺序", playbackOrderLabel, playbackOrderOptions, onSelected = change) }
+                            onShowDanmakuPool?.let { action -> PlayerSettingsRow("弹幕列表") { onDismiss(); action() } }
+                            PlayerSettingsRow("弹幕设置") { onDismiss(); onDanmakuSettingsClick() }
+                            onSubtitleSettings?.let { action -> PlayerSettingsRow("字幕设置") { onDismiss(); action() } }
+                            onLoadSubtitle?.let { action -> PlayerSettingsRow("加载字幕") { onDismiss(); action() } }
+                            onSaveSubtitle?.let { action -> PlayerSettingsRow("保存字幕") { onDismiss(); action() } }
+                            onShowPlaybackInfo?.let { action -> PlayerSettingsRow("播放信息") { action() } }
+                            onReport?.let { action -> PlayerSettingsRow("举报") { onDismiss(); action() } }
+                            PlayerSettingsRow("高级设置") { page = "advanced" }
                         }
                         "sleep" -> PlayerSleepTimerSettings(
                             sleepTimerMinutes, onSleepTimerChange,
@@ -577,11 +566,11 @@ fun VideoSettingsPanel(
                                     PlayerSettingsSelectionRow(label, index == currentCdnServiceIndex) { select(index); onDismiss() }
                                 }
                             }
-                            if (cdnServiceLabels.isNotEmpty() && page == "cdn") PlayerSettingsRow("线路诊断", icon = Icons.Outlined.NetworkCheck) { page = "cdnAdvanced" }
+                            if (cdnServiceLabels.isNotEmpty() && page == "cdn") PlayerSettingsRow("线路诊断") { page = "cdnAdvanced" }
                             if (cdnServiceLabels.isEmpty() || page == "cdnAdvanced") {
                             repeat(cdnCount) { index ->
                                 val diagnostic = cdnLineDiagnostics.firstOrNull { it.index == index }
-                                PlayerSettingsRow(diagnostic?.displayName ?: "线路 ${index + 1}", if (index == currentCdnIndex) "当前" else null, icon = Icons.Outlined.Cloud) {
+                                PlayerSettingsRow(diagnostic?.displayName ?: "线路 ${index + 1}", if (index == currentCdnIndex) "当前" else null) {
                                     com.android.purebilibili.feature.plugin.CdnTransferRuntime.preferHost(diagnostic?.host)
                                     onSwitchCdnTo(index)
                                 }
@@ -592,11 +581,11 @@ fun VideoSettingsPanel(
                     }
                 }
             } else {
-                item { PlayerSettingsRow("返回", icon = Icons.Outlined.ArrowBack) { page = "main" } }
+                item { PlayerSettingsRow("返回") { page = "main" } }
                 item {
-                    onCast?.let { action -> PlayerSettingsRow("投屏", icon = Icons.Outlined.Cast) { onDismiss(); action() } }
-                    onEnterPip?.let { action -> PlayerSettingsRow("画中画", icon = Icons.Outlined.PictureInPictureAlt) { onDismiss(); action() } }
-                    onShare?.let { action -> PlayerSettingsRow("分享", icon = Icons.Outlined.Share) { onDismiss(); action() } }
+                    onCast?.let { action -> PlayerSettingsRow("投屏") { onDismiss(); action() } }
+                    onEnterPip?.let { action -> PlayerSettingsRow("画中画") { onDismiss(); action() } }
+                    onShare?.let { action -> PlayerSettingsRow("分享") { onDismiss(); action() } }
                 }
             val groups = VideoControlCenterGroups(this, controlCenterMotion)
 

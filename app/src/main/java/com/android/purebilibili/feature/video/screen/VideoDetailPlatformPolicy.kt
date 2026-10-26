@@ -152,13 +152,10 @@ internal fun resolveVideoDetailSystemBarsApplySpec(
     } else {
         VideoDetailHiddenSystemBars.NONE
     }
-    val systemBarsBehavior = if (hiddenBars == VideoDetailHiddenSystemBars.NONE) {
-        androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
-    } else transientBarsBehavior
     return if (useTabletLayout) {
         VideoDetailSystemBarsApplySpec(
             hiddenBars = hiddenBars,
-            systemBarsBehavior = systemBarsBehavior,
+            systemBarsBehavior = transientBarsBehavior,
             statusBarColor = backgroundColor,
             navigationBarColor = backgroundColor,
             lightStatusBars = isLightBackground,
@@ -167,7 +164,7 @@ internal fun resolveVideoDetailSystemBarsApplySpec(
     } else {
         VideoDetailSystemBarsApplySpec(
             hiddenBars = hiddenBars,
-            systemBarsBehavior = systemBarsBehavior,
+            systemBarsBehavior = transientBarsBehavior,
             statusBarColor = transparentColor,
             navigationBarColor = transparentColor,
             lightStatusBars = useCollapsedPlayerChromeAppearance && isLightBackground,
