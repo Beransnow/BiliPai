@@ -198,6 +198,23 @@ class VideoDetailSystemBarsPolicyTest {
         assertEquals(0x12345678, spec.navigationBarColor)
         assertEquals(true, spec.lightStatusBars)
         assertEquals(true, spec.lightNavigationBars)
+        assertEquals(androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_DEFAULT, spec.systemBarsBehavior)
+    }
+
+    @Test
+    fun inlineSystemBarsLeaveFullscreenTransientSwipeMode() {
+        for (tablet in listOf(false, true)) {
+            val spec = resolveVideoDetailSystemBarsApplySpec(
+                visibilityPolicy = VideoDetailSystemBarsVisibilityPolicy(false, false),
+                useTabletLayout = tablet,
+                isLightBackground = false,
+                backgroundColor = 0,
+                transparentColor = 0,
+                blackColor = 0xFF000000.toInt(),
+                transientBarsBehavior = 2,
+            )
+            assertEquals(androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_DEFAULT, spec.systemBarsBehavior)
+        }
     }
 
     @Test

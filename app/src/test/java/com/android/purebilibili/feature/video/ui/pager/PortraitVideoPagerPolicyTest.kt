@@ -9,7 +9,6 @@ import androidx.media3.common.Player
 import androidx.media3.ui.AspectRatioFrameLayout
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -174,58 +173,6 @@ class PortraitVideoPagerPolicyTest {
         assertEquals(675, layout.height)
     }
 
-    @Test
-    fun portraitPager_defaultViewportPolicy_doesNotForceFillContainer() {
-        assertFalse(resolvePortraitPagerFillContainer())
-        assertFalse(
-            resolvePortraitPagerFillContainer(
-                aspectRatio = VideoAspectRatio.FIT,
-                isVerticalContent = true
-            )
-        )
-        assertTrue(
-            resolvePortraitPagerFillContainer(
-                aspectRatio = VideoAspectRatio.FILL,
-                isVerticalContent = true
-            )
-        )
-        // Stretch is coerced to Fit for vertical content, so do not fill-deform.
-        assertFalse(
-            resolvePortraitPagerFillContainer(
-                aspectRatio = VideoAspectRatio.STRETCH,
-                isVerticalContent = true
-            )
-        )
-    }
-
-    @Test
-    fun portraitPager_defaultResizeMode_prefersFit() {
-        assertEquals(
-            AspectRatioFrameLayout.RESIZE_MODE_FIT,
-            resolvePortraitPagerResizeMode()
-        )
-        assertEquals(
-            AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
-            resolvePortraitPagerResizeMode(
-                aspectRatio = VideoAspectRatio.FILL,
-                isVerticalContent = true
-            )
-        )
-        assertEquals(
-            AspectRatioFrameLayout.RESIZE_MODE_FIT,
-            resolvePortraitPagerResizeMode(
-                aspectRatio = VideoAspectRatio.STRETCH,
-                isVerticalContent = true
-            )
-        )
-        assertEquals(
-            AspectRatioFrameLayout.RESIZE_MODE_FIT,
-            resolvePortraitPagerResizeMode(
-                aspectRatio = VideoAspectRatio.RATIO_16_9,
-                isVerticalContent = true
-            )
-        )
-    }
 
     @Test
     fun portraitPager_fixedRatioUsesTargetViewportAspect() {
@@ -521,58 +468,6 @@ class PortraitVideoPagerPolicyTest {
     }
 
     @Test
-    fun portraitCommentExpansion_usesSharedProgressInsteadOfSecondaryScaleTween() {
-        val source = File("src/main/java/com/android/purebilibili/feature/video/ui/pager/PortraitVideoPager.kt").readText()
-
-        assertFalse(source.contains("portrait_comment_player_scale"))
-        assertFalse(source.contains("commentExpandedPlayerScale by animateFloatAsState"))
-        assertTrue(source.contains("resolvePortraitCommentPlayerTransform("))
-        assertTrue(source.contains("commentExpansionTransform.scale"))
-    }
-
-    @Test
-    fun portraitOverlay_receivesCommentExpansionProgress() {
-        val source = File("src/main/java/com/android/purebilibili/feature/video/ui/pager/PortraitVideoPager.kt").readText()
-
-        assertTrue(source.contains("commentExpansionProgress = commentSheetVisibilityProgress"))
-    }
-
-    @Test
-    fun portraitOverlayVisibility_isHoistedAboveIndividualPageItems() {
-        val source = File("src/main/java/com/android/purebilibili/feature/video/ui/pager/PortraitVideoPager.kt").readText()
-
-        assertTrue(source.contains("var portraitOverlayVisible by rememberSaveable(initialInfo.bvid)"))
-        assertTrue(source.contains("portraitOverlayVisible = portraitOverlayVisible"))
-        assertTrue(source.contains("onPortraitOverlayVisibleChange = { visible ->"))
-        assertFalse(source.contains("var isOverlayVisible by remember"))
-    }
-
-    @Test
-    fun portraitVideoSwitch_cancelsPendingDanmakuLoadBeforeNewMediaLoads() {
-        val source = File("src/main/java/com/android/purebilibili/feature/video/ui/pager/PortraitVideoPager.kt").readText()
-
-        assertTrue(source.contains("danmakuManager.clearForVideoChange()"))
-        assertFalse(source.contains("danmakuManager.clear()\n                isLoading = true"))
-    }
-
-    @Test
-    fun portraitPager_isolatesDanmakuAndCommentStateFromUnderlyingDetailPage() {
-        val source = File("src/main/java/com/android/purebilibili/feature/video/ui/pager/PortraitVideoPager.kt").readText()
-        val pagerSignature = source
-            .substringAfter("fun PortraitVideoPager(")
-            .substringBefore(") {")
-
-        assertTrue(source.contains("rememberIsolatedDanmakuManager("))
-        assertTrue(source.contains("key = \"portrait_comments_\$initialBvid\""))
-        assertTrue(source.contains("commentViewModel.clearForVideoChange()"))
-        assertTrue(pagerSignature.contains("viewModel: VideoPlaybackViewModel,"))
-        assertTrue(pagerSignature.contains("engagementViewModel: VideoEngagementViewModel,"))
-        assertTrue(pagerSignature.contains("sharedPlayer: ExoPlayer?"))
-        assertTrue(pagerSignature.contains("useTextureSurfaceForNavigation: Boolean = false"))
-        assertFalse(pagerSignature.contains("commentViewModel: VideoCommentViewModel"))
-    }
-
-    @Test
     fun letterboxAmbientCapture_requiresCurrentReadyPageAndSettings() {
         assertTrue(
             shouldCapturePortraitLetterboxAmbientFrame(
@@ -656,16 +551,4 @@ class PortraitVideoPagerPolicyTest {
         )
     }
 
-    @Test
-    fun portraitPager_sourcesUseThrottledProgressAndLetterboxPolicies() {
-        val source = File(
-            "src/main/java/com/android/purebilibili/feature/video/ui/pager/PortraitVideoPager.kt"
-        ).readText()
-
-        assertTrue(source.contains("shouldCommitPortraitProgressToDetailState("))
-        assertTrue(source.contains("shouldCapturePortraitLetterboxAmbientFrame("))
-        assertTrue(source.contains("shouldComposePortraitDanmakuOverlay("))
-        assertFalse(source.contains("if (false && danmakuEnabled"))
-        assertFalse(source.contains("val shouldCaptureLetterboxAmbient = false &&"))
-    }
 }

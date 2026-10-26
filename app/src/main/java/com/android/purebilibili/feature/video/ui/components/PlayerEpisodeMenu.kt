@@ -171,6 +171,7 @@ internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBound
     onDismiss: () -> Unit, modifier: Modifier = Modifier,
     compactHeight: Boolean = false, useGlassSurface: Boolean = false,
     draggable: Boolean = false,
+    maxSideWidth: Dp = 500.dp,
     content: @Composable ColumnScope.(requestDismiss: () -> Unit) -> Unit) {
     val density = LocalDensity.current
     val direction = LocalLayoutDirection.current
@@ -183,7 +184,7 @@ internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBound
     val landscape = size.width > size.height
     val compactMaxHeight = if (compactHeight) with(density) { episodeSheetMaxHeight().roundToPx() } else null
     val bounds = resolvePlayerPanelBounds(safe, playerBounds, isFullscreen, landscape,
-        with(density) { 500.dp.roundToPx() }, maxBottomHeight = compactMaxHeight)
+        with(density) { maxSideWidth.roundToPx() }, maxBottomHeight = compactMaxHeight)
     if (bounds.width <= 0 || bounds.height <= 0) return
     val dragEnabled = draggable && isFullscreen && landscape
     // 退出位移包含窗口右侧安全边距，画面和面板一直共用相同的可见边界。

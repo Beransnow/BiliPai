@@ -5,6 +5,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.TextFields
+import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -81,6 +84,7 @@ fun PlayerSubtitleSettingsPanel(
             )
             PlayerSettingsRow(
                 if (fontImporting) "正在导入字体…" else "字幕字体：${appearance.fontDisplayName.ifBlank { "默认字体" }}",
+                icon = Icons.Outlined.TextFields,
                 onClick = { if (!fontImporting) fontPicker.launch(arrayOf("*/*")) },
             )
             if (appearance.fontFileName.isNotBlank()) {
@@ -115,7 +119,7 @@ fun PlayerSubtitleSettingsPanel(
             }
             onTimingSettings?.let { action ->
                 HorizontalDivider()
-                PlayerSettingsRow("字幕时间偏移", onClick = action)
+                PlayerSettingsRow("字幕时间偏移", icon = Icons.Outlined.Timer, onClick = action)
             }
         }
     }
@@ -148,7 +152,7 @@ private fun SubtitleColorPreference(label: String, value: Int, onChange: (Int) -
     var hex by rememberSaveable(value) { mutableStateOf("#%06X".format(value and 0xFFFFFF)) }
     val parsed = hex.removePrefix("#").takeIf { it.matches(Regex("[0-9a-fA-F]{6}")) }
         ?.toLongOrNull(16)?.toInt()?.or(0xFF000000.toInt())
-    PlayerSettingsRow("$label：#%06X".format(value and 0xFFFFFF), onClick = { editing = true })
+    PlayerSettingsRow("$label：#%06X".format(value and 0xFFFFFF), icon = Icons.Outlined.Palette, onClick = { editing = true })
     if (editing) AlertDialog(
         onDismissRequest = { editing = false }, title = { Text(label) },
         text = {

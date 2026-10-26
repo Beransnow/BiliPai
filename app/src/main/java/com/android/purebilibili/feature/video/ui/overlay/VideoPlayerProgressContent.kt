@@ -13,15 +13,8 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +50,7 @@ internal fun PlayerControlProgressBar(
     currentChapterProvider: () -> String?,
     onChapterClick: () -> Unit,
     modifier: Modifier = Modifier,
+    neutralGlassTrack: Boolean = false,
     seekAreaHeight: Dp? = null,
     verticalHeightScale: Float = 1f,
 ) {
@@ -83,6 +77,7 @@ internal fun PlayerControlProgressBar(
         modifier = modifier,
         seekAreaHeight = seekAreaHeight,
         verticalHeightScale = verticalHeightScale,
+        neutralGlassTrack = neutralGlassTrack,
     )
 }
 
@@ -113,28 +108,20 @@ internal fun PlayerControlViewPointSegments(
 internal fun ProgressTimeText(
     positionProvider: () -> Long,
     durationProvider: () -> Long,
+    fontSp: Int,
     modifier: Modifier = Modifier,
 ) {
     val seconds by remember(positionProvider) { derivedStateOf { positionProvider() / 1000L } }
     val durationSeconds by remember(durationProvider) { derivedStateOf { durationProvider() / 1000L } }
-    val duration = FormatUtils.formatDuration(durationSeconds.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
-    val style = TextStyle(fontSize = 10.sp, lineHeight = 14.sp, fontFamily = FontFamily.Monospace, fontFeatureSettings = "tnum")
-    val measurer = rememberTextMeasurer()
-    val density = LocalDensity.current
-    val width = remember(duration, measurer, density) {
-        with(density) { measurer.measure(duration, style).size.width.toDp() }
-    }
-    Column(modifier.width(width), horizontalAlignment = Alignment.End) {
-        AppText(
-            text = FormatUtils.formatDuration(seconds.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()),
-            color = Color.White, style = style, textAlign = TextAlign.End,
-            modifier = Modifier.fillMaxWidth(), maxLines = 1, softWrap = false, tapToCopyEnabled = false,
-        )
-        AppText(
-            text = duration, color = Color(0xFFD0D0D0), style = style,
-            maxLines = 1, softWrap = false, tapToCopyEnabled = false,
-        )
-    }
+    AppText(
+        text = "${FormatUtils.formatDuration(seconds.toInt())} / ${FormatUtils.formatDuration(durationSeconds.toInt())}",
+        color = Color.White.copy(alpha = 0.9f),
+        fontSize = fontSp.sp,
+        lineHeight = (fontSp + 2).sp,
+        fontWeight = FontWeight.Medium,
+        modifier = modifier,
+        tapToCopyEnabled = false,
+    )
 }
 
 @Composable

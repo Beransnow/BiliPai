@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Done
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +36,7 @@ internal fun PlayerSleepTimerSettings(
             },
         )
     }
-    PlayerSettingsRow("自定义") { custom = true }
+    PlayerSettingsRow("自定义", icon = Icons.Outlined.Edit) { custom = true }
     onWaitForVideoEndChange?.let { change ->
         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("额外等待视频播放完毕", Modifier.weight(1f), fontSize = 14.sp)
