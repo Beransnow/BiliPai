@@ -362,18 +362,21 @@ internal class MessageNotificationPoller(
                 }
             }
 
-            // Red dots only clear previously displayed notices (including summary overflow).
-            // This snapshot must never suppress the fresh candidates added after cleanup.
+            // A continuously unlit author dot is not evidence that a publication was read.
+            // Arm cleanup per pending ID only after observing a lit dot for that notice.
+            val redDotObservedIds = state.dynamicRedDotObservedIds
+                .filterTo(linkedSetOf()) { it in pending }
             var authorUpdates: Map<Long, Boolean> = emptyMap()
-            if (pending.isNotEmpty()) category(null) {
+            if (pending.isNotEmpty() || freshByUp.isNotEmpty()) category(null) {
                 authorUpdates = fetch { source.dynamicAuthorUpdates() }
             }
             val pendingIterator = pending.entries.iterator()
             while (pendingIterator.hasNext()) {
                 val (id, mid) = pendingIterator.next()
-                if (authorUpdates[mid] == false) {
+                if (authorUpdates[mid] == false && id in redDotObservedIds) {
                     cancelNotificationKeys += "dynamic:$id"
                     pendingIterator.remove()
+                    redDotObservedIds.remove(id)
                 }
             }
             val previews = ArrayList<DynamicItem>(MAX_DYNAMIC_NOTIFICATION_PREVIEWS)
@@ -382,6 +385,11 @@ internal class MessageNotificationPoller(
                 for (id in candidates.ids) pending[id] = mid
                 freshCount += candidates.ids.size
                 for (item in candidates.previews) addNewestDynamicNotificationPreview(previews, item)
+            }
+            // Include fresh notices only after cleanup, so this snapshot cannot cancel them.
+            // Missing or failed snapshots retain previous evidence without arming new IDs.
+            for ((id, mid) in pending) {
+                if (authorUpdates[mid] == true) redDotObservedIds += id
             }
             state = state.copy(
                 // Commit only IDs already known before this full scan. A post arriving between
@@ -393,6 +401,7 @@ internal class MessageNotificationPoller(
                 },
                 dynamicUpBaselines = baselines,
                 pendingDynamicIds = pending,
+                dynamicRedDotObservedIds = redDotObservedIds,
             )
             for (item in previews) {
                 val route = resolveDynamicNotificationRoute(item) ?: continue

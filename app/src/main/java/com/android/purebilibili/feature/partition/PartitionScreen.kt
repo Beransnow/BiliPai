@@ -121,7 +121,6 @@ import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.store.HomeSettings
-import com.android.purebilibili.core.store.HomeFeedCardStyle
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
@@ -132,7 +131,6 @@ import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.data.repository.VideoRepository
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.home.components.cards.HomeStyleSingleColumnVideoCard
-import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.home.components.BottomBarIndicatorLayerTransform
 import com.android.purebilibili.feature.home.components.BottomBarLiquidOrientation
 import com.android.purebilibili.feature.home.components.BottomBarMatchedLiquidIndicator
@@ -499,6 +497,7 @@ fun PartitionContent(
     onVideoClick: (VideoItem) -> Unit = {},
     onBangumiClick: (Int) -> Unit = {},
     scrollToTopRequestId: Int = 0,
+    listState: androidx.compose.foundation.lazy.LazyListState = rememberLazyListState(),
     viewModel: PartitionFeedViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -519,7 +518,6 @@ fun PartitionContent(
         )
     }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
     LaunchedEffect(scrollToTopRequestId) {
         if (scrollToTopRequestId <= 0) return@LaunchedEffect
         if (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0) {
@@ -531,6 +529,8 @@ fun PartitionContent(
     val endPadding = contentPadding.calculateEndPadding(layoutDirection)
     val topPadding = contentPadding.calculateTopPadding()
     val bottomPadding = contentPadding.calculateBottomPadding()
+    // 给标签保留文字缩放空间，侧栏和内容间距在所有材质下使用同一布局。
+    val sideRailWidth = 56.dp * LocalDensity.current.fontScale.coerceIn(1f, 1.35f) + startPadding
     var sideRailVideoPushTargetPx by remember { mutableFloatStateOf(0f) }
     val sideRailVideoPushPx = animateFloatAsState(
         targetValue = sideRailVideoPushTargetPx,
@@ -576,7 +576,7 @@ fun PartitionContent(
                 labelMode = homeSettings.topTabLabelMode,
                 iconFamily = topChromeIconFamily,
                 modifier = Modifier
-                    .width(92.dp)
+                    .width(sideRailWidth)
                     .zIndex(if (liquidGlassIndicatorEnabled) 1f else 0f),
                 contentPadding = PaddingValues(
                     start = startPadding,
@@ -613,7 +613,7 @@ fun PartitionContent(
                     listState = listState,
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(
-                        start = 8.dp,
+                        start = 4.dp,
                         top = partitionRefreshIndicatorTopInset,
                         end = endPadding,
                         bottom = bottomPadding
@@ -1167,7 +1167,7 @@ private fun PartitionSideRailItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center,
-                    style = if (showIcon) MaterialTheme.typography.labelMedium else MaterialTheme.typography.titleMedium,
+                    style = if (showIcon) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge,
                     fontWeight = if (selected || clampedSelectionProgress > 0.5f) {
                         FontWeight.SemiBold
                     } else {
@@ -1263,9 +1263,6 @@ private fun PartitionVideoList(
     onVideoClick: (VideoItem) -> Unit
 ) {
     val context = LocalContext.current
-    val homeFeedCardStyle by SettingsManager
-        .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.BILIPAI)
     val showUpBadges by SettingsManager
         .getHomeUpBadgesVisible(context)
         .collectAsStateWithLifecycle(initialValue = false)
@@ -1275,9 +1272,6 @@ private fun PartitionVideoList(
     val showHomePublishTime by SettingsManager
         .getHomePublishTimeVisible(context)
         .collectAsStateWithLifecycle(initialValue = true)
-    val cardLayout = remember(homeFeedCardStyle) {
-        resolveHomeFeedCardLayout(homeFeedCardStyle)
-    }
     val sharedTransitionEnabled = LocalSharedTransitionEnabled.current
     val sharedElementSourceRoute = LocalVideoCardSharedElementSourceRoute.current
         ?.takeIf { it.isNotBlank() }
@@ -1323,11 +1317,13 @@ private fun PartitionVideoList(
                     HomeStyleSingleColumnVideoCard(
                         video = video,
                         sourceRoute = sharedElementSourceRoute,
-                        coverAspectRatio = cardLayout.coverAspectRatio,
+                        coverAspectRatio = 16f / 10f,
                         transitionEnabled = sharedTransitionEnabled,
                         showUpBadge = showUpBadges,
                         durationStyle = homeDurationStyle,
                         showPublishTime = showHomePublishTime,
+                        transparentCardBackground = true,
+                        compactPartition = true,
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { onVideoClick(video) },
                     )

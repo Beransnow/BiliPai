@@ -1437,6 +1437,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     private val _detailState = MutableStateFlow(VideoDetailUiState())
     val detailState = _detailState.asStateFlow()
     private val playbackPreparationAllowed = MutableStateFlow(true)
+    private val relatedPublicationAllowed = MutableStateFlow(true)
     private var relatedLoadJob: Job? = null
     private val relatedLoadScheduler = RelatedVideoLoadScheduler()
     private val videoNetworkPressureObserver = VideoNetworkPressureObserver(application)
@@ -1454,6 +1455,10 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
 
     fun setPlaybackPreparationAllowed(allowed: Boolean) {
         playbackPreparationAllowed.value = allowed
+    }
+
+    fun setRelatedPublicationAllowed(allowed: Boolean) {
+        relatedPublicationAllowed.value = allowed
     }
 
     fun cancelPendingVideoLoad() {
@@ -3546,9 +3551,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                             .isHdrSupported(capabilityContext),
                         isDolbyVisionSupported = com.android.purebilibili.core.util.MediaUtils
                             .isDolbyVisionSupported(capabilityContext),
-                        onVideoInfo = { info ->
-                            publishVideoDetailInfo(info, playbackRequest.bvid, requestToken)
-                        },
+                        // videoInfoDeferred publishes as soon as metadata arrives.
                         videoInfoLoader = { videoInfoDeferred.await() },
                         playbackSpeed = playbackSpeed
                     )
@@ -8492,7 +8495,12 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                 val related = result.getOrDefault(emptyList())
                 val loadState = if (result.isSuccess) VideoPlaybackUiState.RelatedLoadState.READY
                     else VideoPlaybackUiState.RelatedLoadState.FAILED
-                if (currentLoadRequestToken != requestToken) return@launch
+                // Keep the request concurrent with entry, but publish its UI and playlist work
+                // only after the entry transition finishes, even if playback fails.
+                if (!awaitRelatedVideoPublication(relatedPublicationAllowed) {
+                        currentLoadRequestToken == requestToken
+                    }
+                ) return@launch
                 _detailState.update { state ->
                     if (state.requestToken == requestToken) {
                         state.copy(related = related, relatedLoadState = loadState)

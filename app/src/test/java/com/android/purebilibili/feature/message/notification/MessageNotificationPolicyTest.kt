@@ -31,6 +31,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -283,6 +284,7 @@ class MessageNotificationPolicyTest {
                 dynamicOnly,
                 AccountNotificationState(
                     dynamicUpBaselines = mapOf(9L to "100"), pendingDynamicIds = mapOf("105" to 9L),
+                    dynamicRedDotObservedIds = setOf("105"),
                 ),
                 1, setOf("dynamic:105"),
             )
@@ -298,7 +300,17 @@ class MessageNotificationPolicyTest {
             assertEquals(mapOf("110" to 9L), result.state.pendingDynamicIds)
             assertEquals(setOf("dynamic:105"), result.cancelNotificationKeys)
             assertEquals("110", result.state.dynamicUpBaselines[9L])
-            assertEquals(emptyList(), poller.check(dynamicOnly, result.state, 1).notifications)
+            assertEquals(emptySet(), result.state.dynamicRedDotObservedIds)
+            // Persist and reload between polls, as the worker/service does across restarts.
+            var saved = result.state
+            repeat(2) {
+                saved = Json.decodeFromString<AccountNotificationState>(Json.encodeToString(saved))
+                val next = poller.check(dynamicOnly, saved, 1, setOf("dynamic:110"))
+                assertEquals(emptyList(), next.notifications, item.type)
+                assertEquals(emptySet(), next.cancelNotificationKeys, item.type)
+                assertEquals(mapOf("110" to 9L), next.state.pendingDynamicIds)
+                saved = next.state
+            }
         }
     }
 
@@ -627,6 +639,7 @@ class MessageNotificationPolicyTest {
             dynamicProbeBaseline = "110",
             dynamicUpBaselines = mapOf(9L to "90", 10L to "100", 11L to "110"),
             pendingDynamicIds = mapOf("90" to 9L, "100" to 10L, "110" to 11L),
+            dynamicRedDotObservedIds = setOf("90", "100", "110"),
         )
         val result = MessageNotificationPoller(source).check(
             dynamicOnly, previous, 1, setOf("dynamic:90", "dynamic:100", "dynamic:110", "dynamic:summary"),
@@ -639,7 +652,7 @@ class MessageNotificationPolicyTest {
     }
 
     @Test
-    fun closedAuthorRedDotOnlyClearsDisplayedNoticesWithoutSuppressingNewPublications() = runTest {
+    fun redDotCleanupRequiresALitObservationForEachPendingPublication() = runTest {
         val source = Source().apply {
             followingPages = mapOf(1 to FollowingsData(list = listOf(FollowingUser(mid = 9), FollowingUser(mid = 10)), total = 2))
             pages = mapOf(
@@ -651,6 +664,7 @@ class MessageNotificationPolicyTest {
         val previous = AccountNotificationState(
             dynamicUpBaselines = mapOf(9L to "100", 10L to "200"),
             pendingDynamicIds = mapOf("90" to 9L, "95" to 9L, "190" to 10L),
+            dynamicRedDotObservedIds = setOf("90", "95", "190"),
         )
         val poller = MessageNotificationPoller(source)
         val result = poller.check(dynamicOnly, previous, 1, setOf("dynamic:90", "dynamic:190"))
@@ -659,21 +673,79 @@ class MessageNotificationPolicyTest {
         assertEquals(mapOf("190" to 10L, "110" to 9L, "120" to 9L, "220" to 10L), result.state.pendingDynamicIds)
         assertEquals(mapOf(9L to "120", 10L to "220"), result.state.dynamicUpBaselines)
 
-        // The newly posted notices are eligible for red-dot cleanup only on the next poll.
+        assertEquals(setOf("190", "220"), result.state.dynamicRedDotObservedIds)
+        // A second unlit snapshot is still not evidence that the new notices were read.
         val displayed = poller.check(
             dynamicOnly, result.state, 1, setOf("dynamic:190", "dynamic:220", "dynamic:120", "dynamic:110"),
         )
         assertEquals(emptyList(), displayed.notifications)
-        assertEquals(setOf("dynamic:110", "dynamic:120"), displayed.cancelNotificationKeys)
-        assertEquals(mapOf("190" to 10L, "220" to 10L), displayed.state.pendingDynamicIds)
+        assertEquals(emptySet(), displayed.cancelNotificationKeys)
+        assertEquals(result.state.pendingDynamicIds, displayed.state.pendingDynamicIds)
 
         source.authorUpdates = mapOf(9L to true, 10L to true)
         val unreadAgain = poller.check(
-            dynamicOnly, displayed.state, 1, setOf("dynamic:190", "dynamic:220"),
+            dynamicOnly, displayed.state, 1, setOf("dynamic:190", "dynamic:220", "dynamic:110", "dynamic:120"),
         )
         assertEquals(emptyList(), unreadAgain.notifications)
         assertEquals(emptySet(), unreadAgain.cancelNotificationKeys)
         assertEquals(displayed.state.pendingDynamicIds, unreadAgain.state.pendingDynamicIds)
+        assertEquals(setOf("110", "120", "190", "220"), unreadAgain.state.dynamicRedDotObservedIds)
+
+        source.authorUpdates = mapOf(9L to false, 10L to true)
+        source.pages = source.pages + ((9L to "") to DynamicPersonalFeedPage(
+            items = listOf(dynamic("130"), dynamic("120")),
+        ))
+        val read = poller.check(
+            dynamicOnly,
+            Json.decodeFromString<AccountNotificationState>(Json.encodeToString(unreadAgain.state)),
+            1,
+            setOf("dynamic:190", "dynamic:220", "dynamic:110", "dynamic:120"),
+        )
+        assertEquals(setOf("dynamic:110", "dynamic:120"), read.cancelNotificationKeys)
+        assertEquals(listOf("dynamic:130"), read.notifications.map { it.key })
+        assertEquals(mapOf("190" to 10L, "220" to 10L, "130" to 9L), read.state.pendingDynamicIds)
+        assertEquals(setOf("190", "220"), read.state.dynamicRedDotObservedIds)
+    }
+
+    @Test
+    fun legacyPendingNoticesAreNotAssumedToHaveHadALitRedDot() = runTest {
+        val previous = Json.decodeFromString<AccountNotificationState>(
+            """{"dynamicUpBaselines":{"9":"110"},"pendingDynamicIds":{"110":9}}"""
+        )
+        val source = Source().apply {
+            pages = mapOf((9L to "") to DynamicPersonalFeedPage(items = listOf(dynamic("110"))))
+            authorUpdates = mapOf(9L to false)
+        }
+        val result = MessageNotificationPoller(source).check(
+            dynamicOnly, previous, 1, setOf("dynamic:110", "dynamic:summary"),
+        )
+        assertEquals(emptyList(), result.notifications)
+        assertEquals(emptySet(), result.cancelNotificationKeys)
+        assertEquals(previous.pendingDynamicIds, result.state.pendingDynamicIds)
+        assertEquals(emptySet(), result.state.dynamicRedDotObservedIds)
+    }
+
+    @Test
+    fun dismissingDynamicNoticesDropsTheirRedDotEvidenceWithoutReposting() = runTest {
+        val source = Source().apply {
+            pages = mapOf((9L to "") to DynamicPersonalFeedPage(items = listOf(dynamic("110"))))
+            authorUpdates = mapOf(9L to true)
+        }
+        val poller = MessageNotificationPoller(source)
+        val previous = AccountNotificationState(
+            dynamicUpBaselines = mapOf(9L to "110"),
+            pendingDynamicIds = mapOf("110" to 9L),
+            dynamicRedDotObservedIds = setOf("110"),
+        )
+        val dismissed = poller.check(dynamicOnly, previous, 1)
+        assertEquals(emptyList(), dismissed.notifications)
+        assertEquals(emptyMap(), dismissed.state.pendingDynamicIds)
+        assertEquals(emptySet(), dismissed.state.dynamicRedDotObservedIds)
+        source.authorUpdates = mapOf(9L to false)
+        val next = poller.check(dynamicOnly, dismissed.state, 1)
+        assertEquals(emptyList(), next.notifications)
+        assertEquals(emptySet(), next.cancelNotificationKeys)
+        assertEquals(previous.dynamicUpBaselines, next.state.dynamicUpBaselines)
     }
 
     @Test
@@ -685,12 +757,14 @@ class MessageNotificationPolicyTest {
             }
             val previous = AccountNotificationState(
                 dynamicUpBaselines = mapOf(9L to "100"), pendingDynamicIds = mapOf("105" to 9L),
+                dynamicRedDotObservedIds = setOf("105"),
             )
             val result = MessageNotificationPoller(source).check(dynamicOnly, previous, 1, setOf("dynamic:105"))
             assertEquals(emptySet(), result.cancelNotificationKeys)
             assertEquals(listOf("dynamic:120"), result.notifications.map { it.key })
             assertEquals(mapOf("105" to 9L, "120" to 9L), result.state.pendingDynamicIds)
             assertEquals("120", result.state.dynamicUpBaselines[9L])
+            assertEquals(setOf("105"), result.state.dynamicRedDotObservedIds)
         }
     }
 
@@ -703,6 +777,7 @@ class MessageNotificationPolicyTest {
             }
             val previous = AccountNotificationState(
                 dynamicUpBaselines = mapOf(9L to "100"), pendingDynamicIds = mapOf("105" to 9L),
+                dynamicRedDotObservedIds = setOf("105"),
             )
             val poller = MessageNotificationPoller(source)
             val result = poller.check(dynamicOnly, previous, 1, setOf("dynamic:105"))
@@ -710,6 +785,7 @@ class MessageNotificationPolicyTest {
             assertEquals(listOf("dynamic:120"), result.notifications.map { it.key })
             assertEquals(mapOf("105" to 9L, "120" to 9L), result.state.pendingDynamicIds)
             assertEquals("120", result.state.dynamicUpBaselines[9L])
+            assertEquals(setOf("105"), result.state.dynamicRedDotObservedIds)
             assertEquals(failure is IOException, result.shouldRetry)
 
             source.authorUpdatesError = null
@@ -717,6 +793,7 @@ class MessageNotificationPolicyTest {
             val recovered = poller.check(dynamicOnly, result.state, 1, setOf("dynamic:105", "dynamic:120"))
             assertEquals(emptyList(), recovered.notifications)
             assertEquals(result.state.pendingDynamicIds, recovered.state.pendingDynamicIds)
+            assertEquals(setOf("105", "120"), recovered.state.dynamicRedDotObservedIds)
         }
     }
 
@@ -762,6 +839,7 @@ class MessageNotificationPolicyTest {
         val previous = AccountNotificationState(
             dynamicUpBaselines = mapOf(9L to "100", 10L to "200"),
             pendingDynamicIds = mapOf("105" to 9L, "205" to 10L),
+            dynamicRedDotObservedIds = setOf("105", "205"),
         )
         val result = MessageNotificationPoller(source).check(
             dynamicOnly, previous, 1, setOf("dynamic:105", "dynamic:205"),
@@ -876,6 +954,7 @@ class MessageNotificationPolicyTest {
         val previous = AccountNotificationState(
             dynamicUpBaselines = mids.associateWith { "$it" },
             pendingDynamicIds = mapOf("1" to mids.first()),
+            dynamicRedDotObservedIds = setOf("1"),
         )
         val pending = async {
             MessageNotificationPoller(source).check(dynamicOnly, previous, 1, setOf("dynamic:1"))
@@ -933,6 +1012,7 @@ class MessageNotificationPolicyTest {
         val previous = AccountNotificationState(
             dynamicUpBaselines = mids.associateWith { "$it" },
             pendingDynamicIds = mapOf("99" to slowMid),
+            dynamicRedDotObservedIds = setOf("99"),
         )
         val pending = async {
             MessageNotificationPoller(source).check(dynamicOnly, previous, 1, setOf("dynamic:99"))
@@ -1141,6 +1221,7 @@ class MessageNotificationPolicyTest {
             val previous = AccountNotificationState(
                 dynamicProbeBaseline = "100", dynamicUpBaselines = mapOf(9L to "100", 10L to "90"),
                 pendingDynamicIds = mapOf("95" to 10L),
+                dynamicRedDotObservedIds = setOf("95"),
             )
             val result = MessageNotificationPoller(source).check(dynamicOnly, previous, 1, setOf("dynamic:95"))
             assertEquals(listOf("dynamic:120", "dynamic:110"), result.notifications.map { it.key })
