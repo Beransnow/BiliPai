@@ -362,11 +362,10 @@ internal class MessageNotificationPoller(
                 }
             }
 
-            // Query after scanning content: an earlier false snapshot must not suppress a later post.
-            // Only an explicit author-level false closes that author's red dot. Missing entries,
-            // failed snapshots and read_offset acknowledgement tokens are never read evidence.
+            // Red dots only clear previously displayed notices (including summary overflow).
+            // This snapshot must never suppress the fresh candidates added after cleanup.
             var authorUpdates: Map<Long, Boolean> = emptyMap()
-            if (pending.isNotEmpty() || freshByUp.isNotEmpty()) category(null) {
+            if (pending.isNotEmpty()) category(null) {
                 authorUpdates = fetch { source.dynamicAuthorUpdates() }
             }
             val pendingIterator = pending.entries.iterator()
@@ -380,7 +379,6 @@ internal class MessageNotificationPoller(
             val previews = ArrayList<DynamicItem>(MAX_DYNAMIC_NOTIFICATION_PREVIEWS)
             var freshCount = 0
             for ((mid, candidates) in freshByUp) {
-                if (authorUpdates[mid] == false) continue
                 for (id in candidates.ids) pending[id] = mid
                 freshCount += candidates.ids.size
                 for (item in candidates.previews) addNewestDynamicNotificationPreview(previews, item)
