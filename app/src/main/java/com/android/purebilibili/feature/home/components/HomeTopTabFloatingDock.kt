@@ -153,6 +153,16 @@ internal fun HomeTopTabFloatingDock(
     isPagerNavigatingProvider: (() -> Boolean)? = null,
 ) {
     if (categories.isEmpty()) return
+    if (shouldUseOfficialMiuixHomeTopTabs(LocalAppUiStyle.current, liquidGlassEffectsEnabled) && showText && !showIcon) {
+        com.android.purebilibili.core.ui.components.AppNativeTabRow(
+            options = categories.mapIndexed { index, label -> com.android.purebilibili.core.ui.components.AppSegmentOption(index, label) },
+            selectedValue = selectedIndex,
+            onSelectionChange = { index -> if (index == selectedIndex) onReselected() else onSelected(index) },
+            modifier = modifier,
+            scrollable = true,
+        )
+        return
+    }
     val fontScale = LocalDensity.current.fontScale.coerceAtLeast(0.01f)
     if (
         shouldUseOfficialMd3HomeTopToolbar(
@@ -252,7 +262,10 @@ internal fun HomeTopTabFloatingDock(
         darkTheme = isDarkTheme,
         liquidGlassTuning = liquidGlassTuning,
     )
-    val selectedContentColor = resolveHomeTopTabSelectedContentColor(
+    val selectedContentColor = if (shouldUseOfficialMiuixHomeTopTabs(LocalAppUiStyle.current, liquidGlassEffectsEnabled)) {
+        com.android.purebilibili.core.ui.AppInteractionColors.nativeNavigation()?.selectedContent
+            ?: top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme.onBackground
+    } else resolveHomeTopTabSelectedContentColor(
         accent = AppContentColors.selectionAccent(liquidGlassEffectsEnabled),
         shellColor = shellColor,
         liquidGlassEnabled = liquidGlassEffectsEnabled,
@@ -296,11 +309,11 @@ internal fun HomeTopTabFloatingDock(
         longPressDragSelectionEnabled = scrollState != null,
         miuixBackdrop = miuixBackdrop,
         containerColorOverride = shellColor,
-        // Native Miuix shares the bottom navigation's themed selection fill.
-        // Glass retains its neutral lens and MD3 retains its own renderer defaults.
+        // 图标分类保留自绘布局，非玻璃选中底色遵循原生标签；玻璃与 MD3 独立取色。
         indicatorIdleSurfaceColorOverride = if (
             LocalAppUiStyle.current == AppUiStyle.MIUIX && !liquidGlassEffectsEnabled
-        ) AppSurfaceTokens.selectionContainer() else null,
+        ) com.android.purebilibili.core.ui.AppInteractionColors.nativeNavigation()?.selectedContainer
+            ?: top.yukonga.miuix.kmp.theme.MiuixTheme.colorScheme.surfaceContainer else null,
         selectedTextColorOverride = selectedContentColor,
         unselectedTextColorOverride = unselectedContentColor,
         indicatorPositionProvider = indicatorPositionProvider,
