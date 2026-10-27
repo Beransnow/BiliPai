@@ -3142,9 +3142,7 @@ fun AppNavigation(
                                     isCurrentPage = isBottomPagerPageActive,
                                     initialSearchQuery = historySearchKey?.query.orEmpty(),
                                     isSearchDestination = historySearchKey != null,
-                                    onOpenSearchDestination = if (historySearchKey == null) {
-                                        { query, _ -> pushNavigation3Key(BiliPaiNavKey.HistorySearch(query)) }
-                                    } else null,
+                                    onOpenSearchDestination = null,
                                     listScopedSearchChannel = if (historySearchKey == null) {
                                         historyListScopedSearchChannel
                                     } else {
