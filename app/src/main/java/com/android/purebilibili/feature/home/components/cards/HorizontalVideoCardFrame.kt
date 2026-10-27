@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.hasBoundedHeight
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.AppShapes
@@ -143,7 +144,20 @@ internal fun HorizontalVideoCardFrame(
                     (desiredHeight * effectiveAspectRatio).toInt().coerceIn(0, maxCoverWidth)
                 val coverHeight = (coverWidth / effectiveAspectRatio).toInt()
                 val infoWidth = (width - gap - coverWidth).coerceAtLeast(0)
-                val info = measurables[1].measure(Constraints(minWidth = infoWidth, maxWidth = infoWidth, maxHeight = constraints.maxHeight))
+                // 分区紧凑模式下信息列至少与封面等高，使元信息行可以固定在卡片底部。
+                val infoMinHeight = if (compactPartition) {
+                    coverHeight.coerceAtMost(
+                        if (constraints.hasBoundedHeight) constraints.maxHeight else coverHeight
+                    )
+                } else {
+                    0
+                }
+                val info = measurables[1].measure(
+                    Constraints(
+                        minWidth = infoWidth, maxWidth = infoWidth,
+                        minHeight = infoMinHeight, maxHeight = constraints.maxHeight,
+                    )
+                )
                 val height = constraints.constrainHeight(maxOf(minHeight, coverHeight, info.height))
                 val cover = measurables[0].measure(Constraints.fixed(coverWidth, minOf(coverHeight, height)))
                 layout(width, height) {
