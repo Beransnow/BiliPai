@@ -3668,9 +3668,9 @@ private fun ProfileAccountEditRow(
     ) {
         AppText(title, color = AppContentColors.primaryText(), style = MaterialTheme.typography.bodyLarge)
         if (!avatar.isNullOrBlank()) {
-            // 头像行：头像与右箭头作为一组在整行水平居中，标题保持居左。
+            // 头像行与其他行一致：头像与右箭头右对齐，标题保持居左。
             Row(
-                modifier = Modifier.align(Alignment.Center),
+                modifier = Modifier.align(Alignment.CenterEnd),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AsyncImage(model = avatar, contentDescription = "B 站账号头像", contentScale = ContentScale.Crop,

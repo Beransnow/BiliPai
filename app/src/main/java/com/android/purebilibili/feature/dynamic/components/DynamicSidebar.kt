@@ -605,7 +605,7 @@ fun SidebarItem(
 internal fun DynamicSelfAvatar(face: String, isSelected: Boolean) {
     val faceUrl = remember(face) { resolveDynamicSidebarUserAvatarUrl(face) }
     var avatarLoaded by remember(faceUrl) { mutableStateOf(false) }
-    val request = rememberDynamicUserAvatarRequest(displayFace)
+    val request = rememberDynamicUserAvatarRequest(face)
     Box(
         modifier = Modifier.fillMaxSize().semantics { contentDescription = "我" },
         contentAlignment = Alignment.Center
