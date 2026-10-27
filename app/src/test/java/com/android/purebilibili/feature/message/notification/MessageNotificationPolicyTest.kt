@@ -2,8 +2,11 @@ package com.android.purebilibili.feature.message.notification
 
 import com.android.purebilibili.core.network.grpc.DynamicPersonalFeedPage
 import com.android.purebilibili.data.model.response.ArchiveMajor
+import com.android.purebilibili.data.model.response.DrawItem
+import com.android.purebilibili.data.model.response.DrawMajor
 import com.android.purebilibili.data.model.response.DynamicAuthorModule
 import com.android.purebilibili.data.model.response.DynamicContentModule
+import com.android.purebilibili.data.model.response.DynamicDesc
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.DynamicMajor
 import com.android.purebilibili.data.model.response.DynamicModules
@@ -13,6 +16,8 @@ import com.android.purebilibili.data.model.response.FollowedLiveRoom
 import com.android.purebilibili.data.model.response.FollowingUser
 import com.android.purebilibili.data.model.response.FollowingsData
 import com.android.purebilibili.data.model.response.MessageFeedUnreadData
+import com.android.purebilibili.data.model.response.OpusMajor
+import com.android.purebilibili.data.model.response.OpusSummary
 import com.android.purebilibili.data.model.response.PageInfo
 import com.android.purebilibili.data.model.response.SessionItem
 import com.android.purebilibili.data.model.response.SessionMessage
@@ -231,6 +236,70 @@ class MessageNotificationPolicyTest {
         assertEquals(listOf("dynamic:110"), result.notifications.map { it.key })
         assertEquals(mapOf("110" to 9L), result.state.pendingDynamicIds)
         assertEquals(mapOf(9L to "110"), result.state.dynamicUpBaselines)
+    }
+
+    @Test
+    fun nonVideoPublicationsNotifyWithoutAnAuthorRedDotAndDoNotRepeat() = runTest {
+        val author = DynamicAuthorModule(mid = 9, name = "UP")
+        val word = DynamicItem(
+            id_str = "110", type = "DYNAMIC_TYPE_WORD",
+            modules = DynamicModules(
+                module_author = author,
+                module_dynamic = DynamicContentModule(desc = DynamicDesc("文字更新")),
+            ),
+        )
+        val draw = word.copy(
+            type = "DYNAMIC_TYPE_DRAW",
+            modules = word.modules.copy(module_dynamic = DynamicContentModule(
+                desc = DynamicDesc("图文更新"),
+                major = DynamicMajor(draw = DrawMajor(items = listOf(DrawItem(src = "https://i0.hdslb.com/image.jpg")))),
+            )),
+        )
+        val opus = word.copy(
+            type = "DYNAMIC_TYPE_DRAW",
+            modules = word.modules.copy(module_dynamic = DynamicContentModule(
+                major = DynamicMajor(opus = OpusMajor(summary = OpusSummary("Opus 更新"))),
+            )),
+        )
+        val forward = word.copy(
+            type = "DYNAMIC_TYPE_FORWARD",
+            modules = word.modules.copy(module_dynamic = DynamicContentModule(desc = DynamicDesc("转发更新"))),
+            orig = word.copy(id_str = "50"),
+        )
+        for ((item, text, targetId) in listOf(
+            Triple(word, "文字更新", "110"),
+            Triple(draw, "图文更新", "110"),
+            Triple(opus, "Opus 更新", "110"),
+            Triple(forward, "转发更新", "50"),
+        )) {
+            val source = Source().apply {
+                authorUpdates = mapOf(9L to false)
+                pages = mapOf((9L to "") to DynamicPersonalFeedPage(items = listOf(item)))
+            }
+            val poller = MessageNotificationPoller(source)
+            val initial = poller.check(dynamicOnly, AccountNotificationState(), 1)
+            assertEquals(emptyList(), initial.notifications)
+            val result = poller.check(
+                dynamicOnly,
+                AccountNotificationState(
+                    dynamicUpBaselines = mapOf(9L to "100"), pendingDynamicIds = mapOf("105" to 9L),
+                ),
+                1, setOf("dynamic:105"),
+            )
+            assertEquals(listOf("dynamic:110"), result.notifications.map { it.key }, item.type)
+            val notification = result.notifications.single()
+            assertEquals("dynamic:110", notification.key)
+            assertEquals("UP 发布了新动态", notification.title)
+            assertEquals(text, notification.text)
+            assertEquals(
+                "dynamic_detail/$targetId?commentRootRpid=0&commentTargetRpid=0",
+                notification.route,
+            )
+            assertEquals(mapOf("110" to 9L), result.state.pendingDynamicIds)
+            assertEquals(setOf("dynamic:105"), result.cancelNotificationKeys)
+            assertEquals("110", result.state.dynamicUpBaselines[9L])
+            assertEquals(emptyList(), poller.check(dynamicOnly, result.state, 1).notifications)
+        }
     }
 
     @Test
@@ -570,7 +639,7 @@ class MessageNotificationPolicyTest {
     }
 
     @Test
-    fun readAuthorSuppressesNewNoticesButAdvancesItsBaselineWithoutAffectingOtherAuthors() = runTest {
+    fun closedAuthorRedDotOnlyClearsDisplayedNoticesWithoutSuppressingNewPublications() = runTest {
         val source = Source().apply {
             followingPages = mapOf(1 to FollowingsData(list = listOf(FollowingUser(mid = 9), FollowingUser(mid = 10)), total = 2))
             pages = mapOf(
@@ -581,20 +650,30 @@ class MessageNotificationPolicyTest {
         }
         val previous = AccountNotificationState(
             dynamicUpBaselines = mapOf(9L to "100", 10L to "200"),
-            pendingDynamicIds = mapOf("105" to 9L, "205" to 10L),
+            pendingDynamicIds = mapOf("90" to 9L, "95" to 9L, "190" to 10L),
         )
         val poller = MessageNotificationPoller(source)
-        val result = poller.check(dynamicOnly, previous, 1, setOf("dynamic:105", "dynamic:205"))
-        assertEquals(setOf("dynamic:105"), result.cancelNotificationKeys)
-        assertEquals(listOf("dynamic:220"), result.notifications.map { it.key })
-        assertEquals(mapOf("205" to 10L, "220" to 10L), result.state.pendingDynamicIds)
+        val result = poller.check(dynamicOnly, previous, 1, setOf("dynamic:90", "dynamic:190"))
+        assertEquals(setOf("dynamic:90"), result.cancelNotificationKeys)
+        assertEquals(listOf("dynamic:220", "dynamic:120", "dynamic:110"), result.notifications.map { it.key })
+        assertEquals(mapOf("190" to 10L, "110" to 9L, "120" to 9L, "220" to 10L), result.state.pendingDynamicIds)
         assertEquals(mapOf(9L to "120", 10L to "220"), result.state.dynamicUpBaselines)
 
+        // The newly posted notices are eligible for red-dot cleanup only on the next poll.
+        val displayed = poller.check(
+            dynamicOnly, result.state, 1, setOf("dynamic:190", "dynamic:220", "dynamic:120", "dynamic:110"),
+        )
+        assertEquals(emptyList(), displayed.notifications)
+        assertEquals(setOf("dynamic:110", "dynamic:120"), displayed.cancelNotificationKeys)
+        assertEquals(mapOf("190" to 10L, "220" to 10L), displayed.state.pendingDynamicIds)
+
         source.authorUpdates = mapOf(9L to true, 10L to true)
-        val unreadAgain = poller.check(dynamicOnly, result.state, 1, setOf("dynamic:205", "dynamic:220"))
+        val unreadAgain = poller.check(
+            dynamicOnly, displayed.state, 1, setOf("dynamic:190", "dynamic:220"),
+        )
         assertEquals(emptyList(), unreadAgain.notifications)
         assertEquals(emptySet(), unreadAgain.cancelNotificationKeys)
-        assertEquals(result.state.pendingDynamicIds, unreadAgain.state.pendingDynamicIds)
+        assertEquals(displayed.state.pendingDynamicIds, unreadAgain.state.pendingDynamicIds)
     }
 
     @Test
@@ -777,6 +856,7 @@ class MessageNotificationPolicyTest {
                     (mid to "older") to DynamicPersonalFeedPage(items = listOf(dynamic("$mid", mid))),
                 )
             }.toMap()
+            authorUpdates = mapOf(mids.first() to false)
             onPersonalFeed = { mid, offset ->
                 active++
                 peak = maxOf(peak, active)
@@ -793,8 +873,13 @@ class MessageNotificationPolicyTest {
                 assertEquals(pages.keys, completedPages)
             }
         }
-        val previous = AccountNotificationState(dynamicUpBaselines = mids.associateWith { "$it" })
-        val pending = async { MessageNotificationPoller(source).check(dynamicOnly, previous, 1) }
+        val previous = AccountNotificationState(
+            dynamicUpBaselines = mids.associateWith { "$it" },
+            pendingDynamicIds = mapOf("1" to mids.first()),
+        )
+        val pending = async {
+            MessageNotificationPoller(source).check(dynamicOnly, previous, 1, setOf("dynamic:1"))
+        }
         runCurrent()
         assertEquals(MAX_DYNAMIC_NOTIFICATION_CONCURRENCY, active)
         assertEquals(0, authorQueries)
@@ -806,6 +891,7 @@ class MessageNotificationPolicyTest {
         assertEquals(1, authorQueries)
         assertEquals(mids.associateWith { "${it + 100}" }, result.state.dynamicUpBaselines)
         assertEquals(mids.associate { "${it + 100}" to it }, result.state.pendingDynamicIds)
+        assertEquals(setOf("dynamic:1"), result.cancelNotificationKeys)
         assertEquals(
             mids.sortedDescending().take(3).map { "dynamic:${it + 100}" } + "dynamic:summary",
             result.notifications.map { it.key },
@@ -860,13 +946,13 @@ class MessageNotificationPolicyTest {
         val result = pending.await()
         assertEquals(1, authorQueries)
         assertEquals(mids.associateWith { "${it + 100}" }, result.state.dynamicUpBaselines)
-        assertEquals((mids - slowMid).associate { "${it + 100}" to it }, result.state.pendingDynamicIds)
+        assertEquals(mids.associate { "${it + 100}" to it }, result.state.pendingDynamicIds)
         assertEquals(setOf("dynamic:99"), result.cancelNotificationKeys)
         assertEquals(
             mids.sortedDescending().take(3).map { "dynamic:${it + 100}" } + "dynamic:summary",
             result.notifications.map { it.key },
         )
-        assertEquals(mids.size - 1, result.notifications.last().text.filter(Char::isDigit).toInt())
+        assertEquals(mids.size, result.notifications.last().text.filter(Char::isDigit).toInt())
     }
 
     @Test
@@ -1057,9 +1143,9 @@ class MessageNotificationPolicyTest {
                 pendingDynamicIds = mapOf("95" to 10L),
             )
             val result = MessageNotificationPoller(source).check(dynamicOnly, previous, 1, setOf("dynamic:95"))
-            assertEquals(listOf("dynamic:110"), result.notifications.map { it.key })
+            assertEquals(listOf("dynamic:120", "dynamic:110"), result.notifications.map { it.key })
             assertEquals(setOf("dynamic:95"), result.cancelNotificationKeys)
-            assertEquals(mapOf("110" to 9L), result.state.pendingDynamicIds)
+            assertEquals(mapOf("110" to 9L, "120" to 10L), result.state.pendingDynamicIds)
             assertEquals(mapOf(9L to "110", 10L to "120"), result.state.dynamicUpBaselines)
             assertEquals(failure is IOException, result.shouldRetry)
         }
