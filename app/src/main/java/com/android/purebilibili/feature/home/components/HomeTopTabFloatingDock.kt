@@ -278,8 +278,10 @@ internal fun HomeTopTabFloatingDock(
     // Native renderers keep their existing TopNavigation geometry and label policy below.
     val geometryMode = FloatingBottomBarGeometryMode.TopNavigation
     val viewportModifier = if (liquidGlassEffectsEnabled && scrollState != null) {
-        // Own the optical clip at the page viewport, with the same press/velocity margins
-        // as the renderer. Native toolbar placement and clipping retain their existing path.
+        // Own the optical clip at the page viewport: vertical bloom keeps the renderer's
+        // press/velocity margins, while the horizontal clip stays on the shell silhouette so
+        // a scrolling indicator is cut by the dock's rounded ends. Native toolbar placement
+        // and clipping retain their existing path.
         val captureInsets = resolveFloatingDockCaptureInsets(
             shellHeightDp = dockHeight.value,
             requestedIndicatorHeightDp = (dockHeight - AppSpacingTokens.ExtraSmall * 2).coerceAtLeast(0.dp).value,
@@ -288,7 +290,6 @@ internal fun HomeTopTabFloatingDock(
         )
         Modifier.liquidDockViewport(
             verticalOverflow = captureInsets.verticalDp.dp,
-            horizontalOverflow = captureInsets.horizontalDp.dp,
         )
     } else Modifier
     BottomBarFloatingSegmentedControl(

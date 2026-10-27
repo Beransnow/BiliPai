@@ -1233,10 +1233,10 @@ private fun ProfileSpaceContent(
             isSaving = space.isSavingSign,
             onDismiss = { showEditDialog = false },
             onEditSign = { showEditDialog = false; showAccountSignDialog = true },
-            onEditField = { field -> showEditDialog = false; editingAccountField = field },
-            onEditSex = { showEditDialog = false; showAccountSexDialog = true },
+            // 子编辑流程（昵称/生日、性别、头像）叠加在编辑资料之上，返回时回到编辑资料。
+            onEditField = { field -> editingAccountField = field },
+            onEditSex = { showAccountSexDialog = true },
             onEditAvatar = {
-                showEditDialog = false
                 accountAvatarPickerMid = user.mid
                 accountAvatarPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
@@ -3660,29 +3660,46 @@ private fun ProfileAccountEditRow(
     avatar: String? = null,
     onClick: () -> Unit,
 ) {
-    Row(
+    Box(
         modifier = modifier.fillMaxWidth().heightIn(min = 48.dp)
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        contentAlignment = Alignment.CenterStart,
     ) {
-        AppText(title, color = AppContentColors.primaryText(), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        AppText(title, color = AppContentColors.primaryText(), style = MaterialTheme.typography.bodyLarge)
         if (!avatar.isNullOrBlank()) {
-            AsyncImage(model = avatar, contentDescription = "B 站账号头像", contentScale = ContentScale.Crop,
-                modifier = Modifier.size(36.dp).clip(CircleShape))
-        } else if (value.isNotBlank()) {
-            AppText(
-                text = value,
-                color = AppContentColors.secondaryText(),
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1.3f, fill = false),
-            )
+            // 头像行：头像与右箭头作为一组在整行水平居中，标题保持居左。
+            Row(
+                modifier = Modifier.align(Alignment.Center),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AsyncImage(model = avatar, contentDescription = "B 站账号头像", contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(36.dp).clip(CircleShape))
+                Spacer(Modifier.width(4.dp))
+                AppIcon(com.android.purebilibili.core.ui.resolveAppChevronForwardIcon(), contentDescription = null,
+                    tint = AppContentColors.secondaryText(), modifier = Modifier.size(20.dp))
+            }
+        } else {
+            Row(
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (value.isNotBlank()) {
+                    AppText(
+                        text = value,
+                        color = AppContentColors.secondaryText(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    Spacer(Modifier.width(4.dp))
+                }
+                AppIcon(com.android.purebilibili.core.ui.resolveAppChevronForwardIcon(), contentDescription = null,
+                    tint = AppContentColors.secondaryText(), modifier = Modifier.size(20.dp))
+            }
         }
-        Spacer(Modifier.width(4.dp))
-        AppIcon(com.android.purebilibili.core.ui.resolveAppChevronForwardIcon(), contentDescription = null,
-            tint = AppContentColors.secondaryText(), modifier = Modifier.size(20.dp))
     }
 }
 
