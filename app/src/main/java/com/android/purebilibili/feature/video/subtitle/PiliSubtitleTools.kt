@@ -1,5 +1,9 @@
 package com.android.purebilibili.feature.video.subtitle
 
+import com.android.purebilibili.core.ui.components.AppTextButton as TextButton
+import com.android.purebilibili.core.ui.components.AppSlider as Slider
+import com.android.purebilibili.core.ui.AppAlertDialog as AlertDialog
+
 import android.provider.OpenableColumns
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
