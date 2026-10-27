@@ -125,9 +125,9 @@ internal fun HorizontalVideoCardFrame(
                 val widthDp = width.toDp().value
                 val widthFraction = 0.55f - 0.10f * ((widthDp - 320f) / 160f).coerceIn(0f, 1f)
                 val maxCoverWidth = if (compactPartition) {
-                    // 封面以 100dp 高度为基准；窄窗口仍为文字保留空间。
+                    // 封面以 88dp 高度为基准，压缩封面宽度换取标题单行容量；窄窗口仍为文字保留空间。
                     minOf(
-                        (100.dp.toPx() * effectiveAspectRatio).toInt(),
+                        (88.dp.toPx() * effectiveAspectRatio).toInt(),
                         (width * 0.54f).toInt(),
                         (width - gap - minOf(92.dp.roundToPx(), (width - gap).coerceAtLeast(0) / 2)).coerceAtLeast(0),
                     )
