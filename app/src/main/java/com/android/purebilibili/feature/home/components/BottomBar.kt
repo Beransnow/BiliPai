@@ -414,6 +414,21 @@ internal fun resolveFloatingBottomBarContainerColor(
     defaultColor
 }
 
+internal fun resolveBiliPaiFloatingContainerColor(
+    defaultColor: Color,
+    usePlainMiuixFloatingBar: Boolean,
+    mode: FloatingBottomBarMode,
+    hasUiSkinDecoration: Boolean,
+): Color = if (usePlainMiuixFloatingBar && !hasUiSkinDecoration) {
+    defaultColor.copy(alpha = 1f)
+} else {
+    resolveFloatingBottomBarContainerColor(
+        defaultColor = defaultColor,
+        mode = mode,
+        hasUiSkinDecoration = hasUiSkinDecoration,
+    )
+}
+
 internal fun resolveMd3BottomBarFloatingChromeSpec(
     isFloating: Boolean
 ): Md3BottomBarFloatingChromeSpec {
@@ -3914,15 +3929,12 @@ private fun BiliPaiFloatingBottomBarChrome(
         glassEnabled = effectiveGlassEnabled,
         blurEnabled = blurEnabled,
     )
-    val floatingContainerColor = if (usePlainMiuixFloatingBar) {
-        biliPaiContainerColor.copy(alpha = 1f)
-    } else {
-        resolveFloatingBottomBarContainerColor(
-            defaultColor = biliPaiContainerColor,
-            mode = floatingMode,
-            hasUiSkinDecoration = uiSkinDecoration != null,
-        )
-    }
+    val floatingContainerColor = resolveBiliPaiFloatingContainerColor(
+        defaultColor = biliPaiContainerColor,
+        usePlainMiuixFloatingBar = usePlainMiuixFloatingBar,
+        mode = floatingMode,
+        hasUiSkinDecoration = uiSkinDecoration != null,
+    )
     // Share the theme-tinted selection fill with opaque top tabs and category rails.
     val themedIndicatorContainerColor = when {
         themedMiuixSelection -> AppSurfaceTokens.selectionContainer()
@@ -4335,7 +4347,7 @@ private fun BiliPaiFloatingBottomBarChrome(
                     shape = resolveSharedBottomBarCapsuleShape(),
                     miuixBackdrop = miuixBackdrop,
                     containerColor = if (usePlainMiuixFloatingBar) {
-                        floatingContainerColor
+                        biliPaiContainerColor.copy(alpha = 1f)
                     } else {
                         biliPaiContainerColor
                     },
