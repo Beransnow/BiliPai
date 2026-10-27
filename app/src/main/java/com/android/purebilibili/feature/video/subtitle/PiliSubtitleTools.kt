@@ -106,10 +106,14 @@ fun rememberPiliSubtitleTools(
             if (initializationSelectionSerial == nativeSelectionSerial) {
                 session.acquiredSecondaryTrackKey = secondary?.trackKey
                 session.acquiredDisplayMode = resolveSubtitleDisplayModeByAutoPreference(
-                    preference, primary != null, secondary != null,
-                    primary?.let(::isLikelyAiSubtitleTrack) ?: false,
-                    secondary?.let(::isLikelyAiSubtitleTrack) ?: false,
+                    preference = preference,
+                    hasPrimaryTrack = primary != null,
+                    hasSecondaryTrack = secondary != null,
+                    primaryTrackLikelyAi = primary?.let(::isLikelyAiSubtitleTrack) ?: false,
+                    secondaryTrackLikelyAi = secondary?.let(::isLikelyAiSubtitleTrack) ?: false,
                     isMuted = player?.volume == 0f,
+                    primaryTrackLanguage = primary?.lan,
+                    secondaryTrackLanguage = secondary?.lan,
                 )
             }
             if (session.selectedTrackKey == null) session.selectedTrackKey = primary?.trackKey
