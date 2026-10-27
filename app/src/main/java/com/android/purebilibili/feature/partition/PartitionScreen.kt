@@ -651,6 +651,19 @@ private fun PartitionSideRail(
     val resolvedLabelMode = resolvePartitionSideRailLabelMode(labelMode)
     val showIcon = shouldShowPartitionSideRailIcon(resolvedLabelMode)
     val showText = shouldShowPartitionSideRailText(resolvedLabelMode)
+    // 外层左右边距不对称（如 start=16、end=4）时条目会整体偏向一侧；
+    // 取水平均值对称化，使条目与选中指示器在整条侧栏内水平居中。
+    val railHorizontalInset = run {
+        val layoutDirection = LocalLayoutDirection.current
+        (contentPadding.calculateStartPadding(layoutDirection) +
+            contentPadding.calculateEndPadding(layoutDirection)) / 2
+    }
+    val railContentPadding = PaddingValues(
+        start = railHorizontalInset,
+        end = railHorizontalInset,
+        top = contentPadding.calculateTopPadding(),
+        bottom = contentPadding.calculateBottomPadding()
+    )
     val indicatorGeometry = remember {
         resolveMatchedLiquidIndicatorGeometry(
             dockHeightDp = PartitionSideRailItemHeight.value,
@@ -770,7 +783,7 @@ private fun PartitionSideRail(
         holder.totalHeightPx = with(density) { maxHeight.toPx() }
         holder.contentTopPaddingPx = contentTopPaddingPx
         val indicatorHorizontalPadding = resolvePartitionSideRailIndicatorHorizontalPadding(
-            contentPadding = contentPadding,
+            contentPadding = railContentPadding,
             layoutDirection = LocalLayoutDirection.current
         )
         val maxVideoPushPx = with(density) { PartitionVideoListMaxPush.toPx() }
@@ -884,7 +897,7 @@ private fun PartitionSideRail(
                     .fillMaxSize()
                     .zIndex(if (liquidGlassIndicatorEnabled) 0f else 2f)
                     .then(railHighlight?.modifier ?: Modifier),
-                contentPadding = contentPadding,
+                contentPadding = railContentPadding,
                 verticalArrangement = Arrangement.spacedBy(PartitionSideRailItemSpacing)
             ) {
                 itemsIndexed(
