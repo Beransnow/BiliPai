@@ -45,9 +45,9 @@ internal class PlaybackCoordinator(
     fun executePlaybackEndAction(
         action: PlaybackEndAction,
         repeatCurrent: () -> Unit,
-        playNextInOrder: (Boolean) -> Boolean,
-        playNextFromPlaylistLoop: (Boolean) -> Boolean,
-        autoContinue: (Boolean) -> Unit
+        playNextInOrder: (ignoreSavedProgress: Boolean, autoPlay: Boolean) -> Boolean,
+        playNextFromPlaylistLoop: (ignoreSavedProgress: Boolean, autoPlay: Boolean) -> Boolean,
+        autoContinue: (ignoreSavedProgress: Boolean, autoPlay: Boolean) -> Unit
     ): PlaybackEndExecutionOutcome {
         return when (action) {
             PlaybackEndAction.STOP -> PlaybackEndExecutionOutcome(
@@ -58,13 +58,13 @@ internal class PlaybackCoordinator(
                 PlaybackEndExecutionOutcome()
             }
             PlaybackEndAction.PLAY_NEXT_IN_PLAYLIST -> PlaybackEndExecutionOutcome(
-                shouldHidePlaybackEndedDialog = !playNextInOrder(true)
+                shouldHidePlaybackEndedDialog = !playNextInOrder(true, true)
             )
             PlaybackEndAction.PLAY_NEXT_IN_PLAYLIST_LOOP -> PlaybackEndExecutionOutcome(
-                shouldHidePlaybackEndedDialog = !playNextFromPlaylistLoop(true)
+                shouldHidePlaybackEndedDialog = !playNextFromPlaylistLoop(true, true)
             )
             PlaybackEndAction.AUTO_CONTINUE -> {
-                autoContinue(true)
+                autoContinue(true, true)
                 PlaybackEndExecutionOutcome()
             }
         }

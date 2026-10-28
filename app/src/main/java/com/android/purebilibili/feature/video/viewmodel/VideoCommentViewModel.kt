@@ -1245,7 +1245,8 @@ class VideoCommentViewModel : ViewModel() {
                         _commentState.value = current.copy(
                             isSending = false,
                             sendError = null,
-                            replyTarget = completedReplyTarget
+                            replyTarget = completedReplyTarget,
+                            replyCount = current.replyCount + 1
                         )
                         // 重置并重新加载
                         allReplies = emptyList()
@@ -1295,7 +1296,8 @@ class VideoCommentViewModel : ViewModel() {
                     _commentState.value = current.copy(
                         isSending = false,
                         sendError = null,
-                        replyTarget = completedReplyTarget
+                        replyTarget = completedReplyTarget,
+                        replyCount = current.replyCount + 1
                     )
                 }
                 // 3. 一级列表回复 (展开二级或直接回复)
@@ -1597,7 +1599,7 @@ class VideoCommentViewModel : ViewModel() {
      * [新增] 删除二级评论（动画完成后调用）
      */
     fun deleteSubComment(rpid: Long) {
-        removedSubReplyIds += rpid
+        val newlyRemoved = removedSubReplyIds.add(rpid)
         localSubReplies.remove(rpid)
         val current = _subReplyState.value
         // 从二级评论列表中移除
@@ -1608,6 +1610,15 @@ class VideoCommentViewModel : ViewModel() {
             dissolvingIds = (current.dissolvingIds - rpid).toImmutableSet()
         )
         
+        // 楼中楼删除与主评论删除共用总数，重复回调不重复扣减。
+        if (newlyRemoved) {
+            _commentState.update { state ->
+                if (state.replyCountSubject == currentSubject) {
+                    state.copy(replyCount = (state.replyCount - 1).coerceAtLeast(0))
+                } else state
+            }
+        }
+
         android.util.Log.d("CommentVM", " deleteSubComment: rpid=$rpid, remaining=${updatedItems.size}")
         
         // 发起网络删除请求（使用 rootReply 的 oid）

@@ -66,6 +66,18 @@ class NextPlaybackResolverTest {
     }
 
     @Test
+    fun `external playlist order ignores collection and stops at its end`() {
+        assertEquals(PlayInOrderNextSource.PLAYLIST, resolvePlayInOrderNextSource(
+            hasNextPage = true, hasNextSeasonEpisode = true, hasNextPlaylistItem = true,
+            isExternalPlaylist = true,
+        ))
+        assertEquals(PlayInOrderNextSource.NONE, resolvePlayInOrderNextSource(
+            hasNextPage = true, hasNextSeasonEpisode = true, hasNextPlaylistItem = false,
+            isExternalPlaylist = true,
+        ))
+    }
+
+    @Test
     fun `play in order previous should prefer page or season before playlist`() {
         assertEquals(
             PlayInOrderNextSource.PAGE_OR_SEASON,
@@ -133,8 +145,7 @@ class NextPlaybackResolverTest {
     fun `external playlist navigation should follow queue instead of page or season`() {
         assertContentEquals(
             listOf(
-                PlaybackNavigationTarget.PLAYLIST,
-                PlaybackNavigationTarget.DIRECT_QUEUE
+                PlaybackNavigationTarget.PLAYLIST
             ),
             resolvePlaybackNavigationTargets(
                 strategy = AudioNextPlaybackStrategy.PLAY_EXTERNAL_PLAYLIST,
@@ -148,8 +159,7 @@ class NextPlaybackResolverTest {
     fun `external playlist navigation should use queue when no page season target exists`() {
         assertContentEquals(
             listOf(
-                PlaybackNavigationTarget.PLAYLIST,
-                PlaybackNavigationTarget.DIRECT_QUEUE
+                PlaybackNavigationTarget.PLAYLIST
             ),
             resolvePlaybackNavigationTargets(
                 strategy = AudioNextPlaybackStrategy.PLAY_EXTERNAL_PLAYLIST,
@@ -158,7 +168,7 @@ class NextPlaybackResolverTest {
             )
         )
         assertContentEquals(
-            listOf(PlaybackNavigationTarget.DIRECT_QUEUE),
+            emptyList(),
             resolvePlaybackNavigationTargets(
                 strategy = AudioNextPlaybackStrategy.PLAY_EXTERNAL_PLAYLIST,
                 hasPageOrSeasonTarget = false,

@@ -442,6 +442,7 @@ internal fun PortraitVideoEngagementUi(
     session: PortraitVideoEngagementSession,
     visible: Boolean,
     onModalVisibilityChanged: (Boolean) -> Unit,
+    favoriteFolderAnchor: com.android.purebilibili.feature.video.ui.components.FavoriteFolderMenuAnchor? = null,
 ) {
     val state by session.model.uiState.collectAsStateWithLifecycle()
     val folders by session.favoriteFolders.collectAsStateWithLifecycle()
@@ -462,6 +463,7 @@ internal fun PortraitVideoEngagementUi(
                 onConfirm = session::confirmCoins,
             )
             if (folders.visible) FavoriteFolderSheet(
+                source = favoriteFolderAnchor?.source,
                 folders = folders.folders, isLoading = folders.loading,
                 selectedFolderIds = folders.selected, isSaving = folders.saving,
                 onFolderToggle = session::toggleFolder,

@@ -204,6 +204,8 @@ import com.android.purebilibili.feature.video.ui.section.rebindPlayerSurfaceIfNe
 import com.android.purebilibili.feature.video.ui.section.resolveRelativeSeekTargetPosition
 import com.android.purebilibili.feature.video.ui.section.shouldKickPlaybackAfterSurfaceRecovery
 import com.android.purebilibili.feature.video.viewmodel.PlaybackEndAction
+import com.android.purebilibili.feature.video.viewmodel.CommentSubjectKey
+import com.android.purebilibili.feature.video.viewmodel.resolveReplyCount
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackViewModel
 import com.android.purebilibili.feature.video.viewmodel.VideoCommentViewModel
@@ -779,6 +781,11 @@ fun PortraitVideoPager(
     val exoPlayer = sharedPlayer ?: remember(context) {
         val audioFocusEnabled = SettingsManager.getAudioFocusEnabledSync(context)
         val createdPlayer = ExoPlayer.Builder(context)
+            .apply {
+                if (SettingsManager.getResilientVideoBufferSync(context)) {
+                    setLoadControl(com.android.purebilibili.feature.video.state.createVideoLoadControl(context))
+                }
+            }
             .setRenderersFactory(
                 HiResCompatibleRenderersFactory(context)
                     .setExtensionRendererMode(
@@ -2593,6 +2600,7 @@ private fun VideoPageItem(
     var showUpPreview by remember(bvid) { mutableStateOf(false) }
     var commentSheetVisibilityProgress by remember { mutableFloatStateOf(0f) }
     var upPreviewVisibilityProgress by remember(bvid) { mutableFloatStateOf(0f) }
+    val portraitCommentStateHandle = commentViewModel.commentState.collectAsStateWithLifecycle()
     val subReplyState by commentViewModel.subReplyState.collectAsStateWithLifecycle()
     var portraitPageWidthPx by remember { mutableIntStateOf(0) }
     var portraitPageHeightPx by remember { mutableIntStateOf(0) }
@@ -3821,13 +3829,16 @@ private fun VideoPageItem(
         bvid = bvid
     )
 
+    val favoriteFolderMenuAnchor = com.android.purebilibili.feature.video.ui.components.rememberFavoriteFolderMenuAnchor()
     PortraitVideoEngagementUi(
         session = pageEngagementSession,
+        favoriteFolderAnchor = favoriteFolderMenuAnchor,
         visible = isCurrentPage && !isInPipMode,
         onModalVisibilityChanged = { portraitEngagementModalVisible = it },
     )
 
     CompositionLocalProvider(
+        com.android.purebilibili.feature.video.ui.components.LocalFavoriteFolderMenuAnchor provides favoriteFolderMenuAnchor,
         com.android.purebilibili.feature.video.ui.overlay.LocalPlayerPageBackdrop provides
             portraitPageBackdrop.backdrop.takeIf {
                 capturePortraitPage && portraitPageBackdrop.isReady &&
@@ -3852,6 +3863,16 @@ private fun VideoPageItem(
         )
         val diagnosticLoggingEnabled by SettingsManager.getPlayerDiagnosticLoggingEnabled(context)
             .collectAsStateWithLifecycle(initialValue = true)
+        val displayedCommentCount by remember(
+            portraitCommentStateHandle, activeAid, bvid, portraitDetailInfo,
+        ) {
+            derivedStateOf {
+                portraitCommentStateHandle.value.resolveReplyCount(
+                    subject = CommentSubjectKey(activeAid),
+                    detailCount = portraitDetailInfo?.takeIf { it.bvid == bvid }?.stat?.reply,
+                )
+            }
+        }
         val portraitOverlayState = com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlayState(
                 player = exoPlayer,
                 title = title,
@@ -3967,6 +3988,8 @@ private fun VideoPageItem(
                 isFavorited = pageEngagementState.isFavorited,
                 isDisliked = pageEngagementState.isDisliked,
                 hasFavoritePlaylist = portraitHasExternalPlaylist && portraitExternalPlaylist.isNotEmpty(),
+                commentCount = displayedCommentCount?.toLong(),
+                engagementCountsKnown = portraitDetailInfo?.bvid == bvid,
                 likeCount = pageEngagementState.likeCount.toLong(),
                 favoriteCount = pageEngagementState.favoriteCount.toLong(),
                 coinCount = pageEngagementState.coinCount,
@@ -4436,7 +4459,7 @@ private fun VideoPageItem(
             val commentDraft = composerDrafts.comments.drafts[
                 com.android.purebilibili.feature.video.viewmodel.commentComposerDraftKey(draftReplyRpid)
             ] ?: com.android.purebilibili.feature.video.viewmodel.CommentComposerDraft()
-            val commentState by commentViewModel.commentState.collectAsStateWithLifecycle()
+            val commentState by portraitCommentStateHandle
             val commentFraudDetectionEnabled by com.android.purebilibili.core.store.SettingsManager
                 .getCommentFraudDetectionEnabled(context)
                 .collectAsStateWithLifecycle(initialValue = true

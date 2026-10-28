@@ -34,6 +34,9 @@ import com.android.purebilibili.feature.video.danmaku.filterVisibleCommandDanmak
 import com.android.purebilibili.feature.video.danmaku.configureAsPassiveDanmakuOverlay
 import com.android.purebilibili.feature.video.player.MiniPlayerManager
 import com.android.purebilibili.feature.video.state.VideoPlayerState
+import com.android.purebilibili.feature.video.viewmodel.CommentSubjectKey
+import com.android.purebilibili.feature.video.viewmodel.resolveReplyCount
+import com.android.purebilibili.feature.video.viewmodel.withEngagementUiState
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.android.purebilibili.feature.video.ui.overlay.FullscreenDoubleTapAction
 import com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlay
@@ -5458,6 +5461,20 @@ private fun VideoPlayerSectionContent(
                 val playerDiagnosticLoggingEnabled by SettingsManager
                     .getPlayerDiagnosticLoggingEnabled(context)
                     .collectAsStateWithLifecycle(initialValue = true)
+                val displayedCommentCount by remember(
+                    state.commentStateHandle, uiState.info.aid, uiState.info.stat.reply,
+                ) {
+                    derivedStateOf {
+                        state.commentStateHandle?.value?.resolveReplyCount(
+                            subject = CommentSubjectKey(uiState.info.aid),
+                            detailCount = uiState.info.stat.reply,
+                        ) ?: uiState.info.stat.reply
+                    }
+                }
+                // 只为互动显示合并当前视频计数，避免重建字幕与播放副作用的状态键。
+                val displayedEngagement = state.engagementState?.let {
+                    uiState.withEngagementUiState(it)
+                } ?: uiState
                 val overlayState = VideoPlayerOverlayState(
                     player = playerState.player,
                     title = uiState.info.title,
@@ -5622,8 +5639,10 @@ private fun VideoPlayerSectionContent(
                     likeStatusKnown = likeStatusKnown,
                     isCoined = isCoined,
                     isFavorited = isFavorited,
-                    likeCount = uiState.info.stat.like.toLong(),
-                    favoriteCount = uiState.info.stat.favorite.toLong(),
+                    commentCount = displayedCommentCount.toLong(),
+                    engagementCountsKnown = uiState.info.bvid == bvid,
+                    likeCount = displayedEngagement.info.stat.like.toLong(),
+                    favoriteCount = displayedEngagement.info.stat.favorite.toLong(),
                     coinCount = uiState.coinCount,
                     pages = uiState.info.pages,
                     currentPageIndex = currentPageIndex,

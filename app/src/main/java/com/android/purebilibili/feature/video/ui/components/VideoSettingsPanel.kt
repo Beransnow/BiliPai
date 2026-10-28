@@ -5,6 +5,8 @@ import com.android.purebilibili.core.ui.components.AppTextButton as TextButton
 import com.android.purebilibili.core.ui.components.AppSlider as Slider
 import com.android.purebilibili.core.ui.AppAlertDialog as AlertDialog
 
+import com.android.purebilibili.core.store.FullscreenActionCount
+import com.android.purebilibili.core.store.FullscreenActionCountSettings
 import com.android.purebilibili.core.store.ChapterDisplayMode
 import com.android.purebilibili.feature.settings.playbackSettingTitle
 import com.android.purebilibili.core.ui.AppContentColors
@@ -364,6 +366,8 @@ fun VideoSettingsPanel(
         resolveVideoSettingsPanelActionPolicy(widthDp = configuration.screenWidthDp)
     }
     val scope = rememberCoroutineScope()
+    val visibleActionCounts by remember(context) { FullscreenActionCountSettings.getVisibleCounts(context) }
+        .collectAsStateWithLifecycle(initialValue = null)
     val seekForwardSeconds by com.android.purebilibili.core.store.SettingsManager
         .getSeekForwardSeconds(context)
         .collectAsStateWithLifecycle(initialValue = 10
@@ -447,7 +451,7 @@ fun VideoSettingsPanel(
             if (page != "advanced") {
                 item {
                     if (page != "main") PlayerSettingsRow("返回", onClick = { page = if (page == "cdnAdvanced") "cdn" else "main" })
-                    val submenuTitle = when (page) { "quality" -> "选择画质"; "audio" -> "选择音质"; "codec" -> "首选编码格式"; "cdn", "cdnAdvanced" -> "CDN 设置"; "transform" -> "画面变换"; "enhancement" -> "画质增强"; else -> null }
+                    val submenuTitle = when (page) { "quality" -> "选择画质"; "audio" -> "选择音质"; "codec" -> "首选编码格式"; "cdn", "cdnAdvanced" -> "CDN 设置"; "transform" -> "画面变换"; "enhancement" -> "画质增强"; "actionCounts" -> FullscreenActionCountSettings.TITLE; else -> null }
                     submenuTitle?.let { title ->
                         Box(Modifier.fillMaxWidth().height(45.dp), contentAlignment = Alignment.Center) { Text(title, fontSize = 14.sp) }
                     }
@@ -501,7 +505,23 @@ fun VideoSettingsPanel(
                             onSaveSubtitle?.let { action -> PlayerSettingsRow("保存字幕") { onDismiss(); action() } }
                             onShowPlaybackInfo?.let { action -> PlayerSettingsRow("播放信息") { onDismiss(); action() } }
                             onReport?.let { action -> PlayerSettingsRow("举报") { onDismiss(); action() } }
+                            if (isFullscreen) {
+                                PlayerSettingsRow(FullscreenActionCountSettings.TITLE) { page = "actionCounts" }
+                            }
                             PlayerSettingsRow("高级设置") { page = "advanced" }
+                        }
+                        "actionCounts" -> {
+                            FullscreenActionCount.entries.forEach { count ->
+                                PlayerSettingsToggleRow(
+                                    title = count.title,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    checked = visibleActionCounts?.contains(count) == true,
+                                    enabled = visibleActionCounts != null,
+                                    onCheckedChange = { visible ->
+                                        scope.launch { FullscreenActionCountSettings.setVisible(context, count, visible) }
+                                    },
+                                )
+                            }
                         }
                         "transform" -> {
                             VideoSettingsSwitchRow(flipHorizontalIcon, "左右翻转", null, isFlippedHorizontal) { onFlipHorizontal() }

@@ -779,11 +779,7 @@ SettingsItemAnchor("playback.mini_player_mode") {
                             AppSwitchPreference(
                                 icon = rememberSettingsSemanticIcon(SettingsIconRole.AUDIO_SPECTRUM),
                                 title = playbackSettingTitle("playback.audio_spectrum_enabled"),
-                                subtitle = if (audioSpectrumEnabled) {
-                                    "听视频歌曲信息旁的短柱随声音起伏"
-                                } else {
-                                    "用灵动岛式短柱呈现声音变化，不需要录音权限"
-                                },
+                                subtitle = "听视频时让封面背景光晕随声音变化；无需录音权限",
                                 checked = audioSpectrumEnabled,
                                 onCheckedChange = {
                                     scope.launch {
@@ -972,6 +968,8 @@ SettingsItemAnchor("playback.music_lyrics_ui_style") {
                     val defaultAudioQuality = playbackPreferences.defaultAudioQuality
                     val autoHighestQualityEnabled = playbackPreferences.autoHighestQualityEnabled
                     val directedTrafficEnabled = playbackPreferences.directedTrafficEnabled
+                    val resilientVideoBuffer by remember(context) { SettingsManager.getResilientVideoBuffer(context) }
+                        .collectAsStateWithLifecycle(initialValue = SettingsManager.getResilientVideoBufferSync(context))
                     val isLoggedIn = com.android.purebilibili.data.repository.VideoRepository.isPlaybackLoggedIn()
                     val isVip = com.android.purebilibili.data.repository.VideoRepository.isPlaybackVip()
 
@@ -1012,6 +1010,20 @@ SettingsSingleChoicePreference(
                         )
 }
 
+                        AppPreferenceDivider()
+
+                        SettingsItemAnchor("playback.resilient_video_buffer") {
+                            AppSwitchPreference(
+                                icon = rememberSettingsSemanticIcon(SettingsIconRole.RESILIENT_VIDEO_BUFFER),
+                                title = playbackSettingTitle("playback.resilient_video_buffer"),
+                                subtitle = "增加视频预缓冲以应对网络波动，可能消耗更多流量；新播放器生效",
+                                checked = resilientVideoBuffer,
+                                onCheckedChange = { enabled ->
+                                    scope.launch { SettingsManager.setResilientVideoBuffer(context, enabled) }
+                                },
+                                iconTint = AppContentColors.secondaryText(),
+                            )
+                        }
                         AppPreferenceDivider()
 
                                 SettingsItemAnchor("playback.directed_traffic_enabled") {
@@ -1450,12 +1462,33 @@ private fun PlaybackInteractionSettingsSection(
             )
         }
         AppPreferenceDivider()
-        //  [新增] 自动播放下一个视频
-            SettingsItemAnchor("playback.auto_play_enabled") {
-                AppSwitchPreference(
+        val playbackOrderOptions = listOf(
+            AppSegmentOption(PlaybackCompletionBehavior.STOP_AFTER_CURRENT, "暂停"),
+            AppSegmentOption(PlaybackCompletionBehavior.PLAY_IN_ORDER, "顺序"),
+            AppSegmentOption(PlaybackCompletionBehavior.REPEAT_ONE, "单个循环"),
+            AppSegmentOption(PlaybackCompletionBehavior.LOOP_PLAYLIST, "列表循环"),
+            AppSegmentOption(PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC, "自动")
+        )
+        SettingsItemAnchor("playback.playback_completion_behavior") {
+            SettingsSingleChoicePreference(
+                title = settingItemTitle("playback.playback_completion_behavior"),
+                subtitle = "“自动”按下方续播开关决定；顺序、循环和暂停优先于续播开关",
+                options = playbackOrderOptions,
+                selectedValue = playbackCompletionBehavior,
+                onSelectionChange = { behavior ->
+                    scope.launch {
+                        com.android.purebilibili.core.store.SettingsManager
+                            .setPlaybackCompletionBehavior(context, behavior)
+                    }
+                }
+            )
+        }
+        AppPreferenceDivider()
+        SettingsItemAnchor("playback.auto_play_enabled") {
+            AppSwitchPreference(
                 icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_PLAY_NEXT),
                 title = playbackSettingTitle("playback.auto_play_enabled"),
-                subtitle = "分 P 或合集接着播下一集，单个视频播完暂停",
+                subtitle = "播完后选择“自动”时，控制分 P 或合集是否继续下一集",
                 checked = autoPlayEnabled,
                 onCheckedChange = {
                     scope.launch {
@@ -1465,13 +1498,13 @@ private fun PlaybackInteractionSettingsSection(
                 },
                 iconTint = AppContentColors.secondaryText()
             )
-            }
+        }
         AppPreferenceDivider()
-            SettingsItemAnchor("playback.external_playlist_auto_continue_enabled") {
-                AppSwitchPreference(
-                    icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYLIST_AUTO_CONTINUE),
+        SettingsItemAnchor("playback.external_playlist_auto_continue_enabled") {
+            AppSwitchPreference(
+                icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYLIST_AUTO_CONTINUE),
                 title = playbackSettingTitle("playback.external_playlist_auto_continue_enabled"),
-                subtitle = "控制收藏夹、稍后再看、合集等列表播放完后是否继续下一条",
+                subtitle = "播完后选择“自动”时，控制收藏夹、稍后再看等列表是否继续下一条",
                 checked = externalPlaylistAutoContinueEnabled,
                 onCheckedChange = {
                     scope.launch {
@@ -1481,29 +1514,7 @@ private fun PlaybackInteractionSettingsSection(
                 },
                 iconTint = AppContentColors.secondaryText()
             )
-            }
-        AppPreferenceDivider()
-        val playbackOrderOptions = listOf(
-            AppSegmentOption(PlaybackCompletionBehavior.STOP_AFTER_CURRENT, "暂停"),
-            AppSegmentOption(PlaybackCompletionBehavior.PLAY_IN_ORDER, "顺序"),
-            AppSegmentOption(PlaybackCompletionBehavior.REPEAT_ONE, "单个循环"),
-            AppSegmentOption(PlaybackCompletionBehavior.LOOP_PLAYLIST, "列表循环"),
-            AppSegmentOption(PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC, "自动")
-        )
-SettingsItemAnchor("playback.playback_completion_behavior") {
-        SettingsSingleChoicePreference(
-            title = settingItemTitle("playback.playback_completion_behavior"),
-            subtitle = "“自动”会在单个视频结束后暂停，在分P或合集内继续下一集",
-            options = playbackOrderOptions,
-            selectedValue = playbackCompletionBehavior,
-            onSelectionChange = { behavior ->
-                scope.launch {
-                    com.android.purebilibili.core.store.SettingsManager
-                        .setPlaybackCompletionBehavior(context, behavior)
-                }
-            }
-        )
-}
+        }
         if (subtitleFeatureEnabled) {
             AppPreferenceDivider()
             SettingsItemAnchor("playback.subtitle_appearance") {
@@ -2981,6 +2992,10 @@ SettingsItemAnchor("playback.app_screenshot_capture_mode") {
                 },
                 iconTint = AppContentColors.secondaryText()
             )
+            }
+        AppPreferenceDivider()
+            SettingsItemAnchor("playback.fullscreen_action_counts") {
+                com.android.purebilibili.feature.settings.FullscreenActionCountPreference()
             }
         AppPreferenceDivider()
             SettingsItemAnchor("playback.show_fullscreen_action_items") {

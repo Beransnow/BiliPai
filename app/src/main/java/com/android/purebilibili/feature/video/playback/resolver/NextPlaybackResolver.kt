@@ -33,8 +33,12 @@ private fun resolvePlayInOrderSource(
 internal fun resolvePlayInOrderNextSource(
     hasNextPage: Boolean,
     hasNextSeasonEpisode: Boolean,
-    hasNextPlaylistItem: Boolean
+    hasNextPlaylistItem: Boolean,
+    isExternalPlaylist: Boolean = false,
 ): PlayInOrderNextSource {
+    if (isExternalPlaylist) {
+        return if (hasNextPlaylistItem) PlayInOrderNextSource.PLAYLIST else PlayInOrderNextSource.NONE
+    }
     return resolvePlayInOrderSource(
         hasPageOrSeasonTarget = hasNextPage || hasNextSeasonEpisode,
         hasPlaylistTarget = hasNextPlaylistItem
@@ -73,7 +77,6 @@ internal fun resolvePlaybackNavigationTargets(
             if (hasPlaylistTarget) {
                 add(PlaybackNavigationTarget.PLAYLIST)
             }
-            add(PlaybackNavigationTarget.DIRECT_QUEUE)
         }
     }
 

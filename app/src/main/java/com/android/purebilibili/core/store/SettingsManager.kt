@@ -2195,6 +2195,26 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
     }
 
     // --- Auto Play Next ---
+    private val KEY_RESILIENT_VIDEO_BUFFER = booleanPreferencesKey("resilient_video_buffer")
+    private const val CACHE_KEY_RESILIENT_VIDEO_BUFFER = "resilient_video_buffer"
+
+    fun getResilientVideoBuffer(context: Context): Flow<Boolean> = context.settingsDataStore.data
+        .map { it[KEY_RESILIENT_VIDEO_BUFFER] ?: false }
+        .onEach { enabled ->
+            context.getSharedPreferences("auto_play_cache", Context.MODE_PRIVATE)
+                .edit().putBoolean(CACHE_KEY_RESILIENT_VIDEO_BUFFER, enabled).apply()
+        }
+
+    suspend fun setResilientVideoBuffer(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { it[KEY_RESILIENT_VIDEO_BUFFER] = enabled }
+        context.getSharedPreferences("auto_play_cache", Context.MODE_PRIVATE)
+            .edit().putBoolean(CACHE_KEY_RESILIENT_VIDEO_BUFFER, enabled).apply()
+    }
+
+    fun getResilientVideoBufferSync(context: Context): Boolean =
+        context.getSharedPreferences("auto_play_cache", Context.MODE_PRIVATE)
+            .getBoolean(CACHE_KEY_RESILIENT_VIDEO_BUFFER, false)
+
     private val KEY_EXTERNAL_PLAYLIST_AUTO_CONTINUE =
         booleanPreferencesKey("external_playlist_auto_continue")
     private const val CACHE_KEY_EXTERNAL_PLAYLIST_AUTO_CONTINUE = "external_playlist_auto_continue"
@@ -7053,7 +7073,7 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
     }
 
     /**
-     * 「听视频」音乐氛围。数据取自音频输出链路的 PCM（无录音权限），
+     * 「听视频」封面律动。数据取自音频输出链路的 PCM（无录音权限），
      * 默认关闭；公共 AudioSink 按缓冲读取开关，已有 PCM 播放会话内即可生效。
      */
     fun getAudioSpectrumEnabled(context: Context): Flow<Boolean> =
@@ -8810,6 +8830,7 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
             BooleanShareablePreferenceDefinition(KEY_LIVE_AUTO_MINI_PLAYER_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_NEXT_WATCH_HINT_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_AUTO_PLAY, SettingsShareSection.PLAYBACK),
+            BooleanShareablePreferenceDefinition(KEY_RESILIENT_VIDEO_BUFFER, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_PLAYBACK_COMPLETION_BEHAVIOR, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_HW_DECODE, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_BG_PLAY, SettingsShareSection.PLAYBACK),
@@ -9159,6 +9180,11 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         }
         if (playbackSpeedChanged) {
             PlayerSettingsStore.syncPlaybackSpeedCache(context, updated)
+        }
+        if (KEY_RESILIENT_VIDEO_BUFFER.name in appliedKeys) {
+            context.getSharedPreferences("auto_play_cache", Context.MODE_PRIVATE).edit()
+                .putBoolean(CACHE_KEY_RESILIENT_VIDEO_BUFFER, updated[KEY_RESILIENT_VIDEO_BUFFER] ?: false)
+                .apply()
         }
 
         return SettingsShareApplyResult(

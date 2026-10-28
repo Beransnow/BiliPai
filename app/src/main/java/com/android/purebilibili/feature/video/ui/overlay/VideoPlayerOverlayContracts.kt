@@ -165,6 +165,8 @@ data class VideoPlayerOverlayState(
     val likeStatusKnown: Boolean = false,
     val isCoined: Boolean = false,
     val isFavorited: Boolean = false,
+    val commentCount: Long? = null,
+    val engagementCountsKnown: Boolean = false,
     val likeCount: Long = 0L,
     val favoriteCount: Long = 0L,
     val coinCount: Int = 0,

@@ -9,6 +9,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import com.android.purebilibili.core.store.FullscreenActionCountSettings
+import com.android.purebilibili.core.ui.components.AppSwitch
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -161,6 +165,7 @@ internal fun PlayerSettingsRow(title: String, subtitle: String? = null, onClick:
                 "加载字幕" -> Icons.Outlined.FileOpen
                 "播放信息" -> Icons.Outlined.Info
                 "举报" -> Icons.Outlined.ErrorOutline
+                FullscreenActionCountSettings.TITLE -> ImageVector.vectorResource(com.android.purebilibili.R.drawable.ic_settings_action_counts_24)
                 "返回" -> Icons.Outlined.ArrowBack
                 else -> Icons.Outlined.Settings
             },
@@ -247,4 +252,29 @@ internal fun PlayerSettingsSelectionRow(
             else MaterialTheme.colorScheme.surface,
         ),
     )
+}
+
+/** 播放器子菜单沿用普通菜单行的字号与留白，不使用全局设置的彩色图标底座。 */
+@Composable
+internal fun PlayerSettingsToggleRow(
+    title: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    Row(
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = title,
+            modifier = Modifier.weight(1f),
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        AppSwitch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
+    }
 }

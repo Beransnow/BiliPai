@@ -26,6 +26,7 @@ import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 internal data class VideoPlayerSectionState(
     val playerState: VideoPlayerState,
     val uiState: VideoPlaybackUiState,
+    val engagementState: com.android.purebilibili.feature.video.viewmodel.VideoEngagementUiState? = null,
     val isFullscreen: Boolean = false,
     val isInPipMode: Boolean = false,
     val contentTopInset: Dp = 0.dp,
@@ -34,6 +35,7 @@ internal data class VideoPlayerSectionState(
     val danmakuHostActive: Boolean = true,
     val suppressTransientOverlaysForTransition: Boolean = false,
     val endDrawerRequestKey: Int = 0,
+    val commentStateHandle: androidx.compose.runtime.State<com.android.purebilibili.feature.video.viewmodel.CommentUiState>? = null,
     val landscapeCommentPanelVisible: Boolean = false,
     val landscapeCommentPanelOnLeft: Boolean = true,
     val landscapeCommentCloseProgressProvider: () -> Float = { 0f },

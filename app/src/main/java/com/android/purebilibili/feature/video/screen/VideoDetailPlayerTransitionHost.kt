@@ -76,6 +76,7 @@ internal data class ContinuousPlayerFullscreenExtras(
     val landscapeCommentPanelVisible: Boolean,
     val landscapeCommentPanelOnLeft: Boolean,
     val landscapeCommentCloseProgressProvider: () -> Float = { 0f },
+    val commentStateHandle: androidx.compose.runtime.State<com.android.purebilibili.feature.video.viewmodel.CommentUiState>? = null,
 )
 
 /**
@@ -236,6 +237,8 @@ internal fun PortraitInlineVideoPlayerHost(
             state = VideoPlayerSectionState(
                 playerState = playerState,
                 uiState = uiState,
+                engagementState = engagementState,
+                commentStateHandle = fullscreenExtras?.commentStateHandle,
                 isFullscreen = isFullscreen,
                 isInPipMode = isPipMode,
                 contentTopInset = contentTopInset,

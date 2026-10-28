@@ -439,6 +439,8 @@ internal fun TabletVideoLayout(
                                 state = VideoPlayerSectionState(
                                     playerState = playerState,
                                     uiState = uiState,
+                                    engagementState = engagementState,
+                                    commentStateHandle = commentStateHandle,
                                     isLiked = engagementState.isLiked,
                                     isDisliked = engagementState.isDisliked,
                                     likeStatusKnown = engagementState.likeStatusKnown,

@@ -17,6 +17,12 @@ internal fun shouldSuppressPlaybackCompletionForCommentInteraction(
     commentInteractionActive: Boolean
 ): Boolean = commentInteractionActive
 
+internal fun shouldStopAfterCurrentPlayback(
+    armedIdentity: Pair<String, Long>?,
+    currentBvid: String,
+    currentCid: Long,
+): Boolean = armedIdentity != null && armedIdentity == (currentBvid to currentCid)
+
 internal fun resolvePlaybackEndAction(
     behavior: PlaybackCompletionBehavior,
     autoPlayEnabled: Boolean,
@@ -69,8 +75,10 @@ internal fun resolvePlaybackEndActionForSession(
 }
 
 internal fun resolvePlaybackCompletionRepeatMode(
-    behavior: PlaybackCompletionBehavior
+    behavior: PlaybackCompletionBehavior,
+    isInAudioMode: Boolean = false,
 ): Int {
+    if (isInAudioMode) return Player.REPEAT_MODE_OFF
     return when (behavior) {
         PlaybackCompletionBehavior.REPEAT_ONE -> Player.REPEAT_MODE_ONE
         PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC,

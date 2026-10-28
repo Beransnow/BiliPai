@@ -1583,6 +1583,9 @@ private fun VideoPlayerOverlayContent(
                     showBatteryLevel = showFullscreenBatteryLevel,
                     showCurrentTime = showFullscreenTime,
                     showInteractiveActions = showFullscreenActionItems,
+                    likeCount = state.likeCount.takeIf { state.engagementCountsKnown },
+                    favoriteCount = state.favoriteCount.takeIf { state.engagementCountsKnown },
+                    commentCount = state.commentCount.takeIf { state.engagementCountsKnown },
                     onBack = onBack,
                     onHomeClick = actions.onHomeClick,
                     moreMenuSource = moreSource,
@@ -1609,7 +1612,7 @@ private fun VideoPlayerOverlayContent(
                     onShareClick = { onShare?.invoke() ?: openVideoShareSheet() },
                     onCastClick = onCastClickAction,
                     showCastButton = playerControlVisibility.showCastButton,
-                    onCommentClick = if (landscapeSidePanelsAvailable) ({
+                    onCommentClick = if (isFullscreen && bvid.isNotBlank()) ({
                         onDismissEndDrawer()
                         onLandscapeCommentClick()
                     }) else null,

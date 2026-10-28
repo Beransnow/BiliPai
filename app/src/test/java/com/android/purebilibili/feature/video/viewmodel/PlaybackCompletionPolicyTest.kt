@@ -12,6 +12,27 @@ import kotlin.test.assertTrue
 class PlaybackCompletionPolicyTest {
 
     @Test
+    fun `end timer only stops the selected video part`() {
+        val selected = "BV1" to 123L
+        assertTrue(shouldStopAfterCurrentPlayback(selected, "BV1", 123L))
+        assertFalse(shouldStopAfterCurrentPlayback(selected, "BV1", 456L))
+        assertFalse(shouldStopAfterCurrentPlayback(selected, "BV2", 123L))
+        assertFalse(shouldStopAfterCurrentPlayback(null, "BV1", 123L))
+    }
+
+    @Test
+    fun `audio mode leaves repeat decisions to audio queue`() {
+        assertEquals(
+            Player.REPEAT_MODE_OFF,
+            resolvePlaybackCompletionRepeatMode(PlaybackCompletionBehavior.REPEAT_ONE, isInAudioMode = true),
+        )
+        assertEquals(
+            Player.REPEAT_MODE_ONE,
+            resolvePlaybackCompletionRepeatMode(PlaybackCompletionBehavior.REPEAT_ONE, isInAudioMode = false),
+        )
+    }
+
+    @Test
     fun `comment interaction suppresses playback completion navigation`() {
         assertTrue(
             shouldSuppressPlaybackCompletionForCommentInteraction(

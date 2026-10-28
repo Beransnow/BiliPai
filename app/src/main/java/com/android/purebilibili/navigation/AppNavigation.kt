@@ -937,6 +937,7 @@ fun AppNavigation(
             sourceLayout = navigation3ReturnSession.transitionSession?.sourceLayout
                 ?: com.android.purebilibili.core.ui.transition.VideoCardSourceLayout.COVER_ONLY,
             sourceChromeSnapshot = navigation3ReturnSession.transitionSession?.sourceChromeSnapshot,
+            sourcePixelOwner = navigation3ReturnSession.transitionSession?.sourcePixelOwner,
         )
         fun captureCardSourceDirectionForSession(): BiliPaiNavCardSourceDirection {
             return resolveBiliPaiNavCardSourceDirection(
@@ -1236,6 +1237,10 @@ fun AppNavigation(
                 coverUrl = videoKey?.coverUrl,
                 useRecordedCardSource = useRecordedCardSource,
             )
+            if (pendingTransitionSession != null && transitionSession.sourcePixelOwner?.let {
+                    !CardPositionManager.isCurrentVideoCardClick(it)
+                } == true
+            ) return
             val hasCommentJump = (videoKey?.commentRootRpid ?: 0L) > 0L || (videoKey?.commentTargetRpid ?: 0L) > 0L
             if (!skipPortraitStoryResolution && !hasCommentJump) {
                 resolvePortraitStoryNavigationSeed(
@@ -1261,7 +1266,12 @@ fun AppNavigation(
                     )
                 ) {
                     coroutineScope.launch {
-                        if (com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(videoKey.bvid)) {
+                        val isVertical = com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(videoKey.bvid)
+                        if (transitionSession.sourcePixelOwner?.let {
+                                !CardPositionManager.isCurrentVideoCardClick(it)
+                            } == true
+                        ) return@launch
+                        if (isVertical) {
                             if (cardTransitionEnabled) {
                                 navigateToVideoRouteInNavigation3(
                                     route = videoKey.copy(
@@ -1358,6 +1368,10 @@ fun AppNavigation(
                 coverUrl = coverUrl,
                 useRecordedCardSource = useRecordedCardSource,
             )
+            if (pendingTransitionSession != null && transitionSession.sourcePixelOwner?.let {
+                    !CardPositionManager.isCurrentVideoCardClick(it)
+                } == true
+            ) return
             val morphDirectPortrait = resolveDirectPortraitDetailMorphEntry(
                 directPortraitStoryEntry = playerInteractionSettings.directPortraitStoryEntry,
                 cardTransitionEnabled = cardTransitionEnabled,
@@ -1440,7 +1454,12 @@ fun AppNavigation(
                 )
             ) {
                 coroutineScope.launch {
-                    if (com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(bvid)) {
+                    val isVertical = com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(bvid)
+                    if (transitionSession.sourcePixelOwner?.let {
+                            !CardPositionManager.isCurrentVideoCardClick(it)
+                        } == true
+                    ) return@launch
+                    if (isVertical) {
                         if (cardTransitionEnabled) {
                             navigateToVideoInNavigation3(
                                 bvid = bvid,
@@ -4253,6 +4272,7 @@ fun AppNavigation(
                         BiliPaiNavEntryContentRole.LIVE_AREA ->
                             com.android.purebilibili.feature.live.LiveAreaScreen(
                                 onBack = { performSystemBackAction() },
+                                onAreaContainerClick = { target -> pushNavigation3Key(target) },
                                 onAreaClick = { parentAreaId, areaId, title ->
                                     pushNavigation3Key(
                                         BiliPaiNavKey.LiveAreaDetail(
@@ -4551,12 +4571,14 @@ fun AppNavigation(
                                         onAudioModeExit()
                                     }
                                 }
-                                val initialLoadRequest = resolveAudioModeInitialLoadRequest(
+                                val initialLoadRequest = rememberAudioModeInitialLoadRequest(
                                     key = audioModeKey,
-                                    hasDisplayState =
+                                    playbackOwner = viewModel,
+                                    hasDisplayState = {
                                         viewModel.uiState.value is
                                             com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState.Success &&
                                             viewModel.currentPlayer != null
+                                    },
                                 )
                                 val renderAudioPlayer: @Composable (String, Long) -> Unit = { bvid, cid ->
                                     com.android.purebilibili.feature.video.screen.AudioModeScreen(
@@ -4596,6 +4618,9 @@ fun AppNavigation(
                                         coverUrl = cover,
                                         sourceRoute = ScreenRoutes.Partition.route
                                     )
+                                },
+                                onBangumiSeasonClick = { seasonId ->
+                                    pushNavigation3Route(ScreenRoutes.BangumiDetail.createRoute(seasonId))
                                 },
                                 onBangumiClick = { initialType ->
                                     pushNavigation3Route(ScreenRoutes.Bangumi.createRoute(initialType))

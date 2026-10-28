@@ -606,7 +606,9 @@ internal fun VideoDetailScreenStateHolder(
     )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val shareInfo = (uiState as? VideoPlaybackUiState.Success)?.info
+    val favoriteFolderMenuAnchor = com.android.purebilibili.feature.video.ui.components.rememberFavoriteFolderMenuAnchor()
     androidx.compose.runtime.CompositionLocalProvider(
+        com.android.purebilibili.feature.video.ui.components.LocalFavoriteFolderMenuAnchor provides favoriteFolderMenuAnchor,
         com.android.purebilibili.feature.share.LocalReplyShareContext provides shareInfo?.let {
             com.android.purebilibili.feature.share.ReplyShareContext(
                 url = "https://www.bilibili.com/video/${it.bvid}", title = it.title, cover = it.pic,
@@ -1808,7 +1810,8 @@ internal fun VideoDetailScreenStateHolder(
             .sourceChromeSnapshot
             .takeIf { miuixVisualAssetsActive }
     val clickCoverSnapshot =
-        com.android.purebilibili.core.util.CardPositionManager.lastClickedVideoSourceChromeSnapshot
+        com.android.purebilibili.core.util.CardPositionManager
+            .sourceChromeSnapshotFor(scopedHeroDriver.sourcePixelOwner)
             .takeIf { miuixVisualAssetsActive }
     val homePrefetchCover = remember(bvid) {
         com.android.purebilibili.core.util.HomeCoverReturnPrefetchRegistry.snapshot()
@@ -3686,6 +3689,7 @@ internal fun VideoDetailScreenStateHolder(
             subtitleDisplayModePreferenceOverride = subtitleDisplayModeOverride,
             onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it },
             fullscreenExtras = ContinuousPlayerFullscreenExtras(
+                commentStateHandle = commentStateHandle,
                 danmakuComposerVisible = showDanmakuDialog && isFullscreenMode,
                 onDismissDanmakuComposer = viewModel::hideDanmakuSendDialog,
                 onSendDanmakuComposer = viewModel::sendDanmaku,
@@ -4755,7 +4759,7 @@ internal fun VideoDetailScreenStateHolder(
                             if (
                                 entryOwnsMiuixCardTransition && miuixLandingState.enabled &&
                                 (miuixLandingState.sourceChromeSnapshot?.isNowPlayingBar == true ||
-                                    (CardPositionManager.lastClickedNativeCardBitmap != null &&
+                                    (CardPositionManager.nativeCardBitmapFor(miuixLandingState.sourcePixelOwner) != null &&
                                         miuixLandingState.sourceLayout == VideoCardSourceLayout.COVER_ONLY))
                             ) {
                                 { miuixLandingState.sourceBoundsProvider() }

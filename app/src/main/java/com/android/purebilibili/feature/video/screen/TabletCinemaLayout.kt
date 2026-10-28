@@ -322,6 +322,7 @@ internal fun TabletCinemaLayout(
                 CinemaStagePlayer(
                     playerState = playerState,
                     uiState = uiState,
+                    commentStateHandle = androidx.compose.runtime.rememberUpdatedState(commentState),
                     playbackActions = playbackActions,
                     engagementActions = engagementActions,
                     engagementState = engagementState,
@@ -460,6 +461,7 @@ internal fun TabletCinemaLayout(
 
 @Composable
 private fun CinemaStagePlayer(
+    commentStateHandle: androidx.compose.runtime.State<com.android.purebilibili.feature.video.viewmodel.CommentUiState>,
     playerState: VideoPlayerState,
     uiState: VideoPlaybackUiState,
     playbackActions: VideoDetailPlaybackActions,
@@ -554,6 +556,8 @@ private fun CinemaStagePlayer(
                     state = VideoPlayerSectionState(
                         playerState = playerState,
                         uiState = uiState,
+                        engagementState = engagementState,
+                        commentStateHandle = commentStateHandle,
                         isFullscreen = false,
                         isInPipMode = isInPipMode,
                         danmakuHostActive = danmakuHostActive,

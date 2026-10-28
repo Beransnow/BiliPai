@@ -40,7 +40,7 @@ class PlaybackCoordinatorTest {
 
         val action = coordinator.resolvePlaybackEnded(
             behavior = PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC,
-            autoPlayEnabled = false,
+            autoPlayEnabled = true,
             isExternalPlaylist = false,
             externalPlaylistAutoContinueEnabled = false,
             externalPlaylistSource = ExternalPlaylistSource.NONE,
@@ -121,9 +121,9 @@ class PlaybackCoordinatorTest {
         val outcome = coordinator.executePlaybackEndAction(
             action = PlaybackEndAction.STOP,
             repeatCurrent = { error("repeat should not run for stop") },
-            playNextInOrder = { _ -> error("next should not run for stop") },
-            playNextFromPlaylistLoop = { _ -> error("playlist loop should not run for stop") },
-            autoContinue = { _ -> error("auto continue should not run for stop") }
+            playNextInOrder = { _, _ -> error("next should not run for stop") },
+            playNextFromPlaylistLoop = { _, _ -> error("playlist loop should not run for stop") },
+            autoContinue = { _, _ -> error("auto continue should not run for stop") }
         )
 
         assertTrue(outcome.shouldHidePlaybackEndedDialog)
@@ -137,9 +137,9 @@ class PlaybackCoordinatorTest {
         val outcome = coordinator.executePlaybackEndAction(
             action = PlaybackEndAction.REPEAT_CURRENT,
             repeatCurrent = { repeated = true },
-            playNextInOrder = { _ -> false },
-            playNextFromPlaylistLoop = { _ -> false },
-            autoContinue = { _ -> }
+            playNextInOrder = { _, _ -> false },
+            playNextFromPlaylistLoop = { _, _ -> false },
+            autoContinue = { _, _ -> }
         )
 
         assertTrue(repeated)
@@ -153,9 +153,9 @@ class PlaybackCoordinatorTest {
         val outcome = coordinator.executePlaybackEndAction(
             action = PlaybackEndAction.PLAY_NEXT_IN_PLAYLIST,
             repeatCurrent = {},
-            playNextInOrder = { _ -> false },
-            playNextFromPlaylistLoop = { _ -> true },
-            autoContinue = { _ -> }
+            playNextInOrder = { _, _ -> false },
+            playNextFromPlaylistLoop = { _, _ -> true },
+            autoContinue = { _, _ -> }
         )
 
         assertTrue(outcome.shouldHidePlaybackEndedDialog)
@@ -166,20 +166,48 @@ class PlaybackCoordinatorTest {
         val coordinator = PlaybackCoordinator(PlaybackSessionStore())
         var autoContinued = false
         var ignoredSavedProgress = false
+        var startsPlayback = false
 
         val outcome = coordinator.executePlaybackEndAction(
             action = PlaybackEndAction.AUTO_CONTINUE,
             repeatCurrent = {},
-            playNextInOrder = { false },
-            playNextFromPlaylistLoop = { false },
-            autoContinue = { ignoreSavedProgress ->
+            playNextInOrder = { _, _ -> false },
+            playNextFromPlaylistLoop = { _, _ -> false },
+            autoContinue = { ignoreSavedProgress, autoPlay ->
                 autoContinued = true
                 ignoredSavedProgress = ignoreSavedProgress
+                startsPlayback = autoPlay
             }
         )
 
         assertTrue(autoContinued)
         assertTrue(ignoredSavedProgress)
+        assertTrue(startsPlayback)
         assertFalse(outcome.shouldHidePlaybackEndedDialog)
+    }
+
+    @Test
+    fun `ordered and looping playback start the next item after completion`() {
+        val coordinator = PlaybackCoordinator(PlaybackSessionStore())
+        for (action in listOf(PlaybackEndAction.PLAY_NEXT_IN_PLAYLIST, PlaybackEndAction.PLAY_NEXT_IN_PLAYLIST_LOOP)) {
+            var nextStarted = false
+            val outcome = coordinator.executePlaybackEndAction(
+                action = action,
+                repeatCurrent = { error("unexpected repeat") },
+                playNextInOrder = { ignoreProgress, autoPlay ->
+                    assertEquals(PlaybackEndAction.PLAY_NEXT_IN_PLAYLIST, action)
+                    nextStarted = ignoreProgress && autoPlay
+                    true
+                },
+                playNextFromPlaylistLoop = { ignoreProgress, autoPlay ->
+                    assertEquals(PlaybackEndAction.PLAY_NEXT_IN_PLAYLIST_LOOP, action)
+                    nextStarted = ignoreProgress && autoPlay
+                    true
+                },
+                autoContinue = { _, _ -> error("unexpected auto continuation") },
+            )
+            assertTrue(nextStarted)
+            assertFalse(outcome.shouldHidePlaybackEndedDialog)
+        }
     }
 }
