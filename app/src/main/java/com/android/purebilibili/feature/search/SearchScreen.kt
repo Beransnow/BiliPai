@@ -1,6 +1,7 @@
 // 文件路径: feature/search/SearchScreen.kt
 package com.android.purebilibili.feature.search
 
+import com.android.purebilibili.feature.home.resolveIsVerticalForNavigation
 import com.android.purebilibili.navigation.tabSelectedPage
 import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.feature.home.effectiveGridColumnCount
@@ -668,7 +669,7 @@ fun SearchScreen(
     onBack: () -> Unit,
     onOpenTrending: () -> Unit,
     onNavigateSearchTarget: (BilibiliNavigationTarget) -> Boolean,
-    onVideoClick: (String, Long, String) -> Unit,
+    onVideoClick: (String, Long, String, Boolean) -> Unit,
     onWebClick: (String, String) -> Unit,
     onUpClick: (Long) -> Unit,  //  点击UP主跳转到空间
     onBangumiClick: (Long) -> Unit, //  点击番剧/影视跳转详情
@@ -2020,7 +2021,7 @@ fun SearchScreen(
                                                                             position = relatedIndex,
                                                                             resultSection = "creator_related"
                                                                         )
-                                                                        onVideoClick(target.bvid, 0L, video.pic)
+                                                                        onVideoClick(target.bvid, 0L, video.pic, video.resolveIsVerticalForNavigation())
                                                                     }
                                                                     is SearchResultNavigationTarget.Course -> onCheeseClick?.invoke(target.seasonId, target.epId)
                                                                         ?: onBangumiClick(target.seasonId)
@@ -2117,7 +2118,7 @@ fun SearchScreen(
                                                     ) {
                                                         is SearchResultNavigationTarget.Video -> {
                                                             com.android.purebilibili.core.util.AnalyticsHelper.logSearchResultClick(position = index)
-                                                            onVideoClick(target.bvid, 0, video.pic)
+                                                            onVideoClick(target.bvid, 0, video.pic, video.resolveIsVerticalForNavigation())
                                                         }
                                                         is SearchResultNavigationTarget.Course -> {
                                                             if (onCheeseClick != null) {
