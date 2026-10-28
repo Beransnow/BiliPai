@@ -958,11 +958,11 @@ enum class DanmakuPanelWidthMode(val value: Int, val label: String, val widthFra
 
 enum class PortraitDanmakuDisplayAreaMode(val value: Int, val label: String) {
     VIDEO_VIEWPORT(0, "视频画面"),
-    SCREEN_TOP(1, "屏幕顶部");
+    SCREEN_TOP(1, "视频上方");
 
     companion object {
         fun fromValue(value: Int): PortraitDanmakuDisplayAreaMode =
-            entries.find { it.value == value } ?: VIDEO_VIEWPORT
+            entries.find { it.value == value } ?: SCREEN_TOP
     }
 }
 
@@ -1043,7 +1043,7 @@ data class DanmakuSettings(
     val blockAttentionCommands: Boolean = false,
     val smartOcclusion: Boolean = false,
     val portraitDisplayAreaMode: PortraitDanmakuDisplayAreaMode =
-        PortraitDanmakuDisplayAreaMode.VIDEO_VIEWPORT,
+        PortraitDanmakuDisplayAreaMode.SCREEN_TOP,
     val fullscreenPanelWidthMode: DanmakuPanelWidthMode = DanmakuPanelWidthMode.THIRD,
     val blockRulesRaw: String = "",
     val blockRules: List<String> = emptyList()
@@ -5322,7 +5322,7 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
             // at the renderer, so preserve it for portrait fullscreen's shared profile.
             portraitDisplayAreaMode = PortraitDanmakuDisplayAreaMode.fromValue(
                 preferences[keyDanmakuPortraitDisplayAreaMode()]
-                    ?: PortraitDanmakuDisplayAreaMode.VIDEO_VIEWPORT.value
+                    ?: PortraitDanmakuDisplayAreaMode.SCREEN_TOP.value
             ),
             fullscreenPanelWidthMode = normalizeDanmakuFullscreenPanelWidthMode(
                 DanmakuPanelWidthMode.fromValue(

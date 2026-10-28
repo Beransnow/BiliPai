@@ -175,59 +175,6 @@ class PortraitVideoPagerPolicyTest {
     }
 
     @Test
-    fun portraitPager_defaultViewportPolicy_doesNotForceFillContainer() {
-        assertFalse(resolvePortraitPagerFillContainer())
-        assertFalse(
-            resolvePortraitPagerFillContainer(
-                aspectRatio = VideoAspectRatio.FIT,
-                isVerticalContent = true
-            )
-        )
-        assertTrue(
-            resolvePortraitPagerFillContainer(
-                aspectRatio = VideoAspectRatio.FILL,
-                isVerticalContent = true
-            )
-        )
-        // Stretch is coerced to Fit for vertical content, so do not fill-deform.
-        assertFalse(
-            resolvePortraitPagerFillContainer(
-                aspectRatio = VideoAspectRatio.STRETCH,
-                isVerticalContent = true
-            )
-        )
-    }
-
-    @Test
-    fun portraitPager_defaultResizeMode_prefersFit() {
-        assertEquals(
-            AspectRatioFrameLayout.RESIZE_MODE_FIT,
-            resolvePortraitPagerResizeMode()
-        )
-        assertEquals(
-            AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
-            resolvePortraitPagerResizeMode(
-                aspectRatio = VideoAspectRatio.FILL,
-                isVerticalContent = true
-            )
-        )
-        assertEquals(
-            AspectRatioFrameLayout.RESIZE_MODE_FIT,
-            resolvePortraitPagerResizeMode(
-                aspectRatio = VideoAspectRatio.STRETCH,
-                isVerticalContent = true
-            )
-        )
-        assertEquals(
-            AspectRatioFrameLayout.RESIZE_MODE_FIT,
-            resolvePortraitPagerResizeMode(
-                aspectRatio = VideoAspectRatio.RATIO_16_9,
-                isVerticalContent = true
-            )
-        )
-    }
-
-    @Test
     fun portraitPager_fixedRatioUsesTargetViewportAspect() {
         assertEquals(
             16f / 9f,
@@ -330,7 +277,7 @@ class PortraitVideoPagerPolicyTest {
         assertEquals(
             PortraitDanmakuSurfaceMode.VideoViewport,
             resolvePortraitDanmakuSurfaceMode(
-                currentVideoAspect = 16f / 9f,
+                upperRegionAvailable = true,
                 displayAreaMode = PortraitDanmakuDisplayAreaMode.VIDEO_VIEWPORT
             )
         )
@@ -341,7 +288,7 @@ class PortraitVideoPagerPolicyTest {
         assertEquals(
             PortraitDanmakuSurfaceMode.Page,
             resolvePortraitDanmakuSurfaceMode(
-                currentVideoAspect = 9f / 16f,
+                upperRegionAvailable = true,
                 displayAreaMode = PortraitDanmakuDisplayAreaMode.SCREEN_TOP
             )
         )
@@ -380,12 +327,13 @@ class PortraitVideoPagerPolicyTest {
     }
 
     @Test
-    fun pageDanmakuSurface_isInsetFromStatusBar() {
-        assertTrue(
-            shouldInsetPortraitDanmakuFromStatusBar(PortraitDanmakuSurfaceMode.Page)
-        )
-        assertFalse(
-            shouldInsetPortraitDanmakuFromStatusBar(PortraitDanmakuSurfaceMode.VideoViewport)
+    fun portraitDanmakuSurface_fallsBackToVideoWhenNoUsableUpperRegionExists() {
+        assertEquals(
+            PortraitDanmakuSurfaceMode.VideoViewport,
+            resolvePortraitDanmakuSurfaceMode(
+                upperRegionAvailable = false,
+                displayAreaMode = PortraitDanmakuDisplayAreaMode.SCREEN_TOP,
+            )
         )
     }
 

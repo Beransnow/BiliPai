@@ -166,7 +166,7 @@ fun TopControlBar(
     PlayerControlTouchBounds(height = policy.buttonHeightDp.dp) {
         Column(
             modifier = modifier.fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
+                .windowInsetsPadding(playerControlHorizontalInsets(isFullscreen, isPortrait))
                 .playerControlTopSafeArea(isFullscreen, isPortrait, statusBarVisible)
                 .padding(vertical = policy.verticalPaddingDp.dp),
         ) {

@@ -864,6 +864,8 @@ private fun VideoPlayerOverlayContent(
     val lifecycleState by lifecycleOwner.lifecycle.currentStateAsState()
     val hostLifecycleStarted = lifecycleState.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED)
     val configuration = LocalConfiguration.current
+    val viewportIsLandscape = playerBoundsInWindow?.let { it.width > it.height }
+        ?: (configuration.screenWidthDp > configuration.screenHeightDp)
     var showInsightDetails by remember(player, bvid, cid) { mutableStateOf(false) }
     val visualWorkActive = com.android.purebilibili.core.ui.rememberVisualWorkActive()
     // The HUD needs only the existing decoder/error summary to decide whether it is visible.
@@ -1537,10 +1539,8 @@ private fun VideoPlayerOverlayContent(
         }
 
         // 两条材质路径共用显示策略；仅显式选择常驻时在控制栏收起后保留章节。
-        val chapterViewportIsLandscape = playerBoundsInWindow?.let { it.width > it.height }
-            ?: (configuration.screenWidthDp > configuration.screenHeightDp)
         if (chapterDisplayMode == ChapterDisplayMode.PERSISTENT &&
-            isFullscreen && chapterViewportIsLandscape && (!isVisible || isScreenLocked) &&
+            isFullscreen && viewportIsLandscape && (!isVisible || isScreenLocked) &&
             !danmakuComposerVisible && showViewPointMarkers && viewPoints.isNotEmpty()
         ) {
             com.android.purebilibili.feature.video.ui.overlay.OverlayPersistentChapterBar(
@@ -1556,7 +1556,10 @@ private fun VideoPlayerOverlayContent(
                     .align(Alignment.BottomCenter)
                     .landscapeEndDrawerPadding(endDrawerReservedWidthProvider)
                     // 常驻条贴住播放器底边，仅保留左右安全区，不添加底部间距。
-                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    .windowInsetsPadding(
+                        playerControlHorizontalInsets(isFullscreen, !viewportIsLandscape)
+                            .union(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
+                    )
                     .padding(horizontal = 20.dp),
             )
         }
@@ -1646,14 +1649,11 @@ private fun VideoPlayerOverlayContent(
                             onActionBoundsChanged = { action, bounds -> actionAnchorBounds[action] = bounds },
                             onActionSourceChanged = { action, source -> actionSources[action] = source },
                             viewportWidthDpOverride = viewportWidthDpOverride,
-                            viewportIsLandscape = playerBoundsInWindow?.let { it.width > it.height }
-                                ?: (configuration.screenWidthDp > configuration.screenHeightDp),
-                            isPlaying = effectiveIsPlaying,
+                            viewportIsLandscape = viewportIsLandscape,
                             progressProvider = progressProvider,
                             isFullscreen = isFullscreen,
                             currentSpeed = currentSpeed,
                             currentRatio = currentAspectRatio,
-                            onPlayPauseClick = { togglePlayPause() },
                             onSeek = commitSeek,
                             onSeekStart = onSeekStart,
                             onSeekDragStart = onSeekDragStart,
@@ -1734,7 +1734,7 @@ private fun VideoPlayerOverlayContent(
                 exit = fadeOut(OverlayControlFadeSpec),
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Start))
+                    .windowInsetsPadding(playerControlHorizontalInsets(isFullscreen, !viewportIsLandscape).only(WindowInsetsSides.Start))
                     .padding(start = 4.dp)
             ) {
                 FullscreenLockButton(
@@ -1753,7 +1753,7 @@ private fun VideoPlayerOverlayContent(
                 exit = fadeOut(OverlayControlFadeSpec),
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.End))
+                    .windowInsetsPadding(playerControlHorizontalInsets(isFullscreen, !viewportIsLandscape).only(WindowInsetsSides.End))
                     .padding(end = 4.dp)
             ) {
                 PlayerSideButton(
@@ -1943,19 +1943,16 @@ private fun VideoPlayerOverlayContent(
             }
         }
 
-        // 玻璃横竖屏保留中央播放/暂停，原生继续使用底栏播放按钮。
-        if (com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled) {
-            CenterPlaybackControl(
-                visible = showPlayerChrome &&
-                    (pluginPlaybackStatus.first || player.playbackState == Player.STATE_READY || player.playbackState == Player.STATE_ENDED) &&
-                    centerLoadingUiState == null && !isSeekScrubbing &&
-                    !endDrawerVisible && !landscapeCommentPanelVisible && !showInsightDetails,
-                isPlaying = effectiveIsPlaying,
-                onPlayPause = { togglePlayPause() },
-                diameter = if (isFullscreen) 72.dp else 56.dp,
-                modifier = Modifier.align(Alignment.Center),
-            )
-        }
+        CenterPlaybackControl(
+            visible = showPlayerChrome &&
+                (pluginPlaybackStatus.first || player.playbackState == Player.STATE_READY || player.playbackState == Player.STATE_ENDED) &&
+                centerLoadingUiState == null && !isSeekScrubbing &&
+                !endDrawerVisible && !landscapeCommentPanelVisible && !showInsightDetails,
+            isPlaying = effectiveIsPlaying,
+            onPlayPause = { togglePlayPause() },
+            diameter = if (isFullscreen) 72.dp else 56.dp,
+            viewportTopInset = if (isFullscreen) 0.dp else statusBarBackdropHeight,
+        )
 
         // --- 5.4  缓冲加载指示器 ---
         AnimatedVisibility(

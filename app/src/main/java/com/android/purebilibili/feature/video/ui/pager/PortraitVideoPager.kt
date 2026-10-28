@@ -6,6 +6,10 @@
 package com.android.purebilibili.feature.video.ui.pager
 
 import com.android.purebilibili.feature.video.ui.gesture.detectPlayerTapGestures
+import com.android.purebilibili.feature.video.danmaku.resolvePortraitDanmakuUpperRegion
+import com.android.purebilibili.feature.video.danmaku.resolveDanmakuLayerLineHeightPx
+import com.android.purebilibili.feature.video.danmaku.resolveDanmakuTextSizePx
+import com.android.purebilibili.feature.video.ui.section.DanmakuViewportHost
 
 import com.android.purebilibili.data.repository.playableVideoQualityIds
 import com.android.purebilibili.data.repository.advertisedVideoQualityIds
@@ -3244,19 +3248,43 @@ private fun VideoPageItem(
                 translationY = commentExpansionTransform.translationYPx
                 transformOrigin = TransformOrigin(0.5f, 0f)
             }
+        val danmakuVideoViewport = resolvePortraitPlayerViewportSize(
+            containerWidth = portraitPageWidthPx,
+            containerHeight = portraitPageHeightPx,
+            currentVideoAspect = portraitPagerViewportAspect,
+            fillContainer = portraitPagerFillContainer,
+            aspectRatio = aspectRatio,
+            videoWidth = exoPlayer.videoSize.width,
+            videoHeight = exoPlayer.videoSize.height,
+            liquidGlassEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled,
+        )
+        val upperDanmakuRegion = resolvePortraitDanmakuUpperRegion(
+            containerWidthPx = portraitPageWidthPx,
+            containerHeightPx = portraitPageHeightPx,
+            videoViewportWidthPx = danmakuVideoViewport.width,
+            videoViewportHeightPx = danmakuVideoViewport.height,
+            videoWidth = exoPlayer.videoSize.width,
+            videoHeight = exoPlayer.videoSize.height,
+            fitVideoInsideViewport = !portraitPagerFillContainer,
+            viewportOffsetYPx = portraitViewportVerticalOffsetPx,
+            safeTopPx = with(density) { pageDanmakuTopInset.roundToPx() },
+            minimumHeightPx = resolveDanmakuLayerLineHeightPx(
+                fontSize = resolveDanmakuTextSizePx(
+                    context.resources.displayMetrics.density,
+                    portraitDanmakuSettings.fontScale,
+                    isFullscreen = true,
+                ),
+                lineHeightMultiplier = portraitDanmakuSettings.lineHeight,
+            ) / portraitDanmakuSettings.displayArea.coerceIn(0.1f, 1f),
+            videoScale = scale,
+            videoTranslationYPx = panY,
+        )
         val danmakuSurfaceMode = resolvePortraitDanmakuSurfaceMode(
-            currentVideoAspect = currentVideoAspect,
+            upperRegionAvailable = upperDanmakuRegion != null,
             displayAreaMode = portraitDanmakuDisplayAreaMode
         )
         val viewportTransformModifier = Modifier
             .fillMaxSize()
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-                translationX = panX
-                translationY = panY
-            }
-        val pageDanmakuModifier = mediaLayerModifier
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
@@ -3338,19 +3366,20 @@ private fun VideoPageItem(
                 isPlayerReadyForThisVideo = isPlayerReadyForThisVideo,
             )
         ) {
-            PortraitDanmakuOverlay(
-                danmakuManager = danmakuManager,
-                videoWidth = exoPlayer.videoSize.width,
-                videoHeight = exoPlayer.videoSize.height,
-                resizeMode = playerViewRef?.resizeMode ?: portraitPagerResizeMode,
-                modifier = pageDanmakuModifier.then(
-                    if (shouldInsetPortraitDanmakuFromStatusBar(danmakuSurfaceMode)) {
-                        Modifier.padding(top = pageDanmakuTopInset)
-                    } else {
-                        Modifier
-                    }
+            val region = requireNotNull(upperDanmakuRegion)
+            Box(modifier = mediaLayerModifier) {
+                PortraitDanmakuOverlay(
+                    danmakuManager = danmakuManager,
+                    videoWidth = exoPlayer.videoSize.width,
+                    videoHeight = exoPlayer.videoSize.height,
+                    resizeMode = playerViewRef?.resizeMode ?: portraitPagerResizeMode,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = with(density) { region.topPx.toDp() })
+                        .fillMaxWidth()
+                        .height(with(density) { region.heightPx.toDp() }),
                 )
-            )
+            }
         }
 
         // 封面图 (在加载中、未匹配到视频、或未开始播放时显示)
@@ -4589,47 +4618,50 @@ private fun PortraitDanmakuOverlay(
     resizeMode: Int,
     modifier: Modifier = Modifier
 ) {
-    key(danmakuManager) {
-        AndroidView(
-            factory = { ctx ->
-                DanmakuRenderView(ctx).apply {
-                    setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                    // 弹幕层必须 passive，否则会吞掉竖屏全屏的全部触控。
-                    configureAsPassiveDanmakuOverlay()
-                    danmakuManager.attachView(this)
-                }
-            },
-            update = { view ->
-                view.configureAsPassiveDanmakuOverlay()
-                val viewportTag = "$videoWidth:$videoHeight:$resizeMode:${view.width}x${view.height}"
-                if (view.width > 0 && view.height > 0 && view.tag != viewportTag) {
-                    view.tag = viewportTag
-                    danmakuManager.attachView(view)
-                }
-            },
-            onRelease = { view -> danmakuManager.detachView(view) },
-            modifier = modifier
-        )
+    DanmakuViewportHost(modifier) { viewport ->
+        key(danmakuManager) {
+            AndroidView(
+                factory = { ctx ->
+                    DanmakuRenderView(ctx).apply {
+                        danmakuManager.updateViewport(viewport)
+                        addOnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
+                            if (view.width > 0 && view.height > 0) danmakuManager.attachView(this)
+                        }
+                        setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                        // 弹幕层必须 passive，否则会吞掉竖屏全屏的全部触控。
+                        configureAsPassiveDanmakuOverlay()
+                        danmakuManager.attachView(this)
+                    }
+                },
+                update = { view ->
+                    view.configureAsPassiveDanmakuOverlay()
+                    danmakuManager.updateViewport(viewport)
+                    val viewportTag = "$videoWidth:$videoHeight:$resizeMode:${view.width}x${view.height}"
+                    if (view.width > 0 && view.height > 0 && view.tag != viewportTag) {
+                        view.tag = viewportTag
+                        danmakuManager.attachView(view)
+                    }
+                },
+                onRelease = { view -> danmakuManager.detachView(view) },
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 
 internal fun resolvePortraitPagerRepeatMode(): Int = Player.REPEAT_MODE_OFF
 
 internal fun resolvePortraitDanmakuSurfaceMode(
-    currentVideoAspect: Float,
+    upperRegionAvailable: Boolean,
     displayAreaMode: PortraitDanmakuDisplayAreaMode
 ): PortraitDanmakuSurfaceMode {
-    return when (displayAreaMode) {
-        PortraitDanmakuDisplayAreaMode.VIDEO_VIEWPORT -> PortraitDanmakuSurfaceMode.VideoViewport
-        PortraitDanmakuDisplayAreaMode.SCREEN_TOP -> PortraitDanmakuSurfaceMode.Page
+    return if (displayAreaMode == PortraitDanmakuDisplayAreaMode.SCREEN_TOP && upperRegionAvailable) {
+        PortraitDanmakuSurfaceMode.Page
+    } else {
+        PortraitDanmakuSurfaceMode.VideoViewport
     }
 }
 
-internal fun shouldInsetPortraitDanmakuFromStatusBar(
-    surfaceMode: PortraitDanmakuSurfaceMode
-): Boolean {
-    return surfaceMode == PortraitDanmakuSurfaceMode.Page
-}
 
 /**
  * Resolves the top safe inset for the page-level portrait danmaku surface.
@@ -4776,6 +4808,34 @@ internal fun resolvePortraitVideoViewportVerticalOffsetDp(
     return if (currentVideoAspect > 1f) -48 else 0
 }
 
+internal fun resolvePortraitPlayerViewportSize(
+    containerWidth: Int,
+    containerHeight: Int,
+    currentVideoAspect: Float,
+    fillContainer: Boolean,
+    aspectRatio: VideoAspectRatio?,
+    videoWidth: Int,
+    videoHeight: Int,
+    liquidGlassEnabled: Boolean,
+): PortraitVideoViewportSize {
+    return if (aspectRatio != null && !liquidGlassEnabled) {
+        com.android.purebilibili.feature.video.ui.components.resolveVideoViewportLayout(
+            containerWidth = containerWidth,
+            containerHeight = containerHeight,
+            aspectRatio = aspectRatio,
+            videoWidth = videoWidth,
+            videoHeight = videoHeight,
+        ).let { PortraitVideoViewportSize(it.width, it.height) }
+    } else {
+        resolvePortraitVideoViewportSize(
+            containerWidth = containerWidth,
+            containerHeight = containerHeight,
+            currentVideoAspect = currentVideoAspect,
+            fillContainer = fillContainer,
+        )
+    }
+}
+
 @Composable
 internal fun PortraitVideoViewportContainer(
     currentVideoAspect: Float,
@@ -4791,22 +4851,16 @@ internal fun PortraitVideoViewportContainer(
     BoxWithConstraints(modifier = modifier.clipToBounds()) {
         val density = LocalDensity.current
         val viewportSize = with(density) {
-            if (aspectRatio != null && !liquidGlassEnabled) {
-                com.android.purebilibili.feature.video.ui.components.resolveVideoViewportLayout(
-                    containerWidth = maxWidth.roundToPx(),
-                    containerHeight = maxHeight.roundToPx(),
-                    aspectRatio = aspectRatio,
-                    videoWidth = videoWidth,
-                    videoHeight = videoHeight,
-                ).let { PortraitVideoViewportSize(it.width, it.height) }
-            } else {
-                resolvePortraitVideoViewportSize(
-                    containerWidth = maxWidth.roundToPx(),
-                    containerHeight = maxHeight.roundToPx(),
-                    currentVideoAspect = currentVideoAspect,
-                    fillContainer = fillContainer,
-                )
-            }
+            resolvePortraitPlayerViewportSize(
+                containerWidth = maxWidth.roundToPx(),
+                containerHeight = maxHeight.roundToPx(),
+                currentVideoAspect = currentVideoAspect,
+                fillContainer = fillContainer,
+                aspectRatio = aspectRatio,
+                videoWidth = videoWidth,
+                videoHeight = videoHeight,
+                liquidGlassEnabled = liquidGlassEnabled,
+            )
         }
         val isLandscape = maxWidth > maxHeight
 

@@ -191,6 +191,21 @@ internal fun PanelAction(icon: ImageVector, label: String, onClick: () -> Unit) 
     }
 }
 
+@Composable
+internal fun playerPanelSafeWindowBounds(): IntRect {
+    val density = LocalDensity.current
+    val direction = LocalLayoutDirection.current
+    val size = LocalWindowInfo.current.containerSize
+    val insets = WindowInsets.safeDrawing
+    val left = insets.getLeft(density, direction).coerceIn(0, size.width)
+    val top = insets.getTop(density).coerceIn(0, size.height)
+    return IntRect(
+        left, top,
+        (size.width - insets.getRight(density, direction)).coerceIn(left, size.width),
+        (size.height - insets.getBottom(density)).coerceIn(top, size.height),
+    )
+}
+
 /** Ordinary native page surface, independent of the application's Miuix/glass setting. */
 @Composable
 internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBounds: IntRect?,
@@ -199,13 +214,8 @@ internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBound
     draggable: Boolean = false,
     content: @Composable ColumnScope.(requestDismiss: () -> Unit) -> Unit) {
     val density = LocalDensity.current
-    val direction = LocalLayoutDirection.current
     val size = LocalWindowInfo.current.containerSize
-    val insets = WindowInsets.safeDrawing
-    val left = insets.getLeft(density, direction).coerceIn(0, size.width)
-    val top = insets.getTop(density).coerceIn(0, size.height)
-    val safe = IntRect(left, top, (size.width - insets.getRight(density, direction)).coerceIn(left, size.width),
-        (size.height - insets.getBottom(density)).coerceIn(top, size.height))
+    val safe = playerPanelSafeWindowBounds()
     val landscape = size.width > size.height
     val compactMaxHeight = if (compactHeight) with(density) { episodeSheetMaxHeight().roundToPx() } else null
     val bounds = resolvePlayerPanelBounds(safe, playerBounds, isFullscreen, landscape,

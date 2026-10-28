@@ -45,11 +45,31 @@ internal fun PlayerNativeSettingsHost(
     content: @Composable () -> Unit,
 ) {
     val windowSize = androidx.compose.ui.platform.LocalWindowInfo.current.containerSize
-    // 玻璃复用原生菜单内容；列表自行滚动，宿主只接管外壳与触发按钮开合。
-    val glassPolicy = resolvePlayerSettingsMenuLayoutPolicy(
-        screenWidthDp = LocalConfiguration.current.screenWidthDp,
-        screenHeightDp = LocalConfiguration.current.screenHeightDp,
+    val config = LocalConfiguration.current
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val sidePanel = isFullscreen && windowSize.width > windowSize.height &&
+        LocalPlayerPanelViewport.current != null
+    val policy = resolveDanmakuSettingsPanelLayoutPolicy(
+        isFullscreen = false,
+        screenWidthDp = config.screenWidthDp,
+        screenHeightDp = config.screenHeightDp,
     )
+    val safeWindow = playerPanelSafeWindowBounds()
+    val menuWidth = with(density) {
+        if (sidePanel) {
+            resolvePlayerPanelBounds(
+                safeWindow, playerBounds, isFullscreen, landscape = true,
+                maxSideWidth = 500.dp.roundToPx(),
+            ).width.toDp()
+        } else {
+            // 原生外层有左右各 12dp 留白；两种材质共用可见面板宽度。
+            (policy.maxWidthDp.dp - 24.dp).coerceAtMost(
+                (safeWindow.width.toDp() - 32.dp).coerceAtLeast(1.dp),
+            ).coerceAtLeast(1.dp)
+        }
+    }
+    val glassMaxHeight = (config.screenHeightDp - 32).coerceAtLeast(1).dp
+    // 玻璃只接管外壳与触发按钮开合，不再单独收窄主菜单及子页。
     if (com.android.purebilibili.core.ui.components.AppGlassMenu(
             expanded = true,
             onDismissRequest = onDismiss,
@@ -58,21 +78,21 @@ internal fun PlayerNativeSettingsHost(
                 com.android.purebilibili.core.ui.components.AppGlassMenuPlacement.ANCHOR_END
             } else if (isFullscreen) com.android.purebilibili.core.ui.components.AppGlassMenuPlacement.END
             else com.android.purebilibili.core.ui.components.AppGlassMenuPlacement.CENTER,
-            minWidth = 0.dp,
-            maxWidth = glassPolicy.maxWidthDp.dp,
-            maxHeight = glassPolicy.maxHeightDp.dp,
+            minWidth = menuWidth,
+            maxWidth = menuWidth,
+            maxHeight = glassMaxHeight,
             interactiveContent = true,
             showScrollbar = false,
             useAvailableHeight = true,
         ) {
             PlayerNativeMenuTheme {
                 CompositionLocalProvider(LocalPlayerGlassSettingsSurface provides true) {
-                    Box(Modifier.fillMaxWidth().heightIn(max = glassPolicy.maxHeightDp.dp)) { content() }
+                    Box(Modifier.width(menuWidth).heightIn(max = glassMaxHeight)) { content() }
                 }
             }
         }) return
     // 播放器提供避让宿主时，横屏更多操作与选集共用侧面板；其他入口保留原有弹窗。
-    if (isFullscreen && windowSize.width > windowSize.height && LocalPlayerPanelViewport.current != null) {
+    if (sidePanel) {
         PlayerNativeMenuTheme {
             PlayerDetailPanel("更多操作", isFullscreen, playerBounds, onDismiss) { requestDismiss ->
                 Row(
@@ -91,20 +111,13 @@ internal fun PlayerNativeSettingsHost(
         }
         return
     }
-    val config = LocalConfiguration.current
-    val policy = resolveDanmakuSettingsPanelLayoutPolicy(
-        isFullscreen = false,
-        screenWidthDp = config.screenWidthDp,
-        screenHeightDp = config.screenHeightDp,
-    )
     PlayerNativeMenuTheme {
         DanmakuSettingsPanelHost(false, policy, onDismiss) {
             Surface(
                 modifier = Modifier
-                    .widthIn(max = policy.maxWidthDp.dp)
-                    .fillMaxWidth()
                     .padding(12.dp)
                     .padding(bottom = bottomPaddingDp.dp)
+                    .width(menuWidth)
                     .heightIn(max = policy.maxHeightDp.dp),
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(12.dp),
@@ -126,7 +139,7 @@ internal fun PlayerSettingsRow(title: String, subtitle: String? = null, onClick:
         } else {
         Icon(
             imageVector = when (title) {
-                "添加至「稍后再看」" -> Icons.Outlined.WatchLater
+                "稍后再看（添加 / 移出）" -> Icons.Outlined.WatchLater
                 "查看笔记" -> Icons.Outlined.EditNote
                 "离线缓存" -> Icons.Outlined.FolderZip
                 "保存字幕" -> Icons.Outlined.Download
@@ -134,15 +147,15 @@ internal fun PlayerSettingsRow(title: String, subtitle: String? = null, onClick:
                 "定时关闭" -> Icons.Outlined.HourglassTop
                 "播放地址" -> Icons.Outlined.Link
                 "重载视频" -> Icons.Outlined.Refresh
-                "超分辨率" -> Icons.Outlined.StayCurrentLandscape
+                "画质增强" -> Icons.Outlined.StayCurrentLandscape
                 "播放器音量" -> Icons.Outlined.VolumeUp
                 "画面变换" -> Icons.Outlined.Flip
                 "恢复默认" -> Icons.Outlined.Restore
                 "CDN 设置" -> Icons.Outlined.Cloud
                 "选择画质" -> Icons.Outlined.PlayCircle
                 "选择音质" -> Icons.Outlined.Album
-                "解码格式" -> Icons.Outlined.AvTimer
-                "播放顺序" -> Icons.Outlined.Repeat
+                "首选编码格式" -> Icons.Outlined.AvTimer
+                "播完后行为" -> Icons.Outlined.Repeat
                 "弹幕列表" -> Icons.Outlined.Comment
                 "字幕设置" -> Icons.Outlined.Subtitles
                 "加载字幕" -> Icons.Outlined.FileOpen

@@ -4712,28 +4712,8 @@ private fun VideoPlayerSectionContent(
             isPortraitFullscreen = isPortraitFullscreen
         ) && danmakuEnabled && !(isInPipMode && pipNoDanmakuEnabled)
         if (keepDanmakuLayer) {
-            //  计算状态栏高度
-            val statusBarHeightPx = remember(context) {
-                val resourceId = context.resources.getIdentifier(
-                    "status_bar_height", "dimen", "android"
-                )
-                if (resourceId > 0) {
-                    context.resources.getDimensionPixelSize(resourceId)
-                } else {
-                    (24 * context.resources.displayMetrics.density).toInt()
-                }
-            }
-
-            // 竖屏「屏幕顶部」模式：弹幕覆盖整个播放器容器；默认仍贴合视频画面，避免落在黑边里。
-            val useScreenTopDanmakuSurface = shouldUseScreenTopDanmakuSurface(
-                portraitDisplayAreaMode = portraitDanmakuDisplayAreaMode,
-                isLandscapeFullscreen = isFullscreen && !isPortraitFullscreen
-            )
-            val topOffset = resolveDanmakuLayerTopOffsetPx(
-                isFullscreen = isFullscreen,
-                statusBarHeightPx = statusBarHeightPx,
-                useScreenTopSurface = useScreenTopDanmakuSurface
-            )
+            // Portrait fullscreen owns a separate pager host. Inline/landscape layers keep
+            // video-relative geometry, especially authored advanced/BAS coordinates.
 
             //  [修复] 移除 key(isFullscreen)，避免横竖屏切换时重建 DanmakuView 导致弹幕消失
             // 使用 remember 保存 DanmakuView 引用，在 update 回调中处理尺寸变化
@@ -4742,19 +4722,8 @@ private fun VideoPlayerSectionContent(
                 modifier = playerContentModifier
                     .then(if (capturePlayerPage) playerPageBackdrop.danmaku.modifier else Modifier)
                     .graphicsLayer { alpha = if (shouldShowDanmakuLayer) 1f else 0f }
-                    .then(
-                        if (topOffset > 0) {
-                            Modifier.padding(top = with(LocalContext.current.resources.displayMetrics) {
-                                (topOffset / density).dp
-                            })
-                        } else Modifier
-                    )
                     .clipToBounds(),
-                contentAlignment = if (useScreenTopDanmakuSurface) {
-                    Alignment.TopCenter
-                } else {
-                    Alignment.Center
-                }
+                contentAlignment = Alignment.Center
             ) {
                 val density = LocalDensity.current
                 val viewportLayout = remember(maxWidth, maxHeight, viewportAspectRatio, videoSizeState) {
@@ -4769,15 +4738,11 @@ private fun VideoPlayerSectionContent(
                     }
                 }
                 val danmakuContainerHeightPx = with(density) { maxHeight.roundToPx() }
-                val danmakuSurfaceModifier = if (useScreenTopDanmakuSurface) {
-                    Modifier.fillMaxSize()
-                } else {
-                    with(density) {
-                        Modifier.requiredSize(
-                            width = viewportLayout.width.toDp(),
-                            height = viewportLayout.height.toDp()
-                        )
-                    }
+                val danmakuSurfaceModifier = with(density) {
+                    Modifier.requiredSize(
+                        width = viewportLayout.width.toDp(),
+                        height = viewportLayout.height.toDp()
+                    )
                 }
                 DanmakuViewportHost(danmakuSurfaceModifier) { viewport ->
                 key(danmakuManager) {

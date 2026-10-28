@@ -626,6 +626,7 @@ private fun CinemaStagePlayer(
                         onSecondCodecChange = onSecondCodecChange,
                         onAudioQualityChange = onAudioQualityChange,
                         onPlaybackSpeedChange = playbackActions.applyPlaybackSpeed,
+                        onAudioLangChange = playbackActions.changeAudioLanguage,
                         onSaveCover = playbackActions.saveCover,
                         onDownloadAudio = playbackActions.downloadAudio,
                         onPlayModeClick = onPlayModeClick,

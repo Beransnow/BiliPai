@@ -105,7 +105,7 @@ data class VideoPlayerOverlayState(
     val danmakuSmartOcclusion: Boolean = true,
     val danmakuFullscreenPanelWidthMode: DanmakuPanelWidthMode = DanmakuPanelWidthMode.THIRD,
     val portraitDanmakuDisplayAreaMode: PortraitDanmakuDisplayAreaMode =
-        PortraitDanmakuDisplayAreaMode.VIDEO_VIEWPORT,
+        PortraitDanmakuDisplayAreaMode.SCREEN_TOP,
     val danmakuSettingsScope: DanmakuSettingsScope = DanmakuSettingsScope.PORTRAIT,
     val showDanmakuSyncSection: Boolean = false,
     val danmakuCloudSyncEnabled: Boolean = true,
