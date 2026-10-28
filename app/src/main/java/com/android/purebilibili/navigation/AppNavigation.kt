@@ -937,7 +937,6 @@ fun AppNavigation(
             sourceLayout = navigation3ReturnSession.transitionSession?.sourceLayout
                 ?: com.android.purebilibili.core.ui.transition.VideoCardSourceLayout.COVER_ONLY,
             sourceChromeSnapshot = navigation3ReturnSession.transitionSession?.sourceChromeSnapshot,
-            sourcePixelOwner = navigation3ReturnSession.transitionSession?.sourcePixelOwner,
         )
         fun captureCardSourceDirectionForSession(): BiliPaiNavCardSourceDirection {
             return resolveBiliPaiNavCardSourceDirection(
@@ -1237,10 +1236,6 @@ fun AppNavigation(
                 coverUrl = videoKey?.coverUrl,
                 useRecordedCardSource = useRecordedCardSource,
             )
-            if (pendingTransitionSession != null && transitionSession.sourcePixelOwner?.let {
-                    !CardPositionManager.isCurrentVideoCardClick(it)
-                } == true
-            ) return
             val hasCommentJump = (videoKey?.commentRootRpid ?: 0L) > 0L || (videoKey?.commentTargetRpid ?: 0L) > 0L
             if (!skipPortraitStoryResolution && !hasCommentJump) {
                 resolvePortraitStoryNavigationSeed(
@@ -1266,12 +1261,7 @@ fun AppNavigation(
                     )
                 ) {
                     coroutineScope.launch {
-                        val isVertical = com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(videoKey.bvid)
-                        if (transitionSession.sourcePixelOwner?.let {
-                                !CardPositionManager.isCurrentVideoCardClick(it)
-                            } == true
-                        ) return@launch
-                        if (isVertical) {
+                        if (com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(videoKey.bvid)) {
                             if (cardTransitionEnabled) {
                                 navigateToVideoRouteInNavigation3(
                                     route = videoKey.copy(
@@ -1368,10 +1358,6 @@ fun AppNavigation(
                 coverUrl = coverUrl,
                 useRecordedCardSource = useRecordedCardSource,
             )
-            if (pendingTransitionSession != null && transitionSession.sourcePixelOwner?.let {
-                    !CardPositionManager.isCurrentVideoCardClick(it)
-                } == true
-            ) return
             val morphDirectPortrait = resolveDirectPortraitDetailMorphEntry(
                 directPortraitStoryEntry = playerInteractionSettings.directPortraitStoryEntry,
                 cardTransitionEnabled = cardTransitionEnabled,
@@ -1454,12 +1440,7 @@ fun AppNavigation(
                 )
             ) {
                 coroutineScope.launch {
-                    val isVertical = com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(bvid)
-                    if (transitionSession.sourcePixelOwner?.let {
-                            !CardPositionManager.isCurrentVideoCardClick(it)
-                        } == true
-                    ) return@launch
-                    if (isVertical) {
+                    if (com.android.purebilibili.data.repository.VideoRepository.isVerticalVideo(bvid)) {
                         if (cardTransitionEnabled) {
                             navigateToVideoInNavigation3(
                                 bvid = bvid,

@@ -1,6 +1,8 @@
 // 文件路径: feature/search/SearchScreen.kt
 package com.android.purebilibili.feature.search
 
+import com.android.purebilibili.navigation.tabSelectedPage
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.feature.home.effectiveGridColumnCount
 import com.android.purebilibili.feature.home.effectiveGridColumnCountCompact
 import com.android.purebilibili.feature.home.gridColumnPinchEnabled
@@ -3529,7 +3531,7 @@ private fun SearchResultTypeTabRow(
     if (tabs.isEmpty()) return
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
-    val selectedIndex = pagerState.currentPage.coerceIn(0, tabs.lastIndex)
+    val selectedIndex = pagerState.tabSelectedPage.coerceIn(0, tabs.lastIndex)
     val tabLabels = tabs.map { type ->
         resolveSearchTypeTabLabel(type.displayName, counts[type])
     }
@@ -3570,7 +3572,7 @@ private fun SearchResultTypeTabRow(
             // Glide with the indicator (page + fraction) while the pager is moving; settle when idle.
             focusPosition = {
                 if (useScrollableRail) {
-                    pagerState.currentPage + pagerState.currentPageOffsetFraction
+                    pagerState.tabIndicatorPosition
                 } else {
                     0f
                 }
@@ -3603,7 +3605,7 @@ private fun SearchResultTypeTabRow(
             tapPressRefractionEnabled = !useScrollableRail,
             dragSelectionEnabled = tabs.size > 1,
             indicatorPositionProvider = {
-                pagerState.currentPage + pagerState.currentPageOffsetFraction
+                pagerState.tabIndicatorPosition
             },
             isScrollInProgressProvider = { pagerState.isScrollInProgress },
             externalPagerMotionEffectsEnabled = true,

@@ -87,9 +87,6 @@ object CardPositionManager {
             sourceKey != null && it.sourceKey == sourceKey
         }
 
-    internal fun isCurrentVideoCardClick(owner: VideoCardPixelOwner): Boolean =
-        lastClickedVideoPixelOwner === owner
-
     internal fun newVideoCardSourceInstanceId(): Long =
         videoCardSourceInstanceSequence.incrementAndGet()
 
@@ -125,19 +122,6 @@ object CardPositionManager {
 
     internal val lastClickedNativeCardBitmap: ImageBitmap?
         get() = nativeCardBitmap.takeIf { ownsNativeResources() }
-
-    // 导航会话必须持有同一次点击的身份，不能仅凭相同视频或恢复后的来源 key 复用像素。
-    internal fun nativeCardLayerFor(owner: VideoCardPixelOwner?): GraphicsLayer? =
-        lastClickedNativeCardLayer.takeIf { owner != null && owner === nativeResourcesOwner }
-
-    internal fun nativeCoverOverlayLayerFor(owner: VideoCardPixelOwner?): GraphicsLayer? =
-        lastClickedNativeCoverOverlayLayer.takeIf { owner != null && owner === nativeResourcesOwner }
-
-    internal fun nativeCardBitmapFor(owner: VideoCardPixelOwner?): ImageBitmap? =
-        lastClickedNativeCardBitmap.takeIf { owner != null && owner === nativeResourcesOwner }
-
-    internal fun sourceChromeSnapshotFor(owner: VideoCardPixelOwner?): VideoCardSourceChromeSnapshot? =
-        lastClickedVideoSourceChromeSnapshot.takeIf { owner != null && owner === lastClickedVideoPixelOwner }
 
     /** Immutable pixel provenance survives metadata-only restoration of a parent source key. */
     internal var lastClickedWholeCardReturnSnapshot: WholeCardReturnSnapshot? by mutableStateOf(null)

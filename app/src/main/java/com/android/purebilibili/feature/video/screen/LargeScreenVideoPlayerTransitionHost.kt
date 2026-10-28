@@ -105,7 +105,7 @@ internal fun LargeScreenVideoPlayerTransitionHost(
     }
     val isNowPlayingBar = transition.sourceChromeSnapshot?.isNowPlayingBar == true
     val nativeBarBitmap = if (transition.enabled && isNowPlayingBar) {
-        CardPositionManager.nativeCardBitmapFor(transition.sourcePixelOwner)
+        CardPositionManager.lastClickedNativeCardBitmap
     } else null
     val isReturning = { isReturningProvider() }
     val sourceChromeAlpha: () -> Float = {

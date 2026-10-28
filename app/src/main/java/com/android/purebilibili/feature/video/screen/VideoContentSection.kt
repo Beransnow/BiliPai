@@ -1,6 +1,7 @@
 // 文件路径: feature/video/screen/VideoContentSection.kt
 package com.android.purebilibili.feature.video.screen
 
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
 import com.android.purebilibili.feature.video.ui.components.RelatedVideoList
 
@@ -1198,7 +1199,7 @@ internal fun VideoContentSection(
                 isPlayerCollapsed = isPlayerCollapsed,
                 miuixBackdrop = videoContentMiuixBackdrop,
                 indicatorPositionProvider = {
-                    pagerState.currentPage + pagerState.currentPageOffsetFraction
+                    pagerState.tabIndicatorPosition
                 },
                 isScrollInProgressProvider = { pagerState.isScrollInProgress },
                 isPagerDraggingProvider = { nativePagerDragHeld || customPagerDragHeld },

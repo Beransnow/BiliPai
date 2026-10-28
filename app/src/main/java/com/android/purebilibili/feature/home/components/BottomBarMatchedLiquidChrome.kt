@@ -324,6 +324,8 @@ internal fun BottomBarMatchedReusableLiquidDock(
     drawShellLens: Boolean = true,
     shellLensIntensity: Float = 1f,
     isScrollInProgressProvider: () -> Boolean = { false },
+    /** 仅含文字、图标的内容无需录制外壳；内部有玻璃采样控件时保留默认值。 */
+    captureShellForContent: Boolean = true,
     content: @Composable BoxScope.(liquidChromeActive: Boolean) -> Unit
 ) {
     val elasticState = com.android.purebilibili.core.ui.components.rememberAppElasticPressState(
@@ -364,7 +366,9 @@ internal fun BottomBarMatchedReusableLiquidDock(
         com.android.purebilibili.feature.home.components.liquid.rememberStableBackdrop(it)
     }
     // 只录制外壳这一兄弟层，内部控件不得进入自身消费的背景源。
-    val shellSource = if (glassEnabled) com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource() else null
+    val shellSource = if (glassEnabled && captureShellForContent) {
+        com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource()
+    } else null
     val isDarkTheme = com.android.purebilibili.core.ui.isAppInDarkTheme()
     val blurIntensity = currentUnifiedBlurIntensity()
     val tuning = resolveAndroidNativeBottomBarTuning(

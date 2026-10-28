@@ -4,7 +4,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Offset
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
-import com.android.purebilibili.core.util.VideoCardPixelOwner
 
 internal enum class BiliPaiNavCardSourceDirection {
     NONE,
@@ -26,7 +25,6 @@ internal data class BiliPaiNavSourceMetadata(
     val sourceInfoBounds: Rect? = null,
     val sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY,
     val sourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null,
-    val sourcePixelOwner: VideoCardPixelOwner? = null,
 ) {
     val sharedTransitionEntryReady: Boolean
         get() = clickedBoundsRecorded
@@ -120,7 +118,6 @@ internal fun resolveBiliPaiNavSourceMetadata(
     sourceInfoBounds: Rect? = null,
     sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY,
     sourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null,
-    sourcePixelOwner: VideoCardPixelOwner? = null,
 ): BiliPaiNavSourceMetadata {
     return BiliPaiNavSourceMetadata(
         sourceKey = sourceKey,
@@ -135,6 +132,5 @@ internal fun resolveBiliPaiNavSourceMetadata(
         sourceInfoBounds = sourceInfoBounds,
         sourceLayout = sourceLayout,
         sourceChromeSnapshot = sourceChromeSnapshot,
-        sourcePixelOwner = sourcePixelOwner,
     )
 }

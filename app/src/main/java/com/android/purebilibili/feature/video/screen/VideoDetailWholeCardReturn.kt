@@ -10,9 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.graphicsLayer
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import com.android.purebilibili.core.ui.transition.normalizeSharedElementSourceRoute
@@ -96,22 +97,31 @@ internal fun Modifier.videoDetailWholeCardReturnLayer(
     bitmap: ImageBitmap?,
     alphaProvider: () -> Float,
 ): Modifier {
-    if (bitmap == null || bitmap.width <= 1 || bitmap.height <= 1) return this
+    val paint = Paint()
     return drawWithContent {
         val alpha = alphaProvider().coerceIn(0f, 1f)
-        if (alpha < 1f) {
-            // 详情作为独立图层调节组透明度；仅叠化权重变化时复用内容绘制指令。
+        if (alpha <= 0f || bitmap == null || bitmap.width <= 1 || bitmap.height <= 1) {
             drawContent()
-        }
-        if (alpha > 0f) {
-            // 单张位图直接带透明度绘制，无需再创建覆盖详情视口的透明度组。
-            // 两组仍使用原来的权重，保留透明卡片、快速返回和取消手势的叠化。
-            val sourcePixelScale = size.width / bitmap.width
-            scale(sourcePixelScale, sourcePixelScale, pivot = Offset.Zero) {
-                drawImage(bitmap, alpha = alpha)
+        } else {
+            // 原封面、播放器和来源文字继续正常交接，不能在快照尚透明时提前隐藏。
+            // 两个完整内容组统一叠化；快照完全不透明后才停止绘制原内容。
+            drawIntoCanvas { canvas ->
+                if (alpha < 1f) {
+                    paint.alpha = 1f - alpha
+                    canvas.saveLayer(Rect(Offset.Zero, size), paint)
+                    try { this@drawWithContent.drawContent() } finally { canvas.restore() }
+                }
+                paint.alpha = alpha
+                canvas.saveLayer(Rect(Offset.Zero, size), paint)
+                try {
+                    // FillWidthTop 的导航补偿已统一两轴比例，整卡只按宽度缩放一次。
+                    val viewportWidth = size.width
+                    val sourcePixelScale = viewportWidth / bitmap.width
+                    scale(sourcePixelScale, sourcePixelScale, pivot = Offset.Zero) {
+                        drawImage(bitmap)
+                    }
+                } finally { canvas.restore() }
             }
         }
-    }.graphicsLayer {
-        alpha = 1f - alphaProvider().coerceIn(0f, 1f)
     }
 }

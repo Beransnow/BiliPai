@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.list
 
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.feature.home.effectiveGridColumnCount
 import com.android.purebilibili.feature.home.effectiveGridColumnCountCompact
 import com.android.purebilibili.feature.home.gridColumnPinchEnabled
@@ -2242,7 +2243,7 @@ fun CommonListScreen(
                                     .padding(horizontal = historyFilterChrome.horizontalPaddingDp.dp),
                                 miuixBackdrop = visibleHeaderBackdrop,
                                 indicatorPositionProvider = {
-                                    historyPagerState.currentPage + historyPagerState.currentPageOffsetFraction
+                                    historyPagerState.tabIndicatorPosition
                                 },
                                 isScrollInProgressProvider = { historyPagerState.isScrollInProgress },
                             )

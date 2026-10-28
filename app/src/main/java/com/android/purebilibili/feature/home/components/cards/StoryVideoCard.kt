@@ -210,11 +210,7 @@ internal fun StoryVideoCard(
     val cardCoordinates = remember { object { var value: LayoutCoordinates? = null } }
     val coverCoordinates = remember { object { var value: LayoutCoordinates? = null } }
     val nativeCardSnapshot = rememberNativeVideoCardSnapshotController(video.bvid)
-    val cardTransitionClock = com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionClock.current
     val triggerCardClick by rememberUpdatedState(appActionWithFeedback {
-        if (cardTransitionClock?.phase == com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase.OPENING &&
-            cardTransitionClock.sourceRoute == effectiveSharedElementSourceRoute
-        ) return@appActionWithFeedback
         cardCoordinates.value?.takeIf { it.isAttached }?.videoCardSourceBoundsInRoot()?.let { bounds ->
             CardPositionManager.recordVideoCardPosition(
                 bvid = video.bvid,

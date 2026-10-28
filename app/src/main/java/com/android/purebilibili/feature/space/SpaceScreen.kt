@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.space
 
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.feature.home.effectiveGridColumnCount
 import com.android.purebilibili.feature.home.effectiveGridColumnCountCompact
 import com.android.purebilibili.feature.home.gridColumnPinchEnabled
@@ -530,6 +531,7 @@ fun SpaceScreen(
     // 共享顶栏颜色来源，关闭玻璃时沿用原生 MD3 / Miuix 的背景与布局。
     val spaceTopBarIconBackdrop = com.android.purebilibili.core.ui.blur.rememberSurfaceOverlayBackdrop(spaceChromeBackdrop, spaceTopChromeSurfaceColor)
     AppScaffold(
+        topBarIconBackdropSource = spaceChromeSource,
         topBar = {
             BiliPaiImmersiveTopBar(
                 backdrop = spaceChromeBackdrop,
@@ -3646,7 +3648,7 @@ private fun SpaceContentTabs(
                 } else onMainTabSelected(tab)
             },
             modifier = Modifier.stationaryPagerHeader(pagerState, page),
-            indicatorPositionProvider = { pagerState.currentPage + pagerState.currentPageOffsetFraction },
+            indicatorPositionProvider = { pagerState.tabIndicatorPosition },
             isScrollInProgressProvider = { pagerState.isScrollInProgress },
         )
         if (shouldShowSpaceSecondarySwitch(selectedMainTab) && secondarySwitchItems.isNotEmpty()) {

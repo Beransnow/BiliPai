@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.audio.screen
 
+import com.android.purebilibili.navigation.tabSelectedPage
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import androidx.compose.foundation.clickable
 import com.android.purebilibili.core.ui.components.appActionClickable
 
@@ -896,7 +898,7 @@ internal fun MusicPlayerContent(
                 val pagerScope = rememberCoroutineScope()
                 val openCoverPage: () -> Unit = {
                     showMusicChrome()
-                    pagerScope.launch { pagerState.animateScrollToPage(0) }
+                    pagerScope.launch { animatePagerSelection(pagerState, 0) }
                 }
                 Box(modifier = Modifier.fillMaxSize()) {
                     MusicLyricsViewportScrims(
@@ -955,7 +957,7 @@ internal fun MusicPlayerContent(
                                 showLyricsPreview = true,
                                 onOpenLyrics = {
                                     pagerScope.launch {
-                                        pagerState.animateScrollToPage(1)
+                                        animatePagerSelection(pagerState, 1)
                                     }
                                 },
                                 chromeVisible = musicChromeVisible,
@@ -1130,7 +1132,7 @@ internal fun MusicPlayerContent(
                             liquidGlassAdaptIndicatorToLabel = !com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled,
                             items = resolveMusicPlayerPageTabs(),
                             centerGlassContent = true,
-                            selectedIndex = pagerState.currentPage,
+                            selectedIndex = pagerState.tabSelectedPage,
                             onSelected = { page ->
                                 pagerScope.launch {
                                     animatePagerSelection(pagerState, page)
@@ -1149,10 +1151,7 @@ internal fun MusicPlayerContent(
                             tapPressRefractionEnabled = true,
                             isScrollInProgressProvider = { pagerState.isScrollInProgress },
                             indicatorPositionProvider = {
-                                resolveMusicPagerIndicatorPosition(
-                                    currentPage = pagerState.currentPage,
-                                    currentPageOffsetFraction = pagerState.currentPageOffsetFraction
-                                )
+                                pagerState.tabIndicatorPosition.coerceIn(0f, 1f)
                             },
                             externalPagerMotionEffectsEnabled = true,
                         )

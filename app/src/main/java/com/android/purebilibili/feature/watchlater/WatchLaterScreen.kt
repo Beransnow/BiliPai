@@ -1,6 +1,8 @@
 // 文件路径: feature/watchlater/WatchLaterScreen.kt
 package com.android.purebilibili.feature.watchlater
 
+import com.android.purebilibili.navigation.tabSelectedPage
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.feature.home.effectiveGridColumnCount
 import com.android.purebilibili.feature.home.effectiveGridColumnCountCompact
 import com.android.purebilibili.feature.home.gridColumnPinchEnabled
@@ -1288,11 +1290,11 @@ fun WatchLaterScreen(
                         liquidGlassAdaptIndicatorToLabel = !com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled,
                         role = com.android.purebilibili.core.ui.components.AppTabRowRole.FILTER,
                         options = watchLaterFilterOptions,
-                        selectedValue = filters[filterPagerState.currentPage],
+                        selectedValue = filters[filterPagerState.tabSelectedPage],
                         onSelectionChange = viewModel::selectFilter,
                         // 同一连续页位置驱动玻璃与原生指示器，拖动、回弹和点击切页保持同步。
                         indicatorPositionProvider = {
-                            filterPagerState.currentPage + filterPagerState.currentPageOffsetFraction
+                            filterPagerState.tabIndicatorPosition
                         },
                         isScrollInProgressProvider = { filterPagerState.isScrollInProgress },
                         pagerTargetPositionProvider = { filterPagerState.targetPage.toFloat() },

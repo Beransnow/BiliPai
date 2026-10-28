@@ -1225,7 +1225,16 @@ fun HomeScreen(
         chromeCategoryState.videos.isEmpty() && chromeCategoryState.liveRooms.isEmpty())
     val homeChromeBlurEnabled = isLiquidGlassEnabled || isHeaderBlurEnabled ||
         isBottomBarBlurEnabled || appThemeConfig.progressiveTopBlurEnabled
-    val shouldCaptureHomeChromeBackdrop = homeChromeBlurEnabled
+    // 渐进模糊没有有效半径、系统不支持或被预算关闭时，不单独录制整个 feed。
+    // 搜索、标签和底栏的独立磨砂/玻璃仍按原有需求保留背景源，纯色渐隐无需采样。
+    val progressiveTopBlurNeedsBackdrop =
+        com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur(
+            enabled = appThemeConfig.progressiveTopBlurEnabled && !isHeaderBlurEnabled,
+            hasBackdrop = true,
+            blurRadiusDp = homeLiquidGlassTuning.progressiveBlurRadius,
+        ) && !com.android.purebilibili.core.ui.performance.isLowBlurBudgetForced()
+    val shouldCaptureHomeChromeBackdrop = isLiquidGlassEnabled || isHeaderBlurEnabled ||
+        isBottomBarBlurEnabled || progressiveTopBlurNeedsBackdrop
     val homeMiuixBackdropSource = if (shouldCaptureHomeChromeBackdrop) {
         rememberChromeBackdropSource()
     } else {
@@ -2031,7 +2040,6 @@ fun HomeScreen(
                         .realtimeBlurEnabledProvider(),
                 )
             },
-            clearSnapshotEnabledProvider = videoCardTransitionBackgroundState.clearSnapshotEnabledProvider,
             scaleReductionProvider = {
                 resolveVideoCardTransitionBackgroundScaleReduction(backgroundSource)
             },

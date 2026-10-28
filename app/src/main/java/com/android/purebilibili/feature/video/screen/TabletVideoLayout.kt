@@ -1,6 +1,8 @@
 // 文件路径: feature/video/screen/TabletVideoLayout.kt
 package com.android.purebilibili.feature.video.screen
 
+import com.android.purebilibili.navigation.tabSelectedPage
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import com.android.purebilibili.core.util.HapticType
 
@@ -1052,10 +1054,10 @@ internal fun TabletSecondaryContent(
             ) {
                 TabletSecondaryLiquidTabRow(
                     labels = tabs.map { if (it == TabletSecondaryTab.QUEUE) externalQueueTitle else it.label },
-                    selectedIndex = pagerState.currentPage,
+                    selectedIndex = pagerState.tabSelectedPage,
                     onSelected = ::selectSecondaryTab,
                     indicatorPositionProvider = {
-                        pagerState.currentPage + pagerState.currentPageOffsetFraction
+                        pagerState.tabIndicatorPosition
                     },
                     isScrollInProgressProvider = { pagerState.isScrollInProgress },
                     modifier = Modifier.weight(1f),

@@ -1810,8 +1810,7 @@ internal fun VideoDetailScreenStateHolder(
             .sourceChromeSnapshot
             .takeIf { miuixVisualAssetsActive }
     val clickCoverSnapshot =
-        com.android.purebilibili.core.util.CardPositionManager
-            .sourceChromeSnapshotFor(scopedHeroDriver.sourcePixelOwner)
+        com.android.purebilibili.core.util.CardPositionManager.lastClickedVideoSourceChromeSnapshot
             .takeIf { miuixVisualAssetsActive }
     val homePrefetchCover = remember(bvid) {
         com.android.purebilibili.core.util.HomeCoverReturnPrefetchRegistry.snapshot()
@@ -4759,7 +4758,7 @@ internal fun VideoDetailScreenStateHolder(
                             if (
                                 entryOwnsMiuixCardTransition && miuixLandingState.enabled &&
                                 (miuixLandingState.sourceChromeSnapshot?.isNowPlayingBar == true ||
-                                    (CardPositionManager.nativeCardBitmapFor(miuixLandingState.sourcePixelOwner) != null &&
+                                    (CardPositionManager.lastClickedNativeCardBitmap != null &&
                                         miuixLandingState.sourceLayout == VideoCardSourceLayout.COVER_ONLY))
                             ) {
                                 { miuixLandingState.sourceBoundsProvider() }

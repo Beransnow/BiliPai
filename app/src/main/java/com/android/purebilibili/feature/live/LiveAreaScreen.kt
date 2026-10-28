@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.live
 
+import com.android.purebilibili.navigation.tabSelectedPage
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 
 import com.android.purebilibili.core.ui.AppContentColors
@@ -158,11 +160,11 @@ internal fun LiveAreaScreen(
                     liquidGlassAnimateLabelWidthChanges = true,
                     role = AppTabRowRole.SECONDARY,
                     options = areas.mapIndexed { index, parent -> AppSegmentOption(index, parent.name) },
-                    selectedValue = pager.currentPage,
+                    selectedValue = pager.tabSelectedPage,
                     onSelectionChange = { target -> scope.launch { animatePagerSelection(pager, target) } },
                     scrollable = true,
                     centerContent = false,
-                    indicatorPositionProvider = { pager.currentPage + pager.currentPageOffsetFraction },
+                    indicatorPositionProvider = { pager.tabIndicatorPosition },
                     isScrollInProgressProvider = { pager.isScrollInProgress },
                     isPagerDraggingProvider = { pagerDragHeld },
                     pagerTargetPositionProvider = { pager.targetPage.toFloat() },

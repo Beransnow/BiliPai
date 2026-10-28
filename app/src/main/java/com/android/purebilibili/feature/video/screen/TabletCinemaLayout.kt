@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.video.screen
 
+import com.android.purebilibili.navigation.tabSelectedPage
+import com.android.purebilibili.navigation.tabIndicatorPosition
 import com.android.purebilibili.feature.video.ui.components.RelatedVideoList
 
 import com.android.purebilibili.core.ui.AppContentColors
@@ -1233,10 +1235,10 @@ private fun CinemaSideCurtain(
                             ) {
                                 TabletSecondaryLiquidTabRow(
                                     labels = listOf("评论", "相关推荐"),
-                                    selectedIndex = pagerState.currentPage,
+                                    selectedIndex = pagerState.tabSelectedPage,
                                     onSelected = onTabSelected,
                                     indicatorPositionProvider = {
-                                        pagerState.currentPage + pagerState.currentPageOffsetFraction
+                                        pagerState.tabIndicatorPosition
                                     },
                                     isScrollInProgressProvider = { pagerState.isScrollInProgress },
                                 )
