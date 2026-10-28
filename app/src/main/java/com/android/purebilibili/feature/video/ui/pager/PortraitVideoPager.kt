@@ -1110,12 +1110,18 @@ fun PortraitVideoPager(
                     nextItem = nextItem,
                     currentLoadedInfo = collectionInfo
                 )
+                val currentIdentity = currentItem?.let(::resolvePortraitPagePlaybackIdentity)
+                val nextIdentity = nextItem?.let(::resolvePortraitPagePlaybackIdentity)
+                // Same-video parts are injected into pageItems before unrelated feed entries.
+                val hasNextPage = hasCollectionFollowUp &&
+                    currentIdentity?.bvid == nextIdentity?.bvid
                 val playbackEndAction = resolvePlaybackEndAction(
                     behavior = playbackCompletionBehavior,
                     autoPlayEnabled = autoPlayEnabled,
                     isExternalPlaylist = isExternalPlaylist,
                     externalPlaylistAutoContinueEnabled = externalPlaylistAutoContinueEnabled,
-                    hasNextPageOrSeasonTarget = hasCollectionFollowUp
+                    hasNextPage = hasNextPage,
+                    hasNextSeasonEpisode = hasCollectionFollowUp && !hasNextPage
                 )
                 when (playbackEndAction) {
                     PlaybackEndAction.STOP -> {
@@ -3987,7 +3993,7 @@ private fun VideoPageItem(
                 isCoined = pageEngagementState.coinCount > 0,
                 isFavorited = pageEngagementState.isFavorited,
                 isDisliked = pageEngagementState.isDisliked,
-                hasFavoritePlaylist = portraitHasExternalPlaylist && portraitExternalPlaylist.isNotEmpty(),
+                hasExternalPlaylist = portraitHasExternalPlaylist && portraitExternalPlaylist.isNotEmpty(),
                 commentCount = displayedCommentCount?.toLong(),
                 engagementCountsKnown = portraitDetailInfo?.bvid == bvid,
                 likeCount = pageEngagementState.likeCount.toLong(),
@@ -4300,7 +4306,7 @@ private fun VideoPageItem(
                     if (seekSession.isSliderMoving) seekSession.sliderPositionMs else progressState.current
                 },
                 onPlayModeClick = { PlaylistManager.togglePlayMode() },
-                onFavoritePlaylistClick = { showPortraitExternalPlaylist = true },
+                onExternalPlaylistClick = { showPortraitExternalPlaylist = true },
                 onPageSelect = { index ->
                     portraitDetailInfo?.pages?.getOrNull(index)?.let { page ->
                         onRequestCollectionItem(bvid, page.cid, portraitDetailInfo.ugc_season)
