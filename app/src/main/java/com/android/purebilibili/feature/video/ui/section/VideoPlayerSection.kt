@@ -823,7 +823,7 @@ private fun VideoPlayerSectionContent(
     val isCoined = state.isCoined
     val isFavorited = state.isFavorited
     val isTripleSubmitting = state.isTripleSubmitting
-    val hasFavoritePlaylist = state.hasFavoritePlaylist
+    val hasExternalPlaylist = state.hasExternalPlaylist
     val forceCoverOnly = state.forceCoverOnly
     val preserveCurrentFrameOnFullscreenChange = state.preserveCurrentFrameOnFullscreenChange
     val liveBackPreview = state.liveBackPreview
@@ -882,7 +882,7 @@ private fun VideoPlayerSectionContent(
     val onToggleFavorite = actions.onToggleFavorite
     val onTriple = actions.onTriple
     val onPageSelect = actions.onPageSelect
-    val onFavoritePlaylistClick = actions.onFavoritePlaylistClick
+    val onExternalPlaylistClick = actions.onExternalPlaylistClick
     val onSubtitleDisplayModePreferenceOverrideChange =
         actions.onSubtitleDisplayModePreferenceOverrideChange
     val onSubtitleTrackSelected = actions.onSubtitleTrackSelected
@@ -5646,7 +5646,7 @@ private fun VideoPlayerSectionContent(
                     coinCount = uiState.coinCount,
                     pages = uiState.info.pages,
                     currentPageIndex = currentPageIndex,
-                    hasFavoritePlaylist = hasFavoritePlaylist,
+                    hasExternalPlaylist = hasExternalPlaylist,
                     drawerHazeState = overlayDrawerHazeState,
                     statusBarAmbientFrame = statusBarAmbientFrame,
                     statusBarBackdropHeight = contentTopInset,
@@ -5820,7 +5820,7 @@ private fun VideoPlayerSectionContent(
                         onRelatedVideoClick(vid, options)
                     },
                     onPageSelect = onPageSelect,
-                    onFavoritePlaylistClick = onFavoritePlaylistClick,
+                    onExternalPlaylistClick = onExternalPlaylistClick,
                     onLandscapeCommentClick = onLandscapeCommentClick,
                     onShowDanmakuPool = { showDanmakuPoolSheet = true },
                     menuActions = actions.menuActions.copy(

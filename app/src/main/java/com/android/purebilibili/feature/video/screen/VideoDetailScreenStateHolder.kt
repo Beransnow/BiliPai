@@ -3736,10 +3736,8 @@ internal fun VideoDetailScreenStateHolder(
                 onTriple = engagementViewModel::doTripleAction,
                 onRelatedVideoClick = navigateToRelatedVideo,
                 onPageSelect = playbackActions.switchPage,
-                hasFavoritePlaylist = isExternalPlaylist &&
-                    externalPlaylistSource == ExternalPlaylistSource.FAVORITE &&
-                    playlistItems.size > 1,
-                onFavoritePlaylistClick = { showExternalPlaylistQueueSheet = true },
+                hasExternalPlaylist = shouldShowExternalPlaylistQueueBar,
+                onExternalPlaylistClick = { showExternalPlaylistQueueSheet = true },
                 onLandscapeCommentClick = {
                     landscapeCommentPanelVisible = !landscapeCommentPanelVisible
                 },
