@@ -42,15 +42,66 @@ import com.android.purebilibili.core.util.CardPositionManager
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(AndroidJUnit4::class)
 class VideoDetailWholeCardReturnUiRegressionTest {
     @get:Rule
     val rule = createComposeRule()
+
+    @Test
+    fun opacityUpdatesReuseDetailDrawingAndTransparentPixelsStillRevealLiveContent() {
+        val alpha = mutableFloatStateOf(0f)
+        val color = mutableStateOf(Color.Blue)
+        val draws = AtomicInteger()
+        val snapshot = Bitmap.createBitmap(120, 90, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(android.graphics.Color.TRANSPARENT)
+            // The right half stays transparent, as it can in a glass source card.
+            for (x in 0 until 60) for (y in 0 until 90) {
+                setPixel(x, y, android.graphics.Color.RED)
+            }
+        }.asImageBitmap()
+        rule.setContent {
+            Box(Modifier.size(120.dp, 90.dp).background(Color.White)
+                .videoDetailWholeCardReturnLayer(snapshot) { alpha.floatValue }
+                .drawWithContent {
+                    draws.incrementAndGet()
+                    drawRect(color.value)
+                }
+                .testTag("cached-detail"))
+        }
+        fun verify(weight: Float, liveColor: Color) {
+            val pixels = rule.onNodeWithTag("cached-detail").captureToImage().toPixelMap()
+            val left = pixels[pixels.width / 4, pixels.height / 2]
+            val right = pixels[pixels.width * 3 / 4, pixels.height / 2]
+            // Detail group first fades above white, then the snapshot covers its left half.
+            fun check(actual: Color, red: Float, green: Float, blue: Float) {
+                assertEquals(red, actual.red, 0.03f)
+                assertEquals(green, actual.green, 0.03f)
+                assertEquals(blue, actual.blue, 0.03f)
+            }
+            val r = weight + liveColor.red * (1f - weight)
+            val g = weight + liveColor.green * (1f - weight)
+            val b = weight + liveColor.blue * (1f - weight)
+            check(right, r, g, b)
+            check(left, weight + r * (1f - weight), g * (1f - weight), b * (1f - weight))
+        }
+        verify(0f, Color.Blue)
+        val initialDraws = draws.get()
+        for (weight in listOf(0.25f, 0.5f, 0.75f, 1f, 0.5f, 0f)) {
+            rule.runOnIdle { alpha.floatValue = weight }
+            verify(weight, Color.Blue)
+            assertEquals("Only opacity changed; detail must reuse its layer", initialDraws, draws.get())
+        }
+        rule.runOnIdle { color.value = Color.Green; alpha.floatValue = 0.5f }
+        verify(0.5f, Color.Green)
+        assertTrue("Real detail updates must remain live", draws.get() > initialDraws)
+    }
 
 
     @Test

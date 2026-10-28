@@ -762,10 +762,11 @@ internal fun resolveHomeTopContinuousSlabHeight(
 internal fun resolveHomeNativeTopProtectionAlpha(
     liquidGlassActive: Boolean,
     blurActive: Boolean,
+    contentRevealFraction: Float = 1f,
 ): Float = when {
     liquidGlassActive -> 0f
-    blurActive -> 0.96f
-    else -> 1f
+    blurActive -> 0.96f * contentRevealFraction.coerceIn(0f, 1f)
+    else -> contentRevealFraction.coerceIn(0f, 1f)
 }
 
 internal fun resolveHomeTopContinuousSlabSurfaceColor(
@@ -2399,9 +2400,18 @@ fun HomeHeader(
         val nativeTopProtectionAlpha = resolveHomeNativeTopProtectionAlpha(
             liquidGlassActive = isGlassEnabled || topChromeLiquidGlassEnabled,
             blurActive = isHeaderBlurEnabled || isProgressiveBlurActive,
+            contentRevealFraction = if (isProgressiveBlurActive || isProgressiveFadeActive) {
+                maxOf(
+                    searchRevealFraction,
+                    if (expandedTabHeight > 0.dp) {
+                        (currentTabHeight / expandedTabHeight).coerceIn(0f, 1f)
+                    } else 0f,
+                )
+            } else 1f,
         )
         // 仅关闭顶部液态玻璃时覆盖导航区域；放在模糊层之上，避免普通磨砂仍透出列表文字。
-        // 高度止于当前分类栏底部，不延伸到渐进模糊尾部，也不改变搜索行和标签的布局。
+        // 渐进特效下随搜索行和分类栏收起而淡出，仅剩状态栏时由连续渐进层负责背景。
+        // 未启用渐进特效时保留原生底色；液态玻璃路径不叠加此保护层。
         if (nativeTopProtectionAlpha > 0f) {
             Box(
                 modifier = Modifier

@@ -293,11 +293,11 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
     val isNowPlayingBar = sourceChromeSnapshot?.isNowPlayingBar == true
     // The complete bar (including buttons and material) is rendered by the media overlay.
     // Rebuilding an info band here would double-paint it over the frozen native pixels.
-    if (isNowPlayingBar && CardPositionManager.lastClickedNativeCardBitmap != null) return
+    val miuixHost = LocalMiuixVideoCardTransitionState.current
+    if (isNowPlayingBar && CardPositionManager.nativeCardBitmapFor(miuixHost.sourcePixelOwner) != null) return
 
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
-    val miuixHost = LocalMiuixVideoCardTransitionState.current
     val viewportWidthPx = miuixHost.layoutWidthProvider().takeIf { it > 1f }
         ?: with(density) { configuration.screenWidthDp.dp.toPx() }
     val viewportHeightPx = miuixHost.layoutHeightProvider().takeIf { it > 1f }
@@ -407,7 +407,7 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
         )
     }
 
-    val nativeCardLayer = CardPositionManager.lastClickedNativeCardLayer
+    val nativeCardLayer = CardPositionManager.nativeCardLayerFor(miuixHost.sourcePixelOwner)
     if (nativeCardLayer != null) {
         val infoCropXPx = layout.coverOffsetXPx + layout.coverWidthPx
         val infoCropYPx = frozenInfoAnchorYPx
@@ -656,7 +656,8 @@ internal fun VideoDetailReturnCoverChrome(
     },
     inverseScaleYProvider: () -> Float = inverseScaleXProvider,
 ) {
-    val nativeBarBitmap = CardPositionManager.lastClickedNativeCardBitmap
+    val sourceOwner = LocalMiuixVideoCardTransitionState.current.sourcePixelOwner
+    val nativeBarBitmap = CardPositionManager.nativeCardBitmapFor(sourceOwner)
     if (
         nativeBarBitmap != null &&
         shouldDrawNativeCoverOverlay(
@@ -679,7 +680,7 @@ internal fun VideoDetailReturnCoverChrome(
         )
         return
     }
-    val overlayLayer = CardPositionManager.lastClickedNativeCoverOverlayLayer
+    val overlayLayer = CardPositionManager.nativeCoverOverlayLayerFor(sourceOwner)
     if (
         overlayLayer != null &&
         shouldDrawNativeCoverOverlay(

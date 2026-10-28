@@ -3,6 +3,7 @@ package com.android.purebilibili.core.ui.transition
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.geometry.Rect
+import com.android.purebilibili.core.util.VideoCardPixelOwner
 
 /**
  * Miuix Nav card-morph state exposed to video-detail children.
@@ -40,6 +41,7 @@ internal data class MiuixVideoCardTransitionState(
     val sourceInfoBoundsProvider: () -> Rect? = { null },
     val sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY,
     val sourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null,
+    val sourcePixelOwner: VideoCardPixelOwner? = null,
 )
 
 internal val LocalMiuixVideoCardTransitionState = compositionLocalOf {

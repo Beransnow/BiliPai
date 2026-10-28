@@ -15,12 +15,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -58,9 +60,9 @@ internal fun resolveVideoDetailCoverDrawGeometry(
 }
 
 /**
- * 图片请求仍按固定视口解析，封面绘制节点则按当前交接矩形测量。
- * 4:3、16:10 封面可能高于 16:9 播放器；只向小 Canvas 外溢绘制会被图层边界裁掉。
- * 两种材质共用测量阶段的几何，不改变播放器本身的尺寸或图片请求身份。
+ * 图片请求和布局节点保持固定视口，交接矩形只在绘制阶段读取。
+ * 独立封面层按实际交接尺寸录制，避免 4:3、16:10 封面超出播放器时被小画布裁掉。
+ * 玻璃与原生材质共用此几何，不改变播放器尺寸、封面裁切或图片请求身份。
  */
 @Composable
 internal fun VideoDetailReturnCoverImage(
@@ -92,56 +94,56 @@ internal fun VideoDetailReturnCoverImage(
         onSuccess = { onDecoded() },
     )
     val path = remember { Path() }
-    val groupPaint = remember { Paint() }
+    val coverLayer = rememberGraphicsLayer()
+    // 录制期间的密度必须独立于可变 DrawScope；便捷 record(size) 重载会把
+    // 当前绘制作用域作为 Density，录制块中的 toPx/图片绘制可能递归读取自身。
+    val recordingDensity = LocalDensity.current
+    val recordingLayoutDirection = LocalLayoutDirection.current
     val semantics = if (contentDescription != null) Modifier.semantics {
         this.contentDescription = contentDescription
         role = Role.Image
     } else Modifier
     Box(modifier.then(sizeResolver).then(semantics)) {
-        Canvas(
-            Modifier.matchParentSize().videoDetailReturnMediaLayout(
-                landingLayout = landingLayout,
-                handoffProgressProvider = handoffProgressProvider,
-                inverseScaleXProvider = inverseScaleXProvider,
-                inverseScaleYProvider = inverseScaleYProvider,
-                contentTopInsetProvider = contentTopInsetProvider,
-                nativeSnapshotBoundsProvider = nativeSnapshotBoundsProvider,
-                slotOriginProvider = slotOriginProvider,
-            ),
-        ) {
+        Canvas(Modifier.matchParentSize()) {
             val alpha = alphaProvider().coerceIn(0f, 1f)
             if (alpha <= 0f || size.width <= 0f || size.height <= 0f) return@Canvas
             val progress = handoffProgressProvider()
-            val bounds = Rect(Offset.Zero, size)
-            val radius = if (landingLayout?.canRender == true) {
-                clipCornerDp.toPx() * progress.coerceIn(0f, 1f)
-            } else 0f
-            path.reset()
-            path.addRoundRect(RoundRect(bounds, CornerRadius(radius, radius)))
-            val geometry = resolveVideoDetailCoverDrawGeometry(
-                painter.intrinsicSize, bounds.size, contentScale, layoutDirection,
+            val entryFrame = resolveVideoDetailReturnMediaLayoutFrame(
+                containerWidthPx = size.width.roundToInt(),
+                containerHeightPx = size.height.roundToInt(),
+                landingLayout = landingLayout,
+                handoffProgress = progress,
+                inverseScaleX = inverseScaleXProvider(),
+                inverseScaleY = inverseScaleYProvider(),
+                contentTopInsetPx = contentTopInsetProvider().roundToPx(),
+                nativeSnapshotBounds = nativeSnapshotBoundsProvider?.invoke(),
             )
-            // Black loading backing and image must fade as a group. Bound that temporary
-            // surface to the media rect, and avoid it entirely at the opaque endpoint.
-            val hasBacking = backingColor != Color.Unspecified
-            val needsGroupAlpha = hasBacking && alpha < 1f
-            drawIntoCanvas { canvas ->
-                if (needsGroupAlpha) {
-                    groupPaint.alpha = alpha
-                    canvas.saveLayer(bounds, groupPaint)
-                }
-                try {
-                    clipPath(path) {
-                        if (hasBacking) {
-                            drawRect(backingColor, topLeft = bounds.topLeft, size = bounds.size)
-                        }
-                        translate(bounds.left + geometry.offset.x, bounds.top + geometry.offset.y) {
-                            with(painter) { draw(geometry.size, alpha = if (hasBacking) 1f else alpha) }
-                        }
+            val frame = resolveVideoDetailReturnMediaFrameInSlot(entryFrame, slotOriginProvider(), progress)
+            coverLayer.record(
+                density = recordingDensity,
+                layoutDirection = recordingLayoutDirection,
+                size = IntSize(frame.widthPx, frame.heightPx),
+            ) {
+                val bounds = Rect(Offset.Zero, size)
+                val radius = if (landingLayout?.canRender == true) {
+                    clipCornerDp.toPx() * progress.coerceIn(0f, 1f)
+                } else 0f
+                path.rewind()
+                path.addRoundRect(RoundRect(bounds, CornerRadius(radius, radius)))
+                val geometry = resolveVideoDetailCoverDrawGeometry(
+                    painter.intrinsicSize, bounds.size, contentScale, layoutDirection,
+                )
+                clipPath(path) {
+                    if (backingColor != Color.Unspecified) drawRect(backingColor)
+                    translate(geometry.offset.x, geometry.offset.y) {
+                        with(painter) { draw(geometry.size) }
                     }
-                } finally {
-                    if (needsGroupAlpha) canvas.restore()
                 }
+            }
+            // 背板与图片作为一组叠化；仅透明阶段才需要离屏合成。
+            coverLayer.alpha = alpha
+            translate(frame.offsetXPx.toFloat(), frame.offsetYPx.toFloat()) {
+                drawLayer(coverLayer)
             }
         }
     }

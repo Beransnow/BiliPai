@@ -233,7 +233,7 @@ internal fun BiliPaiNavDisplayHost(
     }
     val liveContainerTransitions = if (!liveContainerEnabled) emptyMap() else
         availableLiveContainerTransitions.filterKeys { target ->
-            target is BiliPaiNavKey.Live && isSettingsContainerBoundary(
+            (target is BiliPaiNavKey.Live || target is BiliPaiNavKey.LiveAreaDetail) && isSettingsContainerBoundary(
                 enabled = true,
                 backStack = stackSnapshot,
                 target = target,
@@ -728,6 +728,7 @@ internal fun BiliPaiNavDisplayHost(
         sourceMetadata.sourceInfoBounds,
         sourceMetadata.sourceLayout,
         sourceMetadata.sourceChromeSnapshot,
+        sourceMetadata.sourcePixelOwner,
     ) {
         MiuixVideoCardTransitionState(
             enabled = cardMorphAvailable,
@@ -741,6 +742,7 @@ internal fun BiliPaiNavDisplayHost(
             sourceInfoBoundsProvider = { sourceMetadata.sourceInfoBounds },
             sourceLayout = sourceMetadata.sourceLayout,
             sourceChromeSnapshot = sourceMetadata.sourceChromeSnapshot,
+            sourcePixelOwner = sourceMetadata.sourcePixelOwner,
         )
     }
     // 恢复 0.2.2 的预测返回背景链路：目标返回页（栈前一 key）在预测返回手势中

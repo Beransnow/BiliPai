@@ -84,6 +84,7 @@ internal fun VideoCardTransitionHostDepthLayer(
                 val frozenLayerAlpha = resolveVideoCardTransitionFrozenLayerAlpha(
                     exposure = exposure,
                     depthProgress = progress,
+                    realtimeBlurEnabled = realtimeBlur,
                 )
                 if (!shouldDrawVideoCardTransitionFrozenLayer(frozenLayerAlpha)) {
                     // Source and host use the same handoff boundary. No invisible blur
@@ -110,6 +111,7 @@ internal fun VideoCardTransitionHostDepthLayer(
                     density = density,
                     deviceCornerRadiusPx = deviceCornerRadiusPx,
                     scaleReduction = scaleReductionProvider(),
+                    snapshotBlurHandoffEnabled = realtimeBlur,
                 )
                 val frame = if (realtimeBlur) resolvedFrame else resolvedFrame.withoutDepthEffects()
                 applyVideoCardTransitionSnapshotFrame(

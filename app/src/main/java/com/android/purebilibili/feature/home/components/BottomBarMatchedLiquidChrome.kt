@@ -313,7 +313,7 @@ internal fun BottomBarMatchedReusableLiquidDock(
     liquidGlassEffectsEnabled: Boolean = true,
     /**
      * Allowlisted callers only: home search field, comment [BottomInputBar], and dynamic
-     * composer/detail chrome and the live room header that explicitly follow the same floating-dock contract.
+     * composer/detail chrome, live list search and the live room header that explicitly follow the same floating-dock contract.
      * Other chrome must leave this false.
      */
     reuseEnabled: Boolean = false,
@@ -483,6 +483,9 @@ internal fun BoxScope.BottomBarMatchedLiquidIndicator(
     bottomBarMotionSpec: BottomBarMotionSpec,
     isDarkTheme: Boolean,
     orientation: BottomBarLiquidOrientation = BottomBarLiquidOrientation.HORIZONTAL,
+    // Optional physical shell thickness for vertical rails; horizontal callers retain their defaults.
+    opticalShellExtentDp: Float? = null,
+    indicatorScaleTransformProvider: (() -> BottomBarIndicatorLayerTransform)? = null,
     indicatorAlignment: Alignment = Alignment.CenterStart,
     interactionModifier: Modifier = Modifier,
     wobblePosition: (() -> Float)? = null,
@@ -519,6 +522,8 @@ internal fun BoxScope.BottomBarMatchedLiquidIndicator(
         bottomBarMotionSpec = bottomBarMotionSpec,
         isDarkTheme = isDarkTheme,
         swapMotionAxes = orientation == BottomBarLiquidOrientation.VERTICAL,
+        opticalShellExtentDp = opticalShellExtentDp,
+        indicatorScaleTransformProvider = indicatorScaleTransformProvider,
         indicatorAlignment = indicatorAlignment,
         interactionModifier = interactionModifier,
         wobblePosition = wobblePosition,

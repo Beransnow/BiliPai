@@ -1076,7 +1076,12 @@ internal fun ElegantVideoCard(
             infoBaseContainerColor.copy(alpha = 1f)
         }
 
+    val cardTransitionClock = com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionClock.current
     val triggerCardClick by rememberUpdatedState(appActionWithFeedback {
+        // 进场尚未完成时，来源页上的后续点击不能覆盖正在使用的来源快照。
+        if (cardTransitionClock?.phase == com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase.OPENING &&
+            cardTransitionClock.sourceRoute == effectiveSharedElementSourceRoute
+        ) return@appActionWithFeedback
         cardCoordsRef.value?.takeIf { it.isAttached }?.videoCardSourceBoundsInRoot()?.let { bounds ->
             val sourceCoverBounds = coverCoordsRef.value
                 ?.takeIf { it.isAttached }

@@ -2139,6 +2139,7 @@ fun HomeScreen(
                                         ),
                                         onVideoClick = onPartitionVideoClick,
                                         onBangumiClick = onBangumiClick,
+                                        onBangumiSeasonClick = onBangumiSeasonClick,
                                         listState = partitionListState,
                                         scrollToTopRequestId = partitionScrollToTopRequestId
                                     )

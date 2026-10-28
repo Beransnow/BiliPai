@@ -178,7 +178,11 @@ internal fun HomeStyleSingleColumnVideoCard(
             .diskCacheKey(stationaryCoverUrl)
             .build()
     }
+    val cardTransitionClock = com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionClock.current
     val triggerClick by rememberUpdatedState(appActionWithFeedback {
+        if (cardTransitionClock?.phase == com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase.OPENING &&
+            cardTransitionClock.sourceRoute == sourceRoute
+        ) return@appActionWithFeedback
         cardBounds.value?.let { bounds ->
             val sourceCoverBounds = coverBounds.value
             CardPositionManager.recordVideoCardPosition(
