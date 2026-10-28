@@ -12,7 +12,7 @@
 <img src="https://img.shields.io/badge/Android-8.0%2B-34C759?style=flat-square" alt="Android 8.0+" />
 <img src="https://img.shields.io/badge/License-GPLv3-FF3B30?style=flat-square" alt="GPLv3" />
 
-[Download](#download) · [Telegram channel](https://t.me/bilipai666) · [Telegram group](https://t.me/bilipai888/1)
+[Download](#download) · [Wiki](https://github.com/jay3-yy/BiliPai/wiki) · [Telegram channel](https://t.me/bilipai666) · [Telegram group](https://t.me/bilipai888/1)
 
 </div>
 
