@@ -259,7 +259,7 @@ fun HomeScreen(
                 bvid = video.bvid,
                 cid = video.cid,
                 coverUrl = video.pic,
-                isVerticalVideo = video.isVertical,
+                isVerticalVideo = video.resolveIsVerticalForNavigation(),
                 source = HomeVideoClickSource.GRID,
                 sourceRoute = partitionVideoSourceRoute
             )
@@ -1968,7 +1968,7 @@ fun HomeScreen(
                     bvid = video.bvid,
                     cid = video.cid,
                     coverUrl = video.pic,
-                    isVerticalVideo = video.isVertical,
+                    isVerticalVideo = video.resolveIsVerticalForNavigation(),
                     source = HomeVideoClickSource.TODAY_WATCH,
                     sourceRoute = resolveHomeCategoryVideoSourceRoute(HomeCategory.RECOMMEND)
                 )
@@ -3125,7 +3125,7 @@ fun HomeScreen(
                              bvid = item.bvid,
                              cid = item.cid,
                              coverUrl = item.pic,
-                             isVerticalVideo = item.isVertical,
+                             isVerticalVideo = item.resolveIsVerticalForNavigation(),
                              source = HomeVideoClickSource.PREVIEW,
                              sourceRoute = resolveHomeCategoryVideoSourceRoute(currentCategory)
                          )

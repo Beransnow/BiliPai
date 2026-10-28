@@ -121,6 +121,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.data.model.CommentFraudStatus
+import com.android.purebilibili.data.repository.VideoRepository
 import com.android.purebilibili.data.repository.resolveCommentFraudLightMessage
 import com.android.purebilibili.data.repository.shouldShowCommentFraudResultDialog
 import androidx.core.view.WindowInsetsCompat
@@ -1005,6 +1006,9 @@ internal fun VideoDetailScreenStateHolder(
                             targetCid = resolvedCid,
                         ),
                         startInFullscreen = relatedNavStartInFullscreen.value,
+                        // 相关推荐列表加载时已预热过判定，这里同步取缓存，
+                        // 让新详情页首帧直接进入正确布局，不再先铺横屏。
+                        isVertical = VideoRepository.getCachedVerticalFlag(targetBvid),
                     )
 
                     // 先摘掉父详情壳 sharedBounds，再 push，避免相关卡嵌套在父壳内吃不到 morph。

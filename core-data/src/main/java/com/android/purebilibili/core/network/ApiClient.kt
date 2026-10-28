@@ -903,6 +903,13 @@ interface BilibiliApi {
     // [修复] 通过 aid 获取视频信息 - 用于移动端推荐流（可能只返回 aid）
     @GET("x/web-interface/view")
     suspend fun getVideoInfoByAid(@Query("aid") aid: Long): VideoDetailResponse
+
+    /**
+     * 轻量接口：只返回分P列表（含 dimension），用于在播放信息加载前判断横竖屏。
+     * 比 x/web-interface/view 少返回播放地址、字幕、相关推荐等大字段。
+     */
+    @GET("x/player/pagelist")
+    suspend fun getPageList(@Query("bvid") bvid: String): PageListResponse
     
     @GET("x/tag/archive/tags")
     suspend fun getVideoTags(@Query("bvid") bvid: String): VideoTagResponse
