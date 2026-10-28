@@ -573,6 +573,12 @@ interface BilibiliApi {
         @Query("ps") ps: Int = 20
     ): PopularResponse  //  使用专用响应类型
 
+    @GET("pgc/web/rank/list")
+    suspend fun getPgcRanking(@QueryMap params: Map<String, String>): kotlinx.serialization.json.JsonObject
+
+    @GET("pgc/season/rank/web/list")
+    suspend fun getPgcSeasonRanking(@QueryMap params: Map<String, String>): kotlinx.serialization.json.JsonObject
+
     @GET("x/web-interface/ranking/v2")
     suspend fun getRankingVideos(
         @QueryMap params: Map<String, String>
