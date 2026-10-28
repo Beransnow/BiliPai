@@ -1366,11 +1366,11 @@ private fun PlaybackInteractionSettingsSection(
                     icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_PLAY_ON_OPEN),
                 title = playbackSettingTitle("playback.click_to_play_enabled"),
                 subtitle = if (clickToPlayEnabled) {
-                    "进入视频详情页时自动开始播放"
+                    "进入视频详情页时自动开始播放；不影响已开始的连续播放"
 
 
         } else {
-                    "关闭后进入视频详情页需手动播放"
+                    "进入视频详情页需手动播放；开始播放后仍可按播完策略连续播放"
                 },
                 checked = clickToPlayEnabled,
                 onCheckedChange = {
@@ -1472,7 +1472,7 @@ private fun PlaybackInteractionSettingsSection(
         SettingsItemAnchor("playback.playback_completion_behavior") {
             SettingsSingleChoicePreference(
                 title = settingItemTitle("playback.playback_completion_behavior"),
-                subtitle = "“自动”按下方续播开关决定；顺序、循环和暂停优先于续播开关",
+                subtitle = "分 P 与视频合集分别处理；外部列表内先续播当前视频分 P，再按列表切视频。“自动”受下方两个连播开关控制",
                 options = playbackOrderOptions,
                 selectedValue = playbackCompletionBehavior,
                 onSelectionChange = { behavior ->
@@ -1488,7 +1488,7 @@ private fun PlaybackInteractionSettingsSection(
             AppSwitchPreference(
                 icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_PLAY_NEXT),
                 title = playbackSettingTitle("playback.auto_play_enabled"),
-                subtitle = "播完后选择“自动”时，控制分 P 或合集是否继续下一集",
+                subtitle = "“自动”策略下控制当前视频下一 P；非外部列表播放时，也控制视频合集续播",
                 checked = autoPlayEnabled,
                 onCheckedChange = {
                     scope.launch {
@@ -1504,7 +1504,7 @@ private fun PlaybackInteractionSettingsSection(
             AppSwitchPreference(
                 icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYLIST_AUTO_CONTINUE),
                 title = playbackSettingTitle("playback.external_playlist_auto_continue_enabled"),
-                subtitle = "播完后选择“自动”时，控制收藏夹、稍后再看等列表是否继续下一条",
+                subtitle = "“自动”策略下，当前视频最后一 P 播完后，控制稍后再看、收藏夹等队列是否播放下一视频",
                 checked = externalPlaylistAutoContinueEnabled,
                 onCheckedChange = {
                     scope.launch {

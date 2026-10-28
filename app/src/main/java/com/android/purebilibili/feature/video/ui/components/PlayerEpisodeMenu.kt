@@ -46,6 +46,37 @@ import com.android.purebilibili.data.model.response.UgcSeason
 import com.android.purebilibili.feature.home.components.cards.VideoCardCoverDurationText
 import kotlinx.coroutines.launch
 
+/** Keep current-video parts separate from a surrounding watch-later/favorite/UP queue. */
+@Composable
+fun PlayerEpisodeSourceMenu(
+    externalPlaylistTitle: String,
+    onDismiss: () -> Unit,
+    onPartsClick: () -> Unit,
+    onExternalPlaylistClick: () -> Unit,
+    isFullscreen: Boolean = false,
+    anchorBounds: IntRect? = null,
+    source: com.android.purebilibili.core.ui.components.AppGlassMenuSource? = null,
+) {
+    PlayerSelectionPopup(
+        title = "选集",
+        showTitle = false,
+        placement = if (anchorBounds != null) PlayerListPopupPlacement.ANCHOR_END
+            else if (isFullscreen) PlayerListPopupPlacement.END_BOTTOM else PlayerListPopupPlacement.CENTER,
+        anchorBounds = anchorBounds,
+        source = source,
+        onDismissRequest = onDismiss,
+    ) {
+        PlayerSelectionItem(
+            index = 0, optionCount = 2, text = "分P选集", selected = false,
+            onClick = { onDismiss(); onPartsClick() },
+        )
+        PlayerSelectionItem(
+            index = 1, optionCount = 2, text = externalPlaylistTitle, selected = false,
+            onClick = { onDismiss(); onExternalPlaylistClick() },
+        )
+    }
+}
+
 /** One bounded lazy viewport in the native page/detail region in every player mode. */
 @Composable
 fun PlayerEpisodeMenu(
