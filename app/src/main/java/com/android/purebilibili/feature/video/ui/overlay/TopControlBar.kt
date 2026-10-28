@@ -56,6 +56,7 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.feature.video.ui.components.PiliPlusDanmakuGlyph
 import com.android.purebilibili.feature.video.ui.components.PiliPlusDanmakuSettingsIcon
+import com.android.purebilibili.feature.video.ui.components.PiliPlusDanmakuSendIcon
 import com.android.purebilibili.feature.video.ui.feedback.likeBurstAnchor
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -229,7 +230,9 @@ fun TopControlBar(
                         }
                         if (policy.showDanmakuActions) {
                             if (onSendDanmakuClick != null) {
-                                HeaderIcon(Icons.Outlined.Comment, "发弹幕", onSendDanmakuClick)
+                                HeaderButton("发弹幕", onSendDanmakuClick) {
+                                    PiliPlusDanmakuSendIcon(tint = Color.White, size = 20.dp)
+                                }
                             }
                             if (onDanmakuToggle != null) {
                                 val description = if (danmakuEnabled) "关闭弹幕" else "开启弹幕"

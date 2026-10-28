@@ -422,7 +422,7 @@ class PortraitVideoPagerPolicyTest {
     }
 
     @Test
-    fun portraitActiveAid_fallsBackToItemIdentityOnlyBeforePlayerTargetsPage() {
+    fun portraitActiveAid_keepsItemIdentityUntilPlayerHasLoadedAid() {
         assertEquals(
             1001L,
             resolvePortraitActiveAid(
@@ -432,7 +432,7 @@ class PortraitVideoPagerPolicyTest {
             )
         )
         assertEquals(
-            0L,
+            1001L,
             resolvePortraitActiveAid(
                 isPlayerReadyForThisVideo = true,
                 itemAid = 1001L,

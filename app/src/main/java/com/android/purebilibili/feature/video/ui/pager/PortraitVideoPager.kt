@@ -4612,7 +4612,9 @@ internal fun resolvePortraitActiveAid(
     itemAid: Long,
     currentPlayingAid: Long
 ): Long {
-    return if (isPlayerReadyForThisVideo) currentPlayingAid.coerceAtLeast(0L) else itemAid
+    // 切换开始时播放器先清空 AID；此时列表身份仍有效，不能用未知值覆盖。
+    return if (isPlayerReadyForThisVideo && currentPlayingAid > 0L) currentPlayingAid
+        else itemAid.coerceAtLeast(0L)
 }
 
 internal fun resolvePortraitOverlayControlsVisible(
