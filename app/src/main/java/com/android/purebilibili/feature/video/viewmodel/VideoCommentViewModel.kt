@@ -22,6 +22,7 @@ import com.android.purebilibili.data.model.response.ReplyPicture
 import com.android.purebilibili.data.model.response.ReplyVoteCard
 import com.android.purebilibili.data.repository.CommentGrpcRepository
 import com.android.purebilibili.data.repository.CommentRepository
+import com.android.purebilibili.data.repository.CommentReadException
 import com.android.purebilibili.data.repository.CommentFraudRepository
 import com.android.purebilibili.data.repository.shouldStartCommentFraudDetection
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -107,6 +108,7 @@ data class CommentUiState(
     val replyCountSubject: CommentSubjectKey? = null,
     val replyCountIsAuthoritative: Boolean = false,
     val repliesError: String? = null,
+    val commentReadBlocked: Boolean = false,
     val isRepliesEnd: Boolean = false,
     val nextPage: Int = 1,
     // 排序状态
@@ -403,7 +405,10 @@ class VideoCommentViewModel : ViewModel() {
             isSending = currentState.isSending,
             sendError = currentState.sendError,
             replyTarget = currentState.replyTarget,
-            composerDrafts = currentState.composerDrafts
+            composerDrafts = currentState.composerDrafts,
+            commentReadBlocked = currentState.commentReadBlocked,
+            canInputComment = currentState.canInputComment,
+            rootInputHint = currentState.rootInputHint,
         )
         loadComments()
     }
@@ -534,9 +539,11 @@ class VideoCommentViewModel : ViewModel() {
                     repliesError = null,
                     isRepliesEnd = isEnd,
                     nextPage = pageToLoad + 1,
-                    rootInputHint = data.control?.rootInputText?.takeIf { it.isNotBlank() } ?: current.rootInputHint,
+                    rootInputHint = data.control?.rootInputText?.takeIf { it.isNotBlank() }
+                        ?: if (current.commentReadBlocked) CommentUiState().rootInputHint else current.rootInputHint,
                     childInputHint = data.control?.childInputText?.takeIf { it.isNotBlank() } ?: current.childInputHint,
-                    canInputComment = data.control?.inputDisable?.not() ?: current.canInputComment,
+                    canInputComment = data.control?.inputDisable?.not() ?: (current.commentReadBlocked || current.canInputComment),
+                    commentReadBlocked = false,
                     showUpFlag = data.config?.showUpFlag ?: current.showUpFlag,
                     pinnedReplyIds = pinnedReplyIds.toImmutableSet(),
                     grpcNextOffset = data.grpcNextOffset.takeIf { it.isNotBlank() },
@@ -550,10 +557,14 @@ class VideoCommentViewModel : ViewModel() {
             onState = { loading, end, failure ->
                 if (mainPagingSession === session && requestId == commentLoadRequestId &&
                     shouldApplyCommentSubjectResult(requestSubject, currentSubject)) {
+                    val blocked = (failure as? CommentReadException)?.commentInputBlocked == true
                     _commentState.update { it.copy(
                         isRepliesLoading = loading, isRepliesRefreshing = refresh && !initialPageApplied && loading,
                         isRepliesEnd = end,
-                        repliesError = if (failure != null && (cached == null || initialPageApplied)) failure.message ?: "加载评论失败" else null
+                        repliesError = if (failure != null && (blocked || cached == null || initialPageApplied)) failure.message ?: "加载评论失败" else null,
+                        commentReadBlocked = blocked || it.commentReadBlocked,
+                        canInputComment = if (blocked) false else it.canInputComment,
+                        rootInputHint = if (blocked) failure?.message ?: "评论区暂不可用" else it.rootInputHint,
                     ) }
                 }
             }
@@ -1136,6 +1147,10 @@ class VideoCommentViewModel : ViewModel() {
         if (message.isBlank() && imageUris.isEmpty()) return
         val currentState = _commentState.value
         if (currentState.isSending) return
+        if (!currentState.canInputComment) {
+            _commentState.update { it.copy(sendError = it.rootInputHint.ifBlank { "当前评论区暂不可发言" }) }
+            return
+        }
         
         _commentState.value = currentState.copy(isSending = true, sendError = null)
 

@@ -1226,26 +1226,13 @@ internal fun TabletSecondaryContent(
                             }
                             if (repliesError != null) {
                                 item(key = "tablet_comment_refresh_error") {
-                                    Row(
+                                    com.android.purebilibili.feature.video.ui.components.VideoCommentLoadError(
+                                        message = repliesError,
+                                        onRetry = { if (commentState.replies.isNotEmpty() && !commentState.isRepliesEnd) commentActions.loadComments() else commentActions.refreshComments() },
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                    ) {
-                                        AppText(
-                                            text = repliesError,
-                                            color = AppContentColors.error(),
-                                            modifier = Modifier.weight(1f),
-                                            style = MaterialTheme.typography.bodySmall,
-                                        )
-                                        AppTextButton(onClick = {
-                                            if (commentState.replies.isNotEmpty() && !commentState.isRepliesEnd) {
-                                                commentActions.loadComments()
-                                            } else commentActions.refreshComments()
-                                        }) {
-                                            AppText("重试")
-                                        }
-                                    }
+                                            .then(if (commentState.replies.isEmpty() && commentState.voteCard == null) Modifier.fillParentMaxHeight(0.7f) else Modifier),
+                                    )
                                 }
                             }
                             items(
