@@ -369,6 +369,7 @@ fun BottomControlBar(
                             icon = if (subtitleControlState.enabled) Icons.Filled.ClosedCaption else Icons.Outlined.ClosedCaptionOff,
                             description = "字幕", width = slotWidth, height = 30.dp,
                             selected = subtitleControlState.enabled,
+                            selectedTint = com.android.purebilibili.core.ui.AppContentColors.accent(),
                             onClick = { localMenu = PlayerControlAnchor.SUBTITLE },
                             modifier = anchor(PlayerControlAnchor.SUBTITLE, "player_subtitle_action"),
                         )

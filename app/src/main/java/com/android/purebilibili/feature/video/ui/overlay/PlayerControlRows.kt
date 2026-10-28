@@ -111,6 +111,7 @@ internal fun PlayerControlIconAction(
     dimmed: Boolean = false,
     iconSize: Dp = 22.dp,
     onLongClick: (() -> Unit)? = null,
+    selectedTint: Color = Color.White,
 ) {
     val glass = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
     // 玻璃单图标使用正圆；关闭玻璃时保留调用方原生槽位。
@@ -130,7 +131,8 @@ internal fun PlayerControlIconAction(
                 AppIcon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = Color.White.copy(alpha = if (dimmed) 0.5f else 1f),
+                    tint = (if (selected) selectedTint else Color.White)
+                        .copy(alpha = if (dimmed) 0.5f else 1f),
                     modifier = Modifier.size(iconSize),
                 )
             }
