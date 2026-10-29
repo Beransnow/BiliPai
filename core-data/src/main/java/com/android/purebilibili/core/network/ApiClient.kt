@@ -512,6 +512,12 @@ interface BilibiliApi {
         @Query("web_location") webLocation: String = "333.1387",
     ): com.android.purebilibili.data.model.response.FavoriteCourseResponse
 
+    @retrofit2.http.POST("x/community/cosmo/interface/simple_action")
+    suspend fun favoriteOpusAction(
+        @Query("csrf") csrf: String,
+        @retrofit2.http.Body body: kotlinx.serialization.json.JsonObject,
+    ): SimpleApiResponse
+
     @retrofit2.http.FormUrlEncoded
     @retrofit2.http.POST("x/article/favorites/del")
     suspend fun deleteFavoriteArticle(
@@ -634,7 +640,7 @@ interface BilibiliApi {
     @GET("https://api.live.bilibili.com/xlive/web-ucenter/user/following")
     suspend fun getFollowedLive(
         @Query("page") page: Int = 1,
-        @Query("page_size") pageSize: Int = 30,
+        @Query("page_size") pageSize: Int = 9,
         @Query("ignoreRecord") ignoreRecord: Int = 1,
         @Query("hit_ab") hitAb: Boolean = true
     ): FollowedLiveResponse
@@ -1712,6 +1718,39 @@ interface SearchApi {
 }
 
 interface ArticleApi {
+    @GET("x/article/list/web/articles")
+    suspend fun getCollection(
+        @Query("id") id: Long,
+        @Query("web_location") webLocation: String = "333.1400",
+    ): com.android.purebilibili.data.model.response.ArticleCollectionResponse
+
+    @GET("x/article/viewinfo")
+    suspend fun getArticleInfo(
+        @QueryMap params: Map<String, String>
+    ): com.android.purebilibili.data.model.response.ArticleInfoResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/article/favorites/add")
+    suspend fun addFavorite(
+        @retrofit2.http.Field("id") id: Long,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/article/favorites/del")
+    suspend fun removeFavorite(
+        @retrofit2.http.Field("id") id: Long,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/article/like")
+    suspend fun likeArticle(
+        @retrofit2.http.Field("id") id: Long,
+        @retrofit2.http.Field("type") type: Int,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
     @GET("x/article/view")
     suspend fun getArticleView(
         @QueryMap params: Map<String, String>
@@ -2244,6 +2283,12 @@ interface SpaceApi {
         @Query("mid") mid: Long
     ): com.android.purebilibili.data.model.response.SpaceNoticeResponse
     
+    @retrofit2.http.POST("https://mall.bilibili.com/community-hub/small_shop/feed/tab/item")
+    suspend fun getSpaceShop(
+        @retrofit2.http.QueryMap params: Map<String, String>,
+        @retrofit2.http.Body body: kotlinx.serialization.json.JsonObject,
+    ): kotlinx.serialization.json.JsonObject
+
     //  用户动态 (需要登录 Cookie)
     @GET("x/polymer/web-dynamic/v1/feed/space")
     suspend fun getSpaceDynamic(
