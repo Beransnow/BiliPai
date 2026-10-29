@@ -3252,17 +3252,9 @@ internal fun VideoDetailScreenStateHolder(
     val handlePipClick = {
         // 使用 MiniPlayerManager 进入应用内小窗模式
         miniPlayerManager?.let { manager ->
-            val stopPlaybackOnExit = com.android.purebilibili.core.store.SettingsManager
-                .getStopPlaybackOnExitSync(context)
-            if (stopPlaybackOnExit) {
-                com.android.purebilibili.core.util.Logger.d(
-                    "VideoDetailScreen",
-                    "Stop-on-exit enabled, skip mini mode and leave page directly"
-                )
-                manager.markLeavingByNavigation(expectedBvid = currentBvid)
-                onBack()
-                return@let
-            }
+            // 用户显式点击「小窗」是明确的小窗意图，理应优先于「退出时停止播放」：
+            // 那个设置约束的是普通返回/离开页面，不该把小窗请求改写成退出——
+            // 否则按钮点了等于没点，还会顺手停掉播放（issue #1041 的现象）。
 
             //  [埋点] PiP 进入事件
             com.android.purebilibili.core.util.AnalyticsHelper.logPictureInPicture(
