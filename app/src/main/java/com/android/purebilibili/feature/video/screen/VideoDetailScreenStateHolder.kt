@@ -1201,16 +1201,26 @@ internal fun VideoDetailScreenStateHolder(
         }
     }
 
-    // Keep the existing morph and body reveal intact. Only animated fresh entries
-    // stagger post-landing work; mini-player reuse and animation-off entries bypass it.
+    // 普通导航与整卡导航共用落位后的工作错峰；不借卡片开关改变玻璃或原生布局。
+    // 已有播放器复用入口不延后；entry 内阶段单向锁存，返回预览不重新关闭许可。
     val entryWorkPhase = rememberVideoDetailEntryWorkPhase(
-        staggerWork = transitionEnabled && deferVideoDetailEntryLoad && !reuseFromMiniPlayerAtEntry,
+        staggerWork = shouldStaggerVideoDetailEntryWork(
+            deferEntryLoad = deferVideoDetailEntryLoad,
+            reuseFromMiniPlayerAtEntry = reuseFromMiniPlayerAtEntry,
+        ),
         contentReady = isTransitionFinished && detailContentState != null,
         isVisible = isVisible,
     )
     val entryPlaybackReady = entryTransitionFinished && entryWorkPhase != VideoDetailEntryWorkPhase.Content
     val entryRelatedReady = entryWorkPhase == VideoDetailEntryWorkPhase.Related
     val entryCommentsReady = entryTransitionFinished && entryWorkPhase >= VideoDetailEntryWorkPhase.Comments
+    ReleaseVideoCardCaptureAfterEntryWork(
+        enabled = transitionEnabled,
+        bvid = bvid,
+        sourceRoute = sourceRouteForSharedElement,
+        ready = isTransitionFinished && detailContentState != null && entryRelatedReady,
+        isVisible = isVisible,
+    )
 
     //  监听评论状态
     val commentStateHandle = commentViewModel.commentState.collectAsStateWithLifecycle()
@@ -5362,6 +5372,9 @@ internal fun VideoDetailScreenStateHolder(
                                         isTransitionFinished = isTransitionFinished ||
                                             keepLoadedContentForBackPreview ||
                                             suppressEnterFadeAfterBackPreview,
+                                        // 首次重正文等入场完成，静态骨架沿用现有材质与揭示几何。
+                                        // 返回预览和已经挂载的内容由完成锁存继续保留。
+                                        deferFreshEntryContent = deferVideoDetailEntryLoad,
                                         isLeaving = isLeaving,
                                         rootTransitionOwnsContentAlpha = detailShellSharedBoundsEnabled,
                                         animateLateEntryContent = currentBvid == bvid &&
