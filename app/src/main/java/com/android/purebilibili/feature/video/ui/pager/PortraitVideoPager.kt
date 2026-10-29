@@ -147,7 +147,12 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import com.android.purebilibili.core.network.NetworkModule
+import android.os.SystemClock
 import com.android.purebilibili.core.player.HiResCompatibleRenderersFactory
+import com.android.purebilibili.core.player.SeekTickHapticPolicy
+import com.android.purebilibili.core.ui.AppHapticScene
+import com.android.purebilibili.core.util.HapticType
+import com.android.purebilibili.core.util.rememberHapticFeedback
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.store.DanmakuSettings
 import com.android.purebilibili.core.util.NetworkUtils
@@ -2825,6 +2830,9 @@ private fun VideoPageItem(
     
     // 手势调整进度状态
     var isSeekGesture by remember { mutableStateOf(false) }
+    // 中央横滑调进度的刻度触感：拖起轻振，跨过整秒时短振，快速滑动按 60ms 限频。
+    val seekGestureHaptic = rememberHapticFeedback(AppHapticScene.PLAYER_SEEK)
+    val seekGestureHapticPolicy = remember { SeekTickHapticPolicy() }
     var seekStartPosition by remember { mutableLongStateOf(0L) }
     var seekTargetPosition by remember { mutableLongStateOf(0L) }
     var isLongPressing by remember { mutableStateOf(false) }
@@ -3203,6 +3211,14 @@ private fun VideoPageItem(
                                     .coerceIn(0L, progressState.duration)
                                 seekTargetPosition = seekStartPosition
                                 isSeekGesture = true
+                                if (seekGestureHapticPolicy.start(
+                                        seekStartPosition,
+                                        progressState.duration,
+                                        SystemClock.uptimeMillis()
+                                    )
+                                ) {
+                                    seekGestureHaptic(HapticType.LIGHT)
+                                }
                             }
                         },
                         onDragEnd = {
@@ -3214,11 +3230,13 @@ private fun VideoPageItem(
                             } finally {
                                 isSeekGesture = false
                                 totalDragDistanceX = 0f
+                                seekGestureHapticPolicy.finish()
                             }
                         },
                         onDragCancel = {
                             isSeekGesture = false
                             totalDragDistanceX = 0f
+                            seekGestureHapticPolicy.finish()
                         },
                         onHorizontalDrag = { _, dragAmount ->
                             if (isCurrentPage && isSeekGesture && progressState.duration > 0L) {
@@ -3239,11 +3257,19 @@ private fun VideoPageItem(
                                     seekTargetPosition = (seekStartPosition + seekDelta)
                                         .coerceIn(0L, progressState.duration)
                                 }
+                                if (seekGestureHapticPolicy.update(
+                                        seekTargetPosition,
+                                        SystemClock.uptimeMillis()
+                                    )
+                                ) {
+                                    seekGestureHaptic(HapticType.GESTURE_STEP)
+                                }
                             }
                         }
                     )
                 } finally {
                     isSeekGesture = false
+                    seekGestureHapticPolicy.finish()
                 }
             }
     ) {
