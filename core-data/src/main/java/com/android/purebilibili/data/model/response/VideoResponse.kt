@@ -318,8 +318,7 @@ fun Dash.getBestAudio(preferQuality: Int = -1): DashAudio? {
  * PCDN 由用户设备互相供给带宽，画质与稳定性都不如常规 CDN，不少用户会在路由器或
  * 防火墙里直接屏蔽它。屏蔽后如果只认 `baseUrl`，下载和播放都会直接失败。
  *
- * 判定口径与 app 模块的 `CdnOptimizationPolicy.isRiskyCdnHost` 对齐，并参考 PiliPlus
- * 的 CDN 分类，覆盖这些形态：
+ * 判定口径与 app 模块的 `CdnOptimizationPolicy.isRiskyCdnHost` 对齐，覆盖这些形态：
  *  - `*.mcdn.bilivideo.(com|cn|net)`（域名形态的 mcdn）
  *  - 裸 IP 主机（mcdn 常见的另一种形态，如 `175.12.94.20:8080`）
  *  - 常规镜像域名但带 `os=mcdn` 参数（upos-*-mirror*?os=mcdn）
@@ -339,8 +338,8 @@ internal fun isPcdnUrl(url: String): Boolean {
  * 选线：优先常规 CDN，全部候选都是 PCDN 时替换 host 兜底。
  *
  * 顺序保持稳定：按 baseUrl → backupUrl 的原始顺序挑第一个非 PCDN 的地址。
- * 若整份响应里只有 PCDN 地址（屏蔽 mcdn 的用户会遇到），参考 PiliPlus 的做法
- * 把 host 换成常规 CDN —— upgcxcode 路径与签名在不同 host 之间是通用的，
+ * 若整份响应里只有 PCDN 地址，则将 host 换成常规 CDN；
+ * upgcxcode 路径与签名在不同 host 之间通用，
  * 这样即便 PCDN 全被屏蔽也仍然能下载/播放，而不是直接失败。
  */
 internal fun preferredDashUrl(baseUrl: String, backupUrl: List<String>?): String {
