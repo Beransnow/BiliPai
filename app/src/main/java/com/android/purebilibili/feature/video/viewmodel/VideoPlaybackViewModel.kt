@@ -9335,6 +9335,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         val preferredCandidates = applyPlaybackCdnPreference(
             candidates = cdnRewrite?.candidates ?: originalCandidates,
             preference = playbackCdnPreference.value,
+            pluginApplied = cdnRewrite != null,
         )
         val allVideoUrls = preferredCandidates.map { it.videoUrl }
         val allAudioUrls = preferredCandidates.map { it.audioUrl.orEmpty() }
