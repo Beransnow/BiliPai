@@ -11,6 +11,7 @@ import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -102,7 +103,8 @@ fun CommentDetailScreen(
     var previewTextContent by remember { mutableStateOf<ImagePreviewTextContent?>(null) }
     var showImagePreview by remember { mutableStateOf(false) }
 
-    val currentMid = remember { TokenManager.midCache ?: 0L }
+    val accountIdentity by TokenManager.accountIdentity.collectAsStateWithLifecycle()
+    val currentMid = accountIdentity.mid ?: 0L
     val appearance = rememberVideoCommentAppearance()
 
     LaunchedEffect(oid, rootId, type, targetId) {
@@ -112,6 +114,9 @@ fun CommentDetailScreen(
             type = type,
             targetReplyId = targetId
         )
+    }
+    DisposableEffect(viewModel) {
+        onDispose { viewModel.close() }
     }
 
     BackHandler(enabled = true) {
