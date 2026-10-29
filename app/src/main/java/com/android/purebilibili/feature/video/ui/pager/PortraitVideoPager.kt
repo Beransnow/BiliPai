@@ -414,6 +414,9 @@ fun PortraitVideoPager(
     val scope = rememberCoroutineScope()
     val engagementAccount by TokenManager.accountIdentity.collectAsStateWithLifecycle()
     val engagementSession = engagementAccount to TokenManager.sessDataCache
+    val coinSuccessHaptic = rememberUpdatedState(
+        com.android.purebilibili.feature.video.ui.components.rememberVideoActionSuccessHaptic(isActive)
+    )
     val engagementOwner = remember(engagementSession, viewModel, engagementViewModel) {
         PortraitVideoEngagementStore(
             parentScope = scope,
@@ -421,6 +424,12 @@ fun PortraitVideoPager(
             onEvent = { _, event ->
                 when (event) {
                     is VideoEngagementEvent.Message -> viewModel.toast(event.text)
+                    is VideoEngagementEvent.CoinSucceeded -> {
+                        // store 仅转发当前活动视频的事件；账号仍需按消费时身份校验。
+                        if (com.android.purebilibili.feature.video.viewmodel.matchesVideoEngagementAccount(event.accountSession)) {
+                            coinSuccessHaptic.value()
+                        }
+                    }
                     is VideoEngagementEvent.OpenFollowGroups -> viewModel.showFollowGroupDialogForUser(event.mid)
                     VideoEngagementEvent.InvalidateFavoriteFolders -> viewModel.invalidateFavoriteFolderCache()
                     is VideoEngagementEvent.LoadVideo -> onVideoChange(event.bvid)
@@ -2358,11 +2367,13 @@ private fun VideoPageItem(
         com.android.purebilibili.feature.video.ui.components.rememberVideoScreenshotAction(
             captureBitmap = { _, width, height -> enhancement.captureScreenshot(width, height) }
         )
+    val portraitShareMenuSource = com.android.purebilibili.core.ui.components.rememberAppGlassMenuSource()
     var pendingPortraitShare by remember(bvid, currentPlayingCid) {
         mutableStateOf<com.android.purebilibili.feature.video.share.VideoSharePayload?>(null)
     }
     com.android.purebilibili.feature.video.share.VideoShareSheetHost(
         payload = pendingPortraitShare,
+        glassSource = portraitShareMenuSource,
         onDismiss = { pendingPortraitShare = null },
     )
     var portraitPlayerMenuVisible by remember(bvid) { mutableStateOf(false) }
@@ -2370,7 +2381,7 @@ private fun VideoPageItem(
     val portraitExternalPlaylist by PlaylistManager.playlist.collectAsStateWithLifecycle()
     val portraitHasExternalPlaylist by PlaylistManager.isExternalPlaylist.collectAsStateWithLifecycle()
     var portraitEngagementModalVisible by remember(bvid) { mutableStateOf(false) }
-    val portraitAnyMenuVisible = portraitPlayerMenuVisible || showPortraitExternalPlaylist || portraitEngagementModalVisible
+    val portraitAnyMenuVisible = pendingPortraitShare != null || portraitPlayerMenuVisible || showPortraitExternalPlaylist || portraitEngagementModalVisible
     val portraitViewPoints by viewModel.viewPoints.collectAsStateWithLifecycle()
     val portraitPbpData by viewModel.pbpProgressData.collectAsStateWithLifecycle()
     val portraitDanmakuScope = DanmakuSettingsScope.LANDSCAPE
@@ -4335,6 +4346,7 @@ private fun VideoPageItem(
                         }
                     }
                 },
+                shareMenuSource = portraitShareMenuSource,
                 onShare = {
                     val info = currentSuccess?.info
                     pendingPortraitShare = com.android.purebilibili.feature.video.share.buildVideoSharePayload(
