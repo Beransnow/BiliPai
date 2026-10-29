@@ -3278,6 +3278,12 @@ object NetworkModule {
             .build()
     }
 
+    // HTTP 缓存目录必须落在应用私有 cacheDir；context 未就绪时不挂磁盘缓存，
+    // 不能回退到 /tmp —— Android 上该路径不可写，okhttp3.Cache 重建目录会抛
+    // "failed to create directory: /tmp/okhttp_cache" 并阻断清理缓存流程。
+    private fun resolveHttpCacheDirectory(name: String): java.io.File? =
+        appContext?.let { java.io.File(it.cacheDir, name) }
+
     val okHttpClient: OkHttpClient by lazy {
         val builder = OkHttpClient.Builder()
             .protocols(resolveSharedNetworkProtocols())
@@ -3286,11 +3292,15 @@ object NetworkModule {
             .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
             .readTimeout(20, java.util.concurrent.TimeUnit.SECONDS)
             .writeTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
-            //  [性能优化] HTTP 磁盘缓存 - 32MB，减少重复请求
-            .cache(okhttp3.Cache(
-                directory = java.io.File(appContext?.cacheDir ?: java.io.File("/tmp"), "okhttp_cache"),
-                maxSize = resolveApiHttpCacheBudgetBytes()
-            ))
+            //  [性能优化] HTTP 磁盘缓存 - 32MB，减少重复请求；context 未就绪时跳过
+            .apply {
+                resolveHttpCacheDirectory("okhttp_cache")?.let { dir ->
+                    cache(okhttp3.Cache(
+                        directory = dir,
+                        maxSize = resolveApiHttpCacheBudgetBytes()
+                    ))
+                }
+            }
             //  [性能优化] 连接池优化 - 保持更多空闲连接
             .connectionPool(okhttp3.ConnectionPool(
                 maxIdleConnections = 10,
@@ -3527,10 +3537,14 @@ object NetworkModule {
             .followSslRedirects(true)
             //  风控降级流量与主客户端访问同一批 B 站 API，装一份独立 HTTP 缓存
             //  （目录独立，okhttp3.Cache 不能被两个客户端共享同一实例）
-            .cache(okhttp3.Cache(
-                directory = java.io.File(appContext?.cacheDir ?: java.io.File("/tmp"), "okhttp_cache_guest"),
-                maxSize = resolveApiHttpCacheBudgetBytes() / 2
-            ))
+            .apply {
+                resolveHttpCacheDirectory("okhttp_cache_guest")?.let { dir ->
+                    cache(okhttp3.Cache(
+                        directory = dir,
+                        maxSize = resolveApiHttpCacheBudgetBytes() / 2
+                    ))
+                }
+            }
             //  CookieJar 使用全新的 buvid3，不复用可能被污染的 buvid3Cache
             .cookieJar(object : okhttp3.CookieJar {
                 // 为 guest 模式生成独立的 buvid3，避免复用被风控的 buvid3
