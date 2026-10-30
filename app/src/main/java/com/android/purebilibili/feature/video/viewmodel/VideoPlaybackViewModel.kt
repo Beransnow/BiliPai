@@ -1405,6 +1405,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     private val playbackLoader = PlaybackLoader.from(playbackUseCase)
     private val playbackSessionStore = PlaybackSessionStore()
     private val playbackCoordinator = PlaybackCoordinator(playbackSessionStore)
+    internal val playbackReturnState =
+        com.android.purebilibili.feature.video.playback.session.PlaybackReturnState()
     private val interactionUseCase = VideoInteractionUseCase()
     private val qualityManager = QualityManager()
     private val playbackCdnPreference = SettingsManager
@@ -2569,6 +2571,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         }
 
         override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+            playbackReturnState.recordPlaybackIntent(currentBvid, currentCid, playWhenReady)
             if (!playWhenReady) {
                 cancelPlaybackStallRecovery()
             } else if (exoPlayer?.playbackState == Player.STATE_BUFFERING) {
@@ -3372,6 +3375,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                     } ?: true
                     if (shouldAutoPlay && !player.isPlaying) {
                         player.play()
+                    } else if (!shouldAutoPlay) {
+                        player.pause()
                     }
                     Logger.d(
                         "PlayerVM",
@@ -3403,8 +3408,11 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
             
             //  确保音量正常
             com.android.purebilibili.core.player.PlayerVolumeController.applyPreferredVolume(player)
-            if (!player.isPlaying) {
+            val shouldAutoPlay = playbackRequest.autoPlay ?: player.playWhenReady
+            if (shouldAutoPlay && !player.isPlaying) {
                 player.play()
+            } else if (!shouldAutoPlay) {
+                player.pause()
             }
             restoreSponsorPlaybackState(currentSuccess)
             return
@@ -3701,11 +3709,11 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         } else {
                              relatedPlaybackPreparedToken = requestToken
                              relatedFirstFrameToken = requestToken
-                             // 🎯 Skip preparing player, but ensure it's playing if needed
-                             Logger.d("PlayerVM", "🎯 Skipping player preparation (already playing)")
+                             Logger.d("PlayerVM", "🎯 Skipping player preparation (reuse intent=$shouldAutoPlay)")
                              exoPlayer?.let { p ->
                                  com.android.purebilibili.core.player.PlayerVolumeController.applyPreferredVolume(p)
-                                 if (!p.isPlaying) p.play()
+                                 if (shouldAutoPlay && !p.isPlaying) p.play()
+                                 else if (!shouldAutoPlay) p.pause()
                              }
                         }
                         
