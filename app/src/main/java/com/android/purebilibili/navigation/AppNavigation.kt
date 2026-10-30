@@ -2986,13 +2986,20 @@ fun AppNavigation(
                                                         pageImageLoadingAllowed
                                                     ),
                                                 ) {
-                                                    RenderNavigationContent(
-                                                        key = pageKey,
-                                                        isBottomPagerPageActive = page == bottomPagerState.settledPage &&
-                                                            bottomPagerBackgroundWorkAllowed,
-                                                        isBottomPagerPageVisibleDuringNavigation = pageVisibleDuringNavigation,
-                                                        isBottomPagerHosted = true,
-                                                    )
+                                                    MainHostTabBackScope(
+                                                        enabled = page == bottomPagerState.settledPage &&
+                                                            page == mainBottomPagerState.selectedPage &&
+                                                            !bottomPagerState.isScrollInProgress &&
+                                                            !mainBottomPagerState.isNavigating,
+                                                    ) {
+                                                        RenderNavigationContent(
+                                                            key = pageKey,
+                                                            isBottomPagerPageActive = page == bottomPagerState.settledPage &&
+                                                                bottomPagerBackgroundWorkAllowed,
+                                                            isBottomPagerPageVisibleDuringNavigation = pageVisibleDuringNavigation,
+                                                            isBottomPagerHosted = true,
+                                                        )
+                                                    }
                                                 }
                                             }
                                         } else {

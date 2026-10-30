@@ -10,11 +10,8 @@ import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Build
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -1185,20 +1182,6 @@ fun rememberVideoPlayerState(
     LaunchedEffect(player, playbackCompletionBehavior, isInAudioMode, sleepAfterCurrent) {
         // 听视频使用自己的队列模式处理播完，不能让全局单曲循环提前截获结束事件。
         player.repeatMode = resolvePlaybackCompletionRepeatMode(playbackCompletionBehavior, isInAudioMode || sleepAfterCurrent)
-    }
-
-    val sessionActivityPendingIntent = remember(context, bvid) {
-        //  [修复] 点击通知跳转到 MainActivity 而不是新建 VideoActivity
-        // 这样可以复用应用内的导航栈，保持"单 Activity"架构
-        val intent = Intent(context, com.android.purebilibili.MainActivity::class.java).apply {
-            action = Intent.ACTION_VIEW
-            data = Uri.parse("https://www.bilibili.com/video/$bvid")
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
-        }
-        PendingIntent.getActivity(
-            context, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
     }
 
     val scope = rememberCoroutineScope()
