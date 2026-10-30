@@ -2120,7 +2120,10 @@ fun AppNavigation(
         val bottomBarBackdropSource = if (shouldCaptureBottomBarBackdrop) {
             // Bind the shared recording to every frame of the app theme palette,
             // rather than waiting for navigation/layout to invalidate a static page.
-            rememberChromeBackdropSource(recordingBackground = backgroundColor)
+            rememberChromeBackdropSource(
+                recordingBackground = backgroundColor,
+                isolateContentDrawing = true,
+            )
         } else {
             null
         }
@@ -5209,6 +5212,7 @@ fun AppNavigation(
                                         onCompactClick = compactClick,
                                         isLayoutStable = layoutStable && !driveBottomBarByProgress,
                                         pauseArtworkRotation = pauseNowPlayingArtworkRotation,
+                                        captureCardSourceOnExpand = !audioNowPlayingBarOpensAudioMode,
                                         sourceRoute = currentRoute ?: ScreenRoutes.Home.route,
                                         handoff = audioNowPlayingHandoff,
                                         onExpand = {
@@ -5488,6 +5492,7 @@ fun AppNavigation(
                     },
                     isLayoutStable = !driveBottomBarByProgress,
                     pauseArtworkRotation = pauseNowPlayingArtworkRotation,
+                    captureCardSourceOnExpand = !audioNowPlayingBarOpensAudioMode,
                     sourceRoute = currentRoute ?: ScreenRoutes.Home.route,
                     handoff = audioNowPlayingHandoff,
                     onExpand = {
