@@ -56,6 +56,7 @@ import com.android.purebilibili.feature.video.playback.policy.resolvePlaybackWak
 import com.android.purebilibili.feature.video.playback.audio.isPremiumAudioPlaybackFailure
 import com.android.purebilibili.feature.video.playback.session.resolvePlaybackPauseDecision
 import com.android.purebilibili.feature.video.playback.session.resolvePlaybackResumeDecision
+import com.android.purebilibili.feature.video.playback.session.PlaybackPauseOwner
 import com.android.purebilibili.feature.video.playback.session.PendingPlaybackUserAction
 import com.android.purebilibili.feature.video.playback.session.PlaybackUserActionTracker
 import com.android.purebilibili.feature.video.player.resolveHandleAudioFocusByPolicy
@@ -1035,6 +1036,9 @@ fun rememberVideoPlayerState(
 
     //  尝试复用 MiniPlayerManager 中已加载的 player
     val miniPlayerManager = MiniPlayerManager.getInstance(context)
+    val playbackReturnState = viewModel.playbackReturnState
+    val returnMediaBvid by rememberUpdatedState(bvid)
+    val returnMediaCid by rememberUpdatedState(cid)
     // 仅在页面进入时判断一次，避免 setVideoInfo 更新状态后触发“同页重建 player”
     val reuseFromMiniPlayerAtEntry = remember(bvid, cid) {
         shouldReuseMiniPlayerAtEntry(
@@ -1164,7 +1168,7 @@ fun rememberVideoPlayerState(
                     // prepare() 和 playWhenReady 将在 attachPlayer/loadVideo 设置媒体源后调用
                     playWhenReady = !startPaused &&
                         playbackSessionActive &&
-                        SettingsManager.getClickToPlaySync(context)
+                        playbackReturnState.resolveAutoPlay(bvid, cid, SettingsManager.getClickToPlaySync(context))
                 }
         }
         AbandonableResource(rememberedPlayer) {
@@ -1235,6 +1239,10 @@ fun rememberVideoPlayerState(
                 // Another page or the mini/audio session still owns this instance.
                 Logger.d("VideoPlayerState", "Keep player retained by another page or playback session")
             } else {
+                playbackReturnState.suspend(
+                    returnMediaBvid, returnMediaCid, player.playWhenReady || player.isPlaying,
+                    PlaybackPauseOwner.NAVIGATION,
+                )
                 viewModel.cancelPendingVideoLoad()
                 // 仅当引用匹配时才清理，避免误清理新页面正在使用的 player
                 miniPlayerManager.clearExternalPlayerIfMatches(player)
@@ -1313,6 +1321,10 @@ fun rememberVideoPlayerState(
                     hasTransientResumeIntent = pauseDecision.shouldPersistTransientResumeIntent
                     
                     if (pauseDecision.shouldPausePlayback) {
+                        playbackReturnState.suspend(
+                            returnMediaBvid, returnMediaCid, player.playWhenReady || player.isPlaying,
+                            PlaybackPauseOwner.LIFECYCLE,
+                        )
                         // 非小窗/PiP/后台模式下暂停
                         player.pause()
                         holder.recordDiagnosticEvent("lifecyclePause -> pausePlayback")
@@ -1332,6 +1344,7 @@ fun rememberVideoPlayerState(
                         holder.recordDiagnosticEvent("lifecycleResume -> skipInactiveSession")
                         return@LifecycleEventObserver
                     }
+                    playbackReturnState.resume(PlaybackPauseOwner.LIFECYCLE)
                     val shouldEnsureAudibleOnForeground =
                         !miniPlayerManager.isMiniMode && !miniPlayerManager.isSystemPipActive
                     val isLeavingByNavigation = miniPlayerManager.isLeavingByNavigation
@@ -1550,7 +1563,6 @@ fun rememberVideoPlayerState(
     // 合集列表 / 详情压详情：本页不再是栈顶可见会话时立刻挂起本地 player。
     // 仅「skip attach/load」不够——上一级 ExoPlayer 会继续出声，新详情像卡封面。
     var suspendedByInactiveSession by remember(player) { mutableStateOf(false) }
-    var wasPlayingBeforeSessionSuspend by remember(player) { mutableStateOf(false) }
     val audioNowPlayingActive by com.android.purebilibili.feature.audio.player.AudioNowPlayingSession
         .active.collectAsStateWithLifecycle()
     val ownedByPlaybackHandoff = shouldTreatPlayerAsOwnedByPlaybackHandoff(
@@ -1573,7 +1585,9 @@ fun rememberVideoPlayerState(
             if (likelyActive) {
                 // 重复的非活跃通知不能覆盖第一次挂起时保存的播放意图。
                 if (!suspendedByInactiveSession) {
-                    wasPlayingBeforeSessionSuspend = player.isPlaying || player.playWhenReady
+                    playbackReturnState.suspend(
+                        bvid, cid, player.playWhenReady || player.isPlaying, PlaybackPauseOwner.NAVIGATION
+                    )
                 }
                 player.volume = 0f
                 player.playWhenReady = false
@@ -1594,10 +1608,13 @@ fun rememberVideoPlayerState(
             PlayerVolumeController.applyPreferredVolume(player)
             holder.recordDiagnosticEvent("playbackHandoffOwnsSession -> restoreVolume")
         }
+        if (playbackSessionActive && entryTransitionFinished) {
+            playbackReturnState.resume(PlaybackPauseOwner.NAVIGATION)
+        }
         if (suspendedByInactiveSession && playbackSessionActive && entryTransitionFinished) {
             com.android.purebilibili.core.player.PlayerVolumeController
                 .applyPreferredVolume(player)
-            if (wasPlayingBeforeSessionSuspend) {
+            if (playbackReturnState.resolveAutoPlay(bvid, cid, false)) {
                 player.playWhenReady = true
                 player.play()
                 holder.recordDiagnosticEvent("sessionActive -> resumeAfterSuspend")
@@ -1607,7 +1624,6 @@ fun rememberVideoPlayerState(
                 )
             }
             suspendedByInactiveSession = false
-            wasPlayingBeforeSessionSuspend = false
         }
     }
 
@@ -1635,6 +1651,9 @@ fun rememberVideoPlayerState(
         reuseFromMiniPlayerAtEntry,
         fallbackResumePositionMs,
         playbackSessionActive,
+        // A retained detail can recreate its player before the entry gate opens. Reconcile again
+        // after attachPlayer runs; otherwise the cached restore targets the released instance.
+        entryTransitionFinished,
     ) {
         if (!playbackSessionActive) {
             Logger.d("VideoPlayerState", "Back preview keeps UI only; skip playback session: request=$bvid/$cid")
@@ -1707,7 +1726,9 @@ fun rememberVideoPlayerState(
             cid = cid,
             fallbackResumePositionMs = if (resumeSameRemoteItem) remoteResume?.positionMs ?: fallbackResumePositionMs else fallbackResumePositionMs,
             autoPlay = if (resumeSameRemoteItem) remoteResume?.playing
-                else reusedPlaybackIntentAtEntry ?: SettingsManager.getClickToPlaySync(context),
+                else playbackReturnState.resolveAutoPlay(
+                    bvid, cid, reusedPlaybackIntentAtEntry ?: SettingsManager.getClickToPlaySync(context)
+                ),
         )
     }
 

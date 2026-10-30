@@ -695,6 +695,8 @@ fun SearchScreen(
     val searchChromeSpec = remember(topChromePolicy) { resolveSearchChromeVisualSpec(topChromePolicy) }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val listLayout = rememberVideoListLayoutControl()
+    // Entry-scoped: consuming the initial keyword or returning from a detail must not add a landing.
+    val openedWithKeyword = rememberSaveable { initialKeyword.isNotBlank() }
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -1175,7 +1177,8 @@ fun SearchScreen(
             resolveSearchBackAction(
                 showResults = state.showResults,
                 suggestionsVisible = state.suggestions.isNotEmpty(),
-                searchFieldFocused = searchFieldFocused
+                searchFieldFocused = searchFieldFocused,
+                openedWithKeyword = openedWithKeyword,
             )
         ) {
             SearchBackAction.RETURN_TO_LANDING -> {

@@ -718,17 +718,22 @@ fun AppNavigation(
             SettingsManager.isDataSaverActive(context)
         }
         var previousRouteForStopPolicy by remember { mutableStateOf<String?>(null) }
-        var previousVideoBvidForStopPolicy by remember { mutableStateOf<String?>(null) }
-        val currentVideoBvidForStopPolicy = (currentNavigation3Key as? BiliPaiNavKey.VideoDetail)?.bvid
+        var previousVideoKeyForStopPolicy by remember { mutableStateOf<BiliPaiNavKey.VideoDetail?>(null) }
+        val currentVideoKeyForStopPolicy = currentNavigation3Key as? BiliPaiNavKey.VideoDetail
 
-        LaunchedEffect(currentRoute, currentVideoBvidForStopPolicy) {
-            if (shouldStopPlaybackEagerlyOnVideoRouteExit(previousRouteForStopPolicy, currentRoute)) {
+        LaunchedEffect(currentRoute, currentVideoKeyForStopPolicy) {
+            if (shouldStopPlaybackEagerlyOnVideoRouteExit(
+                    previousRouteForStopPolicy,
+                    currentRoute,
+                    isVideoEntryRetained = previousVideoKeyForStopPolicy?.let { it in navigation3BackStack } == true,
+                )
+            ) {
                 if (miniPlayerManager?.isMiniMode != true) {
-                    miniPlayerManager?.markLeavingByNavigation(expectedBvid = previousVideoBvidForStopPolicy)
+                    miniPlayerManager?.markLeavingByNavigation(expectedBvid = previousVideoKeyForStopPolicy?.bvid)
                 }
             }
             previousRouteForStopPolicy = currentRoute
-            previousVideoBvidForStopPolicy = currentVideoBvidForStopPolicy
+            previousVideoKeyForStopPolicy = currentVideoKeyForStopPolicy
         }
 
         var navigationHostOriginInRoot by remember { mutableStateOf(Offset.Zero) }
