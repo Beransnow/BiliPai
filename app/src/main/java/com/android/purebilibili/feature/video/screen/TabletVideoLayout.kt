@@ -1146,7 +1146,7 @@ internal fun TabletSecondaryContent(
                         }
                     }
 
-                    if (subReplyState.visible && subReplyState.rootReply != null) {
+                    if (subReplyState.visible) {
                         VideoInlineSubReplyDetailContent(
                             state = subReplyState,
                             commentState = commentState,

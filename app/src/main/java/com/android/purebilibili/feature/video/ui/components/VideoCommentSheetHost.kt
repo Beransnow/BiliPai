@@ -792,8 +792,7 @@ fun VideoCommentSheetHost(
                             }
                         }
                         AnimatedVisibility(
-                            visible = hostContent == VideoCommentSheetHostContent.THREAD_DETAIL &&
-                                subReplyState.rootReply != null,
+                            visible = hostContent == VideoCommentSheetHostContent.THREAD_DETAIL,
                             enter = motionSpec.contentEnter,
                             exit = if (threadBackCompleted) androidx.compose.animation.ExitTransition.None else motionSpec.contentExit,
                         ) {
@@ -858,6 +857,13 @@ fun VideoCommentSheetHost(
                                         targetReplyId = subReplyState.targetReplyId
                                     )
                                 }
+                            } else {
+                                SubReplyInitialContent(
+                                    isLoading = subReplyState.isLoading,
+                                    error = subReplyState.error,
+                                    onRetry = commentViewModel::loadMoreSubReplies,
+                                    onDismiss = commentViewModel::closeSubReply,
+                                )
                             }
                         }
                     }

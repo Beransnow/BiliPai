@@ -5379,6 +5379,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         // this call; reading the StateFlow later used to lose the reply target and publish a
         // new root comment instead.
         val replyTo = _replyingToComment.value
+        val sendAccount = com.android.purebilibili.core.store.TokenManager.accountIdentity.value
         ensureComposerDraftVideo()
         val draftState = _composerDrafts.value
         val sendVideoId = draftState.videoId
@@ -5418,6 +5419,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         syncToDynamic = syncToDynamic
                     )
                     .onSuccess { reply ->
+                        if (sendAccount != com.android.purebilibili.core.store.TokenManager.accountIdentity.value) return@onSuccess
                         toast(if (replyTo != null) "回复成功" else "评论成功")
                         val currentVideoId = (_uiState.value as? VideoPlaybackUiState.Success)
                             ?.info?.bvid.orEmpty()
@@ -5445,7 +5447,15 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         }
 
                         // 通知 UI 刷新评论列表
-                        _commentSentEvent.trySend(reply)
+                        _commentSentEvent.trySend(CommentSentEvent(
+                            aid = sendAid,
+                            account = sendAccount,
+                            reply = reply?.let {
+                                if (root > 0L) resolveSentSubReply(
+                                    it, root, parent, replyTo, oid = sendAid, replyType = 1
+                                ) else it.copy(oid = sendAid, replyType = 1)
+                            }
+                        ))
                     }
                     .onFailure { error ->
                         Logger.e(
@@ -5496,8 +5506,13 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         }.getOrNull()
     }
     
-    // 评论发送成功事件
-    private val _commentSentEvent = Channel<com.android.purebilibili.data.model.response.ReplyItem?>(
+    data class CommentSentEvent(
+        val aid: Long,
+        val account: com.android.purebilibili.core.store.AccountSessionIdentity,
+        val reply: ReplyItem?
+    )
+
+    private val _commentSentEvent = Channel<CommentSentEvent>(
         capacity = resolvePlayerTransientEventChannelCapacity()
     )
     val commentSentEvent = _commentSentEvent.receiveAsFlow()

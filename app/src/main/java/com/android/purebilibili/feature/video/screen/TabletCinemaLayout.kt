@@ -1407,7 +1407,7 @@ private fun CinemaCommentsPane(
         )
     }
 
-    if (subReplyState.visible && subReplyState.rootReply != null) {
+    if (subReplyState.visible) {
         VideoInlineSubReplyDetailContent(
             state = subReplyState,
             commentState = commentState,

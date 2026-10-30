@@ -4510,11 +4510,12 @@ private fun VideoPageItem(
         )
 
             LaunchedEffect(activeAid, commentFraudDetectionEnabled) {
-                viewModel.commentSentEvent.collect { reply ->
+                viewModel.commentSentEvent.collect { event ->
                     commentViewModel.onExternalCommentSent(
-                        aid = activeAid,
-                        newReply = reply,
-                        fraudDetectionEnabled = commentFraudDetectionEnabled
+                        aid = event.aid,
+                        newReply = event.reply,
+                        fraudDetectionEnabled = commentFraudDetectionEnabled,
+                        senderAccount = event.account,
                     )
                 }
             }

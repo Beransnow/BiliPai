@@ -178,6 +178,8 @@ import com.android.purebilibili.feature.video.ui.overlay.MiniPlayerOverlay
 import com.android.purebilibili.navigation.AppNavigation
 import com.android.purebilibili.navigation.ScreenRoutes
 import com.android.purebilibili.navigation.VideoRoute
+import com.android.purebilibili.navigation3.BiliPaiNavKey
+import com.android.purebilibili.navigation3.toLegacyRoute
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -367,12 +369,45 @@ internal fun resolveMainActivityLinkNavigation(
     target: BilibiliNavigationTarget
 ): MainActivityLinkNavigation? {
     return when (target) {
-        is BilibiliNavigationTarget.Video -> MainActivityLinkNavigation(
-            pendingVideoId = target.videoId
-        )
+        is BilibiliNavigationTarget.Video -> {
+            if (target.commentRootRpid > 0L || target.commentTargetRpid > 0L) {
+                MainActivityLinkNavigation(
+                    pendingNavigationRoute = VideoRoute.resolveVideoRoutePath(
+                        bvid = target.videoId,
+                        cid = 0L,
+                        encodedCover = "",
+                        startAudio = false,
+                        autoPortrait = false,
+                        commentRootRpid = target.commentRootRpid,
+                        commentTargetRpid = target.commentTargetRpid,
+                    )
+                )
+            } else {
+                MainActivityLinkNavigation(pendingVideoId = target.videoId)
+            }
+        }
 
         is BilibiliNavigationTarget.Dynamic -> MainActivityLinkNavigation(
-            pendingNavigationRoute = resolveMainActivityDynamicRoute(target.dynamicId)
+            pendingNavigationRoute = if (target.openComments || target.commentRootRpid > 0L || target.commentTargetRpid > 0L) {
+                ScreenRoutes.DynamicDetail.createRoute(
+                    target.dynamicId,
+                    commentRootRpid = target.commentRootRpid,
+                    commentTargetRpid = target.commentTargetRpid,
+                    openComments = target.openComments,
+                )
+            } else {
+                resolveMainActivityDynamicRoute(target.dynamicId)
+            }
+        )
+
+        is BilibiliNavigationTarget.CommentDetail -> MainActivityLinkNavigation(
+            pendingNavigationRoute = BiliPaiNavKey.CommentDetail(
+                oid = target.oid,
+                rootId = target.rootReplyId,
+                targetId = target.targetReplyId,
+                type = target.businessId,
+                enterUri = target.enterUri,
+            ).toLegacyRoute()
         )
 
         is BilibiliNavigationTarget.Search -> MainActivityLinkNavigation(
