@@ -143,6 +143,7 @@ import androidx.activity.compose.BackHandler
 import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.feature.live.rememberLiveCardContainerTransition
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.theme.LocalAppUiStyle
@@ -2078,10 +2079,38 @@ fun SearchScreen(
                                     },
                                     contentType = { _, video -> "search_video_${video.contentType}" }
                                 ) { index, video ->
+                                        // 直播卡片和历史页/直播区走同一套容器转场
+                                        // （rememberLiveCardContainerTransition），
+                                        // 之前这里直接 pushNavigation3Key，所以是旧动画。
+                                        val cardCornerRadius = AppShapes.resolveContainerCornerDp(
+                                            level = ContainerLevel.Card,
+                                            uiStyle = LocalAppUiStyle.current,
+                                        )
+                                        val liveContainerTransition =
+                                            if (video.contentType == "live_room") {
+                                                rememberLiveCardContainerTransition(
+                                                    roomId = video.id,
+                                                    title = video.title,
+                                                    hostName = video.owner.name,
+                                                    color = AppSurfaceTokens.cardContainer(),
+                                                    cornerRadius = cardCornerRadius,
+                                                    onClick = {
+                                                        onLiveClick(
+                                                            video.id,
+                                                            video.title,
+                                                            video.owner.name
+                                                        )
+                                                    },
+                                                    enabled = effectiveCardTransitionEnabled,
+                                                )
+                                            } else {
+                                                null
+                                            }
                                         AnimatedVideoListItem(modifier = videoListItemModifier(enabled = cardAnimationEnabled), enabled = cardAnimationEnabled) {
                                             val highlightedTitle = rememberSearchHighlightedTitle(video)
                                             ElegantVideoCard(
                                                 video = video,
+                                                modifier = liveContainerTransition?.modifier ?: Modifier,
                                                 singleColumn = effectiveSearchGridColumns == 1,
                                                 index = index,
                                                 animationEnabled = false, // The stable item wrapper owns column-switch motion.
@@ -2110,7 +2139,12 @@ fun SearchScreen(
                                                 },
                                                 onUpClick = onUpClick,
                                                 onClick = { _, _ ->
-                                                    when (
+                                                    // 直播项走转场包装的点击（内部会调传入的导航），
+                                                    // 其余沿用原来的目标解析。
+                                                    val liveHandler = liveContainerTransition
+                                                    if (liveHandler != null) {
+                                                        liveHandler.onClick()
+                                                    } else when (
                                                         val target = resolveVideoSearchNavigationTarget(
                                                             bvid = video.bvid,
                                                             contentType = video.contentType,

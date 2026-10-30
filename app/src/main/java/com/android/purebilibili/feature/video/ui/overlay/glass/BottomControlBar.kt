@@ -2660,7 +2660,9 @@ fun VideoProgressBar(
         layoutPolicy.baseHeightWithoutChapterDp.dp
     }
     val previewImageHeightDp = if (videoshotData?.isValid == true) {
-        resolveSeekPreviewBubbleHeightDp(LocalConfiguration.current.screenWidthDp)
+        resolveSeekPreviewBubbleHeightDp(
+            LocalConfiguration.current.screenWidthDp, LocalConfiguration.current.screenHeightDp,
+        ).takeIf { it > 0 }
     } else null
     val previewAreaHeightDp = if (isSeekScrubbing) {
         resolveVideoProgressPreviewAreaHeightDp(

@@ -104,6 +104,7 @@ internal enum class SettingsIconRole {
     RETURN_GESTURE_TRANSLATION,
     SKELETON_BREATHING,
     PROGRESSIVE_TOP_BLUR,
+    PROGRESSIVE_BLUR_RENDERER,
     PROGRESSIVE_TOP_FADE,
     KEEP_TOP_SEARCH,
     LINKED_DOCK_MERGE,
@@ -347,6 +348,7 @@ internal fun resolveSettingsMaterialSymbolResource(role: SettingsIconRole): Int 
     SettingsIconRole.RETURN_GESTURE_TRANSLATION -> R.drawable.ms_drag_indicator_24
     SettingsIconRole.SKELETON_BREATHING -> R.drawable.ic_settings_skeleton_breathing_24
     SettingsIconRole.PROGRESSIVE_TOP_BLUR -> R.drawable.ic_settings_progressive_top_blur_24
+    SettingsIconRole.PROGRESSIVE_BLUR_RENDERER -> R.drawable.ic_settings_progressive_blur_renderer_24
     SettingsIconRole.PROGRESSIVE_TOP_FADE -> R.drawable.ic_settings_progressive_top_fade_24
     SettingsIconRole.KEEP_TOP_SEARCH -> R.drawable.ic_settings_top_search_24
     SettingsIconRole.BOTTOM_BAR_SCROLL_COMPACT -> R.drawable.ic_settings_bottom_bar_compact_24

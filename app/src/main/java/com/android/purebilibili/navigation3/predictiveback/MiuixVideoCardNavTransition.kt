@@ -189,13 +189,18 @@ internal fun resolveMiuixVideoCardGestureCornerPx(
     morphProgress: Float,
     floatingCornerPx: Float,
     fullscreenCornerPx: Float = 0f,
-    @Suppress("UNUSED_PARAMETER") sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY,
+    sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY,
     currentShortSidePx: Float = Float.POSITIVE_INFINITY,
 ): Float {
     val morph = morphProgress.coerceIn(0f, 1f)
     val source = sourceCornerPx.coerceAtLeast(0f)
     val target = fullscreenCornerPx.coerceAtLeast(0f)
-    // 所有来源布局共用设备悬浮圆角；保留布局参数供现有入口传递，不再按布局改半径。
+    // 透明横卡没有整卡圆角，封面在独立媒体层裁剪。外壳若鼓起设备圆角，
+    // 会只切掉贴着整行左边缘的封面两角，右侧封面圆角却不变。
+    if (sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE && source == 0f && target == 0f) {
+        return 0f
+    }
+    // 带圆角底板的卡片仍使用设备悬浮圆角。
     // 端点和中段斜率均归零，返回同一深度取得同一半径，不跳变或额外套一层设备裁切。
     val floating = floatingCornerPx.coerceAtLeast(0f)
     val u = (if (morph <= .5f) morph * 2f else (morph - .5f) * 2f).coerceIn(0f, 1f)

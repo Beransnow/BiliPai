@@ -329,6 +329,7 @@ internal fun resolveOverlayPlaybackButtonPlayingState(
     playbackState: Int,
     hasPendingSeekResume: Boolean = false
 ): Boolean {
+    if (playbackState == Player.STATE_ENDED) return false
     return isPlaying || (playWhenReady && (playbackState == Player.STATE_BUFFERING || hasPendingSeekResume))
 }
 
@@ -1267,6 +1268,7 @@ private fun VideoPlayerOverlayContent(
         seekResumeTransitionGraceActive,
         isPlaybackTransitionPending,
         hasPendingSeekResume,
+        player.playbackState,
         player.playWhenReady,
         player.isPlaying,
         debugInfo.bandwidthEstimate
@@ -1279,6 +1281,7 @@ private fun VideoPlayerOverlayContent(
                 hasPendingSeekResume,
             playWhenReady = player.playWhenReady,
             isPlaying = player.isPlaying,
+            playbackState = player.playbackState,
             bandwidthEstimate = debugInfo.bandwidthEstimate
         )
     }

@@ -957,9 +957,10 @@ private fun VideoPlayerSectionContent(
     val uiLayoutWidthDp = remember(configuration.screenWidthDp, viewportWidthDpOverride) {
         (viewportWidthDpOverride ?: configuration.screenWidthDp).coerceAtLeast(1)
     }
-    val uiLayoutPolicy = remember(uiLayoutWidthDp) {
+    val uiLayoutPolicy = remember(uiLayoutWidthDp, configuration.screenHeightDp) {
         resolveVideoPlayerUiLayoutPolicy(
-            widthDp = uiLayoutWidthDp
+            widthDp = uiLayoutWidthDp,
+            windowHeightDp = configuration.screenHeightDp,
         )
     }
     val liquidGlassLayoutEnabled = com.android.purebilibili.core.ui.LocalAppThemeConfig.current.liquidGlassEnabled
@@ -1645,8 +1646,15 @@ private fun VideoPlayerSectionContent(
                 if (shouldPollProgress) {
                     sharedSeekSession = syncPlaybackSeekSession(
                         state = currentSession,
-                        playbackPositionMs = playerState.player.currentPosition.coerceAtLeast(0L),
-                        hasPlaybackResumedAfterPendingSeek = playerState.player.isPlaying
+                        playbackPositionMs = if (playerState.player.playbackState == Player.STATE_ENDED &&
+                            playerState.player.duration > 0L
+                        ) {
+                            playerState.player.duration
+                        } else {
+                            playerState.player.currentPosition.coerceAtLeast(0L)
+                        },
+                        hasPlaybackResumedAfterPendingSeek = playerState.player.isPlaying,
+                        playbackEnded = playerState.player.playbackState == Player.STATE_ENDED,
                     )
                 }
                 delay(200)
@@ -5263,7 +5271,7 @@ private fun VideoPlayerSectionContent(
         // 主题原生的音量/亮度反馈。
         GestureLevelOverlayHost(
             visible = shouldShowLevelIndicator,
-            compact = !isFullscreen,
+            compact = !isFullscreen || uiLayoutPolicy.compactWindowHeight,
             mode = gestureMode,
             percent = gesturePercent,
             glassBackdrop = playerPageBackdrop.backdrop.takeIf {
@@ -5292,7 +5300,7 @@ private fun VideoPlayerSectionContent(
             gestureMotionSpec = gestureMotionSpec,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(top = 96.dp)
+                .padding(top = uiLayoutPolicy.seekCancelHintOffsetDp.dp)
                 .zIndex(121f),
         )
 
