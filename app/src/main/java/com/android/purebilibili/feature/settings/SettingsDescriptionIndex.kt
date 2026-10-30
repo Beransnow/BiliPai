@@ -190,5 +190,8 @@ internal val settingsStaticDescriptionIndex: Map<String, String> = mapOf(
     "playback.wifi_quality" to "关闭“自动最高画质”后生效；仅无线网络环境生效",
     "privacy.privacy_content_authentication_enabled" to "进入收藏、历史等页面前使用指纹、人脸或锁屏密码确认身份",
     "privacy.privacy_mode_enabled" to "开启后不再新增播放和搜索历史，已有记录不会被删除",
+    "privacy.search_hot_control" to "关闭后隐藏搜索页对应分区",
+    "privacy.search_history_control" to "关闭后隐藏搜索历史，记录设置和已有历史不变",
+    "privacy.search_discover_control" to "关闭后隐藏搜索页对应分区",
     "privacy.search_suggestions_enabled" to "开启时使用官方搜索推荐；关闭后改用公开热搜词",
 )

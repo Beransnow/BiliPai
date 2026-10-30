@@ -190,6 +190,9 @@ internal enum class SettingsIconRole {
     FOLLOW_BUTTON,
     PRIVACY_HISTORY,
     PRIVACY_SEARCH_RECOMMENDATION,
+    SEARCH_HOT_SECTION,
+    SEARCH_HISTORY_SECTION,
+    SEARCH_DISCOVER_SECTION,
     PERSONAL_RECAP,
     CUSTOM_MD3_COLOR,
     THEME_LIGHT_BACKGROUND,
@@ -432,6 +435,9 @@ internal fun resolveSettingsMaterialSymbolResource(role: SettingsIconRole): Int 
     SettingsIconRole.UI_ENTRANCE_ANIMATION -> R.drawable.ms_motion_photos_on_24
     SettingsIconRole.FULLSCREEN_SWIPE_BACK -> R.drawable.ms_swipe_right_24
     SettingsIconRole.FOLLOW_BUTTON -> R.drawable.ms_person_add_24
+    SettingsIconRole.SEARCH_HOT_SECTION -> R.drawable.ms_trending_up_24
+    SettingsIconRole.SEARCH_HISTORY_SECTION -> R.drawable.ms_history_24
+    SettingsIconRole.SEARCH_DISCOVER_SECTION -> R.drawable.ms_manage_search_24
     SettingsIconRole.PRIVACY_SEARCH_RECOMMENDATION -> R.drawable.ms_search_24
     SettingsIconRole.PERSONAL_RECAP -> R.drawable.ms_query_stats_24
     SettingsIconRole.PRIVACY_HISTORY -> R.drawable.ms_history_toggle_off_24

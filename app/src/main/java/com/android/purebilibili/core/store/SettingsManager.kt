@@ -4170,6 +4170,19 @@ private val KEY_APP_FONT_WEIGHT = intPreferencesKey("app_font_weight")
         }
     }
 
+    private val searchLandingSectionKeys = listOf(
+        booleanPreferencesKey("search_hot_control_visible"),
+        booleanPreferencesKey("search_history_control_visible"),
+        booleanPreferencesKey("search_discover_control_visible"),
+    )
+
+    fun getSearchLandingSectionVisible(context: Context, index: Int): Flow<Boolean> =
+        context.settingsDataStore.data.map { it[searchLandingSectionKeys[index]] ?: true }
+
+    suspend fun setSearchLandingSectionVisible(context: Context, index: Int, visible: Boolean) {
+        context.settingsDataStore.edit { it[searchLandingSectionKeys[index]] = visible }
+    }
+
     fun getSearchHotSectionEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
         .map { preferences -> preferences[KEY_SEARCH_HOT_SECTION_ENABLED] ?: true }
 

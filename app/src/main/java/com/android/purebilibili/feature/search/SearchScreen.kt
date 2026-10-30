@@ -821,6 +821,9 @@ fun SearchScreen(
     val compactVideoStatsOnCover by SettingsManager
         .getCompactVideoStatsOnCover(context)
         .collectAsStateWithLifecycle(initialValue = false)
+    val showHotSection by SettingsManager.getSearchLandingSectionVisible(context, 0).collectAsStateWithLifecycle(initialValue = true)
+    val showHistorySection by SettingsManager.getSearchLandingSectionVisible(context, 1).collectAsStateWithLifecycle(initialValue = true)
+    val showDiscoverSection by SettingsManager.getSearchLandingSectionVisible(context, 2).collectAsStateWithLifecycle(initialValue = true)
     val hotSearchEnabled by SettingsManager.getSearchHotSectionEnabled(context).collectAsStateWithLifecycle(initialValue = true)
     val discoverSectionEnabled by SettingsManager.getSearchDiscoverSectionEnabled(context).collectAsStateWithLifecycle(initialValue = true)
     val appThemeConfig = com.android.purebilibili.core.ui.LocalAppThemeConfig.current
@@ -1734,9 +1737,7 @@ fun SearchScreen(
                             LaunchedEffect(activePageGridState, state.searchSessionId) {
                                 snapshotFlow {
                                     val current = latestVideoPage
-                                    val itemCount = current.searchResults.size + if (targetSearchType == SearchType.ALL) {
-                                        current.upResults.size + current.bangumiResults.size
-                                    } else 0
+                                    val itemCount = activePageGridState.layoutInfo.totalItemsCount
                                     current.currentPage to shouldLoadMoreSearchVideos(
                                         itemCount = itemCount,
                                         lastVisibleItemIndex = activePageGridState.layoutInfo
@@ -1945,6 +1946,7 @@ fun SearchScreen(
                                             }
                                         )
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
+                                val showFullCardContent = com.android.purebilibili.core.ui.LocalFullVideoCardContentVisible.current
                                 LazyVerticalStaggeredGrid(
                                     columns = StaggeredGridCells.Fixed(effectiveSearchGridColumns),
                                     state = activePageGridState,
@@ -2067,18 +2069,11 @@ fun SearchScreen(
                                         }
                                     }
                                 }
-                                itemsIndexed(
-                                    pageResultState.searchResults,
-                                    key = { index, video ->
-                                        resolveSearchResultLazyItemKey(
-                                            searchType = targetSearchType,
-                                            index = index,
-                                            textKey = video.bvid,
-                                            numericKey = video.id
-                                        )
-                                    },
-                                    contentType = { _, video -> "search_video_${video.contentType}" }
-                                ) { index, video ->
+                                val searchVideoKeys = pageResultState.searchResults.mapIndexed { index, video ->
+                                    resolveSearchResultLazyItemKey(targetSearchType, index, video.bvid, video.id)
+                                }
+                                val renderSearchVideo: @Composable (Int, Modifier) -> Unit = { index, cardModifier ->
+                                        val video = pageResultState.searchResults[index]
                                         // 直播卡片和历史页/直播区走同一套容器转场
                                         // （rememberLiveCardContainerTransition），
                                         // 之前这里直接 pushNavigation3Key，所以是旧动画。
@@ -2106,11 +2101,12 @@ fun SearchScreen(
                                             } else {
                                                 null
                                             }
-                                        AnimatedVideoListItem(modifier = videoListItemModifier(enabled = cardAnimationEnabled), enabled = cardAnimationEnabled) {
+                                        AnimatedVideoListItem(modifier = cardModifier, enabled = cardAnimationEnabled) {
                                             val highlightedTitle = rememberSearchHighlightedTitle(video)
                                             ElegantVideoCard(
                                                 video = video,
-                                                modifier = liveContainerTransition?.modifier ?: Modifier,
+                                                modifier = (if (!showFullCardContent && effectiveSearchGridColumns > 1) Modifier.fillMaxHeight() else Modifier)
+                                                    .then(liveContainerTransition?.modifier ?: Modifier),
                                                 singleColumn = effectiveSearchGridColumns == 1,
                                                 index = index,
                                                 animationEnabled = false, // The stable item wrapper owns column-switch motion.
@@ -2176,6 +2172,34 @@ fun SearchScreen(
 
                                         }
                                     }
+                                if (showFullCardContent || effectiveSearchGridColumns == 1) {
+                                    itemsIndexed(
+                                        pageResultState.searchResults,
+                                        key = { index, _ -> searchVideoKeys[index] },
+                                        contentType = { _, video -> "search_video_${video.contentType}" },
+                                    ) { index, _ ->
+                                        renderSearchVideo(index, videoListItemModifier(enabled = cardAnimationEnabled))
+                                    }
+                                } else {
+                                    com.android.purebilibili.feature.home.resolveHomeFeedAlignedRows(
+                                        pageResultState.searchResults.size, effectiveSearchGridColumns,
+                                    ).forEach { row ->
+                                        item(
+                                            key = row.joinToString(prefix = "search_video_row_", separator = "_") { searchVideoKeys[it] },
+                                            contentType = "search_video_row",
+                                            span = StaggeredGridItemSpan.FullLine,
+                                        ) {
+                                            com.android.purebilibili.feature.home.HomeAlignedVideoRow(
+                                                indices = row,
+                                                itemKeys = searchVideoKeys,
+                                                columns = effectiveSearchGridColumns,
+                                                horizontalArrangement = searchGridHorizontalArrangement,
+                                                modifier = videoListItemModifier(enabled = cardAnimationEnabled).fillMaxWidth(),
+                                                content = renderSearchVideo,
+                                            )
+                                        }
+                                    }
+                                }
 
                                     // [新增] 空状态提示 (提示可能被屏蔽)
                                     if (!pageResultState.isSearching && pageResultState.totalCount == 0 && pageResultState.error == null && pageEmptyStateCopy != null) {
@@ -2722,6 +2746,9 @@ fun SearchScreen(
                     recordSearchHistory = state.recordSearchHistory,
                     globalPrivacyMode = state.globalPrivacyMode,
                     onToggleHistoryRecording = viewModel::toggleSearchHistoryRecording,
+                    showHotSection = showHotSection,
+                    showHistorySection = showHistorySection,
+                    showDiscoverSection = showDiscoverSection,
                     hotSearchEnabled = hotSearchEnabled,
                     discoverSectionEnabled = discoverSectionEnabled,
                     onToggleHotSearch = {
@@ -5250,6 +5277,7 @@ internal fun ArticleSearchResultCard(
         }
         if (item.imageUrls.isNotEmpty()) {
             HorizontalVideoCardFrame(
+                horizontalCoverMaxWidthDp = com.android.purebilibili.feature.home.components.cards.WIDE_LIST_COVER_MAX_WIDTH_DP,
                 modifier = Modifier.fillMaxWidth(),
                 coverContent = {
                     AsyncImage(
