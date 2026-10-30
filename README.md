@@ -120,6 +120,6 @@ Miuix 依赖从 GitHub Packages 获取，需在本机 `~/.gradle/gradle.properti
 
 <div align="center">
 
-<sub>源码版本 0.6.9（534） · 更新于 2026-10-30 · Made by [YangY](https://x.com/YangY_0x00)</sub>
+<sub>源码版本 0.6.9（535） · 更新于 2026-10-30 · Made by [YangY](https://x.com/YangY_0x00)</sub>
 
 </div>

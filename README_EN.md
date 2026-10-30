@@ -120,6 +120,6 @@ This is an unofficial client and is not affiliated with BiliBili. Content belong
 
 <div align="center">
 
-<sub>Source version 0.6.9 (534) · Updated 2026-10-30 · Made by [YangY](https://x.com/YangY_0x00)</sub>
+<sub>Source version 0.6.9 (535) · Updated 2026-10-30 · Made by [YangY](https://x.com/YangY_0x00)</sub>
 
 </div>

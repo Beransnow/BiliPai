@@ -635,7 +635,11 @@ fun PartitionContent(
                 contentPadding = if (liquidGlassIndicatorEnabled) {
                     PaddingValues(
                         horizontal = ((startPadding + 4.dp) / 2 - 4.dp).coerceAtLeast(4.dp),
-                        vertical = 8.dp,
+                        // 竖向首末项与左右边沿共用 dock 的比例内缩，避免固定 8dp 多留一层空白。
+                        vertical = com.android.purebilibili.feature.home.components
+                            .resolveFloatingDockRestIndicatorVerticalInsetDp(
+                                (sideRailWidth - 8.dp).value,
+                            ).dp,
                     )
                 } else PaddingValues(
                     start = startPadding,
@@ -701,6 +705,10 @@ private fun PartitionSideRail(
     }
     val selectedIndex = partitions.indexOfFirst { it.id == selectedId }.coerceAtLeast(0)
     val density = LocalDensity.current
+    // 玻璃侧栏使用纵向槽位；随文字缩放保留胶囊比例，原生 MD3/Miuix 沿用 48dp。
+    val railItemHeight = if (liquidGlassIndicatorEnabled) {
+        64.dp * density.fontScale.coerceIn(1f, 1.35f)
+    } else PartitionSideRailItemHeight
     val animationScope = rememberCoroutineScope()
     val motionSpec = remember { resolveSegmentedControlMotionSpec() }
     val resolvedLabelMode = resolvePartitionSideRailLabelMode(labelMode)
@@ -897,8 +905,8 @@ private fun PartitionSideRail(
         // 在约束作用域内读取宽度，内层 Box 仅使用计算结果。
         val railDockWidth = maxWidth
         val dockShellLensIntensity = (railDockWidth / 64.dp).coerceIn(0f, 1f)
-        val itemHeightPx = with(density) { PartitionSideRailItemHeight.toPx() }
-        val itemSlotHeightPx = with(density) { (PartitionSideRailItemHeight + PartitionSideRailItemSpacing).toPx() }
+        val itemHeightPx = with(density) { railItemHeight.toPx() }
+        val itemSlotHeightPx = with(density) { (railItemHeight + PartitionSideRailItemSpacing).toPx() }
         val contentTopPaddingPx = with(density) { contentPadding.calculateTopPadding().toPx() }
         holder.itemSlotHeightPx = itemSlotHeightPx
         holder.itemHeightPx = itemHeightPx
@@ -912,12 +920,12 @@ private fun PartitionSideRail(
         val indicatorWidth = if (liquidGlassIndicatorEnabled) {
             resolveFloatingDockIndicatorHeightDp(
                 requestedHeightDp = resolveMatchedLiquidIndicatorHeightDp(railDockWidth.value),
-                tabWidthDp = PartitionSideRailItemHeight.value,
+                tabWidthDp = railItemHeight.value,
                 geometryMode = FloatingBottomBarGeometryMode.TopNavigation,
                 shellHeightDp = railDockWidth.value,
             ).dp
         } else (railDockWidth - nativeIndicatorPadding.start - nativeIndicatorPadding.end).coerceAtLeast(0.dp)
-        val indicatorHeight = if (liquidGlassIndicatorEnabled) PartitionSideRailItemHeight
+        val indicatorHeight = if (liquidGlassIndicatorEnabled) railItemHeight
             else PartitionSideRailIndicatorHeight
         val indicatorHorizontalPadding = if (liquidGlassIndicatorEnabled) {
             val inset = ((railDockWidth - indicatorWidth) / 2).coerceAtLeast(0.dp)
@@ -1062,7 +1070,7 @@ private fun PartitionSideRail(
                 ) {
                     partitions.forEach { partition ->
                         Box(
-                            Modifier.fillMaxWidth().height(PartitionSideRailItemHeight),
+                            Modifier.fillMaxWidth().height(railItemHeight),
                             contentAlignment = Alignment.Center,
                         ) {
                             PartitionSideRailItem(
@@ -1103,6 +1111,7 @@ private fun PartitionSideRail(
                 ) { index, partition ->
                     PartitionSideRailItem(
                         partition = partition,
+                        itemHeight = railItemHeight,
                         selected = partition.id == selectedId,
                         selectionProgress = resolvePartitionSideRailItemSelectionProgress(
                             itemIndex = index,
