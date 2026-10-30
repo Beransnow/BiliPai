@@ -9,6 +9,7 @@ package com.android.purebilibili.feature.home.components.cards
  */
 internal const val HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO = 16f / 10f
 internal const val HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP = 140
+internal const val WIDE_LIST_COVER_MAX_WIDTH_DP = 220f
 internal const val HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP = 10
 internal const val HORIZONTAL_VIDEO_CARD_MIN_HEIGHT_DP = 90f
 internal const val HORIZONTAL_VIDEO_CARD_INFO_PADDING_DP = 8

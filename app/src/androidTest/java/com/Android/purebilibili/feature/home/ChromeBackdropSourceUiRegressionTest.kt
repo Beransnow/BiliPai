@@ -59,6 +59,60 @@ class ChromeBackdropSourceUiRegressionTest {
     val composeRule = createComposeRule()
 
     @Test
+    fun isolatedSourceReusesChildDrawingWhileBackdropChangesAndKeepsLiveUpdates() {
+        assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        val background = mutableStateOf(Color.Red)
+        val content = mutableStateOf(Color.Green)
+        val childDraws = AtomicInteger()
+        lateinit var originalSource: ChromeBackdropSource
+        lateinit var currentSource: ChromeBackdropSource
+        composeRule.setContent {
+            val source = rememberChromeBackdropSource(
+                recordingBackground = background.value,
+                isolateContentDrawing = true,
+            )
+            SideEffect { currentSource = source }
+            Box(Modifier.size(80.dp).background(Color.Blue).testTag("isolated-backdrop")) {
+                Box(Modifier.matchParentSize().then(source.modifier).drawWithContent {
+                    childDraws.incrementAndGet()
+                    drawRect(
+                        color = content.value,
+                        topLeft = Offset(size.width / 2f, 0f),
+                        size = Size(size.width / 2f, size.height),
+                    )
+                })
+                Box(Modifier.matchParentSize().drawBackdrop(
+                    backdrop = source.backdrop,
+                    shape = { RectangleShape },
+                    effects = {},
+                ))
+            }
+        }
+        fun assertColors(left: Color, right: Color) {
+            val pixels = composeRule.onNodeWithTag("isolated-backdrop").captureToImage().toPixelMap()
+            for ((fraction, expected) in listOf(0.25f to left, 0.75f to right)) {
+                val actual = pixels[(pixels.width * fraction).toInt(), pixels.height / 2]
+                assertEquals(expected.red, actual.red, 0.03f)
+                assertEquals(expected.green, actual.green, 0.03f)
+                assertEquals(expected.blue, actual.blue, 0.03f)
+            }
+        }
+        assertColors(Color.Red, Color.Green)
+        composeRule.runOnIdle { originalSource = currentSource; childDraws.set(0) }
+        for (color in listOf(Color.Yellow, Color.Red)) {
+            composeRule.runOnIdle { background.value = color }
+            assertColors(color, Color.Green)
+            composeRule.runOnIdle {
+                assertSame(originalSource, currentSource)
+                assertEquals("Backdrop-only updates must reuse child drawing", 0, childDraws.get())
+            }
+        }
+        composeRule.runOnIdle { content.value = Color.Yellow }
+        assertColors(Color.Red, Color.Yellow)
+        composeRule.runOnIdle { assertEquals(1, childDraws.get()) }
+    }
+
+    @Test
     fun scaffoldReusesPageSourceAndRestoresFallbackAndNativeIconScope() {
         assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
         val glass = mutableStateOf(true)

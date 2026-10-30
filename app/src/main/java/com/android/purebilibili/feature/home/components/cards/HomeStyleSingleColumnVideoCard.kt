@@ -423,7 +423,6 @@ internal fun HomeStyleSingleColumnVideoCard(
             HorizontalVideoStatRow(
                 playText = FormatUtils.formatStat(video.stat.view.toLong()),
                 danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                modifier = Modifier.padding(end = if (!compactPartition && (trailingContent != null || onMoreClick != null)) 48.dp else 0.dp),
             )
         },
         trailingContent = when {
