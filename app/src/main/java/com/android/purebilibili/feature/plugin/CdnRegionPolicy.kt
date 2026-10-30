@@ -108,17 +108,16 @@ internal fun applyPlaybackCdnPreference(
 }
 
 /**
- * 排除 PCDN 候选。
+ * 处理候选里的 PCDN 地址。
  *
- * 整批都是 PCDN 时不直接返回空，而是把 host 换成常规线路——upgcxcode 路径与签名
- * 在不同 host 之间通用，这样屏蔽 PCDN 之后仍然能播放/下载。
+ * 不丢弃，而是保留 upgcxcode 路径与签名、把 host 换成常规线路——直接丢弃会让
+ * 只下发 PCDN 的视频彻底打不开。顺序保持不变，换完 host 的地址照常参与选线。
  */
 private fun excludePcdnCandidates(
     candidates: List<PlaybackCdnCandidate>
 ): List<PlaybackCdnCandidate> {
-    val safe = candidates.filter { !isRiskyCdnHost(hostOf(it.videoUrl)) }
-    if (safe.isNotEmpty()) return safe
     return candidates.map { candidate ->
+        if (!isRiskyCdnHost(hostOf(candidate.videoUrl))) return@map candidate
         candidate.copy(
             videoUrl = rewriteBilivideoHost(candidate.videoUrl, FALLBACK_CDN_HOST)
                 ?: candidate.videoUrl,
@@ -742,20 +741,17 @@ private fun normalizeRegionName(value: String): String {
 internal fun rewriteBilivideoHost(url: String, newHost: String): String? {
     val uri = runCatching { URI(url) }.getOrNull() ?: return null
     val originalHost = uri.host ?: return null
-    // 允许 PCDN 域名一起参与改写：mcdn.bilivideo.cn / .net 的 upgcxcode 路径与签名
-    // 和常规 CDN 通用，用户屏蔽 mcdn 后正是靠换 host 才能继续下载/播放。
-    val isBiliHost = originalHost == "bilivideo.com" ||
-        originalHost.endsWith(".bilivideo.com") ||
-        originalHost == "bilivideo.cn" ||
-        originalHost.endsWith(".bilivideo.cn") ||
-        originalHost.endsWith(".bilivideo.net")
-    if (!isBiliHost) return null
+    if (originalHost.equals(newHost, ignoreCase = true)) return null
+    // 能否换 host 取决于路径：upgcxcode 的路径与签名在 host 之间通用。
+    // 不按域名白名单判断，否则 mountaintoys.cn / qrstuvwxyzab.com 这类 PCDN
+    // 和裸 IP 会被挡掉，设置里的线路就失效了。
+    val path = uri.rawPath.orEmpty()
+    if (!path.contains("/upgcxcode/") && !path.contains("/v1/resource")) return null
     if (newHost.isBlank()) return null
 
     val scheme = uri.scheme ?: return null
     val userInfo = uri.rawUserInfo?.let { "$it@" }.orEmpty()
     val port = if (uri.port >= 0) ":${uri.port}" else ""
-    val path = uri.rawPath.orEmpty()
     val query = uri.rawQuery?.let { "?$it" }.orEmpty()
     val fragment = uri.rawFragment?.let { "#$it" }.orEmpty()
     return "$scheme://$userInfo$newHost$port$path$query$fragment"

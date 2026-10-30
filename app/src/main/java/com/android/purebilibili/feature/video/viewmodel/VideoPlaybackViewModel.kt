@@ -472,7 +472,28 @@ internal fun buildPlaybackCdnFallbackState(
             )
         )
     }
-    val firstFallback = candidates.firstOrNull { candidate ->
+    // 回退时优先挑非 PCDN 的候选：首次选线（preferredDashUrl）已经排除 PCDN，
+    // 但这里的候选取自原始响应，可能把 mountaintoys 之类的 PCDN 地址捡回来。
+    val nonPcdn = candidates.filterNot {
+        com.android.purebilibili.feature.plugin.isRiskyCdnHost(it.videoUrl)
+    }
+    // 整批都是 PCDN 时不能直接用它回退（这些域名常常解析失败），
+    // 和 preferredDashUrl 一样换成常规 CDN：upgcxcode 路径与签名跨 host 通用。
+    val orderedCandidates = if (nonPcdn.isNotEmpty()) {
+        nonPcdn + candidates.filter { it !in nonPcdn }
+    } else {
+        val selectedHost = hostOf(selectedVideoUrl)
+        candidates.map { candidate ->
+            candidate.copy(
+                videoUrl = rewriteToDefaultCdnHost(candidate.videoUrl, selectedHost),
+                audioUrl = candidate.audioUrl
+                    ?.takeIf { com.android.purebilibili.feature.plugin.isRiskyCdnHost(it) }
+                    ?.let { url -> rewriteToDefaultCdnHost(url, selectedHost) }
+                    ?: candidate.audioUrl,
+            )
+        }
+    }
+    val firstFallback = orderedCandidates.firstOrNull { candidate ->
         candidate.videoUrl != selectedVideoUrl || candidate.audioUrl != selectedAudioUrl
     }
     return PlaybackCdnFallbackState(
@@ -480,11 +501,31 @@ internal fun buildPlaybackCdnFallbackState(
         selectedAudioUrl = selectedAudioUrl,
         fallbackVideoUrl = firstFallback?.videoUrl,
         fallbackAudioUrl = firstFallback?.audioUrl,
-        fallbackCandidates = candidates,
+        fallbackCandidates = orderedCandidates,
         regionLabel = regionLabel,
         usesCustomRule = usesCustomRule
     )
 }
+
+/** 把 URL 的 host 换成常规 CDN，保留原路径与签名参数。 */
+private fun rewriteToDefaultCdnHost(url: String, avoidHost: String? = null): String {
+    val path = url.substringAfter("://", "").substringAfter("/", "")
+    if (path.isEmpty()) return url
+    // 避开已经用过的线路（例如设置里选的就是阿里云），否则回退等于原地重试
+    val host = DEFAULT_FALLBACK_CDN_HOSTS.firstOrNull { host ->
+        avoidHost == null || !host.contains(avoidHost, ignoreCase = true)
+    } ?: DEFAULT_FALLBACK_CDN_HOSTS.first()
+    return "$host/$path"
+}
+
+private fun hostOf(url: String): String =
+    url.substringAfter("://", "").substringBefore("/").substringBefore(":")
+
+private val DEFAULT_FALLBACK_CDN_HOSTS = listOf(
+    "https://upos-sz-mirrorali.bilivideo.com",
+    "https://upos-sz-mirrorcos.bilivideo.com",
+    "https://upos-sz-mirrorhw.bilivideo.com",
+)
 
 internal fun buildPlaybackAudioUrlCandidates(
     audioUrl: String?,
@@ -9433,7 +9474,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                 originalAudioUrl = audioUrl,
                 regionLabel = cdnRewrite?.regionLabel,
                 audioFallbackUrl = rawAudioUrls.drop(1).firstOrNull(),
-                fallbackCandidates = originalCandidates,
+                // 用已应用「设置线路 > 排除 PCDN」的候选，回退时才不会又捡回 PCDN
+                fallbackCandidates = preferredCandidates,
                 usesCustomRule = cdnRewrite?.sources?.firstOrNull() ==
                     com.android.purebilibili.plugin.sdk.PlaybackCdnCandidateSource.CUSTOM
             )
