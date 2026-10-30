@@ -72,7 +72,9 @@ internal fun resolveHomeFeedPinchColumnBounds(
         contentWidthDp >= 840 -> 6
         contentWidthDp >= 600 -> 5
         contentWidthDp >= 380 -> 4
-        else -> 3
+        contentWidthDp >= 300 -> 2
+        // 极窄分屏优先保留可读卡片；只限制当前显示，不写回用户的列数偏好。
+        else -> 1
     }
     return minColumns..maxColumns
 }

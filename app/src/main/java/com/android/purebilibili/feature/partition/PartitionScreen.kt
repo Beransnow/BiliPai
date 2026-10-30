@@ -1497,13 +1497,17 @@ private fun PartitionVideoList(
         ?: "partition"
     when {
         state.videos.isEmpty() && state.isLoading -> {
-            ContentMediaListSkeleton(
-                modifier = modifier.fillMaxHeight(),
-                itemCount = 8,
-                mediaRowCoverWidth = 140.dp,
-                mediaRowContentPadding = PaddingValues(8.dp),
-                mediaRowContentGap = 10.dp,
-            )
+            BoxWithConstraints(modifier = modifier.fillMaxHeight().padding(contentPadding)) {
+                ContentMediaListSkeleton(
+                    modifier = Modifier.fillMaxSize(),
+                    itemCount = 8,
+                    contentPadding = PaddingValues(0.dp),
+                    mediaRowCoverWidth = com.android.purebilibili.feature.home.components.cards
+                        .resolvePlainHorizontalVideoCoverWidthDp(maxWidth.value, 16f / 10f).dp,
+                    mediaRowContentPadding = PaddingValues(vertical = 6.dp),
+                    mediaRowContentGap = 10.dp,
+                )
+            }
         }
         state.videos.isEmpty() && state.error != null -> {
             Box(modifier = modifier.fillMaxHeight()) {
@@ -1519,7 +1523,7 @@ private fun PartitionVideoList(
                 state = listState,
                 modifier = modifier.fillMaxHeight(),
                 contentPadding = contentPadding,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 itemsIndexed(
                     items = state.videos,
@@ -1544,7 +1548,6 @@ private fun PartitionVideoList(
                         durationStyle = homeDurationStyle,
                         showPublishTime = showHomePublishTime,
                         transparentCardBackground = true,
-                        compactPartition = true,
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { onVideoClick(video) },
                     )

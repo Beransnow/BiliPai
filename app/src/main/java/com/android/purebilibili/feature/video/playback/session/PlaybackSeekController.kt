@@ -30,9 +30,14 @@ internal fun syncPlaybackSeekSession(
     playbackPositionMs: Long,
     toleranceMs: Long = DEFAULT_PLAYBACK_SEEK_PENDING_TOLERANCE_MS,
     hasPlaybackResumedAfterPendingSeek: Boolean = true,
-    nowMs: Long = currentMonotonicMs()
+    nowMs: Long = currentMonotonicMs(),
+    playbackEnded: Boolean = false,
 ): PlaybackSeekSessionState {
     val safePlaybackPositionMs = playbackPositionMs.coerceAtLeast(0L)
+    // 结束态不会再次 isPlaying；清除等待恢复，避免进度永久锁在拖动目标。
+    if (playbackEnded && !state.isSliderMoving) {
+        return expirePendingPlaybackSeek(state, safePlaybackPositionMs)
+    }
     val syncedState = state.copy(playbackPositionMs = safePlaybackPositionMs)
     if (syncedState.isSliderMoving) {
         if (

@@ -24,6 +24,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
@@ -101,19 +102,20 @@ fun PlayerEpisodeMenu(
         val grouped = groupPlayerEpisodeEntries(section.entries)
         if (reversed) grouped.asReversed() else grouped
     }
-    val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
     fun currentIndex(): Int {
         val current = content.sections.getOrNull(content.currentSectionIndex)?.entries?.getOrNull(content.currentEntryIndex)
         return entries.indexOfFirst { current in it }
     }
+    val initialIndex = if (sectionIndex == content.currentSectionIndex) currentIndex().coerceAtLeast(0) else 0
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex)
+    val scope = rememberCoroutineScope()
     LaunchedEffect(content, sectionIndex, reversed) {
         val index = if (sectionIndex == content.currentSectionIndex) currentIndex() else 0
-        // 面板展开/切换分区后动画定位当前集，与面板入场衔接；越界保持原位。
-        if (index in entries.indices) listState.animateScrollToItem(index)
+        // 自动定位不与面板入场叠加滚动动画，首帧及分区/顺序变化后保持当前集完整可见。
+        if (index in entries.indices) listState.scrollToItem(index)
     }
-    PlayerDetailPanel(title = if (pages.size > 1) "分P" else "合集", isFullscreen = isFullscreen,
-        playerBounds = playerBounds, onDismiss = onDismiss, compactHeight = true) { requestPanelDismiss ->
+    PlayerEpisodeSelectionHost(title = if (pages.size > 1) "分P" else "合集", isFullscreen = isFullscreen,
+        playerBounds = playerBounds, onDismiss = onDismiss) { requestPanelDismiss ->
         Row(Modifier.fillMaxWidth().height(45.dp).horizontalScroll(rememberScrollState())
             .padding(horizontal = 6.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(if (pages.size > 1) "分P" else "合集", fontSize = 16.sp)
@@ -165,7 +167,7 @@ fun PlayerEpisodeMenu(
                 }
             }
         }
-        LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().weight(1f), overscrollEffect = null,
+        LazyColumn(state = listState, modifier = Modifier.fillMaxWidth().weight(1f).clipToBounds(), overscrollEffect = null,
             contentPadding = PaddingValues(top = 7.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)) {
             itemsIndexed(entries) { _, group ->
@@ -216,6 +218,32 @@ fun PlayerEpisodeMenu(
 }
 
 @Composable
+private fun PlayerEpisodeSelectionHost(
+    title: String,
+    isFullscreen: Boolean,
+    playerBounds: IntRect?,
+    onDismiss: () -> Unit,
+    content: @Composable ColumnScope.(requestDismiss: () -> Unit) -> Unit,
+) {
+    val window = LocalWindowInfo.current.containerSize
+    if (isFullscreen && window.width > window.height) {
+        // 横屏全屏沿用播放器侧栏和画面避让；其余入口与合集共用自适应面板。
+        PlayerDetailPanel(title, isFullscreen, playerBounds, onDismiss, compactHeight = true, content = content)
+    } else {
+        val maxHeight = episodeSheetMaxHeight()
+        EpisodeSelectionSheet(onDismiss = onDismiss) { requestDismiss ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = maxHeight)
+                    .semantics { paneTitle = title },
+                content = { content(requestDismiss) },
+            )
+        }
+    }
+}
+
+@Composable
 internal fun PanelAction(icon: ImageVector, label: String, onClick: () -> Unit) {
     IconButton(onClick = onClick, modifier = Modifier.size(35.dp)) {
         Icon(icon, contentDescription = label, modifier = Modifier.size(22.dp))
@@ -252,6 +280,9 @@ internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBound
     val bounds = resolvePlayerPanelBounds(safe, playerBounds, isFullscreen, landscape,
         with(density) { 500.dp.roundToPx() }, maxBottomHeight = compactMaxHeight)
     if (bounds.width <= 0 || bounds.height <= 0) return
+    // 底板延伸到窗口底边，列表仍避让导航区；不能把透明导航区留给后面的详情页。
+    val windowBounds = if (landscape) bounds else IntRect(bounds.left, bounds.top, bounds.right, size.height)
+    val bottomContentInset = with(density) { (windowBounds.bottom - bounds.bottom).coerceAtLeast(0).toDp() }
     val dragEnabled = draggable && isFullscreen && landscape
     // 退出位移包含窗口右侧安全边距，画面和面板一直共用相同的可见边界。
     val dragDistancePx = (size.width - bounds.left).coerceAtLeast(bounds.width)
@@ -263,16 +294,20 @@ internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBound
         dragDistancePx = dragDistancePx,
         closeProgressProvider = { closeProgress.floatValue },
     )
-    val provider = remember(bounds) { object : PopupPositionProvider {
+    val provider = remember(windowBounds, landscape) { object : PopupPositionProvider {
         override fun calculatePosition(anchorBounds: IntRect, windowSize: IntSize, layoutDirection: LayoutDirection,
-            popupContentSize: IntSize) = resolvePlayerPanelPopupPosition(bounds, windowSize, popupContentSize)
+            popupContentSize: IntSize) = resolvePlayerPanelPopupPosition(
+                windowBounds, windowSize, popupContentSize, bottomAligned = !landscape,
+            )
     } }
     val surfaceContent: @Composable (requestDismiss: () -> Unit) -> Unit = { requestDismiss ->
         val panelContent: @Composable () -> Unit = {
             Column(
                 modifier = modifier
                     // 弹窗在旧系统上可能比宿主窗口小；遵守实际测量约束，避免子项被挤出屏幕。
-                    .size(with(density) { bounds.width.toDp() }, with(density) { bounds.height.toDp() })
+                    .size(with(density) { windowBounds.width.toDp() }, with(density) { windowBounds.height.toDp() })
+                    .clipToBounds()
+                    .padding(bottom = bottomContentInset)
                     .semantics { paneTitle = title },
                 content = { content(requestDismiss) },
             )
@@ -297,19 +332,27 @@ internal fun PlayerDetailPanel(title: String, isFullscreen: Boolean, playerBound
         popupPositionProvider = provider,
         onDismissRequest = { dismissAction.value?.invoke() ?: onDismiss() },
         // 返回由 Popup 自己的窗口回调处理，保留手势进度与取消恢复。
-        // 使用可见窗口参与测量及定位；位移动画仍在内容图层执行，不移动弹窗窗口。
-        properties = PopupProperties(focusable = true, clippingEnabled = true, dismissOnBackPress = false),
+        // 与宿主的 edge-to-edge 窗口使用同一坐标范围，避免系统可见框再次扣除状态栏。
+        // 安全区由上面的 bounds/底部内边距处理，绘制边界由面板自身裁剪。
+        properties = PopupProperties(focusable = true, clippingEnabled = false, dismissOnBackPress = false),
     ) {
-        com.android.purebilibili.core.ui.AppPopupWindowHost(enableWindowMaterial = false) {
-            PlayerDetailPanelMotion(
-                sidePanel = landscape,
-                dragEnabled = dragEnabled,
-                distancePx = if (landscape) dragDistancePx.toFloat() else (size.height - bounds.top).toFloat(),
-                closeProgress = closeProgress,
-                onDismiss = onDismiss,
-                onDismissAction = { dismissAction.value = it },
-                content = surfaceContent,
-            )
+        // 玻璃菜单宿主会填满父约束，必须在宿主外限定面板尺寸，避免 Popup 按整窗大小定位到顶部。
+        // 两种材质共用原有面板边界，尺寸遵守 Popup 实际可用空间。
+        Box(Modifier
+            .size(with(density) { windowBounds.width.toDp() }, with(density) { windowBounds.height.toDp() })
+            .clipToBounds()
+        ) {
+            com.android.purebilibili.core.ui.AppPopupWindowHost(enableWindowMaterial = false) {
+                PlayerDetailPanelMotion(
+                    sidePanel = landscape,
+                    dragEnabled = dragEnabled,
+                    distancePx = if (landscape) dragDistancePx.toFloat() else (size.height - bounds.top).toFloat(),
+                    closeProgress = closeProgress,
+                    onDismiss = onDismiss,
+                    onDismissAction = { dismissAction.value = it },
+                    content = surfaceContent,
+                )
+            }
         }
     }
 }

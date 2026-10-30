@@ -2429,6 +2429,15 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                 cancelPlaybackStallRecovery()
             }
             if (playbackState == Player.STATE_ENDED) {
+                playbackTransitionMonitorJob?.cancel()
+                playbackTransitionMonitorJob = null
+                _uiState.update { state ->
+                    if (state is VideoPlaybackUiState.Success) {
+                        state.copy(pendingPlaybackTransitionPositionMs = null)
+                    } else {
+                        state
+                    }
+                }
                 samplePlaybackAnalytics(ended = true)
                 if (finishSleepAfterCurrent()) return
                 if (shouldSuppressPlaybackCompletionForCommentInteraction(isCommentInteractionActive)) {

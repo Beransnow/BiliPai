@@ -5,10 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
@@ -33,6 +37,7 @@ import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.components.LocalAppTopBarIconBackdrop
 import com.android.purebilibili.core.ui.blur.rememberChromeBackdropSource
 import com.android.purebilibili.core.ui.blur.ChromeBackdropSource
+import com.android.purebilibili.feature.home.components.floatingDockCaptureOverflow
 import com.android.purebilibili.core.ui.wallpaper.LocalGlobalWallpaperBackdropSource
 import com.android.purebilibili.core.ui.wallpaper.sharedGlobalWallpaperBackground
 import java.util.concurrent.atomic.AtomicInteger
@@ -109,6 +114,41 @@ class ChromeBackdropSourceUiRegressionTest {
 
     @Test
     fun hiddenDockCaptureStillUpdatesItsConsumer() = verifySource(hidden = true)
+
+    @Test
+    fun hiddenDockCaptureIncludesBadgePixelsAboveItsContentBand() {
+        assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        composeRule.setContent {
+            val source = rememberChromeBackdropSource(drawContentToScreen = false)
+            Box(Modifier.size(120.dp).background(Color.Blue).testTag("badge-capture-result")) {
+                Box(
+                    Modifier.align(Alignment.Center).width(100.dp)
+                        .floatingDockCaptureOverflow(56.dp, 16.dp)
+                        .then(source.modifier)
+                        .padding(vertical = 16.dp)
+                        .height(56.dp),
+                ) {
+                    // 背景与前景分层，徽标上半圆位于原有 56dp 内容带之外。
+                    Box(Modifier.matchParentSize().background(Color.DarkGray, RoundedCornerShape(28.dp)))
+                    Box(Modifier.matchParentSize().drawBehind {
+                        drawCircle(Color.Red, radius = 8.dp.toPx(), center = Offset(40.dp.toPx(), 0f))
+                    })
+                }
+                Box(Modifier.matchParentSize().drawBackdrop(
+                    backdrop = source.backdrop,
+                    shape = { RectangleShape },
+                    effects = {},
+                ))
+            }
+        }
+        composeRule.waitForIdle()
+        val pixels = composeRule.onNodeWithTag("badge-capture-result").captureToImage().toPixelMap()
+        for (yDp in listOf(28f, 36f)) {
+            val color = pixels[(pixels.width * 50f / 120f).toInt(), (pixels.height * yDp / 120f).toInt()]
+            assertEquals("Badge must retain both halves", 1f, color.red, 0.05f)
+            assertEquals(0f, color.blue, 0.05f)
+        }
+    }
 
     @Test
     fun nestedNavigationAndHomeSourcesDoNotMultiplyChildDrawing() =

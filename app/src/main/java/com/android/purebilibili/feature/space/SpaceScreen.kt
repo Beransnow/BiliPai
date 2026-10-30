@@ -386,11 +386,12 @@ fun SpaceScreen(
     var repostDynamicId by remember { mutableStateOf<String?>(null) }
     val spaceThemeConfig = LocalAppThemeConfig.current
     // 交互以用户开关为边界，不跟随模糊性能降级切换，避免滚动过程中改变吸顶规则。
-    // 纯色与渐进模糊共用固定顶栏下的连续滚动布局；两种效果都关闭时保留原有折叠路径。
+    // 顶栏磨砂、渐进模糊与纯色渐变共用连续滚动布局；全部关闭时保留原有折叠路径。
     // 此处只决定页面滚动，不改变玻璃、MD3 或 Miuix 的材质参数。
     val pinContentTabs = shouldPinSpaceContentTabs(
         progressiveTopBlurEnabled = spaceThemeConfig.progressiveTopBlurEnabled,
         headerBlurEnabled = spaceThemeConfig.headerBlurEnabled,
+        progressiveTopFadeEnabled = spaceThemeConfig.progressiveTopFadeEnabled,
     )
     val spaceDensity = LocalDensity.current
     val hazeState = if (

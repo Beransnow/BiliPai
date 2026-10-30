@@ -62,10 +62,7 @@ import com.android.purebilibili.core.store.TodayWatchFeedbackStore
 import com.android.purebilibili.core.store.withDislikedVideoFeedback
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
-import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.videoCardTitleMaxLines
@@ -103,7 +100,6 @@ import com.android.purebilibili.navigation.VideoRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.roundToInt
 
 /**
  * PiliPlus horizontal cards use a 16:10 cover.
@@ -254,8 +250,12 @@ fun RelatedVideoItem(
     val nativeCardSnapshot = rememberNativeVideoCardSnapshotController(
         video.bvid, enabled = sharedTransitionEnabled,
     )
-    val cardShape = AppShapes.container(ContainerLevel.Card)
-    val cardCornerRadiusDp = AppShapes.containerCornerDp(ContainerLevel.Card).value.roundToInt()
+    // 透明横卡只由封面自身裁剪圆角；整行及共享转场外框不能再切掉封面左侧。
+    val cardShape = androidx.compose.ui.graphics.RectangleShape
+    val cardCornerRadiusDp = 0
+    val coverCornerDp = com.android.purebilibili.core.ui.AppShapes.mediaCoverCornerDp(
+        com.android.purebilibili.core.ui.ContainerLevel.MediaCover,
+    )
     val context = LocalContext.current
     // Keep the request stable and skip image crossfade during the Miuix page transition.
     val stationaryCoverUrl = remember(video.pic) {
@@ -312,6 +312,7 @@ fun RelatedVideoItem(
                                 showOverflowMenu = onMoreClick != null,
                             ),
                         coverPresentation = VideoCardSourceCoverPresentation(
+                            cornerRadiusDp = coverCornerDp.value,
                             showDurationOnCover = true,
                         ),
                         coverUrl = stationaryCoverUrl,
@@ -346,10 +347,10 @@ fun RelatedVideoItem(
             )
             .then(nativeCardSnapshot.modifier)
             .clip(cardShape)
-            .background(AppSurfaceTokens.cardContainer())
             .clickable(onClick = triggerRelatedVideoClick)
     ) {
         HorizontalVideoCardFrame(
+            plainHorizontal = true,
             coverAspectRatio = coverAspectRatio,
             stacked = stacked,
             fillInfoHeight = true,
@@ -380,7 +381,7 @@ fun RelatedVideoItem(
                     text = video.title,
                     style = contentTypography.title,
                     maxLines = videoCardTitleMaxLines(),
-                    minLines = 1,
+                    minLines = if (stacked) 1 else minOf(2, videoCardTitleMaxLines()),
                     overflow = videoCardTitleOverflow(),
                     color = AppContentColors.primaryText(),
                     modifier = Modifier.fillMaxWidth(),
@@ -466,6 +467,7 @@ fun RelatedVideoItem(
                     HorizontalVideoStatRow(
                         playText = FormatUtils.formatStat(video.stat.view.toLong()),
                         danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                        modifier = Modifier.padding(end = if (onMoreClick != null) 48.dp else 0.dp),
                     )
                 }
             },
@@ -520,7 +522,10 @@ internal fun RelatedVideoGridRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = cardLayout.outerPaddingDp.dp, vertical = 2.dp)
+            .padding(
+                horizontal = cardLayout.outerPaddingDp.dp,
+                vertical = if (cardPresentation == RelatedVideoCardLayout.HORIZONTAL) 1.dp else 2.dp,
+            )
     ) {
         videos.firstOrNull()?.let { video ->
             RelatedVideoItem(

@@ -2240,7 +2240,11 @@ fun CommonListScreen(
                                 tapPressRefractionEnabled = true,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = historyFilterChrome.horizontalPaddingDp.dp),
+                                    .padding(
+                                        horizontal = historyFilterChrome.horizontalPaddingDp.dp,
+                                    )
+                                    // 仅下移历史页玻璃筛选 Dock，保留 MD3、Miuix 原生间距。
+                                    .padding(top = if (historyFilterChrome.useLiquidDock) 6.dp else 0.dp),
                                 miuixBackdrop = visibleHeaderBackdrop,
                                 indicatorPositionProvider = {
                                     historyPagerState.tabIndicatorPosition

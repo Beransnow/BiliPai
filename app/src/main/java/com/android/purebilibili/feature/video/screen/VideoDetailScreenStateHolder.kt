@@ -4773,7 +4773,8 @@ internal fun VideoDetailScreenStateHolder(
                         // A second media-cover radius exposes the live layer around its baked corners.
                         val returnMediaClipCornerDp = if (nativeSnapshotTargetBoundsProvider != null) {
                             0.dp
-                        } else AppShapes.mediaCoverCornerDp()
+                        } else miuixLandingState.sourceChromeSnapshot?.coverPresentation
+                            ?.cornerRadiusDp?.dp ?: AppShapes.mediaCoverCornerDp()
                         val returnMediaInverseScaleProvider: () ->
                             com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardInverseScale = {
                             val landing = landingLayoutForMedia
