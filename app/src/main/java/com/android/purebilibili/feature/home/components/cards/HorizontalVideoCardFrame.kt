@@ -135,7 +135,14 @@ internal fun HorizontalVideoCardFrame(
                 val widthDp = width.toDp().value
                 val widthFraction = 0.55f - 0.10f * ((widthDp - 320f) / 160f).coerceIn(0f, 1f)
                 // 同宽列表的封面宽度与文字起点固定，不由单条内容的高度反推宽度。
-                val coverWidth = if (compactPartition) {
+                val coverWidth = if (allowPortraitCover && effectiveAspectRatio < 1f) {
+                    // 竖版剧集海报按高度限制尺寸，不能套用横向封面的半行宽度。
+                    minOf(
+                        (120.dp.toPx() * effectiveAspectRatio).toInt(),
+                        (width * widthFraction).toInt(),
+                        width - gap,
+                    )
+                } else if (compactPartition) {
                     // 封面以 88dp 高度为基准，压缩封面宽度换取标题单行容量；窄窗口仍为文字保留空间。
                     minOf(
                         (88.dp.toPx() * effectiveAspectRatio).toInt(),

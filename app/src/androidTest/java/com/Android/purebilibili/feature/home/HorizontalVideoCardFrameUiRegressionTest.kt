@@ -35,6 +35,39 @@ class HorizontalVideoCardFrameUiRegressionTest {
     @get:Rule val rule = createComposeRule()
 
     @Test
+    fun seasonPostersKeepCompactSizeAcrossNarrowAndWideRows() {
+        val width = mutableStateOf(280)
+        rule.setContent {
+            CompositionLocalProvider(LocalDensity provides Density(1f, 1f)) {
+                MaterialTheme {
+                    HorizontalVideoCardFrame(
+                        modifier = Modifier.width(width.value.dp).testTag("poster_row"),
+                        coverModifier = Modifier.testTag("poster_cover"),
+                        infoModifier = Modifier.testTag("poster_info"),
+                        coverAspectRatio = 3f / 4f,
+                        allowPortraitCover = true,
+                        coverContent = { Box(Modifier.fillMaxSize()) },
+                        infoContent = { Text("剧集标题\n更新至第197话\n21.5亿播放") },
+                    )
+                }
+            }
+        }
+        for (rowWidth in listOf(280, 480, 100)) {
+            rule.runOnIdle { width.value = rowWidth }
+            val cover = bounds("poster_cover")
+            val info = bounds("poster_info")
+            assertTrue(cover.width <= 90f)
+            assertTrue(cover.height <= 120f)
+            assertEquals(3f / 4f, cover.width / cover.height, 0.02f)
+            assertTrue(info.left >= cover.right)
+            if (rowWidth >= 280) {
+                assertEquals(90f, cover.width, 1f)
+                assertEquals(120f, cover.height, 1f)
+            }
+        }
+    }
+
+    @Test
     fun ordinaryCoversKeepBaselineWidthAcrossPhoneAndWidePanes() {
         val widthDp = mutableStateOf(320)
         rule.setContent {

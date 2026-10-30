@@ -1586,6 +1586,9 @@ private fun PartitionSeasonRankCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // AppText 按主题读取自身默认样式，不能仅依赖父级 Material ProvideTextStyle。
+    // 在入口显式分配标题、更新信息和统计字阶，两种材质及原生主题共用。
+    val typography = com.android.purebilibili.feature.home.components.cards.horizontalVideoCardTypography()
     com.android.purebilibili.feature.personal.PersonalMediaCardFrame(
         modifier = modifier,
         coverAspectRatio = 3f / 4f,
@@ -1594,15 +1597,24 @@ private fun PartitionSeasonRankCard(
         headlineContent = {
             AppText(
                 text = video.title,
+                style = typography.title,
+                color = AppContentColors.primaryText(),
                 maxLines = com.android.purebilibili.core.ui.videoCardTitleMaxLines(),
                 overflow = com.android.purebilibili.core.ui.videoCardTitleOverflow(),
             )
         },
         supportingContent = {
-            if (video.owner.name.isNotBlank()) AppText(video.owner.name)
+            if (video.owner.name.isNotBlank()) {
+                AppText(
+                    text = video.owner.name,
+                    style = typography.author,
+                    color = AppContentColors.secondaryText(),
+                )
+            }
             AppText(
                 text = "${com.android.purebilibili.core.util.FormatUtils.formatStat(video.stat.view.toLong())} 播放 · " +
                     "${com.android.purebilibili.core.util.FormatUtils.formatStat(video.stat.favorite.toLong())} 追剧",
+                style = typography.statistic,
                 color = AppContentColors.secondaryText(),
             )
         },
