@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -96,7 +97,8 @@ fun CollectionSheet(
     currentCid: Long = 0L,
     currentVideoInfo: com.android.purebilibili.data.model.response.ViewInfo? = null,
     onDismiss: () -> Unit,
-    onEpisodeClick: (UgcEpisode) -> Unit
+    onEpisodeClick: (UgcEpisode) -> Unit,
+    inlinePanel: Boolean = false,
 ) {
     val selectionHaptic = rememberHapticFeedback(com.android.purebilibili.core.ui.AppHapticScene.MENUS)
     val sheetMaxHeight = episodeSheetMaxHeight()
@@ -170,17 +172,18 @@ fun CollectionSheet(
         }
     }
 
-    EpisodeSelectionSheet(onDismiss = onDismiss) { requestDismiss ->
+    EpisodeSelectionSheet(onDismiss = onDismiss, inlinePanel = inlinePanel) { requestDismiss ->
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = sheetMaxHeight)
+                .then(if (inlinePanel) Modifier.fillMaxSize() else Modifier.heightIn(max = sheetMaxHeight))
         ) {
             // ── 工具栏（PiliPlus：标题 + 收藏 + 跳转/定位 + 排序 + 关闭）──
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 44.dp)
+                    .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -201,7 +204,7 @@ fun CollectionSheet(
                     ),
                     fontSize = MaterialTheme.typography.labelMedium.fontSize
                 )
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
                 EpisodeListNavigationActions(
                     onTopClick = { scrollToEpisode(0) },
                     onBottomClick = { scrollToEpisode(sortedEpisodes.lastIndex) },
@@ -349,9 +352,8 @@ fun CollectionSheet(
                 state = listState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f, fill = false)
-                    .heightIn(max = 460.dp),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                    .weight(1f, fill = false),
+                contentPadding = PaddingValues(top = 7.dp, bottom = 16.dp)
             ) {
                 itemsIndexed(
                     sortedEpisodes,
@@ -407,14 +409,22 @@ internal fun CollectionEpisodeRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val coverWidth = minOf(160.dp, maxWidth * 0.40f)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(112.dp)
+                .clickable(onClick = onClick)
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Box(
                 modifier = Modifier
-                    .width(132.dp)
-                    .aspectRatio(16f / 9f)
+                    .width(coverWidth)
+                    .height(100.dp)
                     .clip(AppShapes.container(ContainerLevel.Chip))
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
@@ -441,8 +451,7 @@ internal fun CollectionEpisodeRow(
                         .padding(4.dp),
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f).height(100.dp)) {
                 AppText(
                     text = episode.title,
                     style = MaterialTheme.typography.bodyMedium,
@@ -453,7 +462,8 @@ internal fun CollectionEpisodeRow(
                         AppContentColors.primaryText()
                     },
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
                 )
                 if (publishTimeText.isNotBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -466,27 +476,25 @@ internal fun CollectionEpisodeRow(
                     )
                 }
                 val stat = arc?.stat
-                if (stat != null && (stat.view > 0 || stat.danmaku > 0)) {
+                if (stat != null) {
                     Spacer(modifier = Modifier.height(4.dp))
                     // 复用全局统计原子（图标/字号/间距与其他卡片一致）
                     HorizontalVideoStatRow(
                         playText = FormatUtils.formatStat(stat.view.toLong()),
-                        danmakuText = if (stat.danmaku > 0) {
-                            FormatUtils.formatStat(stat.danmaku.toLong())
-                        } else {
-                            ""
-                        }
+                        danmakuText = FormatUtils.formatStat(stat.danmaku.toLong())
                     )
                 }
             }
         }
+        }
 
         // 分 P chips：单集多 P 时展示
         if (episode.pages.size > 1) {
-            Spacer(modifier = Modifier.height(6.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 5.dp)
+                    .height(45.dp)
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {

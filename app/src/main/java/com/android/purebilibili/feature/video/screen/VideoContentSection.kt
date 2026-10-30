@@ -502,6 +502,7 @@ internal class VideoContentPresentationState(
     val bottomContentPadding: Dp,
     val commentPullToRefreshEnabled: Boolean = true,
     val relatedContentReady: Boolean = true,
+    val commentPagePreloadReady: Boolean = true,
 )
 
 internal class VideoContentPrimaryActions(
@@ -573,6 +574,8 @@ internal fun VideoContentSection(
     commentActions: VideoContentCommentActions,
     noteActions: VideoContentNoteActions,
     uiActions: VideoContentUiActions,
+    // 手机正文传原始句柄，将分页/点赞读取限制在评论页；未接入的双栏入口沿用参数。
+    commentUpdates: State<com.android.purebilibili.feature.video.viewmodel.CommentUiState>? = null,
 ) {
     val info = data.info
     val introListState = data.introListState
@@ -685,9 +688,9 @@ internal fun VideoContentSection(
         !themeConfig.headerBlurEnabled
     val immersiveVideoContentChromeEnabled = progressiveCommentHeaderEnabled ||
         solidProgressiveCommentHeaderEnabled
-    val showVideoDetailCommentCount by SettingsManager
-        .getShowVideoDetailCommentCount(context)
-        .collectAsStateWithLifecycle(initialValue = true)
+    val showVideoDetailCommentCount by remember(context) {
+        SettingsManager.getShowVideoDetailCommentCount(context)
+    }.collectAsStateWithLifecycle(initialValue = true)
     val tabs = remember(replyCount, showVideoDetailCommentCount) {
         listOf(
             "简介",
@@ -745,7 +748,8 @@ internal fun VideoContentSection(
     var previewTextContent by remember { mutableStateOf<ImagePreviewTextContent?>(null) }
 
     // 合集展开状态
-    var showCollectionSheet by remember { mutableStateOf(false) }
+    var showCollectionSheet by remember(info.bvid) { mutableStateOf(false) }
+    var showPartsPanel by remember(info.bvid) { mutableStateOf(false) }
     var showAiSummarySheet by remember { mutableStateOf(false) }
     var showNoteListSheet by remember { mutableStateOf(false) }
     var confirmDeleteNote by remember { mutableStateOf(false) }
@@ -963,7 +967,8 @@ internal fun VideoContentSection(
                 state = pagerState,
                 flingBehavior = glassTabFlingBehavior,
                 beyondViewportPageCount = resolveVideoDetailBeyondViewportPageCount(
-                    selectedTabIndex = pagerState.currentPage
+                    selectedTabIndex = pagerState.currentPage,
+                    commentPagePreloadReady = presentationState.commentPagePreloadReady,
                 ),
                 userScrollEnabled = shouldEnableVideoContentHorizontalPagerSwipe(
                             currentPage = pagerState.currentPage,
@@ -1027,6 +1032,7 @@ internal fun VideoContentSection(
                         onUpClick = onUpClick,
                         onRelatedVideoClick = onRelatedVideoClick,
                         onOpenCollectionSheet = { showCollectionSheet = true },
+                        onOpenPartsPanel = { showPartsPanel = true },
                         onDownloadClick = onDownloadClick,
                         onWatchLaterClick = onWatchLaterClick,
                         onShareClick = onShareClick,
@@ -1054,65 +1060,67 @@ internal fun VideoContentSection(
                         showInteractionActions = showInteractionActions,
                         animateVideoDetailLayout = animateVideoDetailLayout
                     )
-                    1 -> VideoCommentTab(
-                        listState = commentListState,
-                        modifier = Modifier,
-                        upMid = info.owner.mid,
-                        maxTimestampMs = info.pages.firstOrNull { it.cid == info.cid }?.duration?.times(1000L)
-                            ?: info.pages.firstOrNull()?.duration?.times(1000L),
-                        replies = replies,
-                        replyCount = replyCount,
-                        emoteMap = emoteMap,
-                        isRepliesLoading = isRepliesLoading,
-                        isRepliesRefreshing = isRepliesRefreshing,
-                        repliesError = repliesError,
-                        isRepliesEnd = isRepliesEnd,
-                        paginationPage = commentState.nextPage,
-                        voteCard = voteCard,
-                        onUpClick = onUpClick,
-                        onSubReplyClick = onSubReplyClick,
-                        onCommentReplyClick = onCommentReplyClick,
-                        onLoadMoreReplies = onLoadMoreReplies,
-                        onRefreshReplies = onRefreshReplies,
-                        pullToRefreshEnabled = commentPullToRefreshEnabled,
-                        onImagePreview = { images, index, rect, textContent ->
-                            previewImages = images
-                            previewInitialIndex = index
-                            sourceRect = rect
-                            previewTextContent = textContent
-                            showImagePreview = true
-                        },
-                        onTimestampClick = onTimestampClick,
-                        showUpFlag = showUpFlag,
-                        contentPadding = pageContentPadding,
-                        currentMid = currentMid,
-                        dissolvingIds = dissolvingIds,
-                        onDeleteComment = onDeleteComment,
-                        onDissolveStart = onDissolveStart,
-                        onCommentLike = onCommentLike,
-                        onCommentHate = onCommentHate,
-                        likedComments = likedComments,
-                        hatedComments = hatedComments,
-                        onCommentUrlClick = onCommentUrlClick,
-                        onReportComment = onReportComment,
-                        onToggleTopComment = onToggleTopComment,
-                        onCheckCommentFraud = onCheckCommentFraud,
-                        showIdentityDecorations = showIdentityDecorations,
-                        lightweightCommentRendering = lightweightCommentRendering,
-                        sortMode = sortMode,
-                        onSortModeChange = onSortModeChange,
-                        showNativeSortHeader = !liquidGlassEnabled,
-                        showSortControlInHeader = true,
-                        // 详情页评论标题在玻璃开/关时统一使用紧凑字阶；仅影响这一处调用。
-                        compactSortHeader = true,
-                        // Glass title and sort share the sibling overlay. Keep its space as list
-                        // padding so hiding chrome cannot resize the list or move its anchors.
-                        showHeader = !immersiveVideoContentChromeEnabled && !liquidGlassEnabled,
-                        floatingHeaderContentPaddingPx = if (immersiveVideoContentChromeEnabled || liquidGlassEnabled) {
-                            commentHeaderHeightProvider
-                        } else null,
-                        onSearchClick = { showCommentSearchSheet = true },
-                    )
+                    1 -> VideoDetailCommentUpdates(commentUpdates) { pageComments ->
+                        VideoCommentTab(
+                            listState = commentListState,
+                            modifier = Modifier,
+                            upMid = info.owner.mid,
+                            maxTimestampMs = info.pages.firstOrNull { it.cid == info.cid }?.duration?.times(1000L)
+                                ?: info.pages.firstOrNull()?.duration?.times(1000L),
+                            replies = pageComments?.replies ?: replies,
+                            replyCount = replyCount,
+                            emoteMap = emoteMap,
+                            isRepliesLoading = pageComments?.isRepliesLoading ?: isRepliesLoading,
+                            isRepliesRefreshing = pageComments?.isRepliesRefreshing ?: isRepliesRefreshing,
+                            repliesError = if (pageComments != null) pageComments.repliesError else repliesError,
+                            isRepliesEnd = pageComments?.isRepliesEnd ?: isRepliesEnd,
+                            paginationPage = pageComments?.nextPage ?: commentState.nextPage,
+                            voteCard = if (pageComments != null) pageComments.voteCard else voteCard,
+                            onUpClick = onUpClick,
+                            onSubReplyClick = onSubReplyClick,
+                            onCommentReplyClick = onCommentReplyClick,
+                            onLoadMoreReplies = onLoadMoreReplies,
+                            onRefreshReplies = onRefreshReplies,
+                            pullToRefreshEnabled = commentPullToRefreshEnabled,
+                            onImagePreview = { images, index, rect, textContent ->
+                                previewImages = images
+                                previewInitialIndex = index
+                                sourceRect = rect
+                                previewTextContent = textContent
+                                showImagePreview = true
+                            },
+                            onTimestampClick = onTimestampClick,
+                            showUpFlag = pageComments?.showUpFlag ?: showUpFlag,
+                            contentPadding = pageContentPadding,
+                            currentMid = pageComments?.currentMid ?: currentMid,
+                            dissolvingIds = pageComments?.dissolvingIds ?: dissolvingIds,
+                            onDeleteComment = onDeleteComment,
+                            onDissolveStart = onDissolveStart,
+                            onCommentLike = onCommentLike,
+                            onCommentHate = onCommentHate,
+                            likedComments = pageComments?.likedComments ?: likedComments,
+                            hatedComments = pageComments?.hatedComments ?: hatedComments,
+                            onCommentUrlClick = onCommentUrlClick,
+                            onReportComment = onReportComment,
+                            onToggleTopComment = onToggleTopComment,
+                            onCheckCommentFraud = onCheckCommentFraud,
+                            showIdentityDecorations = showIdentityDecorations,
+                            lightweightCommentRendering = lightweightCommentRendering,
+                            sortMode = sortMode,
+                            onSortModeChange = onSortModeChange,
+                            showNativeSortHeader = !liquidGlassEnabled,
+                            showSortControlInHeader = true,
+                            // 详情页评论标题在玻璃开/关时统一使用紧凑字阶；仅影响这一处调用。
+                            compactSortHeader = true,
+                            // Glass title and sort share the sibling overlay. Keep its space as list
+                            // padding so hiding chrome cannot resize the list or move its anchors.
+                            showHeader = !immersiveVideoContentChromeEnabled && !liquidGlassEnabled,
+                            floatingHeaderContentPaddingPx = if (immersiveVideoContentChromeEnabled || liquidGlassEnabled) {
+                                commentHeaderHeightProvider
+                            } else null,
+                            onSearchClick = { showCommentSearchSheet = true },
+                        )
+                    }
                 }
             }
         }
@@ -1303,6 +1311,7 @@ internal fun VideoContentSection(
                     currentVideoInfo = info,
                     currentBvid = info.bvid,
                     currentCid = info.cid,
+                    inlinePanel = true,
                     onDismiss = { showCollectionSheet = false },
                     onEpisodeClick = { episode ->
                         showCollectionSheet = false
@@ -1315,6 +1324,16 @@ internal fun VideoContentSection(
             }
         }
 
+        if (showPartsPanel && info.pages.size > 1) {
+            com.android.purebilibili.feature.video.ui.components.PlayerEpisodeMenu(
+                pages = info.pages,
+                currentPageIndex = currentPageIndex,
+                cover = info.pic,
+                inlinePanel = true,
+                onDismiss = { showPartsPanel = false },
+                onPageSelect = onPageSelect,
+            )
+        }
 
         AiSummarySheet(
             visible = showAiSummarySheet,
@@ -1379,7 +1398,7 @@ internal fun VideoContentSection(
 
         if (showCommentSearchSheet) {
             CommentSearchSheet(
-                replies = replies,
+                replies = commentUpdates?.value?.replies ?: replies,
                 upMid = info.owner.mid,
                 onCommentClick = { reply ->
                     onCommentReplyClick(reply)
@@ -1428,6 +1447,7 @@ private fun VideoIntroTab(
     onUpClick: (Long) -> Unit,
     onRelatedVideoClick: (String, android.os.Bundle?) -> Unit,
     onOpenCollectionSheet: () -> Unit,
+    onOpenPartsPanel: () -> Unit,
     onDownloadClick: () -> Unit,
     onWatchLaterClick: () -> Unit,
     onShareClick: () -> Unit = {},
@@ -1496,6 +1516,7 @@ private fun VideoIntroTab(
                 onCommentClick = onCommentClick,
                 onUpClick = onUpClick,
                 onOpenCollectionSheet = onOpenCollectionSheet,
+                onOpenPartsPanel = onOpenPartsPanel,
                 onDownloadClick = onDownloadClick,
                 onWatchLaterClick = onWatchLaterClick,
                 onShareClick = onShareClick,
@@ -2093,6 +2114,7 @@ private fun VideoHeaderContent(
     onCommentClick: () -> Unit,
     onUpClick: (Long) -> Unit,
     onOpenCollectionSheet: () -> Unit,
+    onOpenPartsPanel: () -> Unit,
     onDownloadClick: () -> Unit,
     onWatchLaterClick: () -> Unit,
     onShareClick: () -> Unit = {},
@@ -2226,7 +2248,8 @@ private fun VideoHeaderContent(
                 coverUrl = info.pic,
                 currentPageIndex = currentPageIndex,
                 isPlaying = isVideoPlaying,
-                onPageSelect = onPageSelect
+                onPageSelect = onPageSelect,
+                onOpenExpanded = onOpenPartsPanel,
             )
         }
 

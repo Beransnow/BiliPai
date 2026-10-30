@@ -1097,29 +1097,29 @@ private fun VideoPlayerOverlayContent(
             delay(1000)
         }
     }
-    val showFullscreenLockButton by SettingsManager
-        .getShowFullscreenLockButton(context)
-        .collectAsStateWithLifecycle(initialValue = true
+    val showFullscreenLockButton by remember(context) {
+        SettingsManager.getShowFullscreenLockButton(context)
+    }.collectAsStateWithLifecycle(initialValue = true
         )
-    val showFullscreenScreenshotButton by SettingsManager
-        .getShowFullscreenScreenshotButton(context)
-        .collectAsStateWithLifecycle(initialValue = true
+    val showFullscreenScreenshotButton by remember(context) {
+        SettingsManager.getShowFullscreenScreenshotButton(context)
+    }.collectAsStateWithLifecycle(initialValue = true
         )
-    val showFullscreenBatteryLevel by SettingsManager
-        .getShowFullscreenBatteryLevel(context)
-        .collectAsStateWithLifecycle(initialValue = true
+    val showFullscreenBatteryLevel by remember(context) {
+        SettingsManager.getShowFullscreenBatteryLevel(context)
+    }.collectAsStateWithLifecycle(initialValue = true
         )
-    val showFullscreenTime by SettingsManager
-        .getShowFullscreenTime(context)
-        .collectAsStateWithLifecycle(initialValue = true
+    val showFullscreenTime by remember(context) {
+        SettingsManager.getShowFullscreenTime(context)
+    }.collectAsStateWithLifecycle(initialValue = true
         )
-    val showFullscreenActionItems by SettingsManager
-        .getShowFullscreenActionItems(context)
-        .collectAsStateWithLifecycle(initialValue = true
+    val showFullscreenActionItems by remember(context) {
+        SettingsManager.getShowFullscreenActionItems(context)
+    }.collectAsStateWithLifecycle(initialValue = true
         )
-    val showOnlineCount by SettingsManager
-        .getShowOnlineCount(context)
-        .collectAsStateWithLifecycle(initialValue = false
+    val showOnlineCount by remember(context) {
+        SettingsManager.getShowOnlineCount(context)
+    }.collectAsStateWithLifecycle(initialValue = false
         )
     val chapterDisplayMode by remember(context) { SettingsManager.getChapterDisplayMode(context) }
         .collectAsStateWithLifecycle(initialValue = ChapterDisplayMode.WITH_CONTROLS)
@@ -1134,13 +1134,13 @@ private fun VideoPlayerOverlayContent(
             )
         }
     }
-    val bottomProgressBehavior by SettingsManager
-        .getBottomProgressBehavior(context)
-        .collectAsStateWithLifecycle(initialValue = BottomProgressBehavior.ALWAYS_HIDE
+    val bottomProgressBehavior by remember(context) {
+        SettingsManager.getBottomProgressBehavior(context)
+    }.collectAsStateWithLifecycle(initialValue = BottomProgressBehavior.ALWAYS_HIDE
         )
-    val playerControlVisibility by SettingsManager
-        .getPlayerControlVisibilitySettings(context)
-        .collectAsStateWithLifecycle(
+    val playerControlVisibility by remember(context) {
+        SettingsManager.getPlayerControlVisibilitySettings(context)
+    }.collectAsStateWithLifecycle(
             initialValue = com.android.purebilibili.core.store.PlayerControlVisibilitySettings()
         )
     val displayedOnlineCount = remember(onlineCount, showOnlineCount) {
@@ -1163,9 +1163,9 @@ private fun VideoPlayerOverlayContent(
             hasExternalPlaylist = hasExternalPlaylist
         )
     }
-    val playbackCompletionBehavior by SettingsManager
-        .getPlaybackCompletionBehavior(context)
-        .collectAsStateWithLifecycle(initialValue = PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC
+    val playbackCompletionBehavior by remember(context) {
+        SettingsManager.getPlaybackCompletionBehavior(context)
+    }.collectAsStateWithLifecycle(initialValue = PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC
         )
     val completionOptions = remember {
         listOf(PlaybackCompletionBehavior.STOP_AFTER_CURRENT, PlaybackCompletionBehavior.PLAY_IN_ORDER,
@@ -1174,9 +1174,9 @@ private fun VideoPlayerOverlayContent(
     }
     val completionLabels = remember { completionOptions.map { it.label } }
     // The legacy preference key now enables the inline-player Haze status-bar backdrop.
-    val immersiveVideoPageStatusBar by SettingsManager
-        .getHideVideoPageStatusBar(context)
-        .collectAsStateWithLifecycle(
+    val immersiveVideoPageStatusBar by remember(context) {
+        SettingsManager.getHideVideoPageStatusBar(context)
+    }.collectAsStateWithLifecycle(
             initialValue = SettingsManager.getHideVideoPageStatusBarSync(context),
         )
     val playerChromeStatusBarVisible = !resolveVideoDetailSystemBarsVisibilityPolicy(
@@ -2806,9 +2806,9 @@ fun LandscapeEndDrawer(
             foldPosture = foldPosture,
         )
     }
-    val cardAnimationEnabled by SettingsManager
-        .getCardAnimationEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true
+    val cardAnimationEnabled by remember(context) {
+        SettingsManager.getCardAnimationEnabled(context)
+    }.collectAsStateWithLifecycle(initialValue = true
         )
     val overlayMotionTier = resolveEffectiveMotionTier(
         baseTier = deviceUiProfile.motionTier,

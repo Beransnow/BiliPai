@@ -3,6 +3,8 @@ package com.android.purebilibili.feature.video.ui.components
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,8 +35,21 @@ import com.android.purebilibili.core.ui.AppModalBottomSheet
 internal fun EpisodeSelectionSheet(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
+    inlinePanel: Boolean = false,
     content: @Composable ColumnScope.(requestDismiss: () -> Unit) -> Unit,
 ) {
+    if (inlinePanel) {
+        com.android.purebilibili.core.ui.LocalNavigationBackHandler(enabled = true, onBackCompleted = onDismiss)
+        com.android.purebilibili.core.ui.AppPopupSurface(
+            type = com.android.purebilibili.core.ui.AppPopupSurfaceType.SHEET,
+            shape = androidx.compose.ui.graphics.RectangleShape,
+            containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+            modifier = modifier.fillMaxSize(),
+        ) {
+            Column(Modifier.fillMaxSize()) { content(onDismiss) }
+        }
+        return
+    }
     var sheetVisible by remember { mutableStateOf(true) }
     val backState = rememberNavigationEventState(NavigationEventInfo.None)
     var committedBackProgress by remember { mutableFloatStateOf(0f) }
