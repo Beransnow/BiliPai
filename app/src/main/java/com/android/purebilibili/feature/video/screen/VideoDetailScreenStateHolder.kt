@@ -3854,7 +3854,7 @@ internal fun VideoDetailScreenStateHolder(
                             drawerWidth = com.android.purebilibili.feature.video.ui.overlay
                                 .resolveLandscapeEndDrawerLayoutPolicy(configuration.screenWidthDp)
                                 .drawerWidthDp.dp,
-                            threadContent = if (subReplyState.visible && subReplyState.rootReply != null) {
+                            threadContent = if (subReplyState.visible) {
                                 { onImagePreview ->
                                     VideoInlineSubReplyDetailContent(
                                         state = subReplyState,

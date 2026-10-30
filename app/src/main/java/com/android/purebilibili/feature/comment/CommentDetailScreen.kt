@@ -218,7 +218,7 @@ fun CommentDetailScreen(
                             midStr.toLongOrNull()?.let(onUserClick)
                         },
                         remoteReplyCount = subReplyState.totalCount,
-                        targetReplyId = targetId,
+                        targetReplyId = subReplyState.targetReplyId,
                         onImagePreview = { images, index, rect, textContent ->
                             previewImages = images
                             previewInitialIndex = index

@@ -20,6 +20,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -30,6 +32,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainCommentReplyVisibilityTest {
@@ -189,6 +193,10 @@ class MainCommentReplyVisibilityTest {
         runCurrent()
         assertEquals(listOf(50L), model.subReplyState.value.items.map { it.rpid })
         assertEquals("offline", model.subReplyState.value.error)
+        model.setSubReplySortMode(SubReplySortMode.HOT)
+        runCurrent()
+        assertEquals(listOf(50L), model.subReplyState.value.items.map { it.rpid })
+        assertEquals("offline", model.subReplyState.value.error)
     }
 
     @Test
@@ -300,5 +308,137 @@ class MainCommentReplyVisibilityTest {
 
         assertEquals(root.replies, model.commentState.value.replies.single().replies)
         assertEquals(8, model.commentState.value.replies.single().count)
+    }
+
+    @Test
+    fun `rootless routed failure stays visible and retries the same target before cursor pagination`() = runTest(dispatcher) {
+        val requests = mutableListOf<Pair<String?, Long>>()
+        var fail = true
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            val offset = arg<String?>(4)
+            requests += offset to arg<Long>(5)
+            if (fail) Result.failure(IllegalStateException("target unavailable"))
+            else Result.success(ReplyData(
+                root = root.copy(rpid = 90L),
+                replies = listOf(ReplyItem(rpid = if (offset == null) 91L else 92L, root = 90L)),
+                grpcNextOffset = if (offset == null) "next" else "",
+                cursor = ReplyCursor(isEnd = offset != null),
+            ))
+        }
+        model.openSubReply(root)
+        runCurrent()
+        model.openSubReplyFromRoute(90L, 91L)
+        assertTrue(model.subReplyState.value.visible)
+        assertNull(model.subReplyState.value.rootReply)
+        assertTrue(model.subReplyState.value.items.isEmpty())
+        runCurrent()
+        assertEquals("target unavailable", model.subReplyState.value.error)
+        fail = false
+        model.loadMoreSubReplies()
+        runCurrent()
+        assertEquals(90L, model.subReplyState.value.rootReply?.rpid)
+        assertEquals(listOf(91L), model.subReplyState.value.items.map { it.rpid })
+        assertNull(model.subReplyState.value.error)
+        model.loadMoreSubReplies()
+        runCurrent()
+        assertEquals(listOf(null to 91L, null to 91L, "next" to 0L), requests.drop(1))
+        assertEquals(listOf(91L, 92L), model.subReplyState.value.items.map { it.rpid })
+    }
+
+    @Test
+    fun `new routed thread and close reject cancellation resistant earlier route outcomes`() = runTest(dispatcher) {
+        val firstResponse = CompletableDeferred<Result<ReplyData>>()
+        val secondResponse = CompletableDeferred<Result<ReplyData>>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            withContext(NonCancellable) {
+                if (arg<Long>(2) == 90L) firstResponse.await() else secondResponse.await()
+            }
+        }
+        model.openSubReplyFromRoute(90L, 91L)
+        runCurrent()
+        model.openSubReplyFromRoute(100L, 101L)
+        runCurrent()
+        firstResponse.complete(Result.success(ReplyData(root = root.copy(rpid = 90L))))
+        runCurrent()
+        assertTrue(model.subReplyState.value.isLoading)
+        assertNull(model.subReplyState.value.rootReply)
+        assertEquals(101L, model.subReplyState.value.targetReplyId)
+        model.closeSubReply()
+        secondResponse.complete(Result.failure(IllegalStateException("late failure")))
+        runCurrent()
+        assertFalse(model.subReplyState.value.visible)
+        assertFalse(model.subReplyState.value.isLoading)
+        assertNull(model.subReplyState.value.error)
+        assertNull(model.subReplyState.value.rootReply)
+    }
+
+    @Test
+    fun `routed response cannot restore an old account thread after switching back`() = runTest(dispatcher) {
+        val response = CompletableDeferred<Result<ReplyData>>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers { withContext(NonCancellable) { response.await() } }
+        model.openSubReplyFromRoute(90L, 91L)
+        runCurrent()
+        identities.value = AccountSessionIdentity(202L, 1L)
+        runCurrent()
+        identities.value = AccountSessionIdentity(0L, 2L)
+        runCurrent()
+        response.complete(Result.success(ReplyData(root = root.copy(rpid = 90L))))
+        runCurrent()
+        assertFalse(model.subReplyState.value.visible)
+        assertNull(model.subReplyState.value.rootReply)
+        assertTrue(model.subReplyState.value.items.isEmpty())
+    }
+
+    @Test
+    fun `root targeted route opens an empty thread without requesting the root as a child`() = runTest(dispatcher) {
+        var requestedTarget = -1L
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            requestedTarget = arg(5)
+            Result.success(ReplyData(root = root.copy(rpid = 90L, count = 0, rcount = 0), cursor = ReplyCursor(isEnd = true)))
+        }
+        assertTrue(model.openSubReplyFromRoute(90L, 90L))
+        runCurrent()
+        assertEquals(0L, requestedTarget)
+        assertTrue(model.subReplyState.value.visible)
+        assertEquals(90L, model.subReplyState.value.rootReply?.rpid)
+        assertTrue(model.subReplyState.value.items.isEmpty())
+        assertNull(model.subReplyState.value.error)
+    }
+
+    @Test
+    fun `refresh and sorting replace in flight route lookup with untargeted first pages`() = runTest(dispatcher) {
+        val response = CompletableDeferred<Result<ReplyData>>()
+        val targets = mutableListOf<Long>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            targets += arg<Long>(5)
+            if (arg<Long>(5) > 0L) withContext(NonCancellable) { response.await() }
+            else Result.success(ReplyData(root = root.copy(rpid = 90L), cursor = ReplyCursor(isEnd = true)))
+        }
+        model.openSubReplyFromRoute(90L, 91L)
+        runCurrent()
+        model.refreshSubReplies()
+        runCurrent()
+        assertEquals(0L, model.subReplyState.value.targetReplyId)
+        assertEquals(90L, model.subReplyState.value.rootReply?.rpid)
+        model.openSubReplyFromRoute(90L, 92L)
+        runCurrent()
+        model.setSubReplySortMode(SubReplySortMode.HOT)
+        runCurrent()
+        response.complete(Result.failure(IllegalStateException("abandoned target")))
+        runCurrent()
+        assertEquals(listOf(91L, 0L, 92L, 0L), targets)
+        assertEquals(SubReplySortMode.HOT, model.subReplyState.value.sortMode)
+        assertEquals(0L, model.subReplyState.value.targetReplyId)
+        assertNull(model.subReplyState.value.error)
     }
 }

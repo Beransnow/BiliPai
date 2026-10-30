@@ -15,6 +15,7 @@ import com.android.purebilibili.data.model.response.ReplyCursor
 import com.android.purebilibili.data.model.response.ReplyData
 import com.android.purebilibili.data.model.response.ReplyItem
 import com.android.purebilibili.data.repository.CommentRepository
+import com.android.purebilibili.data.repository.DynamicRepository
 import com.android.purebilibili.feature.comment.SentCommentReplyStores
 import com.android.purebilibili.feature.video.viewmodel.SubReplySortMode
 import io.mockk.Runs
@@ -335,6 +336,273 @@ class DynamicCommentSendViewModelTest {
                 assertTrue(nextOwner.commentUiState.value.comments.isEmpty())
                 assertFalse(nextOwner.openSubReplyFromRoute(10L))
             }
+        }
+    }
+
+    @Test
+    fun `rootless dynamic route failure is visible and retries its target before ordinary cursor pages`() = runTest(dispatcher) {
+        var fail = true
+        val requests = mutableListOf<Pair<String?, Long>>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            val offset = arg<String?>(4)
+            requests += offset to arg<Long>(5)
+            if (fail) Result.failure(IllegalStateException("target unavailable"))
+            else Result.success(threadPage(
+                listOf(ReplyItem(rpid = if (offset == null) 91L else 92L, root = 90L)),
+                if (offset == null) "next" else "",
+            ).copy(root = root.copy(rpid = 90L)))
+        }
+        withViewModel { owner ->
+            owner.openCommentSheet(subject)
+            runCurrent()
+            owner.openSubReply(root)
+            runCurrent()
+            owner.openSubReplyFromRoute(90L, 91L)
+            assertTrue(owner.subReplyState.value.visible)
+            assertNull(owner.subReplyState.value.rootReply)
+            assertTrue(owner.subReplyState.value.items.isEmpty())
+            runCurrent()
+            assertEquals("target unavailable", owner.subReplyState.value.error)
+            fail = false
+            owner.loadMoreSubReplies()
+            runCurrent()
+            assertEquals(90L, owner.subReplyState.value.rootReply?.rpid)
+            assertEquals(listOf(91L), owner.subReplyState.value.items.map { it.rpid })
+            owner.loadMoreSubReplies()
+            runCurrent()
+            assertEquals(listOf(null to 91L, null to 91L, "next" to 0L), requests.drop(1))
+            assertEquals(listOf(91L, 92L), owner.subReplyState.value.items.map { it.rpid })
+            assertNull(owner.subReplyState.value.error)
+        }
+    }
+
+    @Test
+    fun `new dynamic route and close discard cancellation resistant route outcomes`() = runTest(dispatcher) {
+        val firstResponse = CompletableDeferred<Result<ReplyData>>()
+        val secondResponse = CompletableDeferred<Result<ReplyData>>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            withContext(NonCancellable) {
+                if (arg<Long>(2) == 90L) firstResponse.await() else secondResponse.await()
+            }
+        }
+        withViewModel { owner ->
+            owner.openCommentSheet(subject)
+            runCurrent()
+            owner.openSubReplyFromRoute(90L, 91L)
+            runCurrent()
+            owner.openSubReplyFromRoute(100L, 101L)
+            runCurrent()
+            firstResponse.complete(Result.success(threadPage(emptyList(), "").copy(root = root.copy(rpid = 90L))))
+            runCurrent()
+            assertTrue(owner.subReplyState.value.isLoading)
+            assertNull(owner.subReplyState.value.rootReply)
+            assertEquals(101L, owner.subReplyState.value.targetReplyId)
+            owner.closeSubReply()
+            secondResponse.complete(Result.failure(IllegalStateException("late failure")))
+            runCurrent()
+            assertFalse(owner.subReplyState.value.visible)
+            assertFalse(owner.subReplyState.value.isLoading)
+            assertNull(owner.subReplyState.value.rootReply)
+            assertNull(owner.subReplyState.value.error)
+        }
+    }
+
+    @Test
+    fun `account switch closes pending dynamic route and does not leak its root into the next account`() = runTest(dispatcher) {
+        val response = CompletableDeferred<Result<ReplyData>>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers { withContext(NonCancellable) { response.await() } }
+        withViewModel { owner ->
+            owner.openCommentSheet(subject)
+            runCurrent()
+            owner.openSubReplyFromRoute(90L, 91L)
+            runCurrent()
+            identities.value = AccountSessionIdentity(202L, 2L)
+            runCurrent()
+            response.complete(Result.success(threadPage(listOf(ReplyItem(rpid = 91L)), "").copy(root = root.copy(rpid = 90L))))
+            runCurrent()
+            assertFalse(owner.subReplyState.value.visible)
+            assertNull(owner.subReplyState.value.rootReply)
+            assertTrue(owner.subReplyState.value.items.isEmpty())
+            owner.openCommentSheet(subject)
+            runCurrent()
+            assertFalse(owner.subReplyState.value.visible)
+            assertEquals(10L, owner.commentUiState.value.comments.single().rpid)
+        }
+    }
+
+    @Test
+    fun `dynamic root targeted empty route normalizes target and rejects a wrong server root until retry`() = runTest(dispatcher) {
+        var correctRoot = false
+        val targets = mutableListOf<Long>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            targets += arg<Long>(5)
+            Result.success(threadPage(emptyList(), "").copy(root = root.copy(
+                rpid = if (correctRoot) 90L else 10L, count = 0, rcount = 0,
+            )))
+        }
+        withViewModel { owner ->
+            owner.openCommentSheet(subject)
+            runCurrent()
+            assertTrue(owner.openSubReplyFromRoute(90L, 90L))
+            runCurrent()
+            assertTrue(owner.subReplyState.value.visible)
+            assertNull(owner.subReplyState.value.rootReply)
+            assertEquals("回复楼层不匹配，请重试", owner.subReplyState.value.error)
+            correctRoot = true
+            owner.loadMoreSubReplies()
+            runCurrent()
+            assertEquals(listOf(0L, 0L), targets)
+            assertEquals(90L, owner.subReplyState.value.rootReply?.rpid)
+            assertTrue(owner.subReplyState.value.items.isEmpty())
+            assertNull(owner.subReplyState.value.error)
+        }
+    }
+
+    @Test
+    fun `dynamic refresh and sorting cancel an in flight routed target instead of resuming its seek`() = runTest(dispatcher) {
+        val pending = CompletableDeferred<Result<ReplyData>>()
+        val targets = mutableListOf<Long>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            targets += arg<Long>(5)
+            if (arg<Long>(5) > 0L) withContext(NonCancellable) { pending.await() }
+            else Result.success(threadPage(emptyList(), "").copy(root = root.copy(rpid = 90L)))
+        }
+        withViewModel { owner ->
+            owner.openCommentSheet(subject)
+            runCurrent()
+            owner.openSubReplyFromRoute(90L, 91L)
+            runCurrent()
+            owner.refreshSubReplies()
+            runCurrent()
+            assertEquals(0L, owner.subReplyState.value.targetReplyId)
+            assertEquals(90L, owner.subReplyState.value.rootReply?.rpid)
+            owner.openSubReplyFromRoute(90L, 92L)
+            runCurrent()
+            owner.setSubReplySortMode(SubReplySortMode.HOT)
+            runCurrent()
+            pending.complete(Result.failure(IllegalStateException("abandoned target")))
+            runCurrent()
+            assertEquals(listOf(91L, 0L, 92L, 0L), targets)
+            assertEquals(SubReplySortMode.HOT, owner.subReplyState.value.sortMode)
+            assertEquals(0L, owner.subReplyState.value.targetReplyId)
+            assertNull(owner.subReplyState.value.error)
+        }
+    }
+
+    @Test
+    fun `accepted dynamic replies remain visible when routed read and sorted retry both fail`() = runTest(dispatcher) {
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } returns Result.failure(IllegalStateException("offline"))
+        withViewModel { owner ->
+            owner.openCommentSheet(subject)
+            runCurrent()
+            owner.startCommentReply(root)
+            owner.postComment(subject.id_str, "accepted reply") { _, _ -> }
+            runCurrent()
+            owner.openSubReplyFromRoute(10L, 40L)
+            runCurrent()
+            assertEquals(listOf(40L), owner.subReplyState.value.items.map { it.rpid })
+            assertEquals("offline", owner.subReplyState.value.error)
+            owner.setSubReplySortMode(SubReplySortMode.HOT)
+            runCurrent()
+            assertEquals(listOf(40L), owner.subReplyState.value.items.map { it.rpid })
+            assertEquals("offline", owner.subReplyState.value.error)
+        }
+    }
+
+    @Test
+    fun `routed thread opens before pending main list and a late main success cannot reopen it after close`() = runTest(dispatcher) {
+        val mainResponse = CompletableDeferred<Result<ReplyData>>()
+        coEvery {
+            CommentRepository.getMobileCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers { mainResponse.await() }
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } returns Result.success(threadPage(listOf(ReplyItem(rpid = 91L, root = 90L)), "").copy(root = root.copy(rpid = 90L)))
+        withViewModel { owner ->
+            owner.openCommentSheet(subject, rootReplyId = 90L, targetReplyId = 91L)
+            runCurrent()
+            assertTrue(owner.commentUiState.value.isLoading)
+            assertTrue(owner.subReplyState.value.visible)
+            assertEquals(90L, owner.subReplyState.value.rootReply?.rpid)
+            assertEquals(listOf(91L), owner.subReplyState.value.items.map { it.rpid })
+            owner.closeSubReply()
+            mainResponse.complete(Result.success(ReplyData(replies = listOf(root), cursor = ReplyCursor(isEnd = true))))
+            runCurrent()
+            assertFalse(owner.commentUiState.value.isLoading)
+            assertEquals(10L, owner.commentUiState.value.comments.single().rpid)
+            assertFalse(owner.subReplyState.value.visible)
+            coVerify(exactly = 1) {
+                CommentRepository.getMobileSortedSubCommentsForSubject(3000L, 11, 90L, any(), any(), 91L, any())
+            }
+        }
+    }
+
+    @Test
+    fun `main list failure does not prevent routed thread failure feedback or same target retry`() = runTest(dispatcher) {
+        coEvery {
+            CommentRepository.getMobileCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } returns Result.failure(IllegalStateException("main offline"))
+        var failThread = true
+        val targets = mutableListOf<Long>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            targets += arg<Long>(5)
+            if (failThread) Result.failure(IllegalStateException("target unavailable"))
+            else Result.success(threadPage(emptyList(), "").copy(root = root.copy(rpid = 90L)))
+        }
+        withViewModel { owner ->
+            owner.openCommentSheet(subject, rootReplyId = 90L, targetReplyId = 91L)
+            runCurrent()
+            assertEquals("main offline", owner.commentUiState.value.refreshError)
+            assertTrue(owner.subReplyState.value.visible)
+            assertEquals("target unavailable", owner.subReplyState.value.error)
+            failThread = false
+            owner.loadMoreSubReplies()
+            runCurrent()
+            assertEquals(listOf(91L, 91L), targets)
+            assertEquals(90L, owner.subReplyState.value.rootReply?.rpid)
+            assertNull(owner.subReplyState.value.error)
+            coVerify(exactly = 2) {
+                CommentRepository.getMobileSortedSubCommentsForSubject(3000L, 11, 90L, any(), any(), 91L, any())
+            }
+        }
+    }
+
+    @Test
+    fun `closing routed intent before delayed subject resolution prevents a late thread open`() = runTest(dispatcher) {
+        val detailResponse = CompletableDeferred<Result<DynamicItem>>()
+        val unresolved = DynamicItem(id_str = "needs-detail", type = "DYNAMIC_TYPE_ARTICLE")
+        mockkObject(DynamicRepository)
+        try {
+            coEvery { DynamicRepository.getDynamicDetail("needs-detail") } coAnswers { detailResponse.await() }
+            withViewModel { owner ->
+                owner.openCommentSheet(unresolved, rootReplyId = 90L, targetReplyId = 91L)
+                runCurrent()
+                owner.closeSubReply()
+                detailResponse.complete(Result.success(subject.copy(id_str = "needs-detail")))
+                runCurrent()
+                assertFalse(owner.subReplyState.value.visible)
+                assertNull(owner.subReplyState.value.rootReply)
+                coVerify(exactly = 0) {
+                    CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), 90L, any(), any(), any(), any())
+                }
+                assertEquals(10L, owner.commentUiState.value.comments.single().rpid)
+            }
+        } finally {
+            unmockkObject(DynamicRepository)
         }
     }
 

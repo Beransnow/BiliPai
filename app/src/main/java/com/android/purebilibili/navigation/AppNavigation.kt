@@ -2625,6 +2625,7 @@ fun AppNavigation(
                             contentTransitionReady = contentReady,
                             openCommentRootRpid = dynamicKey.commentRootRpid,
                             openCommentTargetRpid = dynamicKey.commentTargetRpid,
+                            openComments = dynamicKey.openComments,
                             onBack = onBack,
                             onVideoClick = { bvid -> navigateToVideoInNavigation3(bvid, 0L, "") },
                             onBangumiClick = { seasonId, epId ->
@@ -4821,6 +4822,10 @@ fun AppNavigation(
                                     title = webKey.title.ifEmpty { null },
                                     mobileUserAgent = webKey.mobileUserAgent,
                                     onBack = { performSystemBackAction() },
+                                    onCommentLink = { url ->
+                                        replaceNavigation3BackStack(popBiliPaiNavKey(navigation3BackStack))
+                                        openBilibiliLinkInNavigation3(url)
+                                    },
                                     onVideoClick = { bvid ->
                                         replaceNavigation3BackStack(
                                             popBiliPaiNavKey(navigation3BackStack)

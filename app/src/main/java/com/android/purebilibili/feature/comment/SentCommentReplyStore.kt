@@ -70,7 +70,7 @@ internal class SentCommentReplyStore {
     fun rootFor(rootId: Long): ReplyItem? {
         if (isRootRemoved(rootId)) return null
         val root = knownRoots[rootId] ?: roots[rootId] ?: return null
-        return merge(listOf(root)).firstOrNull()
+        return merge(listOf(root)).firstOrNull { it.rpid == rootId }
     }
 
     /** A just-published rpid may not yet be readable by the server's target lookup. */

@@ -154,7 +154,9 @@ class CommentDetailViewModel : ViewModel() {
         if (currentAccount == accountIdentity.value &&
             currentOid == oid && currentRootId == rootId && currentType == type &&
             currentTargetReplyId == targetReplyId &&
-            _subReplyState.value.visible && _subReplyState.value.rootReply != null
+            _subReplyState.value.visible &&
+            (_subReplyState.value.isLoading ||
+                (_subReplyState.value.rootReply != null && _subReplyState.value.error == null))
         ) {
             return
         }
@@ -195,18 +197,19 @@ class CommentDetailViewModel : ViewModel() {
 
     fun setSortMode(mode: SubReplySortMode) {
         val state = _subReplyState.value
-        if (state.sortMode == mode || state.isLoading) return
+        if (!state.visible || state.sortMode == mode) return
         subReplyLoadJob?.cancel()
-        _subReplyState.update { it.resetForSort(mode) }
+        val localItems = sentReplyStore?.repliesFor(currentRootId).orEmpty().toImmutableList()
+        _subReplyState.update { it.resetForSort(mode).copy(items = localItems, baseItems = localItems) }
         startSubReplyPaging()
     }
 
     fun refresh() {
         val state = _subReplyState.value
-        if (currentOid <= 0L || currentRootId <= 0L || state.isRefreshing ||
-            (state.isLoading && state.items.isEmpty())
-        ) return
-        _subReplyState.value = state.copy(isLoading = true, isRefreshing = true, error = null)
+        if (!state.visible || currentOid <= 0L || currentRootId <= 0L || state.isRefreshing) return
+        _subReplyState.value = state.copy(
+            isLoading = true, isRefreshing = true, error = null, targetReplyId = 0L
+        )
         startSubReplyPaging()
     }
 
@@ -240,6 +243,7 @@ class CommentDetailViewModel : ViewModel() {
                         paginationOffset = request.offset,
                         targetReplyId = store.remoteTargetReplyId(rootId, target).takeIf { request.page == 1 } ?: 0L
                     ).getOrThrow()
+                    check(data.root?.let { it.rpid == rootId } != false) { "回复楼层不匹配，请重试" }
                     currentCoroutineContext().ensureActive()
                     resolvedRoot = resolveRoutedCommentRootReply(emptyList(), data, rootId) ?: resolvedRoot
                     check(resolvedRoot != null) { "评论可能已被删除或不可见" }

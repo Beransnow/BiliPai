@@ -110,6 +110,10 @@ class CommentDetailReplyVisibilityTest {
         assertEquals(10L, model.subReplyState.value.rootReply?.rpid)
         assertEquals(listOf(50L), ids())
         assertEquals("offline", model.subReplyState.value.error)
+        model.setSortMode(SubReplySortMode.HOT)
+        runCurrent()
+        assertEquals(listOf(50L), ids())
+        assertEquals("offline", model.subReplyState.value.error)
     }
 
     @Test
@@ -504,6 +508,161 @@ class CommentDetailReplyVisibilityTest {
         runCurrent()
 
         assertEquals(listOf(20L, 30L, 50L), ids())
+    }
+
+    @Test
+    fun `same routed parameters retry a failed read even when a cached local root is visible`() = runTest(dispatcher) {
+        SentCommentReplyStores.forSubject(1001L, 47).record(
+            sent.copy(root = 10L, parent = 10L, oid = 1001L, replyType = 47),
+            listOf(root.copy(replyType = 47)),
+        )
+        var fail = true
+        val targets = mutableListOf<Long>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            targets += arg<Long>(5)
+            if (fail) Result.failure(IllegalStateException("target unavailable"))
+            else Result.success(page(listOf(first, second), root = root.copy(replyType = 47)))
+        }
+        model.loadInitial(1001L, 10L, type = 47, targetReplyId = 30L)
+        runCurrent()
+        assertEquals(10L, model.subReplyState.value.rootReply?.rpid)
+        assertEquals(listOf(50L), ids())
+        assertEquals("target unavailable", model.subReplyState.value.error)
+        fail = false
+        model.loadInitial(1001L, 10L, type = 47, targetReplyId = 30L)
+        runCurrent()
+        assertEquals(listOf(30L, 30L), targets)
+        assertEquals(listOf(20L, 30L, 50L), ids())
+        assertNull(model.subReplyState.value.error)
+    }
+
+    @Test
+    fun `new detail thread and close discard cancellation resistant routed results`() = runTest(dispatcher) {
+        val firstResponse = CompletableDeferred<Result<ReplyData>>()
+        val secondResponse = CompletableDeferred<Result<ReplyData>>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            withContext(NonCancellable) {
+                if (arg<Long>(2) == 90L) firstResponse.await() else secondResponse.await()
+            }
+        }
+        model.loadInitial(1001L, 90L, targetReplyId = 91L)
+        runCurrent()
+        model.loadInitial(1001L, 100L, targetReplyId = 101L)
+        runCurrent()
+        firstResponse.complete(Result.success(page(listOf(first), root = root.copy(rpid = 90L))))
+        runCurrent()
+        assertTrue(model.subReplyState.value.isLoading)
+        assertNull(model.subReplyState.value.rootReply)
+        assertEquals(101L, model.subReplyState.value.targetReplyId)
+        model.close()
+        secondResponse.complete(Result.failure(IllegalStateException("late failure")))
+        runCurrent()
+        assertFalse(model.subReplyState.value.visible)
+        assertNull(model.subReplyState.value.rootReply)
+        assertNull(model.subReplyState.value.error)
+    }
+
+    @Test
+    fun `detail account switch discards old routed data while reloading the same root`() = runTest(dispatcher) {
+        val response = CompletableDeferred<Result<ReplyData>>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            if (accounts.value.mid == 1L) withContext(NonCancellable) { response.await() }
+            else Result.success(page(emptyList(), root = root.copy(rpid = 90L, count = 0, rcount = 0)))
+        }
+        model.loadInitial(1001L, 90L, targetReplyId = 91L)
+        runCurrent()
+        accounts.value = AccountSessionIdentity(2L, 2L)
+        runCurrent()
+        response.complete(Result.success(page(listOf(sent), root = root.copy(rpid = 90L))))
+        runCurrent()
+        assertTrue(model.subReplyState.value.visible)
+        assertEquals(90L, model.subReplyState.value.rootReply?.rpid)
+        assertTrue(ids().isEmpty())
+        assertNull(model.subReplyState.value.error)
+    }
+
+    @Test
+    fun `wrong server root is an error and retry can open a root only thread without children`() = runTest(dispatcher) {
+        var correctRoot = false
+        val targets = mutableListOf<Long>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            targets += arg<Long>(5)
+            Result.success(page(emptyList(), root = root.copy(
+                rpid = if (correctRoot) 90L else 10L, count = 0, rcount = 0,
+            )))
+        }
+        model.loadInitial(1001L, 90L, targetReplyId = 90L)
+        runCurrent()
+        assertEquals("回复楼层不匹配，请重试", model.subReplyState.value.error)
+        assertNull(model.subReplyState.value.rootReply)
+        correctRoot = true
+        model.loadMore()
+        runCurrent()
+        assertEquals(listOf(0L, 0L), targets)
+        assertEquals(90L, model.subReplyState.value.rootReply?.rpid)
+        assertTrue(ids().isEmpty())
+        assertNull(model.subReplyState.value.error)
+    }
+
+    @Test
+    fun `detail targets only first page and explicit refresh and sort cancel pending route lookup`() = runTest(dispatcher) {
+        val pending = CompletableDeferred<Result<ReplyData>>()
+        val requests = mutableListOf<Pair<String?, Long>>()
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } coAnswers {
+            val target = arg<Long>(5)
+            val offset = arg<String?>(4)
+            requests += offset to target
+            if (target == 92L || target == 93L) withContext(NonCancellable) { pending.await() }
+            else Result.success(page(
+                listOf(ReplyItem(rpid = if (offset == null) 91L else 94L, root = 90L)),
+                if (offset == null) "next" else "", root.copy(rpid = 90L),
+            ))
+        }
+        model.loadInitial(1001L, 90L, targetReplyId = 91L)
+        runCurrent()
+        model.loadMore()
+        runCurrent()
+        assertEquals(listOf(null to 91L, "next" to 0L), requests)
+        model.loadInitial(1001L, 90L, targetReplyId = 92L)
+        runCurrent()
+        model.refresh()
+        runCurrent()
+        assertEquals(0L, model.subReplyState.value.targetReplyId)
+        model.loadInitial(1001L, 90L, targetReplyId = 93L)
+        runCurrent()
+        model.setSortMode(SubReplySortMode.HOT)
+        runCurrent()
+        pending.complete(Result.failure(IllegalStateException("abandoned target")))
+        runCurrent()
+        assertEquals(listOf(91L, 0L, 92L, 0L, 93L, 0L), requests.map { it.second })
+        assertEquals(SubReplySortMode.HOT, model.subReplyState.value.sortMode)
+        assertEquals(0L, model.subReplyState.value.targetReplyId)
+        assertNull(model.subReplyState.value.error)
+    }
+
+    @Test
+    fun `cached root selection is not replaced by another locally created top level comment`() = runTest(dispatcher) {
+        val subjectStore = SentCommentReplyStores.forSubject(1001L, 47)
+        subjectStore.record(sent.copy(root = 10L, parent = 10L), listOf(root.copy(replyType = 47)))
+        subjectStore.record(ReplyItem(rpid = 500L, root = 0L), emptyList())
+        coEvery {
+            CommentRepository.getMobileSortedSubCommentsForSubject(any(), any(), any(), any(), any(), any(), any())
+        } returns Result.failure(IllegalStateException("offline"))
+        model.loadInitial(1001L, 10L, type = 47, targetReplyId = 50L)
+        runCurrent()
+        assertEquals(10L, model.subReplyState.value.rootReply?.rpid)
+        assertEquals(listOf(50L), ids())
+        assertEquals("offline", model.subReplyState.value.error)
     }
 
     private fun send(target: ReplyItem) {
